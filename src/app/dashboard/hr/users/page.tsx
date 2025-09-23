@@ -105,20 +105,44 @@ export default function UsersPage() {
   const handleEditUser = async (userData: Partial<User>) => {
     if (!selectedUser) return
 
-    // TODO: Implement API call to update user
-    console.log("Update user:", selectedUser.id, userData)
-    setIsEditOpen(false)
-    setSelectedUser(null)
-    fetchUsers() // Refresh the list
+    try {
+      const updatedUser: User = { ...selectedUser, ...userData }
+      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/edit-user/${selectedUser.id}`, {
+        method: "PUT",
+        body: JSON.stringify(updatedUser)
+      })
+
+      if (response.ok) {
+        // Update the user in the local state without page refresh
+        setUsers(users.map(user => user.id === selectedUser.id ? updatedUser : user))
+        setIsEditOpen(false)
+        setSelectedUser(null)
+      } else {
+        console.error("Failed to update user:", await response.text())
+      }
+    } catch (error) {
+      console.error("Error updating user:", error)
+    }
   }
 
   const handleDeleteUser = async () => {
     if (!deleteUser) return
 
-    // TODO: Implement API call to delete user
-    console.log("Delete user:", deleteUser.id)
-    setDeleteUser(null)
-    fetchUsers() // Refresh the list
+    try {
+      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/delete-user/${deleteUser.id}`, {
+        method: "DELETE"
+      })
+
+      if (response.ok) {
+        // Remove the user from the local state without page refresh
+        setUsers(users.filter(user => user.id !== deleteUser.id))
+        setDeleteUser(null)
+      } else {
+        console.error("Failed to delete user:", await response.text())
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error)
+    }
   }
 
   const handleStatusChange = async (userId: string, status: User["status"]) => {

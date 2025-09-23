@@ -149,13 +149,24 @@ export async function addUser(user: User): Promise<void> {
 }
 
 export async function updateUser(updatedUser: User): Promise<void> {
-  // TODO: Implement PUT request to backend with authentication
-  throw new Error("Not implemented - should PUT to backend with auth")
+  const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/edit-user/${updatedUser.id}`, {
+    method: "PUT",
+    body: JSON.stringify(updatedUser)
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to update user")
+  }
 }
 
 export async function deleteUser(userId: string): Promise<void> {
-  // TODO: Implement DELETE request to backend with authentication
-  throw new Error("Not implemented - should DELETE to backend with auth")
+  const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/delete-user/${userId}`, {
+    method: "DELETE"
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to delete user")
+  }
 }
 
 export async function updateUserStatus(userId: string, status: User["status"]): Promise<void> {
