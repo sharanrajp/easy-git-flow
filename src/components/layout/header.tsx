@@ -88,9 +88,7 @@ export function Header({ user }: HeaderProps) {
         {/* Logo and Brand */}
         <div className="flex items-center space-x-8">
           <div className="flex items-center space-x-3">
-            <span className="font-bold text-foreground text-xl bg-gradient-primary bg-clip-text text-transparent">
-              VueData
-            </span>
+            <img src="/vuedata-blue.webp" alt="vueDataImage" draggable="false" height={25} width={200}/>
             <div className="w-10 h-10 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-glow">
               <span className="text-white font-bold text-sm">ATS</span>
             </div>
