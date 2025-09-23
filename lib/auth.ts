@@ -2,17 +2,105 @@ export interface User {
   id: string
   name: string
   email: string
-  role: "hr" | "panelist" | "manager"
+  role: "hr" | "panelist" | "manager" | "admin"
   panelistType?: "panel-member" | "manager"
   skills?: string[]
   interviewRounds?: string[]
   status?: "available" | "in-interview" | "break" | "on-break" | "unavailable"
 }
 
+// Token management functions
+export function getToken(): string | null {
+  if (typeof window === "undefined") return null
+  return localStorage.getItem("ats_token")
+}
+
+export function setToken(token: string): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("ats_token", token)
+  }
+}
+
+export function removeToken(): void {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("ats_token")
+  }
+}
+
+// Refresh token function
+export async function refreshToken(): Promise<string | null> {
+  const currentToken = getToken()
+  if (!currentToken) return null
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/auth/auth/refresh", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${currentToken}`
+      }
+    })
+
+    if (!response.ok) {
+      removeToken()
+      return null
+    }
+
+    const data = await response.json()
+    const { access_token } = data
+    
+    if (access_token) {
+      setToken(access_token)
+      return access_token
+    }
+    
+    return null
+  } catch (error) {
+    console.error("Token refresh failed:", error)
+    removeToken()
+    return null
+  }
+}
+
+// Authenticated API call helper
+async function makeAuthenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
+  let token = getToken()
+  
+  if (!token) {
+    throw new Error("No authentication token available")
+  }
+
+  const authOptions = {
+    ...options,
+    headers: {
+      ...options.headers,
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json"
+    }
+  }
+
+  let response = await fetch(url, authOptions)
+
+  // If unauthorized, try to refresh token and retry
+  if (response.status === 401) {
+    const newToken = await refreshToken()
+    if (newToken) {
+      authOptions.headers = {
+        ...authOptions.headers,
+        "Authorization": `Bearer ${newToken}`
+      }
+      response = await fetch(url, authOptions)
+    }
+  }
+
+  return response
+}
+
+// User management functions
 function getStoredUsers(): User[] {
+  if (typeof window === "undefined") return []
   const stored = localStorage.getItem("ats_users")
-  if (!stored) return []
-  return JSON.parse(stored)
+  return stored ? JSON.parse(stored) : []
 }
 
 function saveUsers(users: User[]): void {
@@ -21,39 +109,44 @@ function saveUsers(users: User[]): void {
   }
 }
 
-export function authenticateUser(email: string, password: string): User | null {
-  console.log("[v0] Login attempt:", { email, password: password ? "***" : "empty" })
-
-  if (password !== "1234") {
-    console.log("[v0] Password mismatch - expected '1234', got:", password)
-    return null
-  }
-
-  const users = getStoredUsers()
-  const user = users.find((u) => u.email === email)
-  if (user) {
-    console.log("[v0] User found:", user.name, user.role)
-    localStorage.setItem("ats_user", JSON.stringify(user))
-    return user
-  } else {
-    console.log("[v0] No user found for email:", email)
-  }
-  return null
-}
-
 export function getStoredUser(): User | null {
   if (typeof window === "undefined") return null
-
   const stored = localStorage.getItem("ats_user")
   return stored ? JSON.parse(stored) : null
 }
 
-export function logout(): void {
-  localStorage.removeItem("ats_user")
+async function fetchUsers(): Promise<User[]> {
+  try {
+    const response = await makeAuthenticatedRequest("http://127.0.0.1:8000/panels/with-status")
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch users")
+    }
+    
+    const users = await response.json() || []
+    saveUsers(users)
+    return users
+  } catch (error) {
+    console.error("Error fetching users:", error)
+    // Return cached users if API fails
+    return getStoredUsers()
+  }
 }
 
-export function getAllUsers(): User[] {
-  return getStoredUsers()
+export function getAllUsers(): Promise<User[]> {
+  return fetchUsers()
+}
+
+export function logout(): void {
+  removeToken()
+  localStorage.removeItem("ats_user")
+  localStorage.removeItem("ats_users")
+}
+
+// Legacy functions for compatibility
+export function authenticateUser(email: string, password: string): User | null {
+  console.log("[v0] Legacy authenticateUser called - use login API instead")
+  return null
 }
 
 export function updateUsersList(users: User[]): void {

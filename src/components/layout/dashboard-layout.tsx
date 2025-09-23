@@ -3,7 +3,8 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Header } from "./header"
-import { type User } from "@/lib/auth"
+import { Sidebar } from "./sidebar"
+import { type User, getStoredUser, getToken } from "@/lib/auth"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -16,10 +17,36 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Since we removed localStorage, redirect to login
-    // In a real app, you'd implement proper session management here
-    navigate("/login")
-  }, [navigate])
+    const token = getToken()
+    const storedUser = getStoredUser()
+
+    // Check if user is authenticated
+    if (!token || !storedUser) {
+      navigate("/login")
+      return
+    }
+
+    // Check role authorization
+    if (requiredRole && storedUser.role !== requiredRole) {
+      // Redirect to appropriate dashboard
+      switch (storedUser.role) {
+        case "hr":
+        case "admin":
+          navigate("/dashboard/hr")
+          break
+        case "panelist":
+          navigate("/dashboard/panelist")
+          break
+        case "manager":
+          navigate("/dashboard/manager")
+          break
+      }
+      return
+    }
+
+    setUser(storedUser)
+    setIsLoading(false)
+  }, [navigate, requiredRole])
 
   if (isLoading) {
     return (
@@ -33,10 +60,22 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
     return null
   }
 
+  if (user.role === "panelist") {
+    return (
+      <div className="flex flex-col min-h-screen bg-background">
+        <Header user={user} />
+        <main className="flex-1 p-6">{children}</main>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <Header user={user} />
-      <main className="flex-1 p-6">{children}</main>
+    <div className="flex h-screen bg-background">
+      <Sidebar user={user} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header user={user} />
+        <main className="flex-1 overflow-auto p-6">{children}</main>
+      </div>
     </div>
   )
 }

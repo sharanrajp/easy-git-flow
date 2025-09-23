@@ -20,33 +20,73 @@ function LoginPage() {
     setIsLoading(true)
 
     try {
-      // Fetch all users from the backend
-      const response = await fetch("http://127.0.0.1:8000/panels/with-status", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" }
+      // Call login endpoint
+      const loginResponse = await fetch("http://127.0.0.1:8000/auth/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
       })
 
-      if (!response.ok) {
-        setError("Unable to connect to server. Please try again.")
+      if (!loginResponse.ok) {
+        const errorData = await loginResponse.json().catch(() => ({}))
+        setError(errorData.message || "Invalid email or password")
         return
       }
 
-      const users = await response.json()
+      const loginData = await loginResponse.json()
+      const { access_token } = loginData
 
-      // Find user with matching email and password
-      const user = users.find((u: any) => u.username === email && u.password === password)
-
-      if (!user) {
-        setError("Invalid email or password")
-      } else if (user.role === "admin") {
-        navigate("/dashboard/hr")
-      } else if (user.role === "panelist") {
-        navigate("/dashboard/panelist")
-      } else {
-        setError("Login failed. Please try again.")
+      if (!access_token) {
+        setError("Login failed. No access token received.")
+        return
       }
+
+      // Store token in localStorage
+      localStorage.setItem("ats_token", access_token)
+
+      // Fetch users with the token
+      const usersResponse = await fetch("http://127.0.0.1:8000/panels/with-status", {
+        method: "GET",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${access_token}`
+        }
+      })
+
+      if (!usersResponse.ok) {
+        setError("Failed to fetch user data. Please try again.")
+        return
+      }
+
+      const users = await usersResponse.json()
+      
+      // Store users in localStorage
+      localStorage.setItem("ats_users", JSON.stringify(users))
+
+      // Find current user to determine redirect
+      const currentUser = users.find((u: any) => u.email === email || u.username === email)
+      
+      if (currentUser) {
+        // Store current user info
+        localStorage.setItem("ats_user", JSON.stringify(currentUser))
+        
+        // Redirect based on role
+        if (currentUser.role === "admin") {
+          navigate("/dashboard/hr")
+        } else if (currentUser.role === "panelist") {
+          navigate("/dashboard/panelist")
+        } else if (currentUser.role === "manager") {
+          navigate("/dashboard/manager")
+        } else {
+          navigate("/dashboard/hr") // Default fallback
+        }
+      } else {
+        setError("User role not recognized. Please contact administrator.")
+      }
+
     } catch (err) {
       setError("Unable to connect to server. Please try again.")
+      console.error("Login error:", err)
     } finally {
       setIsLoading(false)
     }

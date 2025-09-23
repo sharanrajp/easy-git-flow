@@ -26,6 +26,12 @@ const navigationItems = {
     { name: "Users", href: "/dashboard/hr/users", icon: Users },
     { name: "Vacancies", href: "/dashboard/hr/vacancies", icon: Briefcase },
   ],
+  admin: [
+    { name: "Dashboard", href: "/dashboard/hr", icon: LayoutDashboard },
+    { name: "Candidates", href: "/dashboard/hr/candidates", icon: UserCheck },
+    { name: "Users", href: "/dashboard/hr/users", icon: Users },
+    { name: "Vacancies", href: "/dashboard/hr/vacancies", icon: Briefcase },
+  ],
   panelist: [
     { name: "Dashboard", href: "/dashboard/panelist", icon: LayoutDashboard },
     { name: "Candidates", href: "/dashboard/panelist/candidates", icon: UserCheck },
