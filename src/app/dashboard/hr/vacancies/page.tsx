@@ -28,6 +28,7 @@ import {
 import { type Vacancy } from "@/lib/mock-data"
 import { getAllUsers } from "@/lib/auth"
 import { fetchVacancies, addVacancy } from "@/lib/vacancy-api"
+import { makeAuthenticatedRequest } from "@/lib/auth"
 import { VacancyForm } from "@/components/vacancies/vacancy-form"
 import { VacancyDetails } from "@/components/vacancies/vacancy-details"
 import { PanelistSelector } from "@/components/vacancies/panelist-selector"
@@ -157,13 +158,27 @@ export default function VacanciesPage() {
     }
   }
 
-  const handleEditVacancy = (vacancyData: Partial<Vacancy>) => {
+  const handleEditVacancy = async (vacancyData: Partial<Vacancy>) => {
     if (!selectedVacancy) return
 
-    const updatedVacancies = vacancies.map((v) => (v.id === selectedVacancy.id ? { ...v, ...vacancyData } : v))
-    setVacancies(updatedVacancies)
-    setIsEditOpen(false)
-    setSelectedVacancy(null)
+    try {
+      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/Vacancy/${selectedVacancy.id}`, {
+        method: "PUT",
+        body: JSON.stringify({...selectedVacancy, ...vacancyData})
+      })
+
+      if (response.ok) {
+        // Update the vacancy in local state without page refresh
+        const updatedVacancies = vacancies.map((v) => (v.id === selectedVacancy.id ? { ...v, ...vacancyData } : v))
+        setVacancies(updatedVacancies)
+        setIsEditOpen(false)
+        setSelectedVacancy(null)
+      } else {
+        console.error("Failed to update vacancy:", await response.text())
+      }
+    } catch (error) {
+      console.error("Error updating vacancy:", error)
+    }
   }
 
   const getPriorityColor = (priority: string) => {
