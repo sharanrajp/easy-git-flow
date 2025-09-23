@@ -23,7 +23,7 @@ function LoginPage() {
       // Call login endpoint
       const loginResponse = await fetch("http://127.0.0.1:8000/auth/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: JSON.stringify({ username : email, password })
       })
 
