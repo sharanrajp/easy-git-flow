@@ -2,7 +2,7 @@ export interface User {
   id: string
   name: string
   email: string
-  role: "admin" | "panelist" | "manager"
+  role: "hr" | "panelist" | "manager"
   panelistType?: "panel-member" | "manager"
   skills?: string[]
   interviewRounds?: string[]
