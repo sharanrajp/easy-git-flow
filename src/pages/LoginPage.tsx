@@ -34,7 +34,7 @@ function LoginPage() {
       const users = await response.json()
 
       // Find user with matching email and password
-      const user = users.find((u: any) => u.email === email && u.password === password)
+      const user = users.find((u: any) => u.username === email && u.password === password)
 
       if (!user) {
         setError("Invalid email or password")

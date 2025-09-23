@@ -9,75 +9,10 @@ export interface User {
   status?: "available" | "in-interview" | "break" | "on-break" | "unavailable"
 }
 
-// Initial mock user data
-const initialUsers: User[] = [
-  {
-    id: "1",
-    name: "Sarah Johnson",
-    email: "hr@company.com",
-    role: "hr",
-  },
-  {
-    id: "2",
-    name: "Mike Chen",
-    email: "panelist@company.com",
-    role: "panelist",
-    panelistType: "panel-member",
-    skills: ["React", "Node.js", "TypeScript"],
-    interviewRounds: ["R1", "R2"],
-    status: "available",
-  },
-  {
-    id: "3",
-    name: "Emily Davis",
-    email: "manager@company.com",
-    role: "panelist",
-    panelistType: "manager",
-    interviewRounds: ["R1", "R2", "R3"],
-    status: "available",
-  },
-  {
-    id: "4",
-    name: "Alex Rodriguez",
-    email: "panelist2@company.com",
-    role: "panelist",
-    panelistType: "panel-member",
-    skills: ["Python", "Django", "PostgreSQL"],
-    interviewRounds: ["R1", "R2"],
-    status: "available",
-  },
-  {
-    id: "5",
-    name: "Lisa Wang",
-    email: "panelist3@company.com",
-    role: "panelist",
-    panelistType: "panel-member",
-    skills: ["Java", "Spring Boot", "AWS"],
-    interviewRounds: ["R1", "R2"],
-    status: "available",
-  },
-  {
-    id: "6",
-    name: "David Kim",
-    email: "manager2@company.com",
-    role: "panelist",
-    panelistType: "manager",
-    interviewRounds: ["R1", "R2", "R3"],
-    status: "available",
-  },
-]
-
 function getStoredUsers(): User[] {
-  if (typeof window === "undefined") return initialUsers
-
   const stored = localStorage.getItem("ats_users")
-  if (stored) {
-    return JSON.parse(stored)
-  } else {
-    // Initialize with default users if not found
-    localStorage.setItem("ats_users", JSON.stringify(initialUsers))
-    return initialUsers
-  }
+  if (!stored) return []
+  return JSON.parse(stored)
 }
 
 function saveUsers(users: User[]): void {

@@ -14,7 +14,9 @@ export interface User {
 async function fetchUsers(): Promise<User[]> {
   const response = await fetch("http://127.0.0.1:8000/panels/with-status")
   if (!response.ok) throw new Error("Failed to fetch users")
-  return response.json()
+  const users = await response.json() || []
+  localStorage.setItem("ats_users", JSON.stringify(users))
+  return users
 }
 
 export async function getAllUsers(): Promise<User[]> {
