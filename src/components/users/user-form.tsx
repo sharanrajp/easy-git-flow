@@ -22,7 +22,7 @@ interface FormData {
   role: User["role"]
   panelist_type?: User["panelist_type"]
   skills: string[]
-  interviewRounds: string[]
+  available_rounds: string[]
   status?: User["status"]
 }
 
@@ -33,7 +33,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     role: user?.role || ("panelist" as const),
     panelist_type: user?.panelist_type || ("panel-member" as const),
     skills: user?.skills || [],
-    interviewRounds: user?.interviewRounds || [],
+    available_rounds: user?.available_rounds || [],
     status: user?.status || ("available" as const),
   })
 
@@ -45,13 +45,13 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     const submitData: Partial<User> = {
       ...formData,
       panelist_type: formData.role === "panelist" ? formData.panelist_type : undefined,
-      // Only include skills and interviewRounds for panelists
+      // Only include skills and available_rounds for panelists
       skills: formData.role === "panelist" ? formData.skills : undefined,
-      interviewRounds:
+      available_rounds:
         formData.role === "panelist"
           ? formData.panelist_type === "manager"
             ? ["R1", "R2", "R3"]
-            : formData.interviewRounds
+            : formData.available_rounds
           : undefined,
       // Only include status for panelists
       status: formData.role === "panelist" ? formData.status : undefined,
@@ -81,12 +81,12 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     if (checked) {
       setFormData({
         ...formData,
-        interviewRounds: [...formData.interviewRounds, round],
+        available_rounds: [...formData.available_rounds, round],
       })
     } else {
       setFormData({
         ...formData,
-        interviewRounds: formData.interviewRounds.filter((r) => r !== round),
+        available_rounds: formData.available_rounds.filter((r) => r !== round),
       })
     }
   }
@@ -97,7 +97,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
       role,
       panelist_type: role === "panelist" ? "panel-member" : undefined,
       skills: role === "panelist" ? formData.skills : [],
-      interviewRounds: role === "panelist" ? formData.interviewRounds : [],
+      available_rounds: role === "panelist" ? formData.available_rounds : [],
       status: role === "panelist" ? "available" : undefined,
     })
   }
@@ -147,7 +147,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
               setFormData({
                 ...formData,
                 panelist_type: value,
-                interviewRounds: value === "manager" ? ["R1", "R2", "R3"] : formData.interviewRounds,
+                available_rounds: value === "manager" ? ["R1", "R2", "R3"] : formData.available_rounds,
               })
             }
           >
@@ -171,7 +171,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="r1"
-                    checked={formData.interviewRounds.includes("R1")}
+                    checked={formData.available_rounds.includes("R1")}
                     onCheckedChange={(checked) => handleRoundChange("R1", checked as boolean)}
                   />
                   <Label htmlFor="r1">Round 1 (Technical)</Label>
@@ -179,7 +179,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="r2"
-                    checked={formData.interviewRounds.includes("R2")}
+                    checked={formData.available_rounds.includes("R2")}
                     onCheckedChange={(checked) => handleRoundChange("R2", checked as boolean)}
                   />
                   <Label htmlFor="r2">Round 2 (Technical + Behavioral)</Label>

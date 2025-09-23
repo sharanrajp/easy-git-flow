@@ -5,7 +5,7 @@ export interface User {
   role: "hr" | "panelist" | "manager" | "admin"
   panelist_type?: "panel-member" | "manager"
   skills?: string[]
-  interviewRounds?: string[]
+  available_rounds?: string[]
   status?: "available" | "in-interview" | "break" | "on-break" | "unavailable"
 }
 

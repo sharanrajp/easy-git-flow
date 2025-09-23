@@ -311,9 +311,9 @@ export default function UsersPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {user.interviewRounds ? (
+                        {user.available_rounds ? (
                           <div className="flex flex-wrap gap-1">
-                            {user.interviewRounds.map((round) => (
+                            {user.available_rounds.map((round) => (
                               <Badge key={round} variant="secondary" className="text-xs">
                                 {round}
                               </Badge>
