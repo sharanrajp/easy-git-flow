@@ -20,22 +20,27 @@ function LoginPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/auth/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          username: email,
-          password,
-        })
+      // Fetch all users from the backend
+      const response = await fetch("http://127.0.0.1:8000/panels/with-status", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" }
       })
 
-      const data = await response.json()
+      if (!response.ok) {
+        setError("Unable to connect to server. Please try again.")
+        return
+      }
 
-      if (data.detail === "Invalid Creds") {
+      const users = await response.json()
+
+      // Find user with matching email and password
+      const user = users.find((u: any) => u.email === email && u.password === password)
+
+      if (!user) {
         setError("Invalid email or password")
-      } else if (data.role === "hr") {
+      } else if (user.role === "admin") {
         navigate("/dashboard/hr")
-      } else if (data.role === "panelist") {
+      } else if (user.role === "panelist") {
         navigate("/dashboard/panelist")
       } else {
         setError("Login failed. Please try again.")
