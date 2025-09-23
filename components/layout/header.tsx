@@ -30,7 +30,7 @@ export function Header({ user }: HeaderProps) {
 
   const handleStatusChange = (status: User["status"]) => {
     if (user.role === "panelist" && status) {
-      updateUserStatus(user.id, status)
+      updateUserStatus(user._id, status)
       // Force a page refresh to update the UI
       window.location.reload()
     }

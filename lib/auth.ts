@@ -1,5 +1,5 @@
 export interface User {
-  id: string
+  _id: string
   name: string
   email: string
   role: "hr" | "panelist" | "manager" | "admin"
@@ -161,7 +161,7 @@ export function addUser(user: User): void {
 
 export function updateUser(updatedUser: User): void {
   const users = getStoredUsers()
-  const index = users.findIndex((u) => u.id === updatedUser.id)
+  const index = users.findIndex((u) => u._id === updatedUser._id)
   if (index !== -1) {
     users[index] = updatedUser
     saveUsers(users)
@@ -170,19 +170,19 @@ export function updateUser(updatedUser: User): void {
 
 export function deleteUser(userId: string): void {
   const users = getStoredUsers()
-  const filteredUsers = users.filter((u) => u.id !== userId)
+  const filteredUsers = users.filter((u) => u._id !== userId)
   saveUsers(filteredUsers)
 }
 
 export function updateUserStatus(userId: string, status: User["status"]): void {
   const users = getStoredUsers()
-  const user = users.find((u) => u.id === userId)
+  const user = users.find((u) => u._id === userId)
   if (user) {
     user.status = status
     saveUsers(users)
     // Update stored user if it's the current user
     const currentUser = getStoredUser()
-    if (currentUser && currentUser.id === userId) {
+    if (currentUser && currentUser._id === userId) {
       localStorage.setItem("ats_user", JSON.stringify({ ...currentUser, status }))
     }
   }

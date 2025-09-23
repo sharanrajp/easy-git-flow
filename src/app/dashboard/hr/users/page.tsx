@@ -64,7 +64,7 @@ export default function UsersPage() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedUsers(filteredUsers.map((user) => user.id))
+      setSelectedUsers(filteredUsers.map((user) => user._id))
     } else {
       setSelectedUsers([])
     }
@@ -74,7 +74,7 @@ export default function UsersPage() {
     if (checked) {
       setSelectedUsers((prev) => [...prev, userId])
     } else {
-      setSelectedUsers((prev) => prev.filter((id) => id !== userId))
+      setSelectedUsers((prev) => prev.filter((_id) => _id !== userId))
     }
   }
 
@@ -114,7 +114,7 @@ export default function UsersPage() {
 
       if (response.ok) {
         // Update the user in the local state without page refresh
-        setUsers(users.map(user => user.id === selectedUser.id ? updatedUser : user))
+        setUsers(users.map(user => user._id === selectedUser._id ? updatedUser : user))
         setIsEditOpen(false)
         setSelectedUser(null)
       } else {
@@ -135,7 +135,7 @@ export default function UsersPage() {
 
       if (response.ok) {
         // Remove the user from the local state without page refresh
-        setUsers(users.filter(user => user.id !== deleteUser.id))
+        setUsers(users.filter(user => user._id !== deleteUser._id))
         setDeleteUser(null)
       } else {
         console.error("Failed to delete user:", await response.text())
@@ -310,11 +310,11 @@ export default function UsersPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
+                    <TableRow key={user._id}>
                       <TableCell>
                         <Checkbox
-                          checked={selectedUsers.includes(user.id)}
-                          onCheckedChange={(checked) => handleSelectUser(user.id, checked as boolean)}
+                          checked={selectedUsers.includes(user._id)}
+                          onCheckedChange={(checked) => handleSelectUser(user._id, checked as boolean)}
                           className="cursor-pointer"
                         />
                       </TableCell>
@@ -371,7 +371,7 @@ export default function UsersPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem
-                                  onClick={() => handleStatusChange(user.id, "available")}
+                                  onClick={() => handleStatusChange(user._id, "available")}
                                   className="cursor-pointer"
                                 >
                                   <div className="flex items-center">
@@ -382,7 +382,7 @@ export default function UsersPage() {
                                 {user.status === "available" && (
                                   <>
                                     <DropdownMenuItem
-                                      onClick={() => handleStatusChange(user.id, "break")}
+                                      onClick={() => handleStatusChange(user._id, "break")}
                                       className="cursor-pointer"
                                     >
                                       <div className="flex items-center">
@@ -391,7 +391,7 @@ export default function UsersPage() {
                                       </div>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
-                                      onClick={() => handleStatusChange(user.id, "unavailable")}
+                                      onClick={() => handleStatusChange(user._id, "unavailable")}
                                       className="cursor-pointer"
                                     >
                                       <div className="flex items-center">
@@ -441,13 +441,13 @@ export default function UsersPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredUsers.length > 0 ? (
               filteredUsers.map((user) => (
-                <Card key={user.id} className="hover:shadow-md transition-shadow">
+                <Card key={user._id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center space-x-2">
                         <Checkbox
-                          checked={selectedUsers.includes(user.id)}
-                          onCheckedChange={(checked) => handleSelectUser(user.id, checked as boolean)}
+                          checked={selectedUsers.includes(user._id)}
+                          onCheckedChange={(checked) => handleSelectUser(user._id, checked as boolean)}
                           className="cursor-pointer"
                         />
                         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
@@ -506,7 +506,7 @@ export default function UsersPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="start">
                                 <DropdownMenuItem
-                                  onClick={() => handleStatusChange(user.id, "available")}
+                                  onClick={() => handleStatusChange(user._id, "available")}
                                   className="cursor-pointer"
                                 >
                                   <div className="flex items-center">
@@ -517,7 +517,7 @@ export default function UsersPage() {
                                 {user.status === "available" && (
                                   <>
                                     <DropdownMenuItem
-                                      onClick={() => handleStatusChange(user.id, "break")}
+                                      onClick={() => handleStatusChange(user._id, "break")}
                                       className="cursor-pointer"
                                     >
                                       <div className="flex items-center">
@@ -526,7 +526,7 @@ export default function UsersPage() {
                                       </div>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
-                                      onClick={() => handleStatusChange(user.id, "unavailable")}
+                                      onClick={() => handleStatusChange(user._id, "unavailable")}
                                       className="cursor-pointer"
                                     >
                                       <div className="flex items-center">

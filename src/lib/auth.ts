@@ -1,5 +1,5 @@
 export interface User {
-  id: string
+  _id: string
   name: string
   email: string
   role: "hr" | "panelist" | "manager" | "admin"
@@ -149,7 +149,7 @@ export async function addUser(user: User): Promise<void> {
 }
 
 export async function updateUser(updatedUser: User): Promise<void> {
-  const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/edit-user/${updatedUser.id}`, {
+  const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/edit-user/${updatedUser._id}`, {
     method: "PUT",
     body: JSON.stringify(updatedUser)
   })
