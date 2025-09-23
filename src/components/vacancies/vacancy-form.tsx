@@ -38,8 +38,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
     skills: vacancy?.skills || [],
-    jobDescriptionFile: null as File | null,
-    existingJobDescription: vacancy?.jobDescription || "",
+    jobDescription: vacancy?.jobDescription || "",
     aboutPosition: vacancy?.aboutPosition || "",
     driveDate: vacancy?.walkInDetails?.date || "",
     driveLocation: vacancy?.walkInDetails?.location || "",
@@ -92,9 +91,6 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
         date: formData.driveDate,
         location: formData.driveLocation,
       },
-      jobDescription: formData.jobDescriptionFile
-        ? `File uploaded: ${formData.jobDescriptionFile.name}`
-        : formData.existingJobDescription,
     }
 
     onSubmit(submitData)
@@ -116,8 +112,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
       experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
       skills: vacancy?.skills || [],
-      jobDescriptionFile: null as File | null,
-      existingJobDescription: vacancy?.jobDescription || "",
+      jobDescription: vacancy?.jobDescription || "",
       aboutPosition: vacancy?.aboutPosition || "",
       driveDate: vacancy?.walkInDetails?.date || "",
       driveLocation: vacancy?.walkInDetails?.location || "",
@@ -165,13 +160,6 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     }
   }
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setFormData({ ...formData, jobDescriptionFile: file })
-    }
-  }
-
   const canProceedToStep2 = () => {
     return (
       formData.title &&
@@ -186,7 +174,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       formData.experienceTo &&
       formData.driveDate &&
       formData.driveLocation &&
-      (formData.jobDescriptionFile || formData.existingJobDescription) &&
+      formData.jobDescription.trim() &&
       formData.aboutPosition.trim() // Make about position required
     )
   }
@@ -416,63 +404,14 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
 
               <div className="space-y-2">
                 <Label htmlFor="jobDescription">Job Description *</Label>
-                {formData.existingJobDescription && formData.existingJobDescription.startsWith("File uploaded:") ? (
-                  <div className="border rounded-lg p-4 bg-gray-50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <Upload className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {formData.existingJobDescription.replace("File uploaded: ", "")}
-                          </p>
-                          <p className="text-xs text-gray-500">Job description file</p>
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => document.getElementById("jobDescription")?.click()}
-                      >
-                        Reupload
-                      </Button>
-                    </div>
-                    <input
-                      type="file"
-                      id="jobDescription"
-                      accept=".pdf,.doc,.docx,.txt"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-600">Upload job description file *</p>
-                      <input
-                        type="file"
-                        id="jobDescription"
-                        accept=".pdf,.doc,.docx,.txt"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                        required={!formData.existingJobDescription}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById("jobDescription")?.click()}
-                      >
-                        Choose File
-                      </Button>
-                      {formData.jobDescriptionFile && (
-                        <p className="text-sm text-green-600 mt-2">Selected: {formData.jobDescriptionFile.name}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
+                <Textarea
+                  id="jobDescription"
+                  placeholder="Enter job description, responsibilities, and requirements..."
+                  value={formData.jobDescription || ""}
+                  onChange={(e) => setFormData({ ...formData, jobDescription: e.target.value })}
+                  rows={4}
+                  required
+                />
               </div>
 
               <div className="space-y-2">
