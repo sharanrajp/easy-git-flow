@@ -3,7 +3,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Header } from "./header"
-import { type User, getStoredUser } from "@/lib/auth"
+import { type User } from "@/lib/auth"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -16,32 +16,10 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
   const navigate = useNavigate()
 
   useEffect(() => {
-    const storedUser = getStoredUser()
-
-    if (!storedUser) {
-      navigate("/login")
-      return
-    }
-
-    if (requiredRole && storedUser.role !== requiredRole) {
-      // Redirect to appropriate dashboard
-      switch (storedUser.role) {
-        case "hr":
-          navigate("/dashboard/hr")
-          break
-        case "panelist":
-          navigate("/dashboard/panelist")
-          break
-        case "manager":
-          navigate("/dashboard/manager")
-          break
-      }
-      return
-    }
-
-    setUser(storedUser)
-    setIsLoading(false)
-  }, [navigate, requiredRole])
+    // Since we removed localStorage, redirect to login
+    // In a real app, you'd implement proper session management here
+    navigate("/login")
+  }, [navigate])
 
   if (isLoading) {
     return (

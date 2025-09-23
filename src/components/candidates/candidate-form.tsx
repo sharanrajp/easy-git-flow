@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge"
 import { X, FileText } from "lucide-react"
 import type { Candidate } from "@/lib/mock-data"
 import { getMockVacancies } from "@/lib/mock-data"
-import { getStoredUser } from "@/lib/auth"
 
 interface CandidateFormProps {
   candidate?: Candidate
@@ -21,7 +20,8 @@ interface CandidateFormProps {
 }
 
 export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, submitButtonText }: CandidateFormProps) {
-  const currentUser = getStoredUser()
+  // No stored user available since we removed localStorage
+  const currentUser = null
 
   const [formData, setFormData] = useState({
     name: candidate?.name || "",
@@ -40,7 +40,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     relocation: candidate?.relocation || false,
     skills: candidate?.skills || [],
     resume: null as File | null,
-    recruiter: candidate?.recruiter || currentUser?.name || "",
+    recruiter: candidate?.recruiter || "",
   })
 
   const [newSkill, setNewSkill] = useState("")
@@ -208,7 +208,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
               <SelectValue placeholder="Select recruiter" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={currentUser?.name || ""}>{currentUser?.name || "Current User"}</SelectItem>
+              <SelectItem value="Current User">Current User</SelectItem>
               {/* Add other recruiters if needed */}
             </SelectContent>
           </Select>

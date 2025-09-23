@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress"
 import { X, Upload, Search, UserPlus, UserMinus } from "lucide-react"
 import type { Vacancy } from "@/lib/mock-data"
-import { getAllUsers, getStoredUser } from "@/lib/auth"
+import { getAllUsers } from "@/lib/auth"
 
 interface VacancyFormProps {
   vacancy?: Vacancy
@@ -21,7 +21,8 @@ interface VacancyFormProps {
 
 export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   const [currentStep, setCurrentStep] = useState(1)
-  const currentUser = getStoredUser()
+  // No stored user available since we removed localStorage
+  const currentUser = null
 
   const [formData, setFormData] = useState({
     title: vacancy?.title || "",
@@ -32,7 +33,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     city: vacancy?.city || "Perungudi, Chennai", // default city value
     status: vacancy?.status || "active",
     hiringManager: vacancy?.hiringManager || "",
-    recruiterName: vacancy?.recruiterName || (currentUser?.role === "hr" ? currentUser.name : ""),
+    recruiterName: vacancy?.recruiterName || "",
     numberOfVacancies: vacancy?.numberOfVacancies || 1,
     experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
@@ -51,10 +52,9 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   const hrUsers = allUsers.filter((user) => user.role === "hr")
 
   useEffect(() => {
-    if (!vacancy && currentUser?.role === "hr" && !formData.recruiterName) {
-      setFormData((prev) => ({ ...prev, recruiterName: currentUser.name }))
-    }
-  }, [currentUser, vacancy, formData.recruiterName])
+    // No user data available since localStorage was removed
+    // This effect is now a no-op
+  }, [])
 
   const filteredUsers = allUsers.filter(
     (user) =>
@@ -96,7 +96,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       city: vacancy?.city || "Perungudi, Chennai",
       status: vacancy?.status || "active",
       hiringManager: vacancy?.hiringManager || "",
-      recruiterName: vacancy?.recruiterName || (currentUser?.role === "hr" ? currentUser.name : ""),
+      recruiterName: vacancy?.recruiterName || "",
       numberOfVacancies: vacancy?.numberOfVacancies || 1,
       experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
       experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",

@@ -43,7 +43,6 @@ import { CandidateForm } from "@/components/candidates/candidate-form"
 import { CandidateDetails } from "@/components/candidates/candidate-details"
 import { BulkActionsToolbar } from "@/components/candidates/bulk-actions-toolbar"
 import { BulkUploadDialog } from "@/components/candidates/bulk-upload-dialog"
-import { getStoredUser } from "@/lib/auth"
 import { Checkbox } from "@/components/ui/checkbox"
 import { getAllUsers } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
@@ -85,7 +84,8 @@ export default function CandidatesPage() {
   const [currentTime, setCurrentTime] = useState(Date.now())
   const [activeTab, setActiveTab] = useState("unassigned")
 
-  const currentUser = getStoredUser()
+  // No stored user available since we removed localStorage
+  const currentUser = null
   const vacancies = getMockVacancies()
 
   useEffect(() => {
