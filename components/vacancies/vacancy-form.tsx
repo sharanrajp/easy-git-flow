@@ -8,9 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
-import { X, Plus, Upload, Building, MapPin, Calendar, User, Target, FileText } from "lucide-react"
+import { X, Plus, Upload, Building, MapPin, Calendar, User as UserIcon, Target, FileText } from "lucide-react"
 import type { Vacancy } from "@/lib/mock-data"
 import { getAllUsers, type User } from "@/lib/auth"
+import { PanelistSelector } from "@/components/vacancies/panelist-selector"
 
 interface VacancyFormProps {
   vacancy?: Vacancy | null
@@ -52,7 +53,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
       try {
         const users = await getAllUsers()
         setAllUsers(users)
-        setHrUsers(users.filter((user: User) => user.role === "hr"))
+        setHrUsers(users.filter((user) => user.role === "hr"))
       } catch (error) {
         console.error("Failed to fetch users:", error)
         setAllUsers([])
@@ -69,13 +70,13 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
   }, [currentUser, vacancy, formData.recruiterName])
 
   const filteredUsers = allUsers.filter(
-    (user: User) =>
+    (user) =>
       user.name.toLowerCase().includes(panelistSearch.toLowerCase()) ||
       (user.skills && user.skills.some((skill: string) => skill.toLowerCase().includes(panelistSearch.toLowerCase()))),
   )
 
-  const selectedUsers = filteredUsers.filter((u: User) => formData.assignedPanelists.includes(u.id))
-  const unselectedUsers = filteredUsers.filter((u: User) => !formData.assignedPanelists.includes(u.id))
+  const selectedUsers = filteredUsers.filter((u) => formData.assignedPanelists.includes(u.id))
+  const unselectedUsers = filteredUsers.filter((u) => !formData.assignedPanelists.includes(u.id))
   const sortedUsers = [...selectedUsers, ...unselectedUsers]
 
   const handleInputChange = (field: string, value: any) => {
@@ -457,7 +458,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <User className="h-5 w-5 mr-2" />
+                <UserIcon className="h-5 w-5 mr-2" />
                 Team Information
               </CardTitle>
             </CardHeader>
@@ -469,7 +470,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
                     <SelectValue placeholder="Select hiring manager" />
                   </SelectTrigger>
                   <SelectContent>
-                    {hrUsers.map((user: User) => (
+                    {hrUsers.map((user) => (
                       <SelectItem key={user.id} value={user.name}>
                         {user.name}
                       </SelectItem>
@@ -485,7 +486,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
                     <SelectValue placeholder="Select recruiter" />
                   </SelectTrigger>
                   <SelectContent>
-                    {hrUsers.map((user: User) => (
+                    {hrUsers.map((user) => (
                       <SelectItem key={user.id} value={user.name}>
                         {user.name}
                       </SelectItem>

@@ -9,6 +9,20 @@ interface SidebarProps {
   user: User
 }
 
+interface NavigationItem {
+  name: string
+  href: string
+  icon: React.ComponentType<any>
+}
+
+interface NavigationItems {
+  [key: string]: NavigationItem[]
+  hr: NavigationItem[]
+  admin: NavigationItem[]
+  panelist: NavigationItem[]
+  manager: NavigationItem[]
+}
+
 const navigationItems = {
   hr: [
     { name: "Dashboard", href: "/dashboard/hr", icon: LayoutDashboard },
@@ -31,13 +45,13 @@ const navigationItems = {
     { name: "Candidates", href: "/dashboard/manager/candidates", icon: UserCheck },
     { name: "Offers", href: "/dashboard/manager/offers", icon: Briefcase },
   ],
-}
+} as const satisfies Record<string, readonly NavigationItem[]>
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = useLocation().pathname
   const [isCollapsed, setIsCollapsed] = useState(false)
 
-  const items = navigationItems[user.role as keyof typeof navigationItems] || []
+  const items = (navigationItems as any)[user.role] || []
 
   return (
     <>
@@ -67,7 +81,7 @@ export function Sidebar({ user }: SidebarProps) {
         </div>
 
         <nav className="p-4 space-y-2">
-          {items.map((item: any) => {
+          {items.map((item: NavigationItem) => {
             const Icon = item.icon
             const isActive = pathname === item.href
 
