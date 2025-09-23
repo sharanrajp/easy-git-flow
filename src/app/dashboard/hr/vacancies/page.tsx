@@ -360,7 +360,6 @@ export default function VacanciesPage() {
                       <TableHead>Position Title</TableHead>
                       <TableHead>Priority</TableHead>
                       <TableHead>Experience Range</TableHead>
-                      <TableHead>Job Description</TableHead>
                       <TableHead>Drive On</TableHead>
                       <TableHead>No. of Vacancies</TableHead>
                       <TableHead>Recruiter</TableHead>
