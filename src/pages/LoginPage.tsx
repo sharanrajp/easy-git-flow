@@ -33,7 +33,7 @@ function LoginPage() {
 
       if (data.detail === "Invalid Creds") {
         setError("Invalid email or password")
-      } else if (data.role === "admin") {
+      } else if (data.role === "hr") {
         navigate("/dashboard/hr")
       } else if (data.role === "panelist") {
         navigate("/dashboard/panelist")
