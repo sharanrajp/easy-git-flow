@@ -12,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Plus, Search, Edit, Trash2, Grid, List } from "lucide-react"
-import { getAllUsers, type User } from "@/lib/auth"
+import { getAllUsers, type User, makeAuthenticatedRequest } from "@/lib/auth"
 import { UserForm } from "@/components/users/user-form"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 
@@ -85,10 +85,21 @@ export default function UsersPage() {
   }
 
   const handleCreateUser = async (userData: Partial<User>) => {
-    // TODO: Implement API call to create user
-    console.log("Create user:", userData)
-    setIsCreateOpen(false)
-    fetchUsers() // Refresh the list
+    try {
+      const response = await makeAuthenticatedRequest("http://127.0.0.1:8000/admin/add-user", {
+        method: "POST",
+        body: JSON.stringify(userData)
+      })
+
+      if (response.ok) {
+        setIsCreateOpen(false)
+        fetchUsers() // Refresh the list
+      } else {
+        console.error("Failed to create user:", await response.text())
+      }
+    } catch (error) {
+      console.error("Error creating user:", error)
+    }
   }
 
   const handleEditUser = async (userData: Partial<User>) => {
