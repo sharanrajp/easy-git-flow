@@ -162,7 +162,7 @@ export default function VacanciesPage() {
     if (!selectedVacancy) return
 
     try {
-      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/Vacancy/${selectedVacancy.id}`, {
+      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/Vacancy/${selectedVacancy._id}`, {
         method: "PUT",
         body: JSON.stringify({...selectedVacancy, ...vacancyData})
       })

@@ -107,7 +107,7 @@ export default function UsersPage() {
 
     try {
       const updatedUser: User = { ...selectedUser, ...userData }
-      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/edit-user/${selectedUser.id}`, {
+      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/edit-user/${selectedUser._id}`, {
         method: "PUT",
         body: JSON.stringify(updatedUser)
       })
@@ -129,7 +129,7 @@ export default function UsersPage() {
     if (!deleteUser) return
 
     try {
-      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/delete-user/${deleteUser.id}`, {
+      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/delete-user/${deleteUser._id}`, {
         method: "DELETE"
       })
 
