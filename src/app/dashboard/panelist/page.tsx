@@ -348,13 +348,13 @@ export default function PanelistDashboard() {
                   <div className="flex items-center space-x-2">
                     <Calendar className="h-4 w-4 text-gray-500" />
                     <span className="text-sm text-gray-600">
-                      {new Date(session.scheduledTime).toLocaleDateString()}
+                      {formatDate(session.scheduledTime)}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4 text-gray-500" />
                     <span className="text-sm text-gray-600">
-                      {new Date(session.scheduledTime).toLocaleTimeString()}
+                      {formatDate(session.scheduledTime)}
                     </span>
                   </div>
                 </div>
@@ -620,8 +620,8 @@ export default function PanelistDashboard() {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <div>{new Date(session.scheduledTime).toLocaleDateString()}</div>
-                          <div className="text-gray-500">{new Date(session.scheduledTime).toLocaleTimeString()}</div>
+                          <div>{formatDate(session.scheduledTime)}</div>
+                          <div className="text-gray-500">{formatDate(session.scheduledTime)}</div>
                         </div>
                       </TableCell>
                       <TableCell>{session.elapsedTime ? `${Math.floor(session.elapsedTime / 60)}m` : "60m"}</TableCell>
@@ -874,13 +874,13 @@ export default function PanelistDashboard() {
                       <div>
                         <p className="text-sm font-medium text-gray-600">Interview Date</p>
                         <p className="text-base text-gray-900">
-                          {new Date(viewingFeedbackSession.scheduledTime).toLocaleDateString()}
+                          {formatDate(viewingFeedbackSession.scheduledTime)}
                         </p>
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-600">Interview Time</p>
                         <p className="text-base text-gray-900">
-                          {new Date(viewingFeedbackSession.scheduledTime).toLocaleTimeString()}
+                          {formatDate(viewingFeedbackSession.scheduledTime)}
                         </p>
                       </div>
                       <div>
@@ -895,7 +895,7 @@ export default function PanelistDashboard() {
                         <p className="text-sm font-medium text-gray-600">Feedback Submitted</p>
                         <p className="text-base text-gray-900">
                           {viewingFeedbackSession.feedback?.submittedAt
-                            ? new Date(viewingFeedbackSession.feedback.submittedAt).toLocaleString()
+                            ? formatDate(viewingFeedbackSession.feedback.submittedAt)
                             : "N/A"}
                         </p>
                       </div>

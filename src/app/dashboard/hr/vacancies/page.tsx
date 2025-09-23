@@ -29,7 +29,7 @@ import { type Vacancy } from "@/lib/mock-data"
 import { getAllUsers } from "@/lib/auth"
 import { fetchVacancies, addVacancy } from "@/lib/vacancy-api"
 import { VacancyForm } from "@/components/vacancies/vacancy-form"
-import { VacancyDetails } from "@/components/vacancies/vacancy-details"
+import { formatDate } from "@/lib/utils"
 import { PanelistSelector } from "@/components/vacancies/panelist-selector"
 
 export default function VacanciesPage() {
@@ -399,8 +399,8 @@ export default function VacanciesPage() {
                           <TableCell>
                             <div className="text-sm">
                               {vacancy.walkInDetails?.date 
-                                ? new Date(vacancy.walkInDetails.date).toLocaleDateString('en-GB')
-                                : new Date(vacancy.postedOn).toLocaleDateString('en-GB')
+                                ? formatDate(vacancy.walkInDetails?.date)
+                                : formatDate(vacancy.postedOn)
                               }
                             </div>
                           </TableCell>

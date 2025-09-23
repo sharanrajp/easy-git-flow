@@ -438,6 +438,7 @@ export interface Candidate {
   relocation?: boolean
   skills?: string[]
   resumeUrl?: string
+  jobDescription?: string
   appliedDate: string
   recruiter?: string
   status:

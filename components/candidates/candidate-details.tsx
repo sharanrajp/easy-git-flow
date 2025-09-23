@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Download, Mail, Phone, MapPin, Calendar, DollarSign, FileText, Star, MessageSquare } from "lucide-react"
-import type { Candidate } from "@/lib/mock-data"
-import { getInterviewSessionForCandidate } from "@/lib/interview-data"
+import type { Candidate } from "../../lib/mock-data"
+import { getInterviewSessionForCandidate } from "../../lib/interview-data"
 import { useState, useEffect } from "react"
+import { formatDate } from "../../lib/utils"
 
 interface CandidateDetailsProps {
   candidate: Candidate
@@ -155,7 +156,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Applied Date</span>
-                  <p className="font-medium">{candidate.appliedDate}</p>
+                  <p className="font-medium">{formatDate(candidate.appliedDate)}</p>
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Recruiter</span>
@@ -221,19 +222,22 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
             </CardContent>
           </Card>
 
-          {/* Resume */}
+          {/* Job Description */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
                 <FileText className="h-5 w-5 mr-2" />
-                Resume
+                Job Description
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full bg-transparent cursor-pointer">
-                <Download className="h-4 w-4 mr-2" />
-                Download Resume
-              </Button>
+              {candidate.jobDescription ? (
+                <div className="bg-gray-50 p-4 rounded-lg max-h-40 overflow-y-auto">
+                  <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{candidate.jobDescription}</p>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">No job description provided</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -262,7 +266,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
                 {candidate.interviewDateTime && (
                   <div>
                     <span className="text-sm text-gray-500">Scheduled Date & Time</span>
-                    <p className="font-medium">{new Date(candidate.interviewDateTime).toLocaleString()}</p>
+                    <p className="font-medium">{formatDate(candidate.interviewDateTime)}</p>
                   </div>
                 )}
                 {interviewSession && (
@@ -330,11 +334,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
                             <div>
                               <p className="font-medium">{feedback.panelist}</p>
                               <p className="text-sm text-gray-500">
-                                {new Date(feedback.submittedAt).toLocaleDateString()} at{" "}
-                                {new Date(feedback.submittedAt).toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
+                                {formatDate(feedback.submittedAt)}
                               </p>
                               <p className="text-sm text-blue-600 font-medium">
                                 Interview Duration:{" "}

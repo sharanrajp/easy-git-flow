@@ -47,7 +47,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { getAllUsers } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { formatDate } from "@/lib/utils"
 
 export default function CandidatesPage() {
   const [candidates, setCandidates] = useState<Candidate[]>(() => {
@@ -84,9 +84,22 @@ export default function CandidatesPage() {
   const [currentTime, setCurrentTime] = useState(Date.now())
   const [activeTab, setActiveTab] = useState("unassigned")
 
-  // No stored user available since we removed localStorage
-  const currentUser = null
-  const vacancies = getMockVacancies()
+  // Read from localStorage instead of API calls
+  const currentUser = (() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("ats_user")
+      return stored ? JSON.parse(stored) : null
+    }
+    return null
+  })()
+  
+  const vacancies = (() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("vacancies")
+      return stored ? JSON.parse(stored) : getMockVacancies()
+    }
+    return getMockVacancies()
+  })()
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -890,7 +903,7 @@ export default function CandidatesPage() {
                           <TableCell>{candidate.assignedPanelist || "Not assigned"}</TableCell>
                           <TableCell>
                             {candidate.interviewDateTime
-                              ? new Date(candidate.interviewDateTime).toLocaleString()
+                              ? formatDate(candidate.interviewDateTime)
                               : "Not scheduled"}
                           </TableCell>
                           <TableCell>
