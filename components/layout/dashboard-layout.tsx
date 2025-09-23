@@ -29,7 +29,7 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
     if (requiredRole && storedUser.role !== requiredRole) {
       // Redirect to appropriate dashboard
       switch (storedUser.role) {
-        case "hr":
+        case "admin":
           navigate("/dashboard/hr")
           break
         case "panelist":
