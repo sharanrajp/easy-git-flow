@@ -7,8 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { X } from "lucide-react"
-import { Textarea } from "@/components/ui/textarea"
+import { X, FileText } from "lucide-react"
 import type { Candidate } from "@/lib/mock-data"
 import { getMockVacancies } from "@/lib/mock-data"
 
@@ -40,7 +39,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     negotiable: candidate?.negotiable || false,
     relocation: candidate?.relocation || false,
     skills: candidate?.skills || [],
-    jobDescription: candidate?.jobDescription || "",
+    resume: null as File | null,
     recruiter: candidate?.recruiter || "",
   })
 
@@ -93,7 +92,21 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     })
   }
 
-  // Removed resume upload handler since we're using textarea for job description
+  const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const validTypes = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ]
+      if (validTypes.includes(file.type)) {
+        setFormData({ ...formData, resume: file })
+      } else {
+        alert("Please upload a PDF or Word document")
+      }
+    }
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 mt-6 animate-fade-in">
@@ -249,16 +262,25 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="jobDescription">Job Description</Label>
-        <Textarea
-          id="jobDescription"
-          placeholder="Enter job description or requirements..."
-          value={formData.jobDescription}
-          onChange={(e) => setFormData({ ...formData, jobDescription: e.target.value })}
-          className="w-full min-h-24 resize-y"
-          rows={4}
-        />
-        <p className="text-xs text-gray-500">Describe the job requirements and responsibilities</p>
+        <Label htmlFor="resume">Upload Resume</Label>
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <Input
+              id="resume"
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={handleResumeUpload}
+              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 w-full"
+            />
+          </div>
+          {formData.resume && (
+            <div className="flex items-center gap-2 text-sm text-green-600">
+              <FileText className="h-4 w-4" />
+              <span>{formData.resume.name}</span>
+            </div>
+          )}
+        </div>
+        <p className="text-xs text-gray-500">Supported formats: PDF, DOC, DOCX (Max 5MB)</p>
       </div>
 
       <div className="grid grid-cols-2 gap-6">

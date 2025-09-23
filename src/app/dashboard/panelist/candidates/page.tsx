@@ -12,7 +12,6 @@ import { Search, Eye, Play, Clock, CheckCircle } from "lucide-react"
 import { getPanelistCandidates } from "@/lib/panelist-data"
 import { CandidateDetails } from "@/components/candidates/candidate-details"
 import { InterviewFlow } from "@/components/panelist/interview-flow"
-import { formatDate } from "@/lib/utils"
 
 export default function PanelistCandidatesPage() {
   const [candidates] = useState(getPanelistCandidates())
@@ -116,7 +115,7 @@ export default function PanelistCandidatesPage() {
                       <Badge variant="outline">{candidate.round}</Badge>
                     </TableCell>
                     <TableCell>
-                      {candidate.scheduledTime ? formatDate(candidate.scheduledTime) : "Not scheduled"}
+                      {candidate.scheduledTime ? new Date(candidate.scheduledTime).toLocaleString() : "Not scheduled"}
                     </TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(candidate.interviewStatus)}>

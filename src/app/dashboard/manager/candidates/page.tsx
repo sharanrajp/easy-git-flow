@@ -12,7 +12,6 @@ import { Search, Eye, Clock, CheckCircle, XCircle } from "lucide-react"
 import { getManagerCandidates } from "@/lib/manager-data"
 import { CandidateDetails } from "@/components/candidates/candidate-details"
 import { ManagerInterviewFlow } from "@/components/manager/manager-interview-flow"
-import { formatDate } from "@/lib/utils"
 
 export default function ManagerCandidatesPage() {
   const [candidates] = useState(getManagerCandidates())
@@ -135,7 +134,7 @@ export default function ManagerCandidatesPage() {
                     <TableCell>{candidate.expectedCTC}</TableCell>
                     <TableCell>
                       {candidate.r3InterviewDate
-                        ? formatDate(candidate.r3InterviewDate)
+                        ? new Date(candidate.r3InterviewDate).toLocaleDateString()
                         : "Not scheduled"}
                     </TableCell>
                     <TableCell>
