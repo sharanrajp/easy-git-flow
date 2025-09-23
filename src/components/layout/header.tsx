@@ -89,9 +89,6 @@ export function Header({ user }: HeaderProps) {
         <div className="flex items-center space-x-8">
           <div className="flex items-center space-x-3">
             <img src="/vuedata-blue.webp" alt="vueDataImage" draggable="false" height={25} width={200}/>
-            <div className="w-10 h-10 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-glow">
-              <span className="text-white font-bold text-sm">ATS</span>
-            </div>
           </div>
           
           {/* Navigation Items */}
