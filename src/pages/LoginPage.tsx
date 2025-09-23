@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { authenticateUser } from "@/lib/auth"
 import { Building2 } from "lucide-react"
 
 function LoginPage() {
@@ -21,24 +20,30 @@ function LoginPage() {
     setIsLoading(true)
 
     try {
-      const user = authenticateUser(email, password)
-      if (user) {
-        switch (user.role) {
-          case "hr":
-            navigate("/dashboard/hr")
-            break
-          case "panelist":
-            navigate("/dashboard/panelist")
-            break
-          case "manager":
-            navigate("/dashboard/manager")
-            break
-        }
-      } else {
+      const response = await fetch("http://127.0.0.1:8000/auth/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.detail === "Invalid Creds") {
         setError("Invalid email or password")
+      } else if (data.role === "admin") {
+        navigate("/dashboard/hr")
+      } else if (data.role === "panelist") {
+        navigate("/dashboard/panelist")
+      } else {
+        setError("Login failed. Please try again.")
       }
     } catch (err) {
-      setError("Login failed. Please try again.")
+      setError("Unable to connect to server. Please try again.")
     } finally {
       setIsLoading(false)
     }
