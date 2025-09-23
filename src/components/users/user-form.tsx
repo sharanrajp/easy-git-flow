@@ -31,7 +31,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     name: user?.name || "",
     email: user?.email || "",
     role: user?.role || ("panelist" as const),
-    panelist_type: user?.panelist_type || ("panel-member" as const),
+    panelist_type: user?.panelist_type || ("panel_member" as const),
     skills: user?.skills || [],
     available_rounds: user?.available_rounds || [],
     status: user?.status || ("available" as const),
@@ -95,7 +95,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     setFormData({
       ...formData,
       role,
-      panelist_type: role === "panelist" ? "panel-member" : undefined,
+      panelist_type: role === "panelist" ? "panel_member" : undefined,
       skills: role === "panelist" ? formData.skills : [],
       available_rounds: role === "panelist" ? formData.available_rounds : [],
       status: role === "panelist" ? "available" : undefined,
@@ -142,8 +142,8 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
         <div className="space-y-2">
           <Label htmlFor="panelist_type">Panelist Type *</Label>
           <Select
-            value={formData.panelist_type || "panel-member"}
-            onValueChange={(value: "panel-member" | "manager") =>
+            value={formData.panelist_type || "panel_member"}
+            onValueChange={(value: "panel_member" | "manager") =>
               setFormData({
                 ...formData,
                 panelist_type: value,
@@ -155,7 +155,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="panel-member">Panelist (Panel Member)</SelectItem>
+              <SelectItem value="panel_member">Panelist (Panel Member)</SelectItem>
               <SelectItem value="manager">Panelist (Manager)</SelectItem>
             </SelectContent>
           </Select>
@@ -164,7 +164,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
 
       {formData.role === "panelist" && (
         <>
-          {formData.panelist_type === "panel-member" && (
+          {formData.panelist_type === "panel_member" && (
             <div className="space-y-2">
               <Label>Interview Rounds Handled</Label>
               <div className="space-y-2">
