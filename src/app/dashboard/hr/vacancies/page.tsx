@@ -397,35 +397,6 @@ export default function VacanciesPage() {
                             <div className="text-sm">{vacancy.experienceRange}</div>
                           </TableCell>
                           <TableCell>
-                            <div className="max-w-xs">
-                              {vacancy.jobDescription ? (
-                                <div className="text-sm text-gray-600">
-                                  {vacancy.jobDescription.startsWith("File uploaded:") ? (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <button
-                                          className="text-blue-600 hover:text-blue-800 underline cursor-pointer truncate max-w-[150px] block"
-                                          onClick={() => {
-                                            alert(`Opening: ${vacancy.jobDescription?.replace("File uploaded: ", "")}`)
-                                          }}
-                                        >
-                                          📄 {vacancy.jobDescription.replace("File uploaded: ", "").substring(0, 20)}...
-                                        </button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>{vacancy.jobDescription.replace("File uploaded: ", "")}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  ) : (
-                                    <span className="text-gray-500">Text description</span>
-                                  )}
-                                </div>
-                              ) : (
-                                <span className="text-gray-400 text-sm">No description</span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
                             <div className="text-sm">
                               {vacancy.walkInDetails?.date 
                                 ? new Date(vacancy.walkInDetails.date).toLocaleDateString('en-GB')
