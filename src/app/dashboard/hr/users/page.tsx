@@ -88,7 +88,7 @@ export default function UsersPage() {
     try {
       const response = await makeAuthenticatedRequest("http://127.0.0.1:8000/admin/add-user", {
         method: "POST",
-        body: JSON.stringify(userData)
+        body: JSON.stringify({...userData, password : "user123"})
       })
 
       if (response.ok) {
