@@ -1,0 +1,609 @@
+// @ts-nocheck
+
+import { useState, useEffect, useCallback } from "react"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  Plus,
+  Search,
+  MoreHorizontal,
+  Eye,
+  Edit,
+  Trash2,
+  AlertTriangle,
+  Grid,
+  List,
+  Users,
+  ChevronDown,
+} from "lucide-react"
+import { getMockVacancies, type Vacancy } from "@/lib/mock-data"
+import { getAllUsers } from "@/lib/auth"
+import { VacancyForm } from "@/components/vacancies/vacancy-form"
+import { VacancyDetails } from "@/components/vacancies/vacancy-details"
+import { PanelistSelector } from "@/components/vacancies/panelist-selector"
+
+export default function VacanciesPage() {
+  const [vacancies, setVacancies] = useState<Vacancy[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("vacancies")
+      return stored ? JSON.parse(stored) : getMockVacancies()
+    }
+    return getMockVacancies()
+  })
+
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [priorityFilter, setPriorityFilter] = useState("all")
+  const [recruiterFilter, setRecruiterFilter] = useState("all")
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list")
+  const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+  const [isPanelistEditOpen, setIsPanelistEditOpen] = useState(false)
+  const [candidateCounts, setCandidateCounts] = useState<
+    Record<string, { applications: number; shortlisted: number; interviewed: number; joined: number }>
+  >({})
+
+  const getCandidateCountsForVacancy = useCallback((vacancyTitle: string) => {
+    if (typeof window === "undefined") return { applications: 0, shortlisted: 0, interviewed: 0, joined: 0 }
+
+    const storedCandidates = localStorage.getItem("candidates")
+    if (!storedCandidates) return { applications: 0, shortlisted: 0, interviewed: 0, joined: 0 }
+
+    const candidates = JSON.parse(storedCandidates)
+    const vacancyCandidates = candidates.filter((c: any) => c.appliedPosition === vacancyTitle)
+
+    return {
+      applications: vacancyCandidates.length,
+      shortlisted: vacancyCandidates.filter((c: any) => c.status === "shortlisted").length,
+      interviewed: vacancyCandidates.filter((c: any) => c.status === "interviewed" || c.status === "in-interview")
+        .length,
+      joined: vacancyCandidates.filter((c: any) => c.status === "hired" || c.status === "joined").length,
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem("vacancies", JSON.stringify(vacancies))
+  }, [vacancies])
+
+  useEffect(() => {
+    const updateCandidateCounts = () => {
+      if (typeof window === "undefined") return
+
+      const newCounts: Record<
+        string,
+        { applications: number; shortlisted: number; interviewed: number; joined: number }
+      > = {}
+
+      vacancies.forEach((vacancy) => {
+        newCounts[vacancy.title] = getCandidateCountsForVacancy(vacancy.title)
+      })
+
+      setCandidateCounts(newCounts)
+    }
+
+    // Initial load
+    updateCandidateCounts()
+
+    const handleCandidateUpdate = () => {
+      updateCandidateCounts()
+    }
+
+    window.addEventListener("candidateUpdated", handleCandidateUpdate)
+    window.addEventListener("storage", handleCandidateUpdate)
+
+    return () => {
+      window.removeEventListener("candidateUpdated", handleCandidateUpdate)
+      window.removeEventListener("storage", handleCandidateUpdate)
+    }
+  }, [vacancies, getCandidateCountsForVacancy])
+
+  useEffect(() => {
+    const handleCloseDialog = () => {
+      setIsCreateOpen(false)
+      setIsEditOpen(false)
+    }
+
+    window.addEventListener("closeVacancyDialog", handleCloseDialog)
+    return () => {
+      window.removeEventListener("closeVacancyDialog", handleCloseDialog)
+    }
+  }, [])
+
+  const filteredVacancies = vacancies.filter((vacancy) => {
+    const matchesSearch =
+      vacancy.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vacancy.location.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesStatus = statusFilter === "all" || vacancy.status === statusFilter
+    const matchesPriority = priorityFilter === "all" || vacancy.priority === priorityFilter
+    const matchesRecruiter = recruiterFilter === "all" || vacancy.recruiterName === recruiterFilter
+
+    return matchesSearch && matchesStatus && matchesPriority && matchesRecruiter
+  })
+
+  const handleCreateVacancy = (vacancyData: Partial<Vacancy>) => {
+    const jobId = String(vacancies.length + 1).padStart(3, "0") + "DW"
+
+    const newVacancy: Vacancy = {
+      id: jobId,
+      ...vacancyData,
+      postedOn: new Date().toISOString().split("T")[0],
+      applications: 0,
+      shortlisted: 0,
+      interviewed: 0,
+      selected: 0,
+    } as Vacancy
+
+    setVacancies([newVacancy, ...vacancies])
+    setIsCreateOpen(false)
+  }
+
+  const handleEditVacancy = (vacancyData: Partial<Vacancy>) => {
+    if (!selectedVacancy) return
+
+    const updatedVacancies = vacancies.map((v) => (v.id === selectedVacancy.id ? { ...v, ...vacancyData } : v))
+    setVacancies(updatedVacancies)
+    setIsEditOpen(false)
+    setSelectedVacancy(null)
+  }
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "P0":
+        return "bg-red-100 text-red-700"
+      case "P1":
+        return "bg-orange-100 text-orange-700"
+      case "P2":
+        return "bg-blue-100 text-blue-700"
+      case "P3":
+        return "bg-gray-100 text-gray-700"
+      default:
+        return "bg-gray-100 text-gray-700"
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-green-100 text-green-800"
+      case "paused":
+        return "bg-yellow-100 text-yellow-800"
+      case "closed":
+        return "bg-gray-100 text-gray-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  const isDeadlineExpired = (deadline: string) => {
+    return new Date(deadline) < new Date()
+  }
+
+  const handlePanelistUpdate = (panelistIds: string[]) => {
+    if (!selectedVacancy) return
+
+    const updatedVacancies = vacancies.map((v) =>
+      v.id === selectedVacancy.id ? { ...v, assignedPanelists: panelistIds } : v,
+    )
+    setVacancies(updatedVacancies)
+    setSelectedVacancy({ ...selectedVacancy, assignedPanelists: panelistIds })
+    setIsPanelistEditOpen(false)
+  }
+
+  const handleStatusChange = (vacancyId: string, newStatus: string) => {
+    const updatedVacancies = vacancies.map((v) => (v.id === vacancyId ? { ...v, status: newStatus as "active" | "paused" | "closed" } : v))
+    setVacancies(updatedVacancies)
+  }
+
+  const allUsers = getAllUsers()
+  const hrUsers = allUsers.filter((user) => user.role === "hr")
+  const uniqueRecruiters = Array.from(
+    new Set([...vacancies.map((v) => v.recruiterName).filter(Boolean), ...hrUsers.map((user) => user.name)]),
+  )
+
+  return (
+    <DashboardLayout requiredRole="hr">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Vacancies</h1>
+            <p className="text-gray-600">Manage job openings and track applications</p>
+          </div>
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Vacancy
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Create New Vacancy</DialogTitle>
+              </DialogHeader>
+              <VacancyForm onSubmit={handleCreateVacancy} />
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search vacancies by title or location..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="paused">Paused</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder="Priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priority</SelectItem>
+                <SelectItem value="P0">P0</SelectItem>
+                <SelectItem value="P1">P1</SelectItem>
+                <SelectItem value="P2">P2</SelectItem>
+                <SelectItem value="P3">P3</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Recruiter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Recruiters</SelectItem>
+                {uniqueRecruiters.map((recruiter) => (
+                  <SelectItem key={recruiter} value={recruiter}>
+                    {recruiter}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant={viewMode === "list" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "grid" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+              >
+                <Grid className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Vacancies List/Grid */}
+        {viewMode === "list" ? (
+          <Card>
+            <CardContent className="p-0">
+              <TooltipProvider>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Job ID</TableHead>
+                      <TableHead>Position Title</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Experience Range</TableHead>
+                      <TableHead>Job Description</TableHead>
+                      <TableHead>Drive On</TableHead>
+                      <TableHead>No. of Vacancies</TableHead>
+                      <TableHead>Recruiter</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>No. of Panelists Assigned</TableHead>
+                      <TableHead>Applications</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredVacancies.map((vacancy) => {
+                      const counts = candidateCounts[vacancy.title] || {
+                        applications: 0,
+                        shortlisted: 0,
+                        interviewed: 0,
+                        joined: 0,
+                      }
+                      return (
+                        <TableRow
+                          key={vacancy.id}
+                        >
+                          <TableCell>
+                            <div className="font-mono text-sm text-gray-600">#{vacancy.id}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{vacancy.title}</div>
+                              <div className="text-sm text-gray-500">{vacancy.location}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getPriorityColor(vacancy.priority)}>{vacancy.priority}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">{vacancy.experienceRange}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="max-w-xs">
+                              {vacancy.jobDescription ? (
+                                <div className="text-sm text-gray-600">
+                                  {vacancy.jobDescription.startsWith("File uploaded:") ? (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button
+                                          className="text-blue-600 hover:text-blue-800 underline cursor-pointer truncate max-w-[150px] block"
+                                          onClick={() => {
+                                            alert(`Opening: ${vacancy.jobDescription?.replace("File uploaded: ", "")}`)
+                                          }}
+                                        >
+                                          📄 {vacancy.jobDescription.replace("File uploaded: ", "").substring(0, 20)}...
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>{vacancy.jobDescription.replace("File uploaded: ", "")}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  ) : (
+                                    <span className="text-gray-500">Text description</span>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-gray-400 text-sm">No description</span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">{vacancy.walkInDetails?.date || vacancy.postedOn}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm font-medium">{vacancy.numberOfVacancies}</div>
+                          </TableCell>
+                          <TableCell>{vacancy.recruiterName || vacancy.hiringManager}</TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="p-0 h-auto">
+                                  <div className="flex items-center gap-1">
+                                    <Badge className={getStatusColor(vacancy.status)}>{vacancy.status}</Badge>
+                                    <ChevronDown className="h-3 w-3" />
+                                  </div>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent>
+                                <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "active")}>
+                                  Active
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "paused")}>
+                                  Paused
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "closed")}>
+                                  Closed
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <span className="font-medium">{vacancy.assignedPanelists.length}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-blue-600"
+                                onClick={() => {
+                                  setSelectedVacancy(vacancy)
+                                  setIsPanelistEditOpen(true)
+                                }}
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-600">Applied:</span>
+                                <span className="font-medium text-blue-600">{counts.applications}</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-600">Selected:</span>
+                                <span className="font-medium text-orange-600">{counts.shortlisted}</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-600">Interviewed:</span>
+                                <span className="font-medium text-purple-600">{counts.interviewed}</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-600">Joined:</span>
+                                <span className="font-medium text-green-600">{counts.joined}</span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedVacancy(vacancy)
+                                  setIsDetailsOpen(true)
+                                }}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedVacancy(vacancy)
+                                  setIsEditOpen(true)
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </TooltipProvider>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredVacancies.map((vacancy) => {
+              const counts = candidateCounts[vacancy.title] || {
+                applications: 0,
+                shortlisted: 0,
+                interviewed: 0,
+                joined: 0,
+              }
+              return (
+                <Card
+                  key={vacancy.id}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-3">
+                        <div>
+                          <CardTitle className="text-lg">{vacancy.title}</CardTitle>
+                          <p className="text-sm text-gray-600">{vacancy.location}</p>
+                        </div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedVacancy(vacancy)
+                              setIsDetailsOpen(true)
+                            }}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedVacancy(vacancy)
+                              setIsEditOpen(true)
+                            }}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge className={getPriorityColor(vacancy.priority)}>{vacancy.priority}</Badge>
+                      <Badge className={getStatusColor(vacancy.status)}>{vacancy.status}</Badge>
+                      {isDeadlineExpired(vacancy.deadline) && <AlertTriangle className="h-4 w-4 text-red-500" />}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-500">Applications:</span>
+                          <div className="font-medium">{counts.applications}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Panelists:</span>
+                          <div className="font-medium">{vacancy.assignedPanelists.length} assigned</div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        )}
+
+        <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+          <DialogContent className="w-[80%] max-w-none max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Vacancy Details</DialogTitle>
+            </DialogHeader>
+            <div className="mt-6">{selectedVacancy && <VacancyDetails vacancy={selectedVacancy} />}</div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Vacancy</DialogTitle>
+            </DialogHeader>
+            <div className="mt-6">
+              {selectedVacancy && (
+                <Tabs defaultValue="details" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="details">Vacancy Details</TabsTrigger>
+                    <TabsTrigger value="panelists">Panelists</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="details" className="mt-6">
+                    <VacancyForm vacancy={selectedVacancy} onSubmit={handleEditVacancy} />
+                  </TabsContent>
+                  <TabsContent value="panelists" className="mt-6">
+                    <PanelistSelector
+                      selectedPanelists={selectedVacancy.assignedPanelists}
+                      onUpdate={handlePanelistUpdate}
+                    />
+                  </TabsContent>
+                </Tabs>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isPanelistEditOpen} onOpenChange={setIsPanelistEditOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center">
+                <Users className="h-5 w-5 mr-2" />
+                Edit Panelists - {selectedVacancy?.title}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedVacancy && (
+              <PanelistSelector selectedPanelists={selectedVacancy.assignedPanelists} onUpdate={handlePanelistUpdate} />
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    </DashboardLayout>
+  )
+}

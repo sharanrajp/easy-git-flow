@@ -1,27 +1,41 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import HomePage from "./pages/HomePage"
+import LoginPage from "./pages/LoginPage"
+import HRDashboard from "./app/dashboard/hr/page"
+import HRCandidatesPage from "./app/dashboard/hr/candidates/page"
+import HRUsersPage from "./app/dashboard/hr/users/page"
+import HRVacanciesPage from "./app/dashboard/hr/vacancies/page"
+import PanelistDashboard from "./app/dashboard/panelist/page"
+import PanelistCandidatesPage from "./app/dashboard/panelist/candidates/page"
+import ManagerDashboard from "./app/dashboard/manager/page"
+import ManagerCandidatesPage from "./app/dashboard/manager/candidates/page"
+import ManagerOffersPage from "./app/dashboard/manager/offers/page"
+import { Toaster } from "./components/ui/toaster"
+import { ThemeProvider } from "./components/theme-provider"
 
-const queryClient = new QueryClient();
+function App() {
+  return (
+    <ThemeProvider defaultTheme="light">
+      <Router>
+        <div className="min-h-screen bg-background">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/dashboard/hr" element={<HRDashboard />} />
+            <Route path="/dashboard/hr/candidates" element={<HRCandidatesPage />} />
+            <Route path="/dashboard/hr/users" element={<HRUsersPage />} />
+            <Route path="/dashboard/hr/vacancies" element={<HRVacanciesPage />} />
+            <Route path="/dashboard/panelist" element={<PanelistDashboard />} />
+            <Route path="/dashboard/panelist/candidates" element={<PanelistCandidatesPage />} />
+            <Route path="/dashboard/manager" element={<ManagerDashboard />} />
+            <Route path="/dashboard/manager/candidates" element={<ManagerCandidatesPage />} />
+            <Route path="/dashboard/manager/offers" element={<ManagerOffersPage />} />
+          </Routes>
+          <Toaster />
+        </div>
+      </Router>
+    </ThemeProvider>
+  )
+}
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
-
-export default App;
+export default App

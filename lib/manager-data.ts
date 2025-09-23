@@ -1,0 +1,393 @@
+export interface ManagerDashboardData {
+  interviews: {
+    totalR3Interviews: number
+    candidatesSelected: number
+    candidatesRejected: number
+    pendingDecisions: number
+  }
+  offers: {
+    offersSent: number
+    offersAccepted: number
+    offersDeclined: number
+    hiredThisMonth: number
+  }
+  analytics: {
+    avgTimeToDecision: number
+    avgSalaryOffered: number
+    teamCapacity: number
+    pipelineHealth: number
+  }
+  pendingR3Candidates: Array<{
+    id: string
+    name: string
+    position: string
+    interviewDate: string
+    expectedCTC: string
+    daysPending: number
+  }>
+  recentR3History: Array<{
+    id: string
+    candidateName: string
+    position: string
+    rating: number
+    notes: string
+    decision: "selected" | "rejected" | "on-hold"
+    completedAt: string
+  }>
+  teamHiringStatus: Array<{
+    department: string
+    filled: number
+    total: number
+  }>
+  salaryBudget: {
+    totalBudget: number
+    allocated: number
+    remaining: number
+  }
+}
+
+export function getManagerDashboardData(): ManagerDashboardData {
+  return {
+    interviews: {
+      totalR3Interviews: 28,
+      candidatesSelected: 18,
+      candidatesRejected: 7,
+      pendingDecisions: 3,
+    },
+    offers: {
+      offersSent: 15,
+      offersAccepted: 12,
+      offersDeclined: 3,
+      hiredThisMonth: 8,
+    },
+    analytics: {
+      avgTimeToDecision: 3,
+      avgSalaryOffered: 125000,
+      teamCapacity: 85,
+      pipelineHealth: 92,
+    },
+    pendingR3Candidates: [
+      {
+        id: "1",
+        name: "Michael Brown",
+        position: "Product Manager",
+        interviewDate: "2024-01-12",
+        expectedCTC: "$140,000",
+        daysPending: 3,
+      },
+      {
+        id: "2",
+        name: "Sarah Chen",
+        position: "Senior Frontend Developer",
+        interviewDate: "2024-01-10",
+        expectedCTC: "$115,000",
+        daysPending: 5,
+      },
+      {
+        id: "3",
+        name: "David Rodriguez",
+        position: "DevOps Engineer",
+        interviewDate: "2024-01-14",
+        expectedCTC: "$130,000",
+        daysPending: 1,
+      },
+    ],
+    recentR3History: [
+      {
+        id: "1",
+        candidateName: "Emily Davis",
+        position: "UX Designer",
+        rating: 5,
+        notes:
+          "Exceptional design thinking and leadership potential. Strong cultural fit and innovative approach to problem-solving.",
+        decision: "selected",
+        completedAt: "2024-01-13",
+      },
+      {
+        id: "2",
+        candidateName: "John Wilson",
+        position: "Backend Developer",
+        rating: 3,
+        notes:
+          "Good technical skills but lacks the senior-level experience we need for this role. Communication could be improved.",
+        decision: "rejected",
+        completedAt: "2024-01-11",
+      },
+    ],
+    teamHiringStatus: [
+      {
+        department: "Engineering",
+        filled: 12,
+        total: 15,
+      },
+      {
+        department: "Product",
+        filled: 4,
+        total: 6,
+      },
+      {
+        department: "Design",
+        filled: 3,
+        total: 4,
+      },
+      {
+        department: "Marketing",
+        filled: 6,
+        total: 8,
+      },
+    ],
+    salaryBudget: {
+      totalBudget: 2500000,
+      allocated: 1875000,
+      remaining: 625000,
+    },
+  }
+}
+
+export function getManagerCandidates() {
+  return [
+    {
+      id: "1",
+      name: "Michael Brown",
+      email: "michael.brown@email.com",
+      phone: "+1-555-0103",
+      location: "Austin, TX",
+      experience: "6 years",
+      noticePeriod: "3 weeks",
+      appliedPosition: "Product Manager",
+      interviewType: "walk-in",
+      jobType: "full-time",
+      source: "Referral",
+      currentCTC: "$120,000",
+      expectedCTC: "$140,000",
+      negotiable: true,
+      relocation: false,
+      skills: ["Product Strategy", "Analytics", "Agile", "User Research"],
+      appliedDate: "2024-01-05",
+      status: "r3-scheduled",
+      r3Status: "pending-decision",
+      r3InterviewDate: "2024-01-12T14:00:00",
+      daysPending: 3,
+      feedback: [
+        {
+          round: "R1",
+          panelist: "Mike Chen",
+          rating: 4,
+          notes: "Strong technical background and good communication skills.",
+          decision: "selected",
+          submittedAt: "2024-01-12T14:30:00",
+        },
+        {
+          round: "R2",
+          panelist: "Alex Rodriguez",
+          rating: 5,
+          notes: "Excellent product thinking and leadership experience.",
+          decision: "selected",
+          submittedAt: "2024-01-14T16:00:00",
+        },
+      ],
+    },
+    {
+      id: "2",
+      name: "Sarah Chen",
+      email: "sarah.chen@email.com",
+      phone: "+1-555-0105",
+      location: "San Francisco, CA",
+      experience: "5 years",
+      noticePeriod: "2 weeks",
+      appliedPosition: "Senior Frontend Developer",
+      interviewType: "walk-in",
+      jobType: "full-time",
+      source: "LinkedIn",
+      currentCTC: "$100,000",
+      expectedCTC: "$115,000",
+      negotiable: true,
+      relocation: false,
+      skills: ["React", "TypeScript", "Next.js", "GraphQL"],
+      appliedDate: "2024-01-08",
+      status: "r3-scheduled",
+      r3Status: "pending-decision",
+      r3InterviewDate: "2024-01-10T10:00:00",
+      daysPending: 5,
+      feedback: [
+        {
+          round: "R1",
+          panelist: "Lisa Wang",
+          rating: 5,
+          notes: "Outstanding technical skills and problem-solving ability.",
+          decision: "selected",
+          submittedAt: "2024-01-09T11:00:00",
+        },
+        {
+          round: "R2",
+          panelist: "Mike Chen",
+          rating: 4,
+          notes: "Great technical depth and team collaboration skills.",
+          decision: "selected",
+          submittedAt: "2024-01-11T15:30:00",
+        },
+      ],
+    },
+    {
+      id: "3",
+      name: "David Rodriguez",
+      email: "david.rodriguez@email.com",
+      phone: "+1-555-0106",
+      location: "Seattle, WA",
+      experience: "7 years",
+      noticePeriod: "1 month",
+      appliedPosition: "DevOps Engineer",
+      interviewType: "walk-in",
+      jobType: "full-time",
+      source: "Company Website",
+      currentCTC: "$115,000",
+      expectedCTC: "$130,000",
+      negotiable: false,
+      relocation: true,
+      skills: ["AWS", "Kubernetes", "Docker", "Terraform", "CI/CD"],
+      appliedDate: "2024-01-12",
+      status: "r3-scheduled",
+      r3Status: "scheduled",
+      r3InterviewDate: "2024-01-16T11:00:00",
+      daysPending: 0,
+      feedback: [
+        {
+          round: "R1",
+          panelist: "Alex Rodriguez",
+          rating: 4,
+          notes: "Solid DevOps experience with strong automation skills.",
+          decision: "selected",
+          submittedAt: "2024-01-13T10:00:00",
+        },
+        {
+          round: "R2",
+          panelist: "David Kim",
+          rating: 5,
+          notes: "Excellent infrastructure knowledge and scalability mindset.",
+          decision: "selected",
+          submittedAt: "2024-01-15T14:00:00",
+        },
+      ],
+    },
+    {
+      id: "4",
+      name: "Emily Davis",
+      email: "emily.davis@email.com",
+      phone: "+1-555-0104",
+      location: "Seattle, WA",
+      experience: "4 years",
+      noticePeriod: "2 weeks",
+      appliedPosition: "UX Designer",
+      interviewType: "walk-in",
+      jobType: "full-time",
+      source: "Job Board",
+      currentCTC: "$85,000",
+      expectedCTC: "$100,000",
+      negotiable: true,
+      relocation: false,
+      skills: ["Figma", "User Research", "Prototyping", "Design Systems"],
+      appliedDate: "2024-01-09",
+      status: "selected",
+      r3Status: "selected",
+      r3InterviewDate: "2024-01-13T15:00:00",
+      daysPending: 0,
+      feedback: [
+        {
+          round: "R1",
+          panelist: "Lisa Wang",
+          rating: 4,
+          notes: "Creative design approach with good user empathy.",
+          decision: "selected",
+          submittedAt: "2024-01-10T16:00:00",
+        },
+        {
+          round: "R2",
+          panelist: "Mike Chen",
+          rating: 5,
+          notes: "Exceptional design thinking and portfolio quality.",
+          decision: "selected",
+          submittedAt: "2024-01-12T11:30:00",
+        },
+      ],
+    },
+  ]
+}
+
+export const offers = [
+  {
+    id: "1",
+    candidateName: "Emily Davis",
+    email: "emily.davis@email.com",
+    position: "UX Designer",
+    salary: "$100,000",
+    joiningDate: "2024-02-01",
+    createdDate: "2024-01-15",
+    validUntil: "2024-01-29",
+    status: "accepted",
+    benefits:
+      "Health insurance, dental coverage, stock options, flexible working hours, professional development budget",
+    terms: "Full-time employment, 3-month probation period, 30-day notice period, remote work flexibility",
+    notes: "Candidate accepted offer immediately. Very enthusiastic about joining the team.",
+  },
+  {
+    id: "2",
+    candidateName: "Michael Brown",
+    email: "michael.brown@email.com",
+    position: "Product Manager",
+    salary: "$140,000",
+    joiningDate: "2024-02-15",
+    createdDate: "2024-01-16",
+    validUntil: "2024-01-30",
+    status: "negotiating",
+    benefits:
+      "Health insurance, dental coverage, stock options, flexible working hours, professional development budget, gym membership",
+    terms: "Full-time employment, 6-month probation period, 30-day notice period, hybrid work model",
+    notes: "Candidate requested salary increase and additional vacation days. Currently in negotiation.",
+  },
+  {
+    id: "3",
+    candidateName: "Sarah Chen",
+    email: "sarah.chen@email.com",
+    position: "Senior Frontend Developer",
+    salary: "$115,000",
+    joiningDate: "2024-02-05",
+    createdDate: "2024-01-14",
+    validUntil: "2024-01-28",
+    status: "sent",
+    benefits:
+      "Health insurance, dental coverage, stock options, flexible working hours, professional development budget",
+    terms: "Full-time employment, 3-month probation period, 30-day notice period, remote work flexibility",
+    notes: "Offer sent via email. Awaiting candidate response.",
+  },
+  {
+    id: "4",
+    candidateName: "David Rodriguez",
+    email: "david.rodriguez@email.com",
+    position: "DevOps Engineer",
+    salary: "$130,000",
+    joiningDate: "2024-02-10",
+    createdDate: "2024-01-17",
+    validUntil: "2024-01-31",
+    status: "pending",
+    benefits:
+      "Health insurance, dental coverage, stock options, flexible working hours, professional development budget, relocation assistance",
+    terms: "Full-time employment, 3-month probation period, 30-day notice period, hybrid work model",
+    notes: "Offer being prepared for final approval before sending.",
+  },
+  {
+    id: "5",
+    candidateName: "John Wilson",
+    email: "john.wilson@email.com",
+    position: "Backend Developer",
+    salary: "$95,000",
+    joiningDate: "2024-01-25",
+    createdDate: "2024-01-10",
+    validUntil: "2024-01-24",
+    status: "rejected",
+    benefits: "Health insurance, dental coverage, flexible working hours, professional development budget",
+    terms: "Full-time employment, 3-month probation period, 30-day notice period, remote work flexibility",
+    notes: "Candidate declined offer citing better opportunity elsewhere.",
+  },
+]
+
+export const candidates = getManagerCandidates()
