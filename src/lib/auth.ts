@@ -49,3 +49,9 @@ export async function updateUserStatus(userId: string, status: User["status"]): 
   // TODO: Implement PATCH request to backend
   throw new Error("Not implemented - should PATCH to backend")
 }
+
+export function getCurrentUser(): User | null {
+  // Since we removed localStorage, return null for now
+  // This will need to be replaced with proper user state management
+  return null
+}
