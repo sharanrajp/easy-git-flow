@@ -5,7 +5,6 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Header } from "./header"
-import { Sidebar } from "./sidebar"
 import { type User, getStoredUser } from "@/lib/auth"
 
 interface DashboardLayoutProps {
@@ -69,7 +68,6 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar user={user} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header user={user} />
         <main className="flex-1 overflow-auto p-6">{children}</main>
