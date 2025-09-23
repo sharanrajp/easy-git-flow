@@ -31,6 +31,7 @@ import {
 import { getCurrentUser } from "@/lib/auth"
 import { useEffect, useState } from "react"
 import { FeedbackDialog } from "@/components/panelist/feedback-dialog"
+import { formatDate } from "@/lib/utils"
 
 export default function PanelistDashboard() {
   const [interviewSessions, setInterviewSessions] = useState<InterviewSession[]>([])
@@ -348,7 +349,7 @@ export default function PanelistDashboard() {
                   <div className="flex items-center space-x-2">
                     <Calendar className="h-4 w-4 text-gray-500" />
                     <span className="text-sm text-gray-600">
-                      {new Date(session.scheduledTime).toLocaleDateString()}
+                      {formatDate(session.scheduledTime)}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -620,7 +621,7 @@ export default function PanelistDashboard() {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <div>{new Date(session.scheduledTime).toLocaleDateString()}</div>
+                          <div>{formatDate(session.scheduledTime)}</div>
                           <div className="text-gray-500">{new Date(session.scheduledTime).toLocaleTimeString()}</div>
                         </div>
                       </TableCell>
@@ -874,7 +875,7 @@ export default function PanelistDashboard() {
                       <div>
                         <p className="text-sm font-medium text-gray-600">Interview Date</p>
                         <p className="text-base text-gray-900">
-                          {new Date(viewingFeedbackSession.scheduledTime).toLocaleDateString()}
+                          {formatDate(viewingFeedbackSession.scheduledTime)}
                         </p>
                       </div>
                       <div>

@@ -31,6 +31,7 @@ import { fetchVacancies, addVacancy } from "@/lib/vacancy-api"
 import { VacancyForm } from "@/components/vacancies/vacancy-form"
 import { VacancyDetails } from "@/components/vacancies/vacancy-details"
 import { PanelistSelector } from "@/components/vacancies/panelist-selector"
+import { formatDate } from "@/lib/utils"
 
 export default function VacanciesPage() {
   const [vacancies, setVacancies] = useState<Vacancy[]>([])
@@ -399,8 +400,8 @@ export default function VacanciesPage() {
                           <TableCell>
                             <div className="text-sm">
                               {vacancy.walkInDetails?.date 
-                                ? new Date(vacancy.walkInDetails.date).toLocaleDateString('en-GB')
-                                : new Date(vacancy.postedOn).toLocaleDateString('en-GB')
+                                ? formatDate(vacancy.walkInDetails.date)
+                                : formatDate(vacancy.postedOn)
                               }
                             </div>
                           </TableCell>

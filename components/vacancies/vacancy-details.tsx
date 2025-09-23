@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, MapPin, Users, FileText, Download, Briefcase, Clock, Building2, Target } from "lucide-react"
 import type { Vacancy } from "@/lib/mock-data"
 import { getAllUsers, type User } from "@/lib/auth"
+import { formatDate } from "../../src/lib/utils"
 
 interface VacancyDetailsProps {
   vacancy: Vacancy
@@ -222,14 +223,14 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                 <label className="text-sm font-medium text-gray-500">Posted Date</label>
                 <p className="text-gray-900 flex items-center">
                   <Calendar className="h-4 w-4 mr-1" />
-                  {new Date(vacancy.postedOn).toLocaleDateString()}
+                  {formatDate(vacancy.postedOn)}
                 </p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Deadline</label>
                 <p className="text-gray-900 flex items-center">
                   <Clock className="h-4 w-4 mr-1" />
-                  {new Date(vacancy.deadline).toLocaleDateString()}
+                  {formatDate(vacancy.deadline)}
                 </p>
               </div>
             </CardContent>
@@ -275,7 +276,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                   <label className="text-sm font-medium text-gray-500">Date</label>
                   <p className="text-gray-900 flex items-center">
                     <Calendar className="h-4 w-4 mr-1" />
-                    {new Date(vacancy.walkInDetails.date).toLocaleDateString('en-GB')}
+                    {formatDate(vacancy.walkInDetails.date)}
                   </p>
                 </div>
                 <div>

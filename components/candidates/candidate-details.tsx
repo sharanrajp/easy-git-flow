@@ -8,6 +8,7 @@ import { Download, Mail, Phone, MapPin, Calendar, DollarSign, FileText, Star, Me
 import type { Candidate } from "@/lib/mock-data"
 import { getInterviewSessionForCandidate } from "@/lib/interview-data"
 import { useState, useEffect } from "react"
+import { formatDate } from "../../src/lib/utils"
 
 interface CandidateDetailsProps {
   candidate: Candidate
@@ -155,7 +156,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Applied Date</span>
-                  <p className="font-medium">{candidate.appliedDate}</p>
+                  <p className="font-medium">{formatDate(candidate.appliedDate)}</p>
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Recruiter</span>
@@ -262,7 +263,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
                 {candidate.interviewDateTime && (
                   <div>
                     <span className="text-sm text-gray-500">Scheduled Date & Time</span>
-                    <p className="font-medium">{new Date(candidate.interviewDateTime).toLocaleString()}</p>
+                    <p className="font-medium">{formatDate(candidate.interviewDateTime)}</p>
                   </div>
                 )}
                 {interviewSession && (
@@ -330,7 +331,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
                             <div>
                               <p className="font-medium">{feedback.panelist}</p>
                               <p className="text-sm text-gray-500">
-                                {new Date(feedback.submittedAt).toLocaleDateString()} at{" "}
+                                {formatDate(feedback.submittedAt)} at{" "}
                                 {new Date(feedback.submittedAt).toLocaleTimeString([], {
                                   hour: "2-digit",
                                   minute: "2-digit",

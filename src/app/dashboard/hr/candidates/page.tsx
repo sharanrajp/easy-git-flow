@@ -890,7 +890,7 @@ export default function CandidatesPage() {
                           <TableCell>{candidate.assignedPanelist || "Not assigned"}</TableCell>
                           <TableCell>
                             {candidate.interviewDateTime
-                              ? new Date(candidate.interviewDateTime).toLocaleString()
+                              ? formatDate(candidate.interviewDateTime)
                               : "Not scheduled"}
                           </TableCell>
                           <TableCell>
@@ -1073,7 +1073,7 @@ export default function CandidatesPage() {
                               <span className="text-gray-400 text-sm">N/A</span>
                             )}
                           </TableCell>
-                          <TableCell>{candidate.appliedDate}</TableCell>
+                          <TableCell>{formatDate(candidate.appliedDate)}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <Button
