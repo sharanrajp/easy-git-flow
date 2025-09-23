@@ -275,7 +275,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                   <label className="text-sm font-medium text-gray-500">Date</label>
                   <p className="text-gray-900 flex items-center">
                     <Calendar className="h-4 w-4 mr-1" />
-                    {new Date(vacancy.walkInDetails.date).toLocaleDateString()}
+                    {new Date(vacancy.walkInDetails.date).toLocaleDateString('en-GB')}
                   </p>
                 </div>
                 <div>

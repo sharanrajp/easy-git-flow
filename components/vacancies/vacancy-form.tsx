@@ -34,8 +34,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
     experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
     skills: vacancy?.skills || [],
-    jobDescriptionFile: null as File | null,
-    existingJobDescription: vacancy?.jobDescription || "",
+    jobDescription: vacancy?.jobDescription || "",
     aboutPosition: vacancy?.aboutPosition || "",
     driveDate: vacancy?.walkInDetails?.date || "",
     driveLocation: vacancy?.walkInDetails?.location || "",
@@ -94,12 +93,6 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
     handleInputChange("skills", formData.skills.filter((skill: string) => skill !== skillToRemove))
   }
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      handleInputChange("jobDescriptionFile", file)
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -372,13 +365,14 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="jobDescription">Job Description</Label>
+                <Label htmlFor="jobDescription">Job Description *</Label>
                 <Textarea
                   id="jobDescription"
-                  value={formData.existingJobDescription}
-                  onChange={(e) => handleInputChange("existingJobDescription", e.target.value)}
+                  value={formData.jobDescription}
+                  onChange={(e) => handleInputChange("jobDescription", e.target.value)}
                   placeholder="Describe the role, responsibilities, and requirements..."
-                  rows={6}
+                  rows={8}
+                  required
                 />
               </div>
 
@@ -391,34 +385,6 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
                   placeholder="Additional details about the position..."
                   rows={4}
                 />
-              </div>
-
-              <div>
-                <Label htmlFor="jobDescriptionFile">Upload Job Description File (Optional)</Label>
-                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
-                  <div className="space-y-1 text-center">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="flex text-sm text-gray-600">
-                      <label htmlFor="jobDescriptionFile" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
-                        <span>Upload a file</span>
-                        <input
-                          id="jobDescriptionFile"
-                          type="file"
-                          className="sr-only"
-                          accept=".pdf,.doc,.docx"
-                          onChange={handleFileUpload}
-                        />
-                      </label>
-                      <p className="pl-1">or drag and drop</p>
-                    </div>
-                    <p className="text-xs text-gray-500">PDF, DOC up to 10MB</p>
-                  </div>
-                </div>
-                {formData.jobDescriptionFile && (
-                  <p className="mt-2 text-sm text-gray-500">
-                    Selected: {formData.jobDescriptionFile.name}
-                  </p>
-                )}
               </div>
             </CardContent>
           </Card>

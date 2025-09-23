@@ -110,7 +110,7 @@ function LoginPage() {
         <CardHeader className="text-center space-y-6 pb-8">
           <div className="flex justify-center">
             <div>
-              <img src="/public/vuedata-blue.webp" alt="vueDataImage" draggable="false" height={25} width={200}/>
+              <img src="/vuedata-blue.webp" alt="vueDataImage" draggable="false" height={25} width={200}/>
             </div>
           </div>
           <div className="space-y-2">

@@ -356,7 +356,7 @@ export default function VacanciesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Job ID</TableHead>
+                      <TableHead>S.No</TableHead>
                       <TableHead>Position Title</TableHead>
                       <TableHead>Priority</TableHead>
                       <TableHead>Experience Range</TableHead>
@@ -383,7 +383,7 @@ export default function VacanciesPage() {
                           key={vacancy.id}
                         >
                           <TableCell>
-                            <div className="font-mono text-sm text-gray-600">#{vacancy.id}</div>
+                            <div className="font-mono text-sm text-gray-600">#{filteredVacancies.indexOf(vacancy) + 1}</div>
                           </TableCell>
                           <TableCell>
                             <div>
@@ -427,7 +427,12 @@ export default function VacanciesPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="text-sm">{vacancy.walkInDetails?.date || vacancy.postedOn}</div>
+                            <div className="text-sm">
+                              {vacancy.walkInDetails?.date 
+                                ? new Date(vacancy.walkInDetails.date).toLocaleDateString('en-GB')
+                                : new Date(vacancy.postedOn).toLocaleDateString('en-GB')
+                              }
+                            </div>
                           </TableCell>
                           <TableCell>
                             <div className="text-sm font-medium">{vacancy.numberOfVacancies}</div>
