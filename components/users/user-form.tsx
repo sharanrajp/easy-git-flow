@@ -22,7 +22,7 @@ interface FormData {
   name: string
   email: string
   role: User["role"]
-  panelistType?: User["panelistType"]
+  panelist_type?: User["panelist_type"]
   skills: string[]
   interviewRounds: string[]
   status?: User["status"]
@@ -33,7 +33,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     name: user?.name || "",
     email: user?.email || "",
     role: user?.role || ("panelist" as const),
-    panelistType: user?.panelistType || ("panel-member" as const),
+    panelist_type: user?.panelist_type || ("panel-member" as const),
     skills: user?.skills || [],
     interviewRounds: user?.interviewRounds || [],
     status: user?.status || ("available" as const),
@@ -46,12 +46,12 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
 
     const submitData: Partial<User> = {
       ...formData,
-      panelistType: formData.role === "panelist" ? formData.panelistType : undefined,
+      panelist_type: formData.role === "panelist" ? formData.panelist_type : undefined,
       // Only include skills and interviewRounds for panelists
       skills: formData.role === "panelist" ? formData.skills : undefined,
       interviewRounds:
         formData.role === "panelist"
-          ? formData.panelistType === "manager"
+          ? formData.panelist_type === "manager"
             ? ["R1", "R2", "R3"]
             : formData.interviewRounds
           : undefined,
@@ -97,7 +97,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     setFormData({
       ...formData,
       role,
-      panelistType: role === "panelist" ? "panel-member" : undefined,
+      panelist_type: role === "panelist" ? "panel-member" : undefined,
       skills: role === "panelist" ? formData.skills : [],
       interviewRounds: role === "panelist" ? formData.interviewRounds : [],
       status: role === "panelist" ? "available" : undefined,
@@ -142,13 +142,13 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
 
       {formData.role === "panelist" && (
         <div className="space-y-2">
-          <Label htmlFor="panelistType">Panelist Type *</Label>
+          <Label htmlFor="panelist_type">Panelist Type *</Label>
           <Select
-            value={formData.panelistType || "panel-member"}
+            value={formData.panelist_type || "panel-member"}
             onValueChange={(value: "panel-member" | "manager") =>
               setFormData({
                 ...formData,
-                panelistType: value,
+                panelist_type: value,
                 interviewRounds: value === "manager" ? ["R1", "R2", "R3"] : formData.interviewRounds,
               })
             }
@@ -166,7 +166,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
 
       {formData.role === "panelist" && (
         <>
-          {formData.panelistType === "panel-member" && (
+          {formData.panelist_type === "panel-member" && (
             <div className="space-y-2">
               <Label>Interview Rounds Handled</Label>
               <div className="space-y-2">
@@ -190,7 +190,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
             </div>
           )}
 
-          {formData.panelistType === "manager" && (
+          {formData.panelist_type === "manager" && (
             <div className="p-4 bg-purple-50 rounded-lg">
               <p className="text-sm text-purple-800">
                 <strong>Panelist Manager:</strong> Automatically assigned to handle all interview rounds (R1, R2, R3)

@@ -3,7 +3,7 @@ export interface User {
   name: string
   email: string
   role: "hr" | "panelist" | "manager" | "admin"
-  panelistType?: "panel-member" | "manager"
+  panelist_type?: "panel-member" | "manager"
   skills?: string[]
   interviewRounds?: string[]
   status?: "available" | "in-interview" | "break" | "on-break" | "unavailable"

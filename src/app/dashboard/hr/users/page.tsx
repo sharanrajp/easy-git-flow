@@ -144,12 +144,12 @@ export default function UsersPage() {
     }
   }
 
-  const formatRole = (role: string, panelistType?: string) => {
+  const formatRole = (role: string, panelist_type?: string) => {
     switch (role) {
       case "hr":
         return "HR Admin"
       case "panelist":
-        return panelistType === "manager" ? "Panelist (Manager)" : "Panelist (Panel Member)"
+        return panelist_type === "manager" ? "Panelist (Manager)" : "Panelist (Panel Member)"
       case "manager":
         return "Manager"
       default:
@@ -290,7 +290,7 @@ export default function UsersPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getRoleColor(user.role)}>{formatRole(user.role, user.panelistType)}</Badge>
+                        <Badge className={getRoleColor(user.role)}>{formatRole(user.role, user.panelist_type)}</Badge>
                       </TableCell>
                       <TableCell>
                         {user.skills ? (
@@ -456,7 +456,7 @@ export default function UsersPage() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Badge className={`${getRoleColor(user.role)} text-xs`}>
-                          {formatRole(user.role, user.panelistType)}
+                          {formatRole(user.role, user.panelist_type)}
                         </Badge>
                         {user.role === "panelist" &&
                           user.status &&
