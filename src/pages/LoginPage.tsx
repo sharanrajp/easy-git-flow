@@ -109,13 +109,13 @@ function LoginPage() {
       <Card className="w-full max-w-md shadow-elegant border-0 backdrop-blur-sm bg-gradient-card relative z-10">
         <CardHeader className="text-center space-y-6 pb-8">
           <div className="flex justify-center">
-            <div className="p-4 bg-gradient-primary rounded-2xl shadow-glow">
-              <Building2 className="h-10 w-10 text-white" />
+            <div>
+              <img src="/public/vuedata-blue.webp" alt="vueDataImage" draggable="false" height={25} width={200}/>
             </div>
           </div>
           <div className="space-y-2">
-            <CardTitle className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Welcome to VueData ATS
+            <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Welcome to ATS
             </CardTitle>
             <CardDescription className="text-muted-foreground text-base">
               Sign in to your account to continue
