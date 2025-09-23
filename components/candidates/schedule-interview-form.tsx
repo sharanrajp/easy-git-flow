@@ -1,8 +1,4 @@
- 
-
-import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { Candidate } from "@/lib/mock-data"
-import { getAllUsers } from "@/lib/auth"
+import { getAllUsers, type User } from "@/lib/auth"
 
 interface ScheduleInterviewFormProps {
   candidate: Candidate
@@ -21,8 +17,20 @@ interface ScheduleInterviewFormProps {
 export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: ScheduleInterviewFormProps) {
   const [selectedPanelist, setSelectedPanelist] = useState("")
   const [dateTime, setDateTime] = useState("")
+  const [panelists, setPanelists] = useState<User[]>([])
 
-  const panelists = getAllUsers().filter((user) => user.role === "panelist" && user.status === "available")
+  useEffect(() => {
+    const fetchPanelists = async () => {
+      try {
+        const users = await getAllUsers()
+        setPanelists(users.filter((user: User) => user.role === "panelist" && user.status === "available"))
+      } catch (error) {
+        console.error("Failed to fetch panelists:", error)
+        setPanelists([])
+      }
+    }
+    fetchPanelists()
+  }, [])
 
   const getNextRound = () => {
     if (!candidate.currentRound) return "R1"
@@ -89,7 +97,7 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
               <SelectValue placeholder="Choose a panelist" />
             </SelectTrigger>
             <SelectContent>
-              {panelists.map((panelist) => (
+              {panelists.map((panelist: User) => (
                 <SelectItem key={panelist.id} value={panelist.name}>
                   <div className="flex flex-col">
                     <span>{panelist.name}</span>

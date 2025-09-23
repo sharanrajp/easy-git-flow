@@ -1,13 +1,11 @@
- 
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Search, Plus, X, Users, CheckCircle } from "lucide-react"
-import { getAllUsers } from "@/lib/auth"
+import { getAllUsers, type User } from "@/lib/auth"
 
 interface PanelistSelectorProps {
   selectedPanelists: string[]
@@ -16,23 +14,36 @@ interface PanelistSelectorProps {
 
 export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelectorProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const allUsers = getAllUsers()
+  const [allUsers, setAllUsers] = useState<User[]>([])
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const users = await getAllUsers()
+        setAllUsers(users)
+      } catch (error) {
+        console.error("Failed to fetch users:", error)
+        setAllUsers([])
+      }
+    }
+    fetchUsers()
+  }, [])
 
   // Filter users to get potential panelists (all users are valid panelists)
   const availablePanelists = allUsers
 
   // Filter based on search term
   const filteredPanelists = availablePanelists.filter(
-    (user) =>
+    (user: User) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.skills && user.skills.some((skill) => skill.toLowerCase().includes(searchTerm.toLowerCase()))),
+      (user.skills && user.skills.some((skill: string) => skill.toLowerCase().includes(searchTerm.toLowerCase()))),
   )
 
   // Get selected and unselected panelists
-  const selectedPanelistsData = availablePanelists.filter((user) => selectedPanelists.includes(user.id))
+  const selectedPanelistsData = availablePanelists.filter((user: User) => selectedPanelists.includes(user.id))
 
-  const unselectedPanelists = filteredPanelists.filter((user) => !selectedPanelists.includes(user.id))
+  const unselectedPanelists = filteredPanelists.filter((user: User) => !selectedPanelists.includes(user.id))
 
   const handleAddPanelist = (panelistId: string) => {
     const updatedPanelists = [...selectedPanelists, panelistId]
@@ -50,7 +61,7 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
     onAdd,
     onRemove,
   }: {
-    user: any
+    user: User
     isSelected: boolean
     onAdd?: () => void
     onRemove?: () => void
@@ -163,7 +174,7 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {selectedPanelistsData.map((user) => (
+              {selectedPanelistsData.map((user: User) => (
                 <PanelistCard
                   key={user.id}
                   user={user}
@@ -185,7 +196,7 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
           <ScrollArea className="h-96">
             <div className="space-y-3 pr-4">
               {unselectedPanelists.length > 0 ? (
-                unselectedPanelists.map((user) => (
+                unselectedPanelists.map((user: User) => (
                   <PanelistCard key={user.id} user={user} isSelected={false} onAdd={() => handleAddPanelist(user.id)} />
                 ))
               ) : (

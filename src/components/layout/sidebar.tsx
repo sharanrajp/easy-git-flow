@@ -37,7 +37,7 @@ export function Sidebar({ user }: SidebarProps) {
   const pathname = useLocation().pathname
   const [isCollapsed, setIsCollapsed] = useState(false)
 
-  const items = navigationItems[user.role] || []
+  const items = navigationItems[user.role as keyof typeof navigationItems] || []
 
   return (
     <>
@@ -67,7 +67,7 @@ export function Sidebar({ user }: SidebarProps) {
         </div>
 
         <nav className="p-4 space-y-2">
-          {items.map((item) => {
+          {items.map((item: any) => {
             const Icon = item.icon
             const isActive = pathname === item.href
 

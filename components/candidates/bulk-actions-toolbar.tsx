@@ -1,26 +1,35 @@
- 
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Trash2, CheckCircle } from "lucide-react"
-import { getAllUsers } from "@/lib/auth"
-import type { Candidate } from "@/lib/mock-data"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Users, UserCheck } from "lucide-react"
+import { getAllUsers, type User } from "@/lib/auth"
 
 interface BulkActionsToolbarProps {
-  selectedCandidates: Candidate[]
-  onClearSelection: () => void
+  selectedCount: number
   onBulkAction: (action: string, data?: any) => void
 }
 
-export function BulkActionsToolbar({ selectedCandidates, onClearSelection, onBulkAction }: BulkActionsToolbarProps) {
+export function BulkActionsToolbar({ selectedCount, onBulkAction }: BulkActionsToolbarProps) {
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
   const [selectedPanelist, setSelectedPanelist] = useState("")
   const [selectedStatus, setSelectedStatus] = useState("")
+  const [panelists, setPanelists] = useState<User[]>([])
 
-  const panelists = getAllUsers().filter((user) => user.role === "panelist" && user.status === "available")
+  useEffect(() => {
+    const fetchPanelists = async () => {
+      try {
+        const users = await getAllUsers()
+        setPanelists(users.filter((user: User) => user.role === "panelist" && user.status === "available"))
+      } catch (error) {
+        console.error("Failed to fetch panelists:", error)
+        setPanelists([])
+      }
+    }
+    fetchPanelists()
+  }, [])
 
   const handleBulkAssign = () => {
     if (selectedPanelist) {
@@ -30,76 +39,105 @@ export function BulkActionsToolbar({ selectedCandidates, onClearSelection, onBul
     }
   }
 
-  const handleBulkStatusChange = () => {
+  const handleBulkStatusUpdate = () => {
     if (selectedStatus) {
-      onBulkAction("changeStatus", { status: selectedStatus })
+      onBulkAction("status", { status: selectedStatus })
       setIsStatusDialogOpen(false)
       setSelectedStatus("")
     }
   }
 
-  const handleBulkExport = () => {
-    const csvContent = [
-      "Name,Email,Phone,Position,Experience,Skills,Status,Applied Date",
-      ...selectedCandidates.map(
-        (candidate) =>
-          `"${candidate.name}","${candidate.email}","${candidate.phone}","${candidate.appliedPosition}","${candidate.experience}","${candidate.skills?.join("; ") || "No skills"}","${candidate.status}","${candidate.appliedDate}"`,
-      ),
-    ].join("\n")
-
-    const blob = new Blob([csvContent], { type: "text/csv" })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `candidates_export_${new Date().toISOString().split("T")[0]}.csv`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    window.URL.revokeObjectURL(url)
-  }
-
   return (
-    <Card className="border-blue-200 bg-blue-50">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-blue-600" />
-              <span className="font-medium text-blue-900">
-                {selectedCandidates.length} candidate{selectedCandidates.length !== 1 ? "s" : ""} selected
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {selectedCandidates.slice(0, 3).map((candidate) => (
-                <Badge key={candidate.id} variant="secondary" className="text-xs">
-                  {candidate.name}
-                </Badge>
-              ))}
-              {selectedCandidates.length > 3 && (
-                <Badge variant="secondary" className="text-xs">
-                  +{selectedCandidates.length - 3} more
-                </Badge>
-              )}
-            </div>
-          </div>
+    <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+      <div className="flex items-center space-x-4">
+        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+          {selectedCount} candidates selected
+        </Badge>
+        
+        <div className="flex items-center space-x-2">
+          <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="text-blue-700 border-blue-300 hover:bg-blue-100">
+                <UserCheck className="h-4 w-4 mr-2" />
+                Assign Panelist
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Assign Panelist to Selected Candidates</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Select Panelist</label>
+                  <Select value={selectedPanelist} onValueChange={setSelectedPanelist}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a panelist" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {panelists.map((panelist: User) => (
+                        <SelectItem key={panelist.id} value={panelist.name}>
+                          {panelist.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsAssignDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleBulkAssign} disabled={!selectedPanelist}>
+                    Assign
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onBulkAction("delete")}
-              className="bg-red-600 text-white border-red-600 hover:bg-red-700 hover:text-white cursor-pointer"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete Selected ({selectedCandidates.length})
-            </Button>
-
-            <Button variant="ghost" size="sm" className="cursor-pointer" onClick={onClearSelection}>
-              Clear Selection
-            </Button>
-          </div>
+          <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="text-blue-700 border-blue-300 hover:bg-blue-100">
+                <Users className="h-4 w-4 mr-2" />
+                Update Status
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Update Status for Selected Candidates</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Select Status</label>
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="selected">Selected</SelectItem>
+                      <SelectItem value="rejected">Rejected</SelectItem>
+                      <SelectItem value="on-hold">On Hold</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsStatusDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleBulkStatusUpdate} disabled={!selectedStatus}>
+                    Update Status
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

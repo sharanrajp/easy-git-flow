@@ -1,40 +1,34 @@
- 
-
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { X, Upload, Search, UserPlus, UserMinus } from "lucide-react"
+import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
+import { X, Plus, Upload, Building, MapPin, Calendar, User, Target, FileText } from "lucide-react"
 import type { Vacancy } from "@/lib/mock-data"
-import { getAllUsers, getStoredUser } from "@/lib/auth"
+import { getAllUsers, type User } from "@/lib/auth"
 
 interface VacancyFormProps {
-  vacancy?: Vacancy
-  onSubmit: (data: Partial<Vacancy>) => void
+  vacancy?: Vacancy | null
+  onSubmit: (data: any) => void
+  onCancel: () => void
+  currentUser?: any
 }
 
-export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
-  const [currentStep, setCurrentStep] = useState(1)
-  const currentUser = getStoredUser()
-
+export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: VacancyFormProps) {
   const [formData, setFormData] = useState({
     title: vacancy?.title || "",
-    requestType: vacancy?.requestType || "new",
+    department: vacancy?.department || "",
+    location: vacancy?.location || "",
     jobType: vacancy?.jobType || "full-time",
-    priority: vacancy?.priority || "P2",
-    projectClientName: vacancy?.projectClientName || "",
-    city: vacancy?.city || "Perungudi, Chennai", // default city value
+    priority: vacancy?.priority || "P3",
     status: vacancy?.status || "active",
     hiringManager: vacancy?.hiringManager || "",
-    recruiterName: vacancy?.recruiterName || (currentUser?.role === "hr" ? currentUser.name : ""),
+    recruiterName: vacancy?.recruiterName || currentUser?.name || "",
     numberOfVacancies: vacancy?.numberOfVacancies || 1,
     experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
@@ -45,12 +39,28 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     driveDate: vacancy?.walkInDetails?.date || "",
     driveLocation: vacancy?.walkInDetails?.location || "",
     assignedPanelists: vacancy?.assignedPanelists || [],
+    deadline: vacancy?.deadline || "",
   })
 
   const [newSkill, setNewSkill] = useState("")
   const [panelistSearch, setPanelistSearch] = useState("")
-  const allUsers = getAllUsers()
-  const hrUsers = allUsers.filter((user) => user.role === "hr")
+  const [allUsers, setAllUsers] = useState<User[]>([])
+  const [hrUsers, setHrUsers] = useState<User[]>([])
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const users = await getAllUsers()
+        setAllUsers(users)
+        setHrUsers(users.filter((user: User) => user.role === "hr"))
+      } catch (error) {
+        console.error("Failed to fetch users:", error)
+        setAllUsers([])
+        setHrUsers([])
+      }
+    }
+    fetchUsers()
+  }, [])
 
   useEffect(() => {
     if (!vacancy && currentUser?.role === "hr" && !formData.recruiterName) {
@@ -59,280 +69,208 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   }, [currentUser, vacancy, formData.recruiterName])
 
   const filteredUsers = allUsers.filter(
-    (user) =>
+    (user: User) =>
       user.name.toLowerCase().includes(panelistSearch.toLowerCase()) ||
-      (user.skills && user.skills.some((skill) => skill.toLowerCase().includes(panelistSearch.toLowerCase()))),
+      (user.skills && user.skills.some((skill: string) => skill.toLowerCase().includes(panelistSearch.toLowerCase()))),
   )
 
-  const selectedUsers = filteredUsers.filter((u) => formData.assignedPanelists.includes(u.id))
-  const unselectedUsers = filteredUsers.filter((u) => !formData.assignedPanelists.includes(u.id))
+  const selectedUsers = filteredUsers.filter((u: User) => formData.assignedPanelists.includes(u.id))
+  const unselectedUsers = filteredUsers.filter((u: User) => !formData.assignedPanelists.includes(u.id))
   const sortedUsers = [...selectedUsers, ...unselectedUsers]
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    const submitData: Partial<Vacancy> = {
-      ...formData,
-      experienceRange: `${formData.experienceFrom}-${formData.experienceTo} years`,
-      interviewTypes: ["walk-in"], // Only walk-in interviews for this version
-      walkInDetails: {
-        date: formData.driveDate,
-        location: formData.driveLocation,
-      },
-      jobDescription: formData.jobDescriptionFile
-        ? `File uploaded: ${formData.jobDescriptionFile.name}`
-        : formData.existingJobDescription,
-    }
-
-    onSubmit(submitData)
-  }
-
-  const handleCancel = () => {
-    // Reset form data to initial state
-    setFormData({
-      title: vacancy?.title || "",
-      requestType: vacancy?.requestType || "new",
-      jobType: vacancy?.jobType || "full-time",
-      priority: vacancy?.priority || "P2",
-      projectClientName: vacancy?.projectClientName || "",
-      city: vacancy?.city || "Perungudi, Chennai",
-      status: vacancy?.status || "active",
-      hiringManager: vacancy?.hiringManager || "",
-      recruiterName: vacancy?.recruiterName || (currentUser?.role === "hr" ? currentUser.name : ""),
-      numberOfVacancies: vacancy?.numberOfVacancies || 1,
-      experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
-      experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
-      skills: vacancy?.skills || [],
-      jobDescriptionFile: null as File | null,
-      existingJobDescription: vacancy?.jobDescription || "",
-      aboutPosition: vacancy?.aboutPosition || "",
-      driveDate: vacancy?.walkInDetails?.date || "",
-      driveLocation: vacancy?.walkInDetails?.location || "",
-      assignedPanelists: vacancy?.assignedPanelists || [],
-    })
-    setCurrentStep(1)
-    setNewSkill("")
-    setPanelistSearch("")
-
-    // Close the dialog by triggering parent component
-    if (typeof window !== "undefined") {
-      const event = new CustomEvent("closeVacancyDialog")
-      window.dispatchEvent(event)
-    }
+  const handleInputChange = (field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   const addSkill = () => {
     if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
-      setFormData({
-        ...formData,
-        skills: [...formData.skills, newSkill.trim()],
-      })
+      handleInputChange("skills", [...formData.skills, newSkill.trim()])
       setNewSkill("")
     }
   }
 
-  const removeSkill = (skill: string) => {
-    setFormData({
-      ...formData,
-      skills: formData.skills.filter((s) => s !== skill),
-    })
+  const removeSkill = (skillToRemove: string) => {
+    handleInputChange("skills", formData.skills.filter((skill: string) => skill !== skillToRemove))
   }
 
-  const handlePanelistChange = (panelistId: string, checked: boolean) => {
-    if (checked) {
-      setFormData({
-        ...formData,
-        assignedPanelists: [...formData.assignedPanelists, panelistId],
-      })
-    } else {
-      setFormData({
-        ...formData,
-        assignedPanelists: formData.assignedPanelists.filter((id) => id !== panelistId),
-      })
-    }
-  }
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
     if (file) {
-      setFormData({ ...formData, jobDescriptionFile: file })
+      handleInputChange("jobDescriptionFile", file)
     }
   }
 
-  const canProceedToStep2 = () => {
-    return (
-      formData.title &&
-      formData.requestType &&
-      formData.jobType &&
-      formData.priority &&
-      formData.city &&
-      formData.hiringManager &&
-      formData.recruiterName &&
-      formData.numberOfVacancies &&
-      formData.experienceFrom &&
-      formData.experienceTo &&
-      formData.driveDate &&
-      formData.driveLocation &&
-      (formData.jobDescriptionFile || formData.existingJobDescription) &&
-      formData.aboutPosition.trim() // Make about position required
-    )
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    const submissionData = {
+      ...formData,
+      experienceRange: `${formData.experienceFrom}-${formData.experienceTo}`,
+      walkInDetails: formData.driveDate && formData.driveLocation ? {
+        date: formData.driveDate,
+        location: formData.driveLocation
+      } : undefined,
+      interviewTypes: ["walk-in"] as const,
+      id: vacancy?.id || `${Date.now()}`,
+      postedOn: vacancy?.postedOn || new Date().toISOString().split('T')[0],
+      applications: vacancy?.applications || 0,
+      shortlisted: vacancy?.shortlisted || 0,
+      interviewed: vacancy?.interviewed || 0,
+      selected: vacancy?.selected || 0,
+    }
+
+    onSubmit(submissionData)
   }
 
-  const canSubmit = () => {
-    return canProceedToStep2() && formData.assignedPanelists.length >= 1 // Minimum 1 panelist required
-  }
+  const departments = [
+    "Engineering",
+    "Product",
+    "Design", 
+    "Marketing",
+    "Sales",
+    "Data Science",
+    "Security",
+    "Operations",
+    "HR",
+    "Finance"
+  ]
 
-  const progress = currentStep === 1 ? 50 : 100
+  const locations = [
+    "San Francisco, CA",
+    "New York, NY",
+    "Austin, TX", 
+    "Seattle, WA",
+    "Chicago, IL",
+    "Denver, CO",
+    "Los Angeles, CA",
+    "Remote",
+    "Boston, MA",
+    "Washington, DC"
+  ]
 
   return (
-    <div className="space-y-6">
-      {!vacancy && (
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Step {currentStep} of 2</span>
-            <span>{progress}% Complete</span>
-          </div>
-          <Progress value={progress} className="h-2" />
-          <div className="flex justify-between text-xs text-gray-500">
-            <span className={currentStep === 1 ? "font-medium text-blue-600" : ""}>Vacancy Details</span>
-            <span className={currentStep === 2 ? "font-medium text-blue-600" : ""}>Select Panelists</span>
-          </div>
+    <form onSubmit={handleSubmit} className="space-y-8 max-w-6xl mx-auto p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {vacancy ? "Edit Vacancy" : "Create New Vacancy"}
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Fill in the details below to {vacancy ? "update the" : "create a new"} job vacancy.
+          </p>
         </div>
-      )}
+        <div className="flex space-x-3">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+            {vacancy ? "Update Vacancy" : "Create Vacancy"}
+          </Button>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {(currentStep === 1 || vacancy) && (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Form - Left 2 columns */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Vacancy Details</CardTitle>
-              <CardDescription>Fill in the basic information about the position</CardDescription>
+              <CardTitle className="flex items-center">
+                <Building className="h-5 w-5 mr-2" />
+                Basic Information
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
                   <Label htmlFor="title">Position Title *</Label>
                   <Input
                     id="title"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) => handleInputChange("title", e.target.value)}
+                    placeholder="e.g., Senior Frontend Developer"
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="requestType">Request Type *</Label>
-                  <Select
-                    value={formData.requestType}
-                    onValueChange={(value: any) => setFormData({ ...formData, requestType: value })}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="replacement">Replacement</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="jobType">Job Type *</Label>
-                  <Select
-                    value={formData.jobType}
-                    onValueChange={(value: any) => setFormData({ ...formData, jobType: value })}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="full-time">Full-Time</SelectItem>
-                      <SelectItem value="internship">Internship</SelectItem>
-                      <SelectItem value="contract">Contract</SelectItem>
-                      <SelectItem value="contract-to-hire">Contract to Hire</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="priority">Priority *</Label>
-                  <Select
-                    value={formData.priority}
-                    onValueChange={(value: any) => setFormData({ ...formData, priority: value })}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="P0">P0</SelectItem>
-                      <SelectItem value="P1">P1</SelectItem>
-                      <SelectItem value="P2">P2</SelectItem>
-                      <SelectItem value="P3">P3</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="hiringManager">Hiring Manager *</Label>
-                  <Input
-                    id="hiringManager"
-                    value={formData.hiringManager}
-                    onChange={(e) => setFormData({ ...formData, hiringManager: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="recruiterName">Recruiter Name *</Label>
-                  <Select
-                    value={formData.recruiterName}
-                    onValueChange={(value: any) => setFormData({ ...formData, recruiterName: value })}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select recruiter" />
+                <div>
+                  <Label htmlFor="department">Department *</Label>
+                  <Select value={formData.department} onValueChange={(value) => handleInputChange("department", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
-                      {hrUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.name}>
-                          {user.name}
+                      {departments.map((dept) => (
+                        <SelectItem key={dept} value={dept}>
+                          {dept}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">City *</Label>
-                  <Input
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    required
-                  />
+                <div>
+                  <Label htmlFor="location">Location *</Label>
+                  <Select value={formData.location} onValueChange={(value) => handleInputChange("location", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locations.map((loc) => (
+                        <SelectItem key={loc} value={loc}>
+                          {loc}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="numberOfVacancies">Number of Vacancies *</Label>
+
+                <div>
+                  <Label htmlFor="jobType">Job Type *</Label>
+                  <Select value={formData.jobType} onValueChange={(value) => handleInputChange("jobType", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select job type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="full-time">Full Time</SelectItem>
+                      <SelectItem value="part-time">Part Time</SelectItem>
+                      <SelectItem value="contract">Contract</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="numberOfVacancies">Number of Positions *</Label>
                   <Input
                     id="numberOfVacancies"
                     type="number"
                     min="1"
                     value={formData.numberOfVacancies}
-                    onChange={(e) =>
-                      setFormData({ ...formData, numberOfVacancies: Number.parseInt(e.target.value) || 1 })
-                    }
+                    onChange={(e) => handleInputChange("numberOfVacancies", parseInt(e.target.value) || 1)}
                     required
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+                <div>
+                  <Label htmlFor="priority">Priority *</Label>
+                  <Select value={formData.priority} onValueChange={(value) => handleInputChange("priority", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select priority" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="P0">P0 - Critical</SelectItem>
+                      <SelectItem value="P1">P1 - High</SelectItem>
+                      <SelectItem value="P2">P2 - Medium</SelectItem>
+                      <SelectItem value="P3">P3 - Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
                   <Label htmlFor="status">Status *</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value: any) => setFormData({ ...formData, status: value })}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
+                  <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="active">Active</SelectItem>
@@ -341,306 +279,237 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="projectClientName">Project/Client Name</Label>
+
+                <div>
+                  <Label htmlFor="deadline">Application Deadline *</Label>
                   <Input
-                    id="projectClientName"
-                    value={formData.projectClientName}
-                    onChange={(e) => setFormData({ ...formData, projectClientName: e.target.value })}
+                    id="deadline"
+                    type="date"
+                    value={formData.deadline}
+                    onChange={(e) => handleInputChange("deadline", e.target.value)}
+                    required
                   />
                 </div>
               </div>
+            </CardContent>
+          </Card>
 
+          {/* Experience and Skills */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Target className="h-5 w-5 mr-2" />
+                Experience & Skills
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="experienceFrom">Experience From (years) *</Label>
+                <div>
+                  <Label htmlFor="experienceFrom">Experience From (Years) *</Label>
                   <Input
                     id="experienceFrom"
                     type="number"
                     min="0"
-                    placeholder="0"
                     value={formData.experienceFrom}
-                    onChange={(e) => setFormData({ ...formData, experienceFrom: e.target.value })}
+                    onChange={(e) => handleInputChange("experienceFrom", e.target.value)}
+                    placeholder="0"
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="experienceTo">Experience To (years) *</Label>
+                <div>
+                  <Label htmlFor="experienceTo">Experience To (Years) *</Label>
                   <Input
                     id="experienceTo"
                     type="number"
                     min="0"
-                    placeholder="5"
                     value={formData.experienceTo}
-                    onChange={(e) => setFormData({ ...formData, experienceTo: e.target.value })}
+                    onChange={(e) => handleInputChange("experienceTo", e.target.value)}
+                    placeholder="5"
                     required
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Skills Required</Label>
-                <div className="flex space-x-2">
+              <div>
+                <Label htmlFor="skills">Required Skills *</Label>
+                <div className="flex space-x-2 mb-2">
                   <Input
-                    placeholder="Add a skill"
                     value={newSkill}
                     onChange={(e) => setNewSkill(e.target.value)}
+                    placeholder="Add a skill"
                     onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
                   />
-                  <Button type="button" onClick={addSkill}>
-                    Add
+                  <Button type="button" onClick={addSkill} variant="outline" size="sm">
+                    <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.skills.map((skill) => (
-                    <Badge key={skill} variant="secondary" className="flex items-center gap-1">
-                      {skill}
-                      <X className="h-3 w-3 cursor-pointer" onClick={() => removeSkill(skill)} />
+                <div className="flex flex-wrap gap-2">
+                  {formData.skills.map((skill: string) => (
+                    <Badge key={skill} variant="secondary" className="flex items-center space-x-1">
+                      <span>{skill}</span>
+                      <button type="button" onClick={() => removeSkill(skill)}>
+                        <X className="h-3 w-3" />
+                      </button>
                     </Badge>
                   ))}
                 </div>
               </div>
+            </CardContent>
+          </Card>
 
-              <div className="space-y-2">
-                <Label htmlFor="jobDescription">Job Description *</Label>
-                {formData.existingJobDescription && formData.existingJobDescription.startsWith("File uploaded:") ? (
-                  <div className="border rounded-lg p-4 bg-gray-50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <Upload className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {formData.existingJobDescription.replace("File uploaded: ", "")}
-                          </p>
-                          <p className="text-xs text-gray-500">Job description file</p>
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => document.getElementById("jobDescription")?.click()}
-                      >
-                        Reupload
-                      </Button>
-                    </div>
-                    <input
-                      type="file"
-                      id="jobDescription"
-                      accept=".pdf,.doc,.docx,.txt"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-600">Upload job description file *</p>
-                      <input
-                        type="file"
-                        id="jobDescription"
-                        accept=".pdf,.doc,.docx,.txt"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                        required={!formData.existingJobDescription}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById("jobDescription")?.click()}
-                      >
-                        Choose File
-                      </Button>
-                      {formData.jobDescriptionFile && (
-                        <p className="text-sm text-green-600 mt-2">Selected: {formData.jobDescriptionFile.name}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="aboutPosition">About Position *</Label>
+          {/* Job Description */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <FileText className="h-5 w-5 mr-2" />
+                Job Description
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="jobDescription">Job Description</Label>
                 <Textarea
-                  id="aboutPosition"
-                  placeholder="Describe the position, responsibilities, and requirements..."
-                  value={formData.aboutPosition}
-                  onChange={(e) => setFormData({ ...formData, aboutPosition: e.target.value })}
-                  rows={4}
-                  required
+                  id="jobDescription"
+                  value={formData.existingJobDescription}
+                  onChange={(e) => handleInputChange("existingJobDescription", e.target.value)}
+                  placeholder="Describe the role, responsibilities, and requirements..."
+                  rows={6}
                 />
               </div>
 
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="driveDate">Drive Date *</Label>
-                    <Input
-                      id="driveDate"
-                      type="date"
-                      value={formData.driveDate}
-                      onChange={(e) => setFormData({ ...formData, driveDate: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="driveLocation">Drive Location *</Label>
-                    <Input
-                      id="driveLocation"
-                      placeholder="Enter interview location"
-                      value={formData.driveLocation}
-                      onChange={(e) => setFormData({ ...formData, driveLocation: e.target.value })}
-                      required
-                    />
+              <div>
+                <Label htmlFor="aboutPosition">About Position (Optional)</Label>
+                <Textarea
+                  id="aboutPosition"
+                  value={formData.aboutPosition}
+                  onChange={(e) => handleInputChange("aboutPosition", e.target.value)}
+                  placeholder="Additional details about the position..."
+                  rows={4}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="jobDescriptionFile">Upload Job Description File (Optional)</Label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                  <div className="space-y-1 text-center">
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                    <div className="flex text-sm text-gray-600">
+                      <label htmlFor="jobDescriptionFile" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                        <span>Upload a file</span>
+                        <input
+                          id="jobDescriptionFile"
+                          type="file"
+                          className="sr-only"
+                          accept=".pdf,.doc,.docx"
+                          onChange={handleFileUpload}
+                        />
+                      </label>
+                      <p className="pl-1">or drag and drop</p>
+                    </div>
+                    <p className="text-xs text-gray-500">PDF, DOC up to 10MB</p>
                   </div>
                 </div>
+                {formData.jobDescriptionFile && (
+                  <p className="mt-2 text-sm text-gray-500">
+                    Selected: {formData.jobDescriptionFile.name}
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
-        )}
 
-        {(currentStep === 2 || vacancy) && !vacancy && (
+          {/* Walk-in Drive Details */}
           <Card>
             <CardHeader>
-              <CardTitle>Select Panelists</CardTitle>
-              <CardDescription>
-                Choose panelists and managers for this vacancy from all users. Selected:{" "}
-                {formData.assignedPanelists.length}
-              </CardDescription>
+              <CardTitle className="flex items-center">
+                <Calendar className="h-5 w-5 mr-2" />
+                Walk-in Drive Details (Optional)
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="panelistSearch">Search Users</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="driveDate">Drive Date</Label>
                   <Input
-                    id="panelistSearch"
-                    placeholder="Search by name or skills..."
-                    value={panelistSearch}
-                    onChange={(e) => setPanelistSearch(e.target.value)}
-                    className="pl-10"
+                    id="driveDate"
+                    type="date"
+                    value={formData.driveDate}
+                    onChange={(e) => handleInputChange("driveDate", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="driveLocation">Drive Location</Label>
+                  <Input
+                    id="driveLocation"
+                    value={formData.driveLocation}
+                    onChange={(e) => handleInputChange("driveLocation", e.target.value)}
+                    placeholder="e.g., Main Office, Conference Room A"
                   />
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </div>
 
-              {selectedUsers.length > 0 && (
-                <div className="space-y-2">
-                  <Label className="text-green-700">Selected Users ({selectedUsers.length})</Label>
-                  <div className="space-y-2 p-3 bg-green-50 rounded-lg max-h-40 overflow-y-auto">
-                    {selectedUsers.map((user) => (
-                      <div key={user.id} className="flex items-center justify-between p-2 bg-white rounded border">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                            <span className="text-green-700 font-medium text-sm">
-                              {user.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="font-medium text-green-900">{user.name}</p>
-                            <p className="text-sm text-green-600">
-                              {user.role} • {user.email}
-                            </p>
-                            {user.skills && <p className="text-sm text-green-600">Skills: {user.skills.join(", ")}</p>}
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handlePanelistChange(user.id, false)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <UserMinus className="h-4 w-4" />
-                        </Button>
-                      </div>
+        {/* Sidebar - Right column */}
+        <div className="space-y-6">
+          {/* Team Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <User className="h-5 w-5 mr-2" />
+                Team Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="hiringManager">Hiring Manager *</Label>
+                <Select value={formData.hiringManager} onValueChange={(value) => handleInputChange("hiringManager", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select hiring manager" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hrUsers.map((user: User) => (
+                      <SelectItem key={user.id} value={user.name}>
+                        {user.name}
+                      </SelectItem>
                     ))}
-                  </div>
-                </div>
-              )}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              <div className="space-y-2">
-                <Label>Available Users</Label>
-                <div className="space-y-2 max-h-96 overflow-y-auto border rounded-lg p-3">
-                  {unselectedUsers.slice(0, Math.max(20, unselectedUsers.length)).map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                          <span className="text-gray-700 font-medium text-sm">
-                            {user.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="font-medium">{user.name}</p>
-                          <p className="text-sm text-gray-500">
-                            {user.role} • {user.email}
-                          </p>
-                          {user.skills && <p className="text-sm text-gray-500">Skills: {user.skills.join(", ")}</p>}
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handlePanelistChange(user.id, true)}
-                        className="text-blue-600 hover:text-blue-700"
-                      >
-                        <UserPlus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  {unselectedUsers.length === 0 && (
-                    <p className="text-center text-gray-500 py-4">
-                      {panelistSearch ? "No users found matching your search" : "All users have been selected"}
-                    </p>
-                  )}
-                </div>
+              <div>
+                <Label htmlFor="recruiterName">Recruiter Name *</Label>
+                <Select value={formData.recruiterName} onValueChange={(value) => handleInputChange("recruiterName", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select recruiter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hrUsers.map((user: User) => (
+                      <SelectItem key={user.id} value={user.name}>
+                        {user.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
-        )}
 
-        <div className="flex justify-between">
-          <div>
-            {currentStep === 2 && !vacancy && (
-              <Button type="button" variant="outline" onClick={() => setCurrentStep(1)}>
-                Previous
-              </Button>
-            )}
-          </div>
-          <div className="flex space-x-3">
-            <Button type="button" variant="outline" onClick={handleCancel}>
-              Cancel
-            </Button>
-            {vacancy ? (
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                Save Changes
-              </Button>
-            ) : currentStep === 1 ? (
-              <Button
-                type="button"
-                onClick={() => setCurrentStep(2)}
-                disabled={!canProceedToStep2()}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                Next: Select Panelists
-              </Button>
-            ) : (
-              <Button type="submit" disabled={!canSubmit()} className="bg-blue-600 hover:bg-blue-700">
-                Create Vacancy
-              </Button>
-            )}
-          </div>
+          {/* Panelist Assignment */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Assign Panelists</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PanelistSelector
+                selectedPanelists={formData.assignedPanelists}
+                onUpdate={(panelists) => handleInputChange("assignedPanelists", panelists)}
+              />
+            </CardContent>
+          </Card>
         </div>
-      </form>
-    </div>
+      </div>
+    </form>
   )
 }
