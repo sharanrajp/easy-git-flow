@@ -15,43 +15,39 @@ interface NavigationItem {
   icon: React.ComponentType<any>
 }
 
-interface NavigationItems {
-  [key: string]: NavigationItem[]
-  hr: NavigationItem[]
-  admin: NavigationItem[]
-  panelist: NavigationItem[]
-  manager: NavigationItem[]
+const getNavigationItems = (role: string): NavigationItem[] => {
+  const items: Record<string, NavigationItem[]> = {
+    hr: [
+      { name: "Dashboard", href: "/dashboard/hr", icon: LayoutDashboard },
+      { name: "Candidates", href: "/dashboard/hr/candidates", icon: UserCheck },
+      { name: "Users", href: "/dashboard/hr/users", icon: Users },
+      { name: "Vacancies", href: "/dashboard/hr/vacancies", icon: Briefcase },
+    ],
+    admin: [
+      { name: "Dashboard", href: "/dashboard/hr", icon: LayoutDashboard },
+      { name: "Candidates", href: "/dashboard/hr/candidates", icon: UserCheck },
+      { name: "Users", href: "/dashboard/hr/users", icon: Users },
+      { name: "Vacancies", href: "/dashboard/hr/vacancies", icon: Briefcase },
+    ],
+    panelist: [
+      { name: "Dashboard", href: "/dashboard/panelist", icon: LayoutDashboard },
+      { name: "Candidates", href: "/dashboard/panelist/candidates", icon: UserCheck },
+    ],
+    manager: [
+      { name: "Dashboard", href: "/dashboard/manager", icon: LayoutDashboard },
+      { name: "Candidates", href: "/dashboard/manager/candidates", icon: UserCheck },
+      { name: "Offers", href: "/dashboard/manager/offers", icon: Briefcase },
+    ],
+  }
+  
+  return items[role] || []
 }
-
-const navigationItems = {
-  hr: [
-    { name: "Dashboard", href: "/dashboard/hr", icon: LayoutDashboard },
-    { name: "Candidates", href: "/dashboard/hr/candidates", icon: UserCheck },
-    { name: "Users", href: "/dashboard/hr/users", icon: Users },
-    { name: "Vacancies", href: "/dashboard/hr/vacancies", icon: Briefcase },
-  ],
-  admin: [
-    { name: "Dashboard", href: "/dashboard/hr", icon: LayoutDashboard },
-    { name: "Candidates", href: "/dashboard/hr/candidates", icon: UserCheck },
-    { name: "Users", href: "/dashboard/hr/users", icon: Users },
-    { name: "Vacancies", href: "/dashboard/hr/vacancies", icon: Briefcase },
-  ],
-  panelist: [
-    { name: "Dashboard", href: "/dashboard/panelist", icon: LayoutDashboard },
-    { name: "Candidates", href: "/dashboard/panelist/candidates", icon: UserCheck },
-  ],
-  manager: [
-    { name: "Dashboard", href: "/dashboard/manager", icon: LayoutDashboard },
-    { name: "Candidates", href: "/dashboard/manager/candidates", icon: UserCheck },
-    { name: "Offers", href: "/dashboard/manager/offers", icon: Briefcase },
-  ],
-} as const satisfies Record<string, readonly NavigationItem[]>
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = useLocation().pathname
   const [isCollapsed, setIsCollapsed] = useState(false)
 
-  const items = (navigationItems as any)[user.role] || []
+  const items = getNavigationItems(user.role)
 
   return (
     <>

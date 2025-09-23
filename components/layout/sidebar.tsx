@@ -1,5 +1,3 @@
- 
-
 import { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
@@ -11,29 +9,45 @@ interface SidebarProps {
   user: User
 }
 
-const navigationItems = {
-  hr: [
-    { name: "Dashboard", href: "/dashboard/hr", icon: LayoutDashboard },
-    { name: "Candidates", href: "/dashboard/hr/candidates", icon: UserCheck },
-    { name: "Users", href: "/dashboard/hr/users", icon: Users },
-    { name: "Vacancies", href: "/dashboard/hr/vacancies", icon: Briefcase },
-  ],
-  panelist: [
-    { name: "Dashboard", href: "/dashboard/panelist", icon: LayoutDashboard },
-    { name: "Candidates", href: "/dashboard/panelist/candidates", icon: UserCheck },
-  ],
-  manager: [
-    { name: "Dashboard", href: "/dashboard/manager", icon: LayoutDashboard },
-    { name: "Candidates", href: "/dashboard/manager/candidates", icon: UserCheck },
-    { name: "Offers", href: "/dashboard/manager/offers", icon: Briefcase },
-  ],
+interface NavigationItem {
+  name: string
+  href: string
+  icon: React.ComponentType<any>
+}
+
+const getNavigationItems = (role: string): NavigationItem[] => {
+  const items: Record<string, NavigationItem[]> = {
+    hr: [
+      { name: "Dashboard", href: "/dashboard/hr", icon: LayoutDashboard },
+      { name: "Candidates", href: "/dashboard/hr/candidates", icon: UserCheck },
+      { name: "Users", href: "/dashboard/hr/users", icon: Users },
+      { name: "Vacancies", href: "/dashboard/hr/vacancies", icon: Briefcase },
+    ],
+    admin: [
+      { name: "Dashboard", href: "/dashboard/hr", icon: LayoutDashboard },
+      { name: "Candidates", href: "/dashboard/hr/candidates", icon: UserCheck },
+      { name: "Users", href: "/dashboard/hr/users", icon: Users },
+      { name: "Vacancies", href: "/dashboard/hr/vacancies", icon: Briefcase },
+    ],
+    panelist: [
+      { name: "Dashboard", href: "/dashboard/panelist", icon: LayoutDashboard },
+      { name: "Candidates", href: "/dashboard/panelist/candidates", icon: UserCheck },
+    ],
+    manager: [
+      { name: "Dashboard", href: "/dashboard/manager", icon: LayoutDashboard },
+      { name: "Candidates", href: "/dashboard/manager/candidates", icon: UserCheck },
+      { name: "Offers", href: "/dashboard/manager/offers", icon: Briefcase },
+    ],
+  }
+  
+  return items[role] || []
 }
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = useLocation().pathname
   const [isCollapsed, setIsCollapsed] = useState(false)
 
-  const items = navigationItems[user.role] || []
+  const items = getNavigationItems(user.role)
 
   return (
     <>
@@ -63,7 +77,7 @@ export function Sidebar({ user }: SidebarProps) {
         </div>
 
         <nav className="p-4 space-y-2">
-          {items.map((item) => {
+          {items.map((item: NavigationItem) => {
             const Icon = item.icon
             const isActive = pathname === item.href
 
