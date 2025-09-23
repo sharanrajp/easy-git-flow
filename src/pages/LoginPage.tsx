@@ -120,24 +120,6 @@ function LoginPage() {
               </button>
             </div>
           </form>
-
-          <div className="mt-6 p-6 bg-gradient-card border border-border/50 rounded-2xl">
-            <p className="text-sm font-semibold text-foreground mb-3">Demo Accounts:</p>
-            <div className="space-y-2 text-xs text-muted-foreground">
-              <div className="flex justify-between items-center p-2 bg-accent/30 rounded-lg">
-                <span className="font-medium">HR:</span>
-                <span>hr@company.com / 1234</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-accent/30 rounded-lg">
-                <span className="font-medium">Panelist:</span>
-                <span>panelist@company.com / 1234</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-accent/30 rounded-lg">
-                <span className="font-medium">Manager:</span>
-                <span>manager@company.com / 1234</span>
-              </div>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>
