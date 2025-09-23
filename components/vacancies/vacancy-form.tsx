@@ -101,7 +101,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     const submissionData = {
@@ -120,7 +120,11 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
       selected: vacancy?.selected || 0,
     }
 
-    onSubmit(submissionData)
+    try {
+      await onSubmit(submissionData)
+    } catch (error) {
+      console.error('Error submitting vacancy:', error)
+    }
   }
 
   const departments = [

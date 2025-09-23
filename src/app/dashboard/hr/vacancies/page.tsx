@@ -25,20 +25,17 @@ import {
   Users,
   ChevronDown,
 } from "lucide-react"
-import { getMockVacancies, type Vacancy } from "@/lib/mock-data"
+import { type Vacancy } from "@/lib/mock-data"
 import { getAllUsers } from "@/lib/auth"
+import { fetchVacancies, addVacancy } from "@/lib/vacancy-api"
 import { VacancyForm } from "@/components/vacancies/vacancy-form"
 import { VacancyDetails } from "@/components/vacancies/vacancy-details"
 import { PanelistSelector } from "@/components/vacancies/panelist-selector"
 
 export default function VacanciesPage() {
-  const [vacancies, setVacancies] = useState<Vacancy[]>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("vacancies")
-      return stored ? JSON.parse(stored) : getMockVacancies()
-    }
-    return getMockVacancies()
-  })
+  const [vacancies, setVacancies] = useState<Vacancy[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -72,9 +69,24 @@ export default function VacanciesPage() {
     }
   }, [])
 
+  // Load vacancies from API on component mount
   useEffect(() => {
-    localStorage.setItem("vacancies", JSON.stringify(vacancies))
-  }, [vacancies])
+    const loadVacancies = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const fetchedVacancies = await fetchVacancies()
+        setVacancies(fetchedVacancies)
+      } catch (err) {
+        console.error('Failed to load vacancies:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load vacancies')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadVacancies()
+  }, [])
 
   useEffect(() => {
     const updateCandidateCounts = () => {
@@ -132,21 +144,16 @@ export default function VacanciesPage() {
     return matchesSearch && matchesStatus && matchesPriority && matchesRecruiter
   })
 
-  const handleCreateVacancy = (vacancyData: Partial<Vacancy>) => {
-    const jobId = String(vacancies.length + 1).padStart(3, "0") + "DW"
-
-    const newVacancy: Vacancy = {
-      id: jobId,
-      ...vacancyData,
-      postedOn: new Date().toISOString().split("T")[0],
-      applications: 0,
-      shortlisted: 0,
-      interviewed: 0,
-      selected: 0,
-    } as Vacancy
-
-    setVacancies([newVacancy, ...vacancies])
-    setIsCreateOpen(false)
+  const handleCreateVacancy = async (vacancyData: Partial<Vacancy>) => {
+    try {
+      setError(null)
+      const newVacancy = await addVacancy(vacancyData)
+      setVacancies([newVacancy, ...vacancies])
+      setIsCreateOpen(false)
+    } catch (err) {
+      console.error('Failed to create vacancy:', err)
+      setError(err instanceof Error ? err.message : 'Failed to create vacancy')
+    }
   }
 
   const handleEditVacancy = (vacancyData: Partial<Vacancy>) => {
@@ -206,6 +213,21 @@ export default function VacanciesPage() {
     setVacancies(updatedVacancies)
   }
 
+  const [hrUsers, setHrUsers] = useState<any[]>([])
+  
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const users = await getAllUsers()
+        const hrUsersList = users.filter((user: any) => user.role === 'hr')
+        setHrUsers(hrUsersList)
+      } catch (err) {
+        console.error('Failed to load users:', err)
+      }
+    }
+    loadUsers()
+  }, [])
+
   const uniqueRecruiters = Array.from(
     new Set([...vacancies.map((v) => v.recruiterName).filter(Boolean), ...hrUsers.map((user) => user.name)]),
   )
@@ -235,74 +257,99 @@ export default function VacanciesPage() {
           </Dialog>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search vacancies by title or location..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="paused">Paused</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-              <SelectTrigger className="w-36">
-                <SelectValue placeholder="Priority" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Priority</SelectItem>
-                <SelectItem value="P0">P0</SelectItem>
-                <SelectItem value="P1">P1</SelectItem>
-                <SelectItem value="P2">P2</SelectItem>
-                <SelectItem value="P3">P3</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Recruiter" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Recruiters</SelectItem>
-                {uniqueRecruiters.map((recruiter) => (
-                  <SelectItem key={recruiter} value={recruiter}>
-                    {recruiter}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === "grid" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("grid")}
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="flex">
+              <AlertTriangle className="h-5 w-5 text-red-400" />
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">Error</h3>
+                <p className="mt-1 text-sm text-red-700">{error}</p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-2 text-gray-600">Loading vacancies...</span>
+          </div>
+        )}
+
+        {/* Search and Filter Controls */}
+        {!loading && (
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search vacancies by title or location..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="paused">Paused</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="Priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priority</SelectItem>
+                  <SelectItem value="P0">P0</SelectItem>
+                  <SelectItem value="P1">P1</SelectItem>
+                  <SelectItem value="P2">P2</SelectItem>
+                  <SelectItem value="P3">P3</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Recruiter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Recruiters</SelectItem>
+                  {uniqueRecruiters.map((recruiter) => (
+                    <SelectItem key={recruiter} value={recruiter}>
+                      {recruiter}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "grid" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Vacancies List/Grid */}
-        {viewMode === "list" ? (
+        {!loading && !error && (
+          viewMode === "list" ? (
           <Card>
             <CardContent className="p-0">
               <TooltipProvider>
@@ -549,6 +596,28 @@ export default function VacanciesPage() {
                 </Card>
               )
             })}
+          </div>
+          )
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && filteredVacancies.length === 0 && (
+          <div className="text-center py-12">
+            <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <Plus className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No vacancies found</h3>
+            <p className="text-gray-500 mb-4">
+              {searchTerm || statusFilter !== "all" || priorityFilter !== "all" || recruiterFilter !== "all"
+                ? "Try adjusting your search criteria"
+                : "Get started by creating your first vacancy"}
+            </p>
+            {!searchTerm && statusFilter === "all" && priorityFilter === "all" && recruiterFilter === "all" && (
+              <Button onClick={() => setIsCreateOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Vacancy
+              </Button>
+            )}
           </div>
         )}
 
