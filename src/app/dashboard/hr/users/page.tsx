@@ -307,7 +307,7 @@ export default function UsersPage() {
                             )}
                           </div>
                         ) : (
-                          <span className="text-gray-400">N/A</span>
+                          <span className="text-gray-400">-</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -320,7 +320,7 @@ export default function UsersPage() {
                             ))}
                           </div>
                         ) : (
-                          <span className="text-gray-400">N/A</span>
+                          <span className="text-gray-400">-</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -370,7 +370,7 @@ export default function UsersPage() {
                             </DropdownMenu>
                           )
                         ) : (
-                          <span className="text-gray-400">N/A</span>
+                          <span className="text-gray-400">-</span>
                         )}
                       </TableCell>
                       <TableCell>

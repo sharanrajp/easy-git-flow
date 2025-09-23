@@ -46,11 +46,6 @@ const navigationItems = {
 export function Header({ user }: HeaderProps) {
   const navigate = useNavigate()
   const pathname = useLocation().pathname
-  const [notifications] = useState([
-    "New candidate application received",
-    "Interview scheduled for tomorrow",
-    "Feedback pending for John Doe",
-  ])
 
   const items = navigationItems[user.role] || []
 
@@ -153,29 +148,6 @@ export function Header({ user }: HeaderProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-
-          {/* Notifications */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-accent/50 smooth-transition">
-                <Bell className="h-5 w-5" />
-                {notifications.length > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-gradient-primary text-white shadow-glow">
-                    {notifications.length}
-                  </Badge>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 bg-card/95 backdrop-blur-xl border-border/50 shadow-elegant">
-              <DropdownMenuLabel className="font-semibold">Notifications</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {notifications.map((notification, index) => (
-                <DropdownMenuItem key={index} className="py-3 smooth-transition">
-                  <div className="text-sm">{notification}</div>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
 
           {/* Profile */}
           <DropdownMenu>

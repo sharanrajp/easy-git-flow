@@ -22,11 +22,6 @@ interface HeaderProps {
 
 export function Header({ user }: HeaderProps) {
   const navigate = useNavigate()
-  const [notifications] = useState([
-    "New candidate application received",
-    "Interview scheduled for tomorrow",
-    "Feedback pending for John Doe",
-  ])
 
   const handleLogout = () => {
     logout()
@@ -64,29 +59,6 @@ export function Header({ user }: HeaderProps) {
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* Notifications */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                {notifications.length > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500">
-                    {notifications.length}
-                  </Badge>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80">
-              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {notifications.map((notification, index) => (
-                <DropdownMenuItem key={index} className="py-3">
-                  <div className="text-sm">{notification}</div>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           {/* Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
