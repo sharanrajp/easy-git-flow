@@ -1,6 +1,6 @@
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,8 +19,20 @@ interface ScheduleInterviewFormProps {
 export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: ScheduleInterviewFormProps) {
   const [selectedPanelist, setSelectedPanelist] = useState("")
   const [dateTime, setDateTime] = useState("")
+  const [panelists, setPanelists] = useState<any[]>([])
 
-  const panelists = getAllUsers().filter((user) => user.role === "panelist" && user.status === "available")
+  useEffect(() => {
+    const fetchPanelists = async () => {
+      try {
+        const users = await getAllUsers()
+        setPanelists(users.filter((user) => user.role === "panelist" && user.status === "available"))
+      } catch (error) {
+        console.error("Failed to fetch panelists:", error)
+        setPanelists([])
+      }
+    }
+    fetchPanelists()
+  }, [])
 
   const getNextRound = () => {
     if (!candidate.currentRound) return "R1"

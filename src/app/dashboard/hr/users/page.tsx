@@ -12,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Plus, Search, Edit, Trash2, Grid, List } from "lucide-react"
-import { getAllUsers, updateUsersList, type User } from "@/lib/auth"
+import { getAllUsers, type User } from "@/lib/auth"
 import { UserForm } from "@/components/users/user-form"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 
@@ -28,14 +28,23 @@ export default function UsersPage() {
   const [deleteUser, setDeleteUser] = useState<User | null>(null)
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [showDeleteSelected, setShowDeleteSelected] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true)
+      const usersData = await getAllUsers()
+      setUsers(usersData)
+    } catch (error) {
+      console.error("Failed to fetch users:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    setUsers(getAllUsers())
+    fetchUsers()
   }, [])
-
-  useEffect(() => {
-    updateUsersList(users)
-  }, [users])
 
   useEffect(() => {
     setShowDeleteSelected(selectedUsers.length > 0)
@@ -69,50 +78,42 @@ export default function UsersPage() {
     }
   }
 
-  const handleDeleteSelected = () => {
-    const updatedUsers = users.filter((user) => !selectedUsers.includes(user.id))
-    setUsers(updatedUsers)
+  const handleDeleteSelected = async () => {
+    // TODO: Implement API call to delete multiple users
+    console.log("Delete selected users:", selectedUsers)
     setSelectedUsers([])
   }
 
-  const handleCreateUser = (userData: Partial<User>) => {
-    const newUser: User = {
-      id: Date.now().toString(),
-      ...userData,
-    } as User
-
-    const updatedUsers = [...users, newUser]
-    setUsers(updatedUsers)
+  const handleCreateUser = async (userData: Partial<User>) => {
+    // TODO: Implement API call to create user
+    console.log("Create user:", userData)
     setIsCreateOpen(false)
+    fetchUsers() // Refresh the list
   }
 
-  const handleEditUser = (userData: Partial<User>) => {
+  const handleEditUser = async (userData: Partial<User>) => {
     if (!selectedUser) return
 
-    const updatedUsers = users.map((u) => (u.id === selectedUser.id ? { ...u, ...userData } : u))
-    setUsers(updatedUsers)
+    // TODO: Implement API call to update user
+    console.log("Update user:", selectedUser.id, userData)
     setIsEditOpen(false)
     setSelectedUser(null)
+    fetchUsers() // Refresh the list
   }
 
-  const handleDeleteUser = () => {
+  const handleDeleteUser = async () => {
     if (!deleteUser) return
 
-    const updatedUsers = users.filter((u) => u.id !== deleteUser.id)
-    setUsers(updatedUsers)
+    // TODO: Implement API call to delete user
+    console.log("Delete user:", deleteUser.id)
     setDeleteUser(null)
+    fetchUsers() // Refresh the list
   }
 
-  const handleStatusChange = (userId: string, status: User["status"]) => {
-    const user = users.find((u) => u.id === userId)
-    if (!user) return
-
-    if (user.status === "in-interview" && status !== "available") {
-      return // Don't allow status change when in interview
-    }
-
-    const updatedUsers = users.map((u) => (u.id === userId ? { ...u, status } : u))
-    setUsers(updatedUsers)
+  const handleStatusChange = async (userId: string, status: User["status"]) => {
+    // TODO: Implement API call to update user status
+    console.log("Update user status:", userId, status)
+    fetchUsers() // Refresh the list
   }
 
   const getRoleColor = (role: string) => {
@@ -247,7 +248,11 @@ export default function UsersPage() {
         </div>
 
         {/* Users List/Grid */}
-        {viewMode === "list" ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : viewMode === "list" ? (
           <Card>
             <CardContent className="p-0">
               <Table>

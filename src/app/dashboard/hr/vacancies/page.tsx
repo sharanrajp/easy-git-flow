@@ -206,8 +206,6 @@ export default function VacanciesPage() {
     setVacancies(updatedVacancies)
   }
 
-  const allUsers = getAllUsers()
-  const hrUsers = allUsers.filter((user) => user.role === "hr")
   const uniqueRecruiters = Array.from(
     new Set([...vacancies.map((v) => v.recruiterName).filter(Boolean), ...hrUsers.map((user) => user.name)]),
   )

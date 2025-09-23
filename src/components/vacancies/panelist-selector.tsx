@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -14,7 +14,20 @@ interface PanelistSelectorProps {
 
 export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelectorProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const allUsers = getAllUsers()
+  const [allUsers, setAllUsers] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const users = await getAllUsers()
+        setAllUsers(users)
+      } catch (error) {
+        console.error("Failed to fetch users:", error)
+        setAllUsers([])
+      }
+    }
+    fetchUsers()
+  }, [])
 
   // Filter users to get potential panelists (all users are valid panelists)
   const availablePanelists = allUsers
@@ -24,7 +37,7 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
     (user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.skills && user.skills.some((skill) => skill.toLowerCase().includes(searchTerm.toLowerCase()))),
+      (user.skills && user.skills.some((skill: string) => skill.toLowerCase().includes(searchTerm.toLowerCase()))),
   )
 
   // Get selected and unselected panelists

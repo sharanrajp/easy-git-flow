@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,8 +11,23 @@ interface VacancyDetailsProps {
 }
 
 export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
-  const allUsers = getAllUsers()
-  const assignedPanelists = allUsers.filter((user) => vacancy.assignedPanelists.includes(user.id))
+  const [allUsers, setAllUsers] = useState<any[]>([])
+  const [assignedPanelists, setAssignedPanelists] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const users = await getAllUsers()
+        setAllUsers(users)
+        setAssignedPanelists(users.filter((user) => vacancy.assignedPanelists.includes(user.id)))
+      } catch (error) {
+        console.error("Failed to fetch users:", error)
+        setAllUsers([])
+        setAssignedPanelists([])
+      }
+    }
+    fetchUsers()
+  }, [vacancy.assignedPanelists])
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -269,7 +285,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                     <span className="text-white font-semibold text-sm">
                       {panelist.name
                         .split(" ")
-                        .map((n) => n[0])
+                        .map((n: string) => n[0])
                         .join("")}
                     </span>
                   </div>

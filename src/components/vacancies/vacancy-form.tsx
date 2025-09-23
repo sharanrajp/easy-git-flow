@@ -48,8 +48,23 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
 
   const [newSkill, setNewSkill] = useState("")
   const [panelistSearch, setPanelistSearch] = useState("")
-  const allUsers = getAllUsers()
-  const hrUsers = allUsers.filter((user) => user.role === "hr")
+  const [allUsers, setAllUsers] = useState<any[]>([])
+  const [hrUsers, setHrUsers] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const users = await getAllUsers()
+        setAllUsers(users)
+        setHrUsers(users.filter((user) => user.role === "hr"))
+      } catch (error) {
+        console.error("Failed to fetch users:", error)
+        setAllUsers([])
+        setHrUsers([])
+      }
+    }
+    fetchUsers()
+  }, [])
 
   useEffect(() => {
     // No user data available since localStorage was removed
@@ -59,7 +74,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   const filteredUsers = allUsers.filter(
     (user) =>
       user.name.toLowerCase().includes(panelistSearch.toLowerCase()) ||
-      (user.skills && user.skills.some((skill) => skill.toLowerCase().includes(panelistSearch.toLowerCase()))),
+      (user.skills && user.skills.some((skill: string) => skill.toLowerCase().includes(panelistSearch.toLowerCase()))),
   )
 
   const selectedUsers = filteredUsers.filter((u) => formData.assignedPanelists.includes(u.id))
@@ -535,7 +550,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                             <span className="text-green-700 font-medium text-sm">
                               {user.name
                                 .split(" ")
-                                .map((n) => n[0])
+                                .map((n: string) => n[0])
                                 .join("")}
                             </span>
                           </div>
@@ -572,7 +587,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                           <span className="text-gray-700 font-medium text-sm">
                             {user.name
                               .split(" ")
-                              .map((n) => n[0])
+                              .map((n: string) => n[0])
                               .join("")}
                           </span>
                         </div>
