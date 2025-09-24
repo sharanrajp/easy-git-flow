@@ -3,6 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DialogDescription } from "@/components/ui/dialog"
 import { AssignedCandidateDetails } from "@/components/candidates/assigned-candidate-details"
+import { UnassignedCandidateDetails } from "@/components/candidates/unassigned-candidate-details"
 
 import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
@@ -94,6 +95,8 @@ export default function CandidatesPage() {
   const [loadingAssigned, setLoadingAssigned] = useState(false)
   const [selectedAssignedCandidate, setSelectedAssignedCandidate] = useState<BackendCandidate | null>(null)
   const [isAssignedDetailsOpen, setIsAssignedDetailsOpen] = useState(false)
+  const [selectedUnassignedCandidate, setSelectedUnassignedCandidate] = useState<BackendCandidate | null>(null)
+  const [isUnassignedDetailsOpen, setIsUnassignedDetailsOpen] = useState(false)
 
   // No stored user available since we removed localStorage
   const currentUser = null
@@ -114,45 +117,33 @@ export default function CandidatesPage() {
     return () => clearInterval(interval)
   }, [])
 
-  // Load unassigned candidates when tab becomes free
+  // Load both assigned and unassigned candidates in parallel when page loads
   useEffect(() => {
-    const loadUnassignedCandidates = async () => {
-      if (activeTab !== "unassigned") return
-      
+    const loadAllCandidates = async () => {
       setLoadingUnassigned(true)
-      try {
-        const data = await fetchUnassignedCandidates()
-        setUnassignedCandidates(data)
-      } catch (error) {
-        console.error('Failed to load unassigned candidates:', error)
-        setUnassignedCandidates([])
-      } finally {
-        setLoadingUnassigned(false)
-      }
-    }
-
-    loadUnassignedCandidates()
-  }, [activeTab])
-
-  // Load assigned candidates when tab becomes free
-  useEffect(() => {
-    const loadAssignedCandidates = async () => {
-      if (activeTab !== "assigned") return
-      
       setLoadingAssigned(true)
+      
       try {
-        const data = await fetchAssignedCandidates()
-        setAssignedCandidates(data)
+        // Load both datasets in parallel
+        const [unassignedData, assignedData] = await Promise.all([
+          fetchUnassignedCandidates(),
+          fetchAssignedCandidates()
+        ])
+        
+        setUnassignedCandidates(unassignedData)
+        setAssignedCandidates(assignedData)
       } catch (error) {
-        console.error('Failed to load assigned candidates:', error)
+        console.error('Failed to load candidates:', error)
+        setUnassignedCandidates([])
         setAssignedCandidates([])
       } finally {
+        setLoadingUnassigned(false)
         setLoadingAssigned(false)
       }
     }
 
-    loadAssignedCandidates()
-  }, [activeTab])
+    loadAllCandidates()
+  }, [])
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -914,22 +905,8 @@ export default function CandidatesPage() {
                                 size="icon"
                                 className="cursor-pointer"
                                 onClick={() => {
-                                  // Convert to frontend format for details view
-                                  const frontendCandidate = {
-                                    id: candidate._id,
-                                    name: candidate.name,
-                                    email: candidate.email,
-                                    phone_number: candidate.phone_number,
-                                    applied_position: candidate.applied_position,
-                                    status: candidate.status,
-                                    total_experience: candidate.total_experience,
-                                    skill_set: candidate.skill_set,
-                                    source: candidate.source,
-                                    appliedDate: candidate.appliedDate,
-                                    recruiter: candidate.recruiter
-                                  }
-                                  setSelectedCandidate(frontendCandidate)
-                                  setIsDetailsOpen(true)
+                                  setSelectedUnassignedCandidate(candidate)
+                                  setIsUnassignedDetailsOpen(true)
                                 }}
                               >
                                 <Eye className="h-4 w-4" />
@@ -1757,6 +1734,24 @@ export default function CandidatesPage() {
             setSelectedAssignedCandidate(null)
           }}
         />
+        
+        {/* Unassigned Candidate Details Modal */}
+        <Dialog open={isUnassignedDetailsOpen} onOpenChange={setIsUnassignedDetailsOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Candidate Details</DialogTitle>
+            </DialogHeader>
+            {selectedUnassignedCandidate && (
+              <UnassignedCandidateDetails 
+                candidate={selectedUnassignedCandidate}
+                onClose={() => {
+                  setIsUnassignedDetailsOpen(false)
+                  setSelectedUnassignedCandidate(null)
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   )

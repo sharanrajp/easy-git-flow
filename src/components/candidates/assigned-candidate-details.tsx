@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 // Local formatDate function since it's not exported from utils
@@ -121,180 +121,206 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Candidate Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Name</label>
-                  <p className="font-medium">{candidate.name}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Email</label>
-                  <p>{candidate.email}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Phone</label>
-                  <p>{formatPhoneNumber(candidate.phone_number)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Applied Position</label>
-                  <p>{(candidate as any).applied_position || candidate.applied_position || "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Register Number</label>
-                  <p>{candidate.register_number || "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Interview Type</label>
-                  <p>{candidate.interview_type || "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Experience</label>
-                  <p>{candidate.total_experience ? `${candidate.total_experience} years` : "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Notice Period</label>
-                  <p>{candidate.notice_period || "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Current CTC</label>
-                  <p>{candidate.current_ctc ? `₹${candidate.current_ctc} LPA` : "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Expected CTC</label>
-                  <p>{candidate.expected_ctc ? `₹${candidate.expected_ctc} LPA` : "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Willing to Relocate</label>
-                  <p>{candidate.willing_to_relocate === true ? "Yes" : candidate.willing_to_relocate === false ? "No" : "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Applied Date</label>
-                  <p>{candidate.created_at ? formatDate(candidate.created_at) : "N/A"}</p>
-                </div>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-gray-500">Skills</label>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {Array.isArray(candidate.skill_set) && candidate.skill_set.length > 0 ? (
-                    candidate.skill_set.map((skill: string, index: number) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {skill.trim()}
-                      </Badge>
-                    ))
-                  ) : (
-                    <span className="text-gray-400">No skills listed</span>
+          <Tabs defaultValue="details" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details">Candidate Details</TabsTrigger>
+              <TabsTrigger value="interviews">
+                Interview & Feedback
+                {candidate.previous_rounds && candidate.previous_rounds.length > 0 && (
+                  <Badge variant="secondary" className="ml-2">
+                    {candidate.previous_rounds.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="details" className="space-y-6">
+              {/* Basic Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Candidate Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Name</label>
+                      <p className="font-medium">{candidate.name}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Email</label>
+                      <p>{candidate.email}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Phone</label>
+                      <p>{formatPhoneNumber(candidate.phone_number)}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Applied Position</label>
+                      <p>{(candidate as any).applied_position || candidate.applied_position || "N/A"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Register Number</label>
+                      <p>{candidate.register_number || "N/A"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Interview Type</label>
+                      <p>{candidate.interview_type || "N/A"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Experience</label>
+                      <p>{candidate.total_experience ? `${candidate.total_experience} years` : "N/A"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Notice Period</label>
+                      <p>{candidate.notice_period || "N/A"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Current CTC</label>
+                      <p>{candidate.current_ctc ? `₹${candidate.current_ctc} LPA` : "N/A"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Expected CTC</label>
+                      <p>{candidate.expected_ctc ? `₹${candidate.expected_ctc} LPA` : "N/A"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Willing to Relocate</label>
+                      <p>{candidate.willing_to_relocate === true ? "Yes" : candidate.willing_to_relocate === false ? "No" : "N/A"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Applied Date</label>
+                      <p>{candidate.created_at ? formatDate(candidate.created_at) : "N/A"}</p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Skills</label>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {Array.isArray(candidate.skill_set) && candidate.skill_set.length > 0 ? (
+                        candidate.skill_set.map((skill: string, index: number) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {skill.trim()}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span className="text-gray-400">No skills listed</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {candidate.resume_link && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Resume</label>
+                      <div className="mt-1">
+                        <a
+                          href={candidate.resume_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline"
+                        >
+                          Download Resume
+                        </a>
+                      </div>
+                    </div>
                   )}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-              {candidate.resume_link && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Resume</label>
-                  <div className="mt-1">
-                    <a
-                      href={candidate.resume_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 underline"
-                    >
-                      Download Resume
-                    </a>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Interview Feedback */}
-          {candidate.previous_rounds && candidate.previous_rounds.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Interview Feedback</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {candidate.previous_rounds!.map((round: any, index: number) => (
-                  <div key={index} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-lg">Round {round.round?.toUpperCase()}</h4>
-                      <Badge className={getStatusColor(round.status)}>
-                        {round.status}
-                      </Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Panelist</label>
-                        <p>{round.panel_name || "N/A"}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Feedback Submitted</label>
-                        <p>{round.feedback_submitted ? "Yes" : "No"}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Overall Rating</label>
-                        <p>{round.rating || "N/A"}</p>
-                      </div>
-                    </div>
-
-                    {round.feedback && (
-                      <div className="mb-4">
-                        <label className="text-sm font-medium text-gray-500">Feedback</label>
-                        <p className="mt-1 p-3 bg-gray-50 rounded-md">{round.feedback}</p>
-                      </div>
-                    )}
-
-                    {/* Technical Scores */}
-                    {(round.communication || round.problem_solving || round.logical_thinking || 
-                      round.code_quality || round.technical_knowledge) && (
-                      <div>
-                        <label className="text-sm font-medium text-gray-500 mb-2 block">Technical Scores</label>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          {round.communication && (
-                            <div className="flex items-center justify-between">
-                              <span>Communication:</span>
-                              <StarRating rating={round.communication} />
-                            </div>
-                          )}
-                          {round.problem_solving && (
-                            <div className="flex items-center justify-between">
-                              <span>Problem Solving:</span>
-                              <StarRating rating={round.problem_solving} />
-                            </div>
-                          )}
-                          {round.logical_thinking && (
-                            <div className="flex items-center justify-between">
-                              <span>Logical Thinking:</span>
-                              <StarRating rating={round.logical_thinking} />
-                            </div>
-                          )}
-                          {round.code_quality && (
-                            <div className="flex items-center justify-between">
-                              <span>Code Quality:</span>
-                              <StarRating rating={round.code_quality} />
-                            </div>
-                          )}
-                          {round.technical_knowledge && (
-                            <div className="flex items-center justify-between">
-                              <span>Technical Knowledge:</span>
-                              <StarRating rating={round.technical_knowledge} />
-                            </div>
-                          )}
+            <TabsContent value="interviews" className="space-y-6">
+              {/* Interview Feedback */}
+              {candidate.previous_rounds && candidate.previous_rounds.length > 0 ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Interview Feedback History</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {candidate.previous_rounds!.map((round: any, index: number) => (
+                      <div key={index} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-medium text-lg">Round {round.round?.toUpperCase()}</h4>
+                          <Badge className={getStatusColor(round.status)}>
+                            {round.status}
+                          </Badge>
                         </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <label className="text-sm font-medium text-gray-500">Panelist</label>
+                            <p>{round.panel_name || "N/A"}</p>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-500">Feedback Submitted</label>
+                            <p>{round.feedback_submitted ? "Yes" : "No"}</p>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-500">Overall Rating</label>
+                            <p>{round.rating || "N/A"}</p>
+                          </div>
+                        </div>
+
+                        {round.feedback && (
+                          <div className="mb-4">
+                            <label className="text-sm font-medium text-gray-500">Feedback</label>
+                            <p className="mt-1 p-3 bg-gray-50 rounded-md">{round.feedback}</p>
+                          </div>
+                        )}
+
+                        {/* Technical Scores */}
+                        {(round.communication || round.problem_solving || round.logical_thinking || 
+                          round.code_quality || round.technical_knowledge) && (
+                          <div>
+                            <label className="text-sm font-medium text-gray-500 mb-2 block">Technical Scores</label>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              {round.communication && (
+                                <div className="flex items-center justify-between">
+                                  <span>Communication:</span>
+                                  <StarRating rating={round.communication} />
+                                </div>
+                              )}
+                              {round.problem_solving && (
+                                <div className="flex items-center justify-between">
+                                  <span>Problem Solving:</span>
+                                  <StarRating rating={round.problem_solving} />
+                                </div>
+                              )}
+                              {round.logical_thinking && (
+                                <div className="flex items-center justify-between">
+                                  <span>Logical Thinking:</span>
+                                  <StarRating rating={round.logical_thinking} />
+                                </div>
+                              )}
+                              {round.code_quality && (
+                                <div className="flex items-center justify-between">
+                                  <span>Code Quality:</span>
+                                  <StarRating rating={round.code_quality} />
+                                </div>
+                              )}
+                              {round.technical_knowledge && (
+                                <div className="flex items-center justify-between">
+                                  <span>Technical Knowledge:</span>
+                                  <StarRating rating={round.technical_knowledge} />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    
-                    {index < candidate.previous_rounds!.length - 1 && <Separator className="mt-4" />}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
+                    ))}
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="text-center py-12">
+                    <div className="text-gray-400 mb-4">📝</div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No interview feedback available</h3>
+                    <p className="text-gray-500">
+                      Interview feedback will appear here once interviews are conducted and feedback is submitted.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </DialogContent>
     </Dialog>
