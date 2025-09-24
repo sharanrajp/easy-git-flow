@@ -35,9 +35,9 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
   // Filter based on search term
   const filteredPanelists = availablePanelists.filter(
     (user) =>
-      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.skills && user.skills.some((skill: string) => skill?.toLowerCase().includes(searchTerm.toLowerCase()))),
+      (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (user.skills && user.skills.some((skill: string) => skill && skill.toLowerCase().includes(searchTerm.toLowerCase()))),
   )
 
   // Get selected and unselected panelists
