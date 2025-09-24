@@ -38,7 +38,7 @@ export function Header({ user }: HeaderProps) {
 
   const getStatusColor = (status?: string) => {
     switch (status) {
-      case "available":
+      case "active":
         return "bg-green-100 text-green-800"
       case "in-interview":
         return "bg-orange-100 text-orange-800"
@@ -92,7 +92,7 @@ export function Header({ user }: HeaderProps) {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => handleStatusChange("available")}>
+                  <DropdownMenuItem onClick={() => handleStatusChange("active")}>
                     <div className="flex items-center">
                       <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                       Available

@@ -109,7 +109,7 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
             )}
 
             {user.status && (
-              <Badge variant={user.status === "available" ? "default" : "secondary"} className="text-xs mt-2">
+              <Badge variant={user.status === "active" ? "default" : "secondary"} className="text-xs mt-2">
                 {user.status}
               </Badge>
             )}

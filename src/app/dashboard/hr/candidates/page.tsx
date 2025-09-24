@@ -1265,7 +1265,7 @@ export default function CandidatesPage() {
                       panelist.skills?.some((skill) => skill.toLowerCase().includes(panelistSearch.toLowerCase())),
                   )
 
-                  const availablePanelists = filteredPanelists.filter((p) => p.status === "available")
+                  const availablePanelists = filteredPanelists.filter((p) => p.status === "active")
                   const interviewingPanelists = filteredPanelists.filter((p) => p.status === "in-interview")
                   const breakPanelists = filteredPanelists.filter((p) => p.status === "on-break")
                   const unavailablePanelists = filteredPanelists.filter((p) => p.status === "unavailable" || !p.status)
@@ -1490,7 +1490,7 @@ export default function CandidatesPage() {
                       panelist.skills?.some((skill) => skill.toLowerCase().includes(panelistSearch.toLowerCase())),
                   )
 
-                  const availablePanelists = filteredPanelists.filter((p) => p.status === "available")
+                  const availablePanelists = filteredPanelists.filter((p) => p.status === "active")
                   const interviewingPanelists = filteredPanelists.filter((p) => p.status === "in-interview")
                   const breakPanelists = filteredPanelists.filter((p) => p.status === "on-break")
                   const unavailablePanelists = filteredPanelists.filter((p) => p.status === "unavailable" || !p.status)

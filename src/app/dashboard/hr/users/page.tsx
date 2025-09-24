@@ -166,7 +166,7 @@ export default function UsersPage() {
 
   const getStatusColor = (status?: string) => {
     switch (status) {
-      case "available":
+      case "active":
         return "bg-green-100 text-green-800"
       case "in-interview":
         return "bg-orange-100 text-orange-800"
@@ -255,7 +255,7 @@ export default function UsersPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="available">Available</SelectItem>
+                <SelectItem value="active">Available</SelectItem>
                 <SelectItem value="in-interview">In Interview</SelectItem>
                 <SelectItem value="break">Break</SelectItem>
                 <SelectItem value="unavailable">Unavailable</SelectItem>
@@ -371,7 +371,7 @@ export default function UsersPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem
-                                  onClick={() => handleStatusChange(user._id, "available")}
+                                  onClick={() => handleStatusChange(user._id, "active")}
                                   className="cursor-pointer"
                                 >
                                   <div className="flex items-center">
@@ -379,7 +379,7 @@ export default function UsersPage() {
                                     Available
                                   </div>
                                 </DropdownMenuItem>
-                                {user.status === "available" && (
+                                {user.status === "active" && (
                                   <>
                                     <DropdownMenuItem
                                       onClick={() => handleStatusChange(user._id, "break")}
@@ -506,7 +506,7 @@ export default function UsersPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="start">
                                 <DropdownMenuItem
-                                  onClick={() => handleStatusChange(user._id, "available")}
+                                  onClick={() => handleStatusChange(user._id, "active")}
                                   className="cursor-pointer"
                                 >
                                   <div className="flex items-center">
@@ -514,7 +514,7 @@ export default function UsersPage() {
                                     Available
                                   </div>
                                 </DropdownMenuItem>
-                                {user.status === "available" && (
+                                {user.status === "active" && (
                                   <>
                                     <DropdownMenuItem
                                       onClick={() => handleStatusChange(user._id, "break")}

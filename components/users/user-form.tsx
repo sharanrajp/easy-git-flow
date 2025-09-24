@@ -36,7 +36,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     panelist_type: user?.panelist_type || ("panel_member" as const),
     skills: user?.skills || [],
     available_rounds: user?.available_rounds || [],
-    status: user?.status || ("available" as const),
+    status: user?.status || ("active" as const),
   })
 
   const [newSkill, setNewSkill] = useState("")
@@ -100,7 +100,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
       panelist_type: role === "panelist" ? "panel_member" : undefined,
       skills: role === "panelist" ? formData.skills : [],
       available_rounds: role === "panelist" ? formData.available_rounds : [],
-      status: role === "panelist" ? "available" : undefined,
+      status: role === "panelist" ? "active" : undefined,
     })
   }
 
@@ -226,14 +226,14 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select
-                value={formData.status || "available"}
+                value={formData.status === "active" ? "available" : formData.status || "available"}
                 onValueChange={(value: string) => setFormData({ ...formData, status: value as User["status"] })}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="available">Available</SelectItem>
+                  <SelectItem value="active">Available</SelectItem>
                   <SelectItem value="break">Break</SelectItem>
                   <SelectItem value="unavailable">Unavailable</SelectItem>
                 </SelectContent>
