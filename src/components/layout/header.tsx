@@ -166,7 +166,7 @@ export function Header({ user }: HeaderProps) {
                   <div className="text-xs text-muted-foreground capitalize">{user.role}</div>
                 </div>
                 {user.role === "panelist" && user.status && (
-                  <Badge className={cn("status-badge", getStatusColor(user.status))}>{user.status}</Badge>
+                  <Badge className={cn("status-badge", getStatusColor(user.status))}>{user.status === "active" ? "available" : user.status}</Badge>
                 )}
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>

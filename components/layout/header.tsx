@@ -76,7 +76,7 @@ export function Header({ user }: HeaderProps) {
                   <div className="text-xs text-gray-500 capitalize">{user.role}</div>
                 </div>
                 {user.role === "panelist" && user.status && (
-                  <Badge className={getStatusColor(user.status)}>{user.status}</Badge>
+                  <Badge className={getStatusColor(user.status)}>{user.status === "active" ? "available" : user.status}</Badge>
                 )}
               </Button>
             </DropdownMenuTrigger>

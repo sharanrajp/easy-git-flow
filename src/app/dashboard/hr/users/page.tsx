@@ -366,7 +366,7 @@ export default function UsersPage() {
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="cursor-pointer">
-                                  <Badge className={getStatusColor(user.status)}>{user.status}</Badge>
+                                  <Badge className={getStatusColor(user.status)}>{user.status === "active" ? "available" : user.status}</Badge>
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
@@ -501,7 +501,7 @@ export default function UsersPage() {
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="p-0 h-auto cursor-pointer">
-                                  <Badge className={`${getStatusColor(user.status)} text-xs`}>{user.status}</Badge>
+                                  <Badge className={`${getStatusColor(user.status)} text-xs`}>{user.status === "active" ? "available" : user.status}</Badge>
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="start">
