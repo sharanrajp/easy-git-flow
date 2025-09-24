@@ -39,7 +39,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
     skills: vacancy?.skills || [],
     jobDescription: vacancy?.jobDescription || "",
-    aboutPosition: vacancy?.aboutPosition || "",
+    about_position: vacancy?.about_position || "",
     driveDate: vacancy?.walkInDetails?.date || "",
     driveLocation: vacancy?.walkInDetails?.location || "",
     assignedPanelists: vacancy?.assignedPanelists || [],
@@ -113,7 +113,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
       skills: vacancy?.skills || [],
       jobDescription: vacancy?.jobDescription || "",
-      aboutPosition: vacancy?.aboutPosition || "",
+      about_position: vacancy?.about_position || "",
       driveDate: vacancy?.walkInDetails?.date || "",
       driveLocation: vacancy?.walkInDetails?.location || "",
       assignedPanelists: vacancy?.assignedPanelists || [],
@@ -175,7 +175,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       formData.driveDate &&
       formData.driveLocation &&
       formData.jobDescription.trim() &&
-      formData.aboutPosition.trim() // Make about position required
+      formData.about_position.trim() // Make about position required
     )
   }
 
@@ -415,12 +415,12 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="aboutPosition">About Position *</Label>
+                <Label htmlFor="about_position">About Position *</Label>
                 <Textarea
-                  id="aboutPosition"
+                  id="about_position"
                   placeholder="Describe the position, responsibilities, and requirements..."
-                  value={formData.aboutPosition}
-                  onChange={(e) => setFormData({ ...formData, aboutPosition: e.target.value })}
+                  value={formData.about_position}
+                  onChange={(e) => setFormData({ ...formData, about_position: e.target.value })}
                   rows={4}
                   required
                 />

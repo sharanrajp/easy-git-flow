@@ -137,7 +137,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
             </Card>
           )}
 
-          {vacancy.aboutPosition && (
+          {vacancy.about_position && (
             <Card>
               <CardHeader>
                 <CardTitle>About Position</CardTitle>
@@ -145,7 +145,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
               <CardContent>
                 <div className="prose max-w-none">
                   <div className="whitespace-pre-wrap text-gray-700">
-                    {vacancy.aboutPosition}
+                    {vacancy.about_position}
                   </div>
                 </div>
               </CardContent>

@@ -35,7 +35,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
     skills: vacancy?.skills || [],
     jobDescription: vacancy?.jobDescription || "",
-    aboutPosition: vacancy?.aboutPosition || "",
+    about_position: vacancy?.about_position || "",
     driveDate: vacancy?.walkInDetails?.date || "",
     driveLocation: vacancy?.walkInDetails?.location || "",
     assignedPanelists: vacancy?.assignedPanelists || [],
@@ -377,11 +377,11 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
               </div>
 
               <div>
-                <Label htmlFor="aboutPosition">About Position (Optional)</Label>
+                <Label htmlFor="about_position">About Position (Optional)</Label>
                 <Textarea
-                  id="aboutPosition"
-                  value={formData.aboutPosition}
-                  onChange={(e) => handleInputChange("aboutPosition", e.target.value)}
+                  id="about_position"
+                  value={formData.about_position}
+                  onChange={(e) => handleInputChange("about_position", e.target.value)}
                   placeholder="Additional details about the position..."
                   rows={4}
                 />

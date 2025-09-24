@@ -140,7 +140,7 @@ export interface Vacancy {
   request_type?: string
   projectClientName?: string
   city?: string
-  aboutPosition?: string
+  about_position?: string
 }
 
 export function getMockVacancies(): Vacancy[] {
