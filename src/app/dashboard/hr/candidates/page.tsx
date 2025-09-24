@@ -49,6 +49,7 @@ import { saveInterviewSession, type InterviewSession } from "@/lib/interview-dat
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { fetchUnassignedCandidates, fetchAssignedCandidates, type BackendCandidate } from "@/lib/candidates-api"
+import { formatDate } from "@/lib/utils"
 
 export default function CandidatesPage() {
   const [candidates, setCandidates] = useState<Candidate[]>(() => {
