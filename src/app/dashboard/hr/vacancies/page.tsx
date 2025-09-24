@@ -162,7 +162,7 @@ export default function VacanciesPage() {
     if (!selectedVacancy) return
 
     try {
-      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/Vacancy/${selectedVacancy._id}`, {
+      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/Vacancy/${selectedVacancy.id}`, {
         method: "PUT",
         body: JSON.stringify({...selectedVacancy, ...vacancyData})
       })
@@ -218,7 +218,7 @@ export default function VacanciesPage() {
 
     try {
       // Update vacancy in database
-      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/Vacancy/${selectedVacancy._id}`, {
+      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/Vacancy/${selectedVacancy.id}`, {
         method: "PUT",
         body: JSON.stringify({...selectedVacancy, assignedPanelists: panelistIds})
       })
@@ -238,7 +238,7 @@ export default function VacanciesPage() {
   }
 
   const handleStatusChange = async (vacancyId: string, newStatus: string) => {
-    const vacancy = vacancies.find(v => v._id === vacancyId)
+    const vacancy = vacancies.find(v => v.id === vacancyId)
     if (!vacancy) return
 
     try {
@@ -416,17 +416,17 @@ export default function VacanciesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredVacancies.map((vacancy) => {
-                      const counts = candidateCounts[vacancy.position_title] || {
-                        applications: 0,
-                        shortlisted: 0,
-                        interviewed: 0,
-                        joined: 0,
-                      }
-                      return (
-                        <TableRow
-                          key={vacancy._id}
-                        >
+                     {filteredVacancies.map((vacancy) => {
+                       const counts = candidateCounts[vacancy.position_title] || {
+                         applications: 0,
+                         shortlisted: 0,
+                         interviewed: 0,
+                         joined: 0,
+                       }
+                       return (
+                         <TableRow
+                           key={vacancy.id}
+                         >
                           <TableCell>
                             <div className="font-mono text-sm text-gray-600">#{filteredVacancies.indexOf(vacancy) + 1}</div>
                           </TableCell>
@@ -464,17 +464,17 @@ export default function VacanciesPage() {
                                   </div>
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent>
-                                <DropdownMenuItem onClick={() => handleStatusChange(vacancy._id, "active")}>
-                                  Active
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleStatusChange(vacancy._id, "paused")}>
-                                  Paused
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleStatusChange(vacancy._id, "closed")}>
-                                  Closed
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
+                               <DropdownMenuContent>
+                                 <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "active")}>
+                                   Active
+                                 </DropdownMenuItem>
+                                 <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "paused")}>
+                                   Paused
+                                 </DropdownMenuItem>
+                                 <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "closed")}>
+                                   Closed
+                                 </DropdownMenuItem>
+                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
                           <TableCell>
@@ -554,10 +554,10 @@ export default function VacanciesPage() {
                 interviewed: 0,
                 joined: 0,
               }
-              return (
-                <Card
-                  key={vacancy._id}
-                >
+               return (
+                 <Card
+                   key={vacancy.id}
+                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-3">

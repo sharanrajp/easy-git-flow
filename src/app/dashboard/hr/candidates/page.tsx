@@ -48,6 +48,7 @@ import { getAllUsers } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, type BackendCandidate } from "@/lib/candidates-api"
 
 export default function CandidatesPage() {
   const [candidates, setCandidates] = useState<Candidate[]>(() => {
@@ -83,6 +84,10 @@ export default function CandidatesPage() {
   const [panelistSearch, setPanelistSearch] = useState("")
   const [currentTime, setCurrentTime] = useState(Date.now())
   const [activeTab, setActiveTab] = useState("unassigned")
+  const [unassignedCandidates, setUnassignedCandidates] = useState<BackendCandidate[]>([])
+  const [assignedCandidates, setAssignedCandidates] = useState<BackendCandidate[]>([])
+  const [loadingUnassigned, setLoadingUnassigned] = useState(false)
+  const [loadingAssigned, setLoadingAssigned] = useState(false)
 
   // No stored user available since we removed localStorage
   const currentUser = null
@@ -102,6 +107,46 @@ export default function CandidatesPage() {
 
     return () => clearInterval(interval)
   }, [])
+
+  // Load unassigned candidates when tab becomes active
+  useEffect(() => {
+    const loadUnassignedCandidates = async () => {
+      if (activeTab !== "unassigned") return
+      
+      setLoadingUnassigned(true)
+      try {
+        const data = await fetchUnassignedCandidates()
+        setUnassignedCandidates(data)
+      } catch (error) {
+        console.error('Failed to load unassigned candidates:', error)
+        setUnassignedCandidates([])
+      } finally {
+        setLoadingUnassigned(false)
+      }
+    }
+
+    loadUnassignedCandidates()
+  }, [activeTab])
+
+  // Load assigned candidates when tab becomes active
+  useEffect(() => {
+    const loadAssignedCandidates = async () => {
+      if (activeTab !== "assigned") return
+      
+      setLoadingAssigned(true)
+      try {
+        const data = await fetchAssignedCandidates()
+        setAssignedCandidates(data)
+      } catch (error) {
+        console.error('Failed to load assigned candidates:', error)
+        setAssignedCandidates([])
+      } finally {
+        setLoadingAssigned(false)
+      }
+    }
+
+    loadAssignedCandidates()
+  }, [activeTab])
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -175,8 +220,8 @@ export default function CandidatesPage() {
   ],
 }
 
-  const unassignedCandidates = filteredCandidates.filter((c) => c.status === "unassigned")
-  const assignedCandidates = filteredCandidates.filter(
+  const localUnassignedCandidates = filteredCandidates.filter((c) => c.status === "unassigned")
+  const localAssignedCandidates = filteredCandidates.filter(
     (c) =>
       c.status === "assigned" ||
       c.status === "r1-scheduled" ||
@@ -685,164 +730,192 @@ export default function CandidatesPage() {
 
         <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="unassigned">Unassigned ({unassignedCandidates.length})</TabsTrigger>
-            <TabsTrigger value="assigned">Assigned ({assignedCandidates.length})</TabsTrigger>
+            <TabsTrigger value="unassigned">
+              Unassigned ({loadingUnassigned ? "..." : unassignedCandidates.length})
+            </TabsTrigger>
+            <TabsTrigger value="assigned">
+              Assigned ({loadingAssigned ? "..." : assignedCandidates.length})
+            </TabsTrigger>
             <TabsTrigger value="completed">Completed ({completedCandidates.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="unassigned">
-            <Card>
-              <CardHeader>
-                <CardTitle>Unassigned Candidates</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">
-                        <Checkbox
-                          checked={
-                            unassignedCandidates.length > 0 &&
-                            unassignedCandidates.every((c) => selectedCandidates.includes(c.id))
-                          }
-                          onCheckedChange={(checked) => handleSelectAll(unassignedCandidates, checked as boolean)}
-                        />
-                      </TableHead>
-                      <TableHead>Candidate</TableHead>
-                      <TableHead>Position</TableHead>
-                      <TableHead>Experience</TableHead>
-                      <TableHead>Skills</TableHead>
-                      <TableHead>Recruiter</TableHead>
-                      <TableHead>Wait Time</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {unassignedCandidates.map((candidate) => (
-                      <TableRow key={candidate.id}>
-                        <TableCell>
+            {loadingUnassigned ? (
+              <Card>
+                <CardContent className="flex items-center justify-center py-16">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-2 text-gray-600">Loading unassigned candidates...</span>
+                </CardContent>
+              </Card>
+            ) : unassignedCandidates.length > 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Unassigned Candidates</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12">
                           <Checkbox
-                            checked={selectedCandidates.includes(candidate.id)}
-                            onCheckedChange={(checked) => handleSelectCandidate(candidate.id, checked as boolean)}
+                            checked={
+                              unassignedCandidates.length > 0 &&
+                              unassignedCandidates.every((c) => selectedCandidates.includes(c._id))
+                            }
+                            onCheckedChange={(checked) => {
+                              const candidateIds = unassignedCandidates.map((c) => c._id)
+                              if (checked) {
+                                setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
+                              } else {
+                                setSelectedCandidates(selectedCandidates.filter((id) => !candidateIds.includes(id)))
+                              }
+                            }}
                           />
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{candidate.name}</div>
-                            <div className="text-sm text-gray-500">{candidate.email}</div>
-                            <div className="text-sm text-gray-500">{candidate.phone}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{candidate.appliedPosition}</TableCell>
-                        <TableCell>{candidate.experience}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {candidate.skills && candidate.skills.length > 0 ? (
-                              candidate.skills.slice(0, 2).map((skill: string, skillIndex: number) => (
-                                <Badge key={skillIndex} variant="secondary" className="text-xs">
-                                  {skill}
+                        </TableHead>
+                        <TableHead>Candidate</TableHead>
+                        <TableHead>Position</TableHead>
+                        <TableHead>Experience</TableHead>
+                        <TableHead>Skills</TableHead>
+                        <TableHead>Source</TableHead>
+                        <TableHead>Applied Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {unassignedCandidates.map((candidate) => (
+                        <TableRow key={candidate._id}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedCandidates.includes(candidate._id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedCandidates([...selectedCandidates, candidate._id])
+                                } else {
+                                  setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id))
+                                }
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{candidate.name}</div>
+                              <div className="text-sm text-gray-500">{candidate.email}</div>
+                              <div className="text-sm text-gray-500">{candidate.phone || "No phone"}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{candidate.appliedPosition}</TableCell>
+                          <TableCell>{candidate.experience || "N/A"}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {candidate.skills && candidate.skills.length > 0 ? (
+                                candidate.skills.slice(0, 2).map((skill: string, skillIndex: number) => (
+                                  <Badge key={skillIndex} variant="secondary" className="text-xs">
+                                    {skill}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <Badge variant="secondary" className="text-xs">No skills</Badge>
+                              )}
+                              {candidate.skills && candidate.skills.length > 2 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{candidate.skills.length - 2}
                                 </Badge>
-                              ))
-                            ) : (
-                              <Badge variant="secondary" className="text-xs">No skills</Badge>
-                            )}
-                            {candidate.skills && candidate.skills.length > 2 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{candidate.skills.length - 2}
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>{candidate.recruiter || "Not assigned"}</TableCell>
-                        <TableCell>
-                          {candidate.waitTimeStarted ? (
-                            <span className="text-orange-600 font-medium">{formatWaitTime(candidate)}</span>
-                          ) : (
-                            <span className="text-gray-400">Not started</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Badge className={getStatusColor(candidate.status)}>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{candidate.source || "Not specified"}</TableCell>
+                          <TableCell>{new Date(candidate.appliedDate).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            <Badge className="bg-gray-100 text-gray-800">
                               <div className="flex items-center gap-1">
-                                {getStatusIcon(candidate.status)}
-                                {formatStatus(candidate.status)}
+                                <Clock className="h-3 w-3" />
+                                {candidate.status || "Unassigned"}
                               </div>
                             </Badge>
-                            {["r1-scheduled", "r2-scheduled", "r3-scheduled"]?.includes(candidate.status) && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="cursor-pointer bg-transparent"
-                                onClick={() => handleRescheduleInterview(candidate)}
-                              >
-                                Re-Assign
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            {!candidate.isCheckedIn ? (
-                              <Button
-                                size="sm"
-                                className="bg-green-600 hover:bg-green-700 cursor-pointer"
-                                onClick={() => handleCheckIn(candidate.id)}
-                              >
-                                Check-in
-                              </Button>
-                            ) : (
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
                               <Button
                                 size="sm"
                                 className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
-                                onClick={() => handleScheduleInterview(candidate)}
+                                onClick={() => {
+                                  // Convert backend candidate to frontend format for assignment
+                                  const frontendCandidate = {
+                                    id: candidate._id,
+                                    name: candidate.name,
+                                    email: candidate.email,
+                                    phone: candidate.phone,
+                                    appliedPosition: candidate.appliedPosition,
+                                    status: candidate.status,
+                                    experience: candidate.experience,
+                                    skills: candidate.skills,
+                                    source: candidate.source,
+                                    appliedDate: candidate.appliedDate,
+                                    recruiter: candidate.recruiter
+                                  }
+                                  handleScheduleInterview(frontendCandidate)
+                                }}
                               >
                                 Assign Panel
                               </Button>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="cursor-pointer"
-                              onClick={() => {
-                                setSelectedCandidate(candidate)
-                                setIsDetailsOpen(true)
-                              }}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="cursor-pointer"
-                              onClick={() => {
-                                setSelectedCandidate(candidate)
-                                setIsEditOpen(true)
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="cursor-pointer"
-                              onClick={() => setDeleteCandidate(candidate)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="cursor-pointer"
+                                onClick={() => {
+                                  // Convert to frontend format for details view
+                                  const frontendCandidate = {
+                                    id: candidate._id,
+                                    name: candidate.name,
+                                    email: candidate.email,
+                                    phone: candidate.phone,
+                                    appliedPosition: candidate.appliedPosition,
+                                    status: candidate.status,
+                                    experience: candidate.experience,
+                                    skills: candidate.skills,
+                                    source: candidate.source,
+                                    appliedDate: candidate.appliedDate,
+                                    recruiter: candidate.recruiter
+                                  }
+                                  setSelectedCandidate(frontendCandidate)
+                                  setIsDetailsOpen(true)
+                                }}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <Clock className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No unassigned candidates</h3>
+                  <p className="text-gray-500 mb-6 max-w-md">
+                    There are currently no unassigned candidates from the backend.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="assigned">
-            {assignedCandidates.length > 0 ? (
+            {loadingAssigned ? (
+              <Card>
+                <CardContent className="flex items-center justify-center py-16">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-2 text-gray-600">Loading assigned candidates...</span>
+                </CardContent>
+              </Card>
+            ) : assignedCandidates.length > 0 ? (
               <Card>
                 <CardContent className="p-0">
                   <Table>
@@ -852,9 +925,16 @@ export default function CandidatesPage() {
                           <Checkbox
                             checked={
                               assignedCandidates.length > 0 &&
-                              assignedCandidates.every((c) => selectedCandidates.includes(c.id))
+                              assignedCandidates.every((c) => selectedCandidates.includes(c._id))
                             }
-                            onCheckedChange={(checked) => handleSelectAll(assignedCandidates, checked as boolean)}
+                            onCheckedChange={(checked) => {
+                              const candidateIds = assignedCandidates.map((c) => c._id)
+                              if (checked) {
+                                setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
+                              } else {
+                                setSelectedCandidates(selectedCandidates.filter((id) => !candidateIds.includes(id)))
+                              }
+                            }}
                           />
                         </TableHead>
                         <TableHead>Candidate</TableHead>
@@ -862,25 +942,30 @@ export default function CandidatesPage() {
                         <TableHead>Current Round</TableHead>
                         <TableHead>Panelist</TableHead>
                         <TableHead>Interview Date</TableHead>
-                        <TableHead>Wait Time</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {assignedCandidates.map((candidate) => (
-                        <TableRow key={candidate.id}>
+                        <TableRow key={candidate._id}>
                           <TableCell>
                             <Checkbox
-                              checked={selectedCandidates.includes(candidate.id)}
-                              onCheckedChange={(checked) => handleSelectCandidate(candidate.id, checked as boolean)}
+                              checked={selectedCandidates.includes(candidate._id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedCandidates([...selectedCandidates, candidate._id])
+                                } else {
+                                  setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id))
+                                }
+                              }}
                             />
                           </TableCell>
                           <TableCell>
                             <div>
                               <div className="font-medium">{candidate.name}</div>
                               <div className="text-sm text-gray-500">{candidate.email}</div>
-                              <div className="text-sm text-gray-500">{candidate.phone}</div>
+                              <div className="text-sm text-gray-500">{candidate.phone || "No phone"}</div>
                             </div>
                           </TableCell>
                           <TableCell>{candidate.appliedPosition}</TableCell>
@@ -890,26 +975,14 @@ export default function CandidatesPage() {
                           <TableCell>{candidate.assignedPanelist || "Not assigned"}</TableCell>
                           <TableCell>
                             {candidate.interviewDateTime
-                              ? formatDate(candidate.interviewDateTime)
+                              ? new Date(candidate.interviewDateTime).toLocaleDateString()
                               : "Not scheduled"}
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-2">
-                              {candidate.waitTimeStarted ? (
-                                <div className="flex items-center gap-1 text-sm">
-                                  <Timer className="h-3 w-3 text-orange-500" />
-                                  <span className="text-orange-600 font-medium">{formatWaitTime(candidate)}</span>
-                                </div>
-                              ) : (
-                                <span className="text-gray-400 text-sm">Not started</span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getStatusColor(candidate.status)}>
+                            <Badge className="bg-blue-100 text-blue-800">
                               <div className="flex items-center gap-1">
-                                {getStatusIcon(candidate.status)}
-                                {formatStatus(candidate.status)}
+                                <Calendar className="h-3 w-3" />
+                                {candidate.status || "Assigned"}
                               </div>
                             </Badge>
                           </TableCell>
@@ -920,43 +993,29 @@ export default function CandidatesPage() {
                                 size="sm"
                                 className="cursor-pointer"
                                 onClick={() => {
-                                  setSelectedCandidate(candidate)
+                                  // Convert to frontend format for details view
+                                  const frontendCandidate = {
+                                    id: candidate._id,
+                                    name: candidate.name,
+                                    email: candidate.email,
+                                    phone: candidate.phone,
+                                    appliedPosition: candidate.appliedPosition,
+                                    status: candidate.status,
+                                    experience: candidate.experience,
+                                    skills: candidate.skills,
+                                    source: candidate.source,
+                                    appliedDate: candidate.appliedDate,
+                                    recruiter: candidate.recruiter,
+                                    currentRound: candidate.currentRound,
+                                    assignedPanelist: candidate.assignedPanelist,
+                                    interviewDateTime: candidate.interviewDateTime
+                                  }
+                                  setSelectedCandidate(frontendCandidate)
                                   setIsDetailsOpen(true)
                                 }}
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="cursor-pointer"
-                                onClick={() => {
-                                  setSelectedCandidate(candidate)
-                                  setIsEditOpen(true)
-                                }}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="cursor-pointer"
-                                onClick={() => setDeleteCandidate(candidate)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                              {["r1-scheduled", "r2-scheduled", "r3-scheduled"]?.includes(candidate.status) && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    setCandidateToReschedule(candidate)
-                                    setShowRescheduleDialog(true)
-                                  }}
-                                >
-                                  Re-Assign
-                                </Button>
-                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -973,15 +1032,7 @@ export default function CandidatesPage() {
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">No assigned candidates</h3>
                   <p className="text-gray-500 mb-6 max-w-md">
-                    {searchTerm ||
-                    jobFilter !== "all" ||
-                    statusFilter !== "all" ||
-                    experienceFilter !== "all" ||
-                    recruiterFilter !== "all" ||
-                    interviewTypeFilter !== "all" ||
-                    dateFilter !== "all"
-                      ? "No assigned candidates match your current filters. Try adjusting your search criteria."
-                      : "No candidates are currently assigned to panelists. Assign candidates from the Unassigned tab to get started."}
+                    No candidates are currently assigned from the backend.
                   </p>
                 </CardContent>
               </Card>

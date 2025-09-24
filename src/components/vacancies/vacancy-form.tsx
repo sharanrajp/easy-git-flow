@@ -454,7 +454,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
           </Card>
         )}
 
-        {(currentStep === 2 || vacancy) && !vacancy && (
+        {(currentStep === 2 || vacancy) && (
           <Card>
             <CardHeader>
               <CardTitle>Select Panelists</CardTitle>
