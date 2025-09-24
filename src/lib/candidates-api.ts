@@ -140,11 +140,16 @@ export async function fetchAssignedCandidates(): Promise<BackendCandidate[]> {
 export async function fetchPanelistAssignedCandidates(): Promise<PanelistCandidate[]> {
   const token = getToken();
   
+  console.log('fetchPanelistAssignedCandidates - Token:', token ? 'Present' : 'Missing');
+  
   if (!token) {
+    console.error('fetchPanelistAssignedCandidates - No authentication token found');
     throw new Error('No authentication token found');
   }
 
   try {
+    console.log('fetchPanelistAssignedCandidates - Making request to:', `${API_BASE_URL}/interviews/my-assigned-candidates`);
+    
     const response = await fetch(`${API_BASE_URL}/interviews/my-assigned-candidates`, {
       method: 'GET',
       headers: {
@@ -153,11 +158,15 @@ export async function fetchPanelistAssignedCandidates(): Promise<PanelistCandida
       },
     });
 
+    console.log('fetchPanelistAssignedCandidates - Response status:', response.status);
+    
     if (!response.ok) {
+      console.error('fetchPanelistAssignedCandidates - Response not ok:', response.status, response.statusText);
       throw new Error(`Failed to fetch panelist assigned candidates: ${response.status} ${response.statusText}`);
     }
 
     const candidates: PanelistCandidate[] = await response.json();
+    console.log('fetchPanelistAssignedCandidates - Success:', candidates.length, 'candidates found');
     return candidates;
   } catch (error) {
     console.error('Error fetching panelist assigned candidates:', error);

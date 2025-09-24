@@ -12,7 +12,9 @@ export interface User {
 // Token management functions
 export function getToken(): string | null {
   if (typeof window === "undefined") return null
-  return localStorage.getItem("ats_token")
+  const token = localStorage.getItem("ats_token")
+  console.log('getToken - Token retrieved:', token ? 'Present' : 'Missing')
+  return token
 }
 
 export function setToken(token: string): void {
