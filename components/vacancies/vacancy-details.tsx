@@ -159,7 +159,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {vacancy.skills.map((skill: string) => (
+                {vacancy.skill_set.map((skill: string) => (
                   <Badge key={skill} variant="secondary" className="bg-blue-50 text-blue-700">
                     {skill}
                   </Badge>
@@ -310,16 +310,16 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900">{panelist.name}</h4>
                         <p className="text-sm text-gray-600">{panelist.email}</p>
-                        {panelist.skills && (
+                        {panelist.skill_set && (
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {panelist.skills.slice(0, 2).map((skill: string) => (
+                            {panelist.skill_set.slice(0, 2).map((skill: string) => (
                               <Badge key={skill} variant="outline" className="text-xs">
                                 {skill}
                               </Badge>
                             ))}
-                            {panelist.skills.length > 2 && (
+                            {panelist.skill_set.length > 2 && (
                               <Badge variant="outline" className="text-xs">
-                                +{panelist.skills.length - 2}
+                                +{panelist.skill_set.length - 2}
                               </Badge>
                             )}
                           </div>

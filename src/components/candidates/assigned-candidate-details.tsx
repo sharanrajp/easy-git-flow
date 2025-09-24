@@ -27,10 +27,8 @@ export interface BackendCandidate {
   applied_position?: string
   status?: string
   final_status?: string
-  experience?: string
   total_experience?: number
-  skills?: string[]
-  skill_set?: string
+  skill_set?: string[]
   source?: string
   appliedDate?: string
   created_at?: string
@@ -186,7 +184,7 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                 <label className="text-sm font-medium text-gray-500">Skills</label>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {candidate.skill_set ? (
-                    candidate.skill_set.split(',').map((skill: string, index: number) => (
+                    candidate.skill_set.map((skill: string, index: number) => (
                       <Badge key={index} variant="outline" className="text-xs">
                         {skill.trim()}
                       </Badge>

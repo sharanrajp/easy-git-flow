@@ -33,7 +33,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
     number_of_vacancies: vacancy?.number_of_vacancies || 1,
     experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
-    skills: vacancy?.skills || [],
+    skill_set: vacancy?.skill_set || [],
     jobDescription: vacancy?.jobDescription || "",
     about_position: vacancy?.about_position || "",
     driveDate: vacancy?.walkInDetails?.date || "",
@@ -71,7 +71,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
   const filteredUsers = allUsers.filter(
     (user) =>
       user.name.toLowerCase().includes(panelistSearch.toLowerCase()) ||
-      (user.skills && user.skills.some((skill: string) => skill.toLowerCase().includes(panelistSearch.toLowerCase()))),
+      (user.skill_set && user.skill_set.some((skill: string) => skill.toLowerCase().includes(panelistSearch.toLowerCase()))),
   )
 
   const selectedUsers = filteredUsers.filter((u) => formData.assignedPanelists.includes(u._id))
@@ -83,14 +83,14 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
   }
 
   const addSkill = () => {
-    if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
-      handleInputChange("skills", [...formData.skills, newSkill.trim()])
+    if (newSkill.trim() && !formData.skill_set.includes(newSkill.trim())) {
+      handleInputChange("skill_set", [...formData.skill_set, newSkill.trim()])
       setNewSkill("")
     }
   }
 
   const removeSkill = (skillToRemove: string) => {
-    handleInputChange("skills", formData.skills.filter((skill: string) => skill !== skillToRemove))
+    handleInputChange("skill_set", formData.skill_set.filter((skill: string) => skill !== skillToRemove))
   }
 
 
@@ -329,7 +329,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
               </div>
 
               <div>
-                <Label htmlFor="skills">Required Skills *</Label>
+                <Label htmlFor="skill_set">Required Skills *</Label>
                 <div className="flex space-x-2 mb-2">
                   <Input
                     value={newSkill}
@@ -342,7 +342,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
                   </Button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {formData.skills.map((skill: string) => (
+                  {formData.skill_set.map((skill: string) => (
                     <Badge key={skill} variant="secondary" className="flex items-center space-x-1">
                       <span>{skill}</span>
                       <button type="button" onClick={() => removeSkill(skill)}>

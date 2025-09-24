@@ -132,7 +132,7 @@ export default function ManagerCandidatesPage() {
                       </div>
                     </TableCell>
                     <TableCell>{candidate.appliedPosition}</TableCell>
-                    <TableCell>{candidate.expectedCTC}</TableCell>
+                    <TableCell>{candidate.expected_ctc}</TableCell>
                     <TableCell>
                       {candidate.r3InterviewDate
                         ? formatDate(candidate.r3InterviewDate)

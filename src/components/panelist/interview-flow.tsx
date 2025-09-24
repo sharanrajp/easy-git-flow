@@ -115,7 +115,7 @@ export function InterviewFlow({ candidate, onComplete }: InterviewFlowProps) {
             </div>
             <div>
               <span className="text-sm text-gray-500">Experience:</span>
-              <p className="font-medium">{candidate.experience}</p>
+              <p className="font-medium">{candidate.total_experience}</p>
             </div>
           </div>
         </CardContent>
@@ -167,7 +167,7 @@ export function InterviewFlow({ candidate, onComplete }: InterviewFlowProps) {
             <div>
               <span className="text-sm text-gray-500">Required Skills:</span>
               <div className="flex flex-wrap gap-2 mt-1">
-                {candidate.skills?.map((skill: string) => (
+                {candidate.skill_set?.map((skill: string) => (
                   <Badge key={skill} variant="secondary">
                     {skill}
                   </Badge>

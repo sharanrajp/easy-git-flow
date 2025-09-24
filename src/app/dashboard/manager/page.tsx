@@ -177,7 +177,7 @@ export default function ManagerDashboard() {
                     </div>
                     <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
                       <div>Interview Date: {candidate.interviewDate}</div>
-                      <div>Expected CTC: {candidate.expectedCTC}</div>
+                      <div>Expected CTC: {candidate.expected_ctc}</div>
                       <div>Days Pending: {candidate.daysPending}</div>
                     </div>
                   </div>

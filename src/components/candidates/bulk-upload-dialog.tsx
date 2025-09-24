@@ -116,11 +116,11 @@ Jane Smith,jane.smith@email.com,+1234567891,Backend Developer,2-4 years,"Node.js
             case "position":
               candidate.appliedPosition = value
               break
-            case "experience":
-              candidate.experience = value
+            case "total_experience":
+              candidate.total_experience = value
               break
             case "skills":
-              candidate.skills = value
+              candidate.skill_set = value
                 .split(",")
                 .map((s: string) => s.trim())
                 .filter((s: string) => s)
@@ -136,19 +136,19 @@ Jane Smith,jane.smith@email.com,+1234567891,Backend Developer,2-4 years,"Node.js
               candidate.location = value
               break
             case "notice period":
-              candidate.noticePeriod = value
+              candidate.notice_period = value
               break
             case "current ctc":
-              candidate.currentCTC = value
+              candidate.current_ctc = value
               break
             case "expected ctc":
-              candidate.expectedCTC = value
+              candidate.expected_ctc = value
               break
             case "negotiable":
               candidate.negotiable = value.toLowerCase() === "yes" || value.toLowerCase() === "true"
               break
             case "relocation":
-              candidate.relocation = value.toLowerCase() === "yes" || value.toLowerCase() === "true"
+              candidate.willing_to_relocate = value.toLowerCase() === "yes" || value.toLowerCase() === "true"
               break
           }
         })
@@ -162,15 +162,15 @@ Jane Smith,jane.smith@email.com,+1234567891,Backend Developer,2-4 years,"Node.js
         // Set defaults
         candidate.id = `bulk_${Date.now()}_${i}`
         candidate.interviewType = "Walk-In"
-        candidate.skills = candidate.skills || []
+        candidate.skill_set = candidate.skill_set || []
         candidate.source = candidate.source || "Bulk Upload"
         candidate.job_type = candidate.job_type || "full_time"
         candidate.location = candidate.location || "Not specified"
-        candidate.noticePeriod = candidate.noticePeriod || "Not specified"
-        candidate.currentCTC = candidate.currentCTC || "Not specified"
-        candidate.expectedCTC = candidate.expectedCTC || "Not specified"
+        candidate.notice_period = candidate.notice_period || "Not specified"
+        candidate.current_ctc = candidate.current_ctc || "Not specified"
+        candidate.expected_ctc = candidate.expected_ctc || "Not specified"
         candidate.negotiable = candidate.negotiable || false
-        candidate.relocation = candidate.relocation || false
+        candidate.willing_to_relocate = candidate.willing_to_relocate || false
         candidate.appliedDate = new Date().toISOString().split("T")[0]
         candidate.status = "unassigned"
 

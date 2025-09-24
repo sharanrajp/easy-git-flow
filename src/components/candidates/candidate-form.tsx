@@ -28,17 +28,17 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     email: candidate?.email || "",
     phone: candidate?.phone || "",
     location: candidate?.location || "",
-    experience: candidate?.experience || "",
-    noticePeriod: candidate?.noticePeriod || "",
+    total_experience: candidate?.total_experience || "",
+    notice_period: candidate?.notice_period || "",
     appliedPosition: candidate?.appliedPosition || "",
     interviewType: candidate?.interviewType || "Walk-In",
     job_type: candidate?.job_type || "full_time",
     source: candidate?.source || "",
-    currentCTC: candidate?.currentCTC || "",
-    expectedCTC: candidate?.expectedCTC || "",
+    current_ctc: candidate?.current_ctc || "",
+    expected_ctc: candidate?.expected_ctc || "",
     negotiable: candidate?.negotiable || false,
-    relocation: candidate?.relocation || false,
-    skills: candidate?.skills || [],
+    willing_to_relocate: candidate?.willing_to_relocate || false,
+    skill_set: candidate?.skill_set || [],
     resume: null as File | null,
     recruiter: candidate?.recruiter || "",
   })
@@ -76,10 +76,10 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
   }
 
   const addSkill = () => {
-    if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
+    if (newSkill.trim() && !formData.skill_set.includes(newSkill.trim())) {
       setFormData({
         ...formData,
-        skills: [...formData.skills, newSkill.trim()],
+        skill_set: [...formData.skill_set, newSkill.trim()],
       })
       setNewSkill("")
     }
@@ -88,7 +88,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
   const removeSkill = (skill: string) => {
     setFormData({
       ...formData,
-      skills: formData.skills.filter((s) => s !== skill),
+      skill_set: formData.skill_set.filter((s) => s !== skill),
     })
   }
 
@@ -159,23 +159,23 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
 
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="experience">Experience *</Label>
+          <Label htmlFor="total_experience">Experience *</Label>
           <Input
-            id="experience"
+            id="total_experience"
             placeholder="e.g., 3 years"
-            value={formData.experience}
-            onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+            value={formData.total_experience}
+            onChange={(e) => setFormData({ ...formData, total_experience: e.target.value })}
             required
             className="w-full"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="noticePeriod">Notice Period *</Label>
+          <Label htmlFor="notice_period">Notice Period *</Label>
           <Input
-            id="noticePeriod"
+            id="notice_period"
             placeholder="e.g., 2 weeks"
-            value={formData.noticePeriod}
-            onChange={(e) => setFormData({ ...formData, noticePeriod: e.target.value })}
+            value={formData.notice_period}
+            onChange={(e) => setFormData({ ...formData, notice_period: e.target.value })}
             required
             className="w-full"
           />
@@ -285,22 +285,22 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
 
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="currentCTC">Current CTC</Label>
+          <Label htmlFor="current_ctc">Current CTC</Label>
           <Input
-            id="currentCTC"
+            id="current_ctc"
             placeholder="e.g., $80,000"
-            value={formData.currentCTC}
-            onChange={(e) => setFormData({ ...formData, currentCTC: e.target.value })}
+            value={formData.current_ctc}
+            onChange={(e) => setFormData({ ...formData, current_ctc: e.target.value })}
             className="w-full"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="expectedCTC">Expected CTC</Label>
+          <Label htmlFor="expected_ctc">Expected CTC</Label>
           <Input
-            id="expectedCTC"
+            id="expected_ctc"
             placeholder="e.g., $95,000"
-            value={formData.expectedCTC}
-            onChange={(e) => setFormData({ ...formData, expectedCTC: e.target.value })}
+            value={formData.expected_ctc}
+            onChange={(e) => setFormData({ ...formData, expected_ctc: e.target.value })}
             className="w-full"
           />
         </div>
@@ -317,11 +317,11 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
         </div>
         <div className="flex items-center space-x-2">
           <Checkbox
-            id="relocation"
-            checked={formData.relocation}
-            onCheckedChange={(checked) => setFormData({ ...formData, relocation: checked as boolean })}
+            id="willing_to_relocate"
+            checked={formData.willing_to_relocate}
+            onCheckedChange={(checked) => setFormData({ ...formData, willing_to_relocate: checked as boolean })}
           />
-          <Label htmlFor="relocation">Open to Relocation</Label>
+          <Label htmlFor="willing_to_relocate">Open to Relocation</Label>
         </div>
       </div>
 
@@ -340,7 +340,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           </Button>
         </div>
         <div className="flex flex-wrap gap-2 mt-2">
-          {formData.skills.map((skill) => (
+          {formData.skill_set.map((skill) => (
             <Badge key={skill} variant="secondary" className="flex items-center gap-1">
               {skill}
               <X className="h-3 w-3 cursor-pointer" onClick={() => removeSkill(skill)} />

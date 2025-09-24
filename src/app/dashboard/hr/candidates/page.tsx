@@ -170,7 +170,7 @@ export default function CandidatesPage() {
 
     const matchesJob = jobFilter === "all" || candidate.appliedPosition.toLowerCase().includes(jobFilter.toLowerCase())
     const matchesStatus = statusFilter === "all" || candidate.status === statusFilter
-    const matchesExperience = experienceFilter === "all" || candidate.experience.includes(experienceFilter)
+    const matchesExperience = experienceFilter === "all" || candidate.total_experience.includes(experienceFilter)
     const matchesRecruiter =
       recruiterFilter === "all" || candidate.source.toLowerCase().includes(recruiterFilter.toLowerCase())
     const matchesInterviewType = interviewTypeFilter === "all" || candidate.interviewType === interviewTypeFilter
@@ -249,8 +249,8 @@ export default function CandidatesPage() {
         email: candidateData.email,
         phone: candidateData.phone,
         appliedPosition: candidateData.appliedPosition,
-        experience: candidateData.experience,
-        skills: candidateData.skills,
+        total_experience: candidateData.total_experience,
+        skill_set: candidateData.skill_set,
         source: candidateData.source,
         appliedDate: new Date().toISOString().split("T")[0],
         status: "unassigned",
@@ -268,8 +268,8 @@ export default function CandidatesPage() {
         phone: newBackendCandidate.phone || "",
         appliedPosition: newBackendCandidate.appliedPosition,
         status: newBackendCandidate.status as any,
-        experience: newBackendCandidate.experience || "",
-        skills: newBackendCandidate.skills || [],
+        total_experience: newBackendCandidate.total_experience || "",
+        skill_set: newBackendCandidate.skill_set || [],
         source: newBackendCandidate.source || "",
         appliedDate: newBackendCandidate.appliedDate,
         recruiter: newBackendCandidate.recruiter || "",
@@ -855,21 +855,21 @@ export default function CandidatesPage() {
                             </div>
                           </TableCell>
                           <TableCell>{candidate.appliedPosition}</TableCell>
-                          <TableCell>{candidate.experience || "N/A"}</TableCell>
+                          <TableCell>{candidate.total_experience || "N/A"}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
-                              {candidate.skills && candidate.skills.length > 0 ? (
-                                candidate.skills.slice(0, 2).map((skill: string, skillIndex: number) => (
+                              {candidate.skill_set && candidate.skill_set.length > 0 ? (
+                                candidate.skill_set.slice(0, 2).map((skill: string, skillIndex: number) => (
                                   <Badge key={skillIndex} variant="secondary" className="text-xs">
                                     {skill}
                                   </Badge>
                                 ))
                               ) : (
-                                <Badge variant="secondary" className="text-xs">No skills</Badge>
+                                <Badge variant="secondary" className="text-xs">No skill</Badge>
                               )}
-                              {candidate.skills && candidate.skills.length > 2 && (
+                              {candidate.skill_set && candidate.skill_set.length > 2 && (
                                 <Badge variant="outline" className="text-xs">
-                                  +{candidate.skills.length - 2}
+                                  +{candidate.skill_set.length - 2}
                                 </Badge>
                               )}
                             </div>
@@ -898,8 +898,8 @@ export default function CandidatesPage() {
                                     phone: candidate.phone,
                                     appliedPosition: candidate.appliedPosition,
                                     status: candidate.status,
-                                    experience: candidate.experience,
-                                    skills: candidate.skills,
+                                    total_experience: candidate.total_experience,
+                                    skill_set: candidate.skill_set,
                                     source: candidate.source,
                                     appliedDate: candidate.appliedDate,
                                     recruiter: candidate.recruiter
@@ -922,8 +922,8 @@ export default function CandidatesPage() {
                                     phone: candidate.phone,
                                     appliedPosition: candidate.appliedPosition,
                                     status: candidate.status,
-                                    experience: candidate.experience,
-                                    skills: candidate.skills,
+                                    total_experience: candidate.total_experience,
+                                    skill_set: candidate.skill_set,
                                     source: candidate.source,
                                     appliedDate: candidate.appliedDate,
                                     recruiter: candidate.recruiter
@@ -1259,7 +1259,7 @@ export default function CandidatesPage() {
                   const filteredPanelists = jobPanelists.filter(
                     (panelist) =>
                       panelist.name.toLowerCase().includes(panelistSearch.toLowerCase()) ||
-                      panelist.skills?.some((skill) => skill.toLowerCase().includes(panelistSearch.toLowerCase())),
+                      panelist.skill_set?.some((skill) => skill.toLowerCase().includes(panelistSearch.toLowerCase())),
                   )
 
                   const availablePanelists = filteredPanelists.filter((p) => p.current_status === "free")
@@ -1294,7 +1294,7 @@ export default function CandidatesPage() {
                                 <div>
                                   <p className="font-medium">{panelist.name}</p>
                                   <p className="text-sm text-gray-600">
-                                    Skills: {panelist.skills?.join(", ") || "Not specified"}
+                                    Skills: {panelist.skill_set?.join(", ") || "Not specified"}
                                   </p>
                                   <p className="text-xs text-green-600 font-medium">Ready to interview</p>
                                 </div>
@@ -1327,7 +1327,7 @@ export default function CandidatesPage() {
                                 <div>
                                   <p className="font-medium">{panelist.name}</p>
                                   <p className="text-sm text-gray-600">
-                                    Skills: {panelist.skills?.join(", ") || "Not specified"}
+                                    Skills: {panelist.skill_set?.join(", ") || "Not specified"}
                                   </p>
                                   <p className="text-xs text-orange-600 font-medium">Currently interviewing</p>
                                 </div>
@@ -1361,7 +1361,7 @@ export default function CandidatesPage() {
                                 <div>
                                   <p className="font-medium">{panelist.name}</p>
                                   <p className="text-sm text-gray-600">
-                                    Skills: {panelist.skills?.join(", ") || "Not specified"}
+                                    Skills: {panelist.skill_set?.join(", ") || "Not specified"}
                                   </p>
                                   <p className="text-xs text-blue-600 font-medium">On break</p>
                                 </div>
@@ -1395,7 +1395,7 @@ export default function CandidatesPage() {
                                 <div>
                                   <p className="font-medium text-gray-700">{panelist.name}</p>
                                   <p className="text-sm text-gray-500">
-                                    Skills: {panelist.skills?.join(", ") || "Not specified"}
+                                    Skills: {panelist.skill_set?.join(", ") || "Not specified"}
                                   </p>
                                   <p className="text-xs text-gray-500 font-medium">Not available</p>
                                 </div>
@@ -1484,7 +1484,7 @@ export default function CandidatesPage() {
                   const filteredPanelists = availablePanelistsExcludingCurrent.filter(
                     (panelist) =>
                       panelist.name.toLowerCase().includes(panelistSearch.toLowerCase()) ||
-                      panelist.skills?.some((skill) => skill.toLowerCase().includes(panelistSearch.toLowerCase())),
+                      panelist.skill_set?.some((skill) => skill.toLowerCase().includes(panelistSearch.toLowerCase())),
                   )
 
                   const availablePanelists = filteredPanelists.filter((p) => p.current_status === "free")
@@ -1519,7 +1519,7 @@ export default function CandidatesPage() {
                                 <div>
                                   <p className="font-medium">{panelist.name}</p>
                                   <p className="text-sm text-gray-600">
-                                    Skills: {panelist.skills?.join(", ") || "Not specified"}
+                                    Skills: {panelist.skill_set?.join(", ") || "Not specified"}
                                   </p>
                                   <p className="text-xs text-green-600 font-medium">Ready to interview</p>
                                 </div>
@@ -1552,7 +1552,7 @@ export default function CandidatesPage() {
                                 <div>
                                   <p className="font-medium">{panelist.name}</p>
                                   <p className="text-sm text-gray-600">
-                                    Skills: {panelist.skills?.join(", ") || "Not specified"}
+                                    Skills: {panelist.skill_set?.join(", ") || "Not specified"}
                                   </p>
                                   <p className="text-xs text-orange-600 font-medium">Currently interviewing</p>
                                 </div>
@@ -1586,7 +1586,7 @@ export default function CandidatesPage() {
                                 <div>
                                   <p className="font-medium">{panelist.name}</p>
                                   <p className="text-sm text-gray-600">
-                                    Skills: {panelist.skills?.join(", ") || "Not specified"}
+                                    Skills: {panelist.skill_set?.join(", ") || "Not specified"}
                                   </p>
                                   <p className="text-xs text-blue-600 font-medium">On break</p>
                                 </div>
@@ -1620,7 +1620,7 @@ export default function CandidatesPage() {
                                 <div>
                                   <p className="font-medium text-gray-700">{panelist.name}</p>
                                   <p className="text-sm text-gray-500">
-                                    Skills: {panelist.skills?.join(", ") || "Not specified"}
+                                    Skills: {panelist.skill_set?.join(", ") || "Not specified"}
                                   </p>
                                   <p className="text-xs text-gray-500 font-medium">Not available</p>
                                 </div>

@@ -98,7 +98,7 @@ export interface Vacancy {
   panelists?: string[]
   number_of_vacancies: number
   experienceRange: string
-  skills: string[]
+  skill_set: string[]
   jobDescription?: string
   interview_type: "Walk-In"
   walkInDetails?: {
@@ -132,7 +132,7 @@ export function getMockVacancies(): Vacancy[] {
       recruiter_name: "Sarah Johnson",
       number_of_vacancies: 2,
       experienceRange: "3-5 years",
-      skills: ["React", "TypeScript", "Next.js", "Tailwind CSS"],
+      skill_set: ["React", "TypeScript", "Next.js", "Tailwind CSS"],
       interview_type: "Walk-In",
       walkInDetails: {
         date: "2024-01-15",
@@ -158,7 +158,7 @@ export function getMockVacancies(): Vacancy[] {
       recruiter_name: "Sarah Johnson",
       number_of_vacancies: 1,
       experienceRange: "2-4 years",
-      skills: ["Node.js", "Python", "PostgreSQL", "AWS"],
+      skill_set: ["Node.js", "Python", "PostgreSQL", "AWS"],
       interview_type: "Walk-In",
       deadline: "2024-02-15",
       postedOn: "2024-01-05",
@@ -180,7 +180,7 @@ export function getMockVacancies(): Vacancy[] {
       recruiter_name: "Sarah Johnson",
       number_of_vacancies: 1,
       experienceRange: "5-7 years",
-      skills: ["Product Strategy", "Analytics", "User Research", "Agile"],
+      skill_set: ["Product Strategy", "Analytics", "User Research", "Agile"],
       interview_type: "Walk-In",
       deadline: "2024-01-20",
       postedOn: "2023-12-20",
@@ -202,7 +202,7 @@ export function getMockVacancies(): Vacancy[] {
       recruiter_name: "Sarah Johnson",
       number_of_vacancies: 1,
       experienceRange: "2-4 years",
-      skills: ["Figma", "User Research", "Prototyping", "Design Systems"],
+      skill_set: ["Figma", "User Research", "Prototyping", "Design Systems"],
       interview_type: "Walk-In",
       deadline: "2024-02-28",
       postedOn: "2024-01-10",
@@ -224,7 +224,7 @@ export function getMockVacancies(): Vacancy[] {
       recruiter_name: "Sarah Johnson",
       number_of_vacancies: 1,
       experienceRange: "4-6 years",
-      skills: ["Docker", "Kubernetes", "AWS", "CI/CD", "Terraform"],
+      skill_set: ["Docker", "Kubernetes", "AWS", "CI/CD", "Terraform"],
       interview_type: "Walk-In",
       walkInDetails: {
         date: "2024-01-25",
@@ -247,17 +247,17 @@ export interface Candidate {
   email: string
   phone: string
   location: string
-  experience: string
-  noticePeriod: string
+  total_experience: string
+  notice_period: string
   appliedPosition: string
   interviewType: "Walk-In"
   job_type: "full_time" | "part-time" | "contract"
   source: string
-  currentCTC?: string
-  expectedCTC?: string
+  current_ctc?: string
+  expected_ctc?: string
   negotiable?: boolean
-  relocation?: boolean
-  skills?: string[]
+  willing_to_relocate?: boolean
+  skill_set?: string[]
   resumeUrl?: string
   appliedDate: string
   recruiter?: string
@@ -306,17 +306,17 @@ export function getMockCandidates(): Candidate[] {
       email: "john.smith@email.com",
       phone: "+1-555-0101",
       location: "San Francisco, CA",
-      experience: "4 years",
-      noticePeriod: "2 weeks",
+      total_experience: "4 years",
+      notice_period: "2 weeks",
       appliedPosition: "Senior Frontend Developer",
       interviewType: "Walk-In",
       job_type: "full_time",
       source: "LinkedIn",
-      currentCTC: "$95,000",
-      expectedCTC: "$110,000",
+      current_ctc: "$95,000",
+      expected_ctc: "$110,000",
       negotiable: true,
-      relocation: false,
-      skills: ["React", "TypeScript", "Next.js", "Node.js"],
+      willing_to_relocate: false,
+      skill_set: ["React", "TypeScript", "Next.js", "Node.js"],
       appliedDate: "2024-01-10",
       status: "unassigned",
       recruiter: "Sarah Johnson",
@@ -329,17 +329,17 @@ export function getMockCandidates(): Candidate[] {
       email: "sarah.wilson@email.com",
       phone: "+1-555-0102",
       location: "New York, NY",
-      experience: "3 years",
-      noticePeriod: "1 month",
+      total_experience: "3 years",
+      notice_period: "1 month",
       appliedPosition: "Backend Developer",
       interviewType: "Walk-In",
       job_type: "full_time",
       source: "Company Website",
-      currentCTC: "$85,000",
-      expectedCTC: "$100,000",
+      current_ctc: "$85,000",
+      expected_ctc: "$100,000",
       negotiable: false,
-      relocation: true,
-      skills: ["Python", "Django", "PostgreSQL", "AWS"],
+      willing_to_relocate: true,
+      skill_set: ["Python", "Django", "PostgreSQL", "AWS"],
       appliedDate: "2024-01-08",
       status: "r1-scheduled",
       currentRound: "R1",
@@ -353,17 +353,17 @@ export function getMockCandidates(): Candidate[] {
       email: "emily.davis@email.com",
       phone: "+1-555-0104",
       location: "Seattle, WA",
-      experience: "2 years",
-      noticePeriod: "2 weeks",
+      total_experience: "2 years",
+      notice_period: "2 weeks",
       appliedPosition: "UX Designer",
       interviewType: "Walk-In",
       job_type: "contract",
       source: "Job Board",
-      currentCTC: "$70,000",
-      expectedCTC: "$85,000",
+      current_ctc: "$70,000",
+      expected_ctc: "$85,000",
       negotiable: true,
-      relocation: false,
-      skills: ["Figma", "User Research", "Prototyping", "Design Systems"],
+      willing_to_relocate: false,
+      skill_set: ["Figma", "User Research", "Prototyping", "Design Systems"],
       appliedDate: "2024-01-12",
       status: "r2-completed",
       currentRound: "R2",
@@ -377,17 +377,17 @@ export function getMockCandidates(): Candidate[] {
       email: "jessica.martinez@email.com",
       phone: "+1-555-0106",
       location: "Chicago, IL",
-      experience: "3 years",
-      noticePeriod: "2 weeks",
+      total_experience: "3 years",
+      notice_period: "2 weeks",
       appliedPosition: "Frontend Developer",
       interviewType: "Walk-In",
       job_type: "full_time",
       source: "LinkedIn",
-      currentCTC: "$75,000",
-      expectedCTC: "$90,000",
+      current_ctc: "$75,000",
+      expected_ctc: "$90,000",
       negotiable: true,
-      relocation: false,
-      skills: ["React", "JavaScript", "CSS", "HTML", "Git"],
+      willing_to_relocate: false,
+      skill_set: ["React", "JavaScript", "CSS", "HTML", "Git"],
       appliedDate: "2024-01-07",
       status: "rejected",
       currentRound: "R2",
@@ -418,17 +418,17 @@ export function getMockCandidates(): Candidate[] {
       email: "robert.chen@email.com",
       phone: "+1-555-0107",
       location: "Boston, MA",
-      experience: "4 years",
-      noticePeriod: "3 weeks",
+      total_experience: "4 years",
+      notice_period: "3 weeks",
       appliedPosition: "Backend Developer",
       interviewType: "Walk-In",
       job_type: "full_time",
       source: "Company Website",
-      currentCTC: "$88,000",
-      expectedCTC: "$105,000",
+      current_ctc: "$88,000",
+      expected_ctc: "$105,000",
       negotiable: false,
-      relocation: true,
-      skills: ["Node.js", "Express", "MongoDB", "Redis", "GraphQL"],
+      willing_to_relocate: true,
+      skill_set: ["Node.js", "Express", "MongoDB", "Redis", "GraphQL"],
       appliedDate: "2024-01-06",
       status: "selected",
       currentRound: "R3",

@@ -370,14 +370,14 @@ export default function PanelistDashboard() {
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium text-gray-700">Skills:</span>
                     <div className="flex flex-wrap gap-1">
-                      {candidateDetails?.skills?.slice(0, 3).map((skill: string, index: number) => (
+                      {candidateDetails?.skill_set?.slice(0, 3).map((skill: string, index: number) => (
                         <Badge key={index} variant="secondary" className="text-xs">
                           {skill}
                         </Badge>
                       ))}
-                      {candidateDetails?.skills?.length > 3 && (
+                      {candidateDetails?.skill_set?.length > 3 && (
                         <Badge variant="secondary" className="text-xs">
-                          +{candidateDetails.skills.length - 3} more
+                          +{candidateDetails.skill_set.length - 3} more
                         </Badge>
                       )}
                     </div>
@@ -385,7 +385,7 @@ export default function PanelistDashboard() {
 
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium text-gray-700">Experience:</span>
-                    <span className="text-sm text-gray-600">{candidateDetails?.experience || "N/A"}</span>
+                    <span className="text-sm text-gray-600">{candidateDetails?.total_experience || "N/A"}</span>
                   </div>
                 </div>
               </div>
@@ -604,17 +604,17 @@ export default function PanelistDashboard() {
                       <TableCell>
                         <Badge variant="outline">{session.round}</Badge>
                       </TableCell>
-                      <TableCell>{candidateDetails?.experience || "N/A"}</TableCell>
+                      <TableCell>{candidateDetails?.total_experience || "N/A"}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {candidateDetails?.skills?.slice(0, 2).map((skill: string, index: number) => (
+                          {candidateDetails?.skill_set?.slice(0, 2).map((skill: string, index: number) => (
                             <Badge key={index} variant="secondary" className="text-xs">
                               {skill}
                             </Badge>
                           ))}
-                          {candidateDetails?.skills?.length > 2 && (
+                          {candidateDetails?.skill_set?.length > 2 && (
                             <Badge variant="secondary" className="text-xs">
-                              +{candidateDetails.skills.length - 2}
+                              +{candidateDetails.skill_set.length - 2}
                             </Badge>
                           )}
                         </div>

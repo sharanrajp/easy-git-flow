@@ -328,16 +328,16 @@ export default function UsersPage() {
                         <Badge className={getRoleColor(user.role)}>{formatRole(user.role, user.panelist_type)}</Badge>
                       </TableCell>
                       <TableCell>
-                        {user.skills ? (
+                        {user.skill_set ? (
                           <div className="flex flex-wrap gap-1">
-                            {user.skills.slice(0, 2).map((skill) => (
+                            {user.skill_set.slice(0, 2).map((skill) => (
                               <Badge key={skill} variant="outline" className="text-xs">
                                 {skill}
                               </Badge>
                             ))}
-                            {user.skills.length > 2 && (
+                            {user.skill_set.length > 2 && (
                               <Badge variant="outline" className="text-xs">
-                                +{user.skills.length - 2}
+                                +{user.skill_set.length - 2}
                               </Badge>
                             )}
                           </div>
@@ -541,17 +541,17 @@ export default function UsersPage() {
                           ))}
                       </div>
 
-                      {user.skills && user.skills.length > 0 && (
+                      {user.skill_set && user.skill_set.length > 0 && (
                         <div>
                           <div className="flex flex-wrap gap-1">
-                            {user.skills.slice(0, 2).map((skill) => (
+                            {user.skill_set.slice(0, 2).map((skill) => (
                               <Badge key={skill} variant="outline" className="text-xs">
                                 {skill}
                               </Badge>
                             ))}
-                            {user.skills.length > 2 && (
+                            {user.skill_set.length > 2 && (
                               <Badge variant="outline" className="text-xs">
-                                +{user.skills.length - 2}
+                                +{user.skill_set.length - 2}
                               </Badge>
                             )}
                           </div>

@@ -23,7 +23,7 @@ interface FormData {
   email: string
   role: User["role"]
   panelist_type?: User["panelist_type"]
-  skills: string[]
+  skill_set: string[]
   available_rounds: string[]
   current_status?: User["current_status"]
 }
@@ -34,7 +34,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     email: user?.email || "",
     role: user?.role || ("panelist" as const),
     panelist_type: user?.panelist_type || ("panel_member" as const),
-    skills: user?.skills || [],
+    skill_set: user?.skill_set || [],
     available_rounds: user?.available_rounds || [],
     current_status: user?.current_status || ("free" as const),
   })
@@ -47,8 +47,8 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     const submitData: Partial<User> = {
       ...formData,
       panelist_type: formData.role === "panelist" ? formData.panelist_type : undefined,
-      // Only include skills and available_rounds for panelists
-      skills: formData.role === "panelist" ? formData.skills : undefined,
+      // Only include skill_set and available_rounds for panelists
+      skill_set: formData.role === "panelist" ? formData.skill_set : undefined,
       available_rounds:
         formData.role === "panelist"
           ? formData.panelist_type === "manager"
@@ -63,10 +63,10 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
   }
 
   const addSkill = () => {
-    if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
+    if (newSkill.trim() && !formData.skill_set.includes(newSkill.trim())) {
       setFormData({
         ...formData,
-        skills: [...formData.skills, newSkill.trim()],
+        skill_set: [...formData.skill_set, newSkill.trim()],
       })
       setNewSkill("")
     }
@@ -75,7 +75,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
   const removeSkill = (skill: string) => {
     setFormData({
       ...formData,
-      skills: formData.skills.filter((s) => s !== skill),
+      skill_set: formData.skill_set.filter((s) => s !== skill),
     })
   }
 
@@ -98,7 +98,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
       ...formData,
       role,
       panelist_type: role === "panelist" ? "panel_member" : undefined,
-      skills: role === "panelist" ? formData.skills : [],
+      skill_set: role === "panelist" ? formData.skill_set : [],
       available_rounds: role === "panelist" ? formData.available_rounds : [],
       current_status: role === "panelist" ? "free" : undefined,
     })
@@ -213,7 +213,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
               </Button>
             </div>
             <div className="flex flex-wrap gap-2 mt-2">
-              {formData.skills.map((skill) => (
+              {formData.skill_set.map((skill) => (
                 <Badge key={skill} variant="secondary" className="flex items-center gap-1">
                   {skill}
                   <X className="h-3 w-3 cursor-pointer" onClick={() => removeSkill(skill)} />

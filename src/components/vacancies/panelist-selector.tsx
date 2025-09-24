@@ -37,7 +37,7 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
     (user) =>
       (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (user.skills && user.skills.some((skill: string) => skill && skill.toLowerCase().includes(searchTerm.toLowerCase()))),
+      (user.skill_set && user.skill_set.some((skill: string) => skill && skill.toLowerCase().includes(searchTerm.toLowerCase()))),
   )
 
   // Get selected and unselected panelists
@@ -93,16 +93,16 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
             <p className="text-sm text-gray-600">{user.email || "No email"}</p>
             <p className="text-xs text-gray-500 capitalize mt-1">{user.role}</p>
 
-            {user.skills && user.skills.length > 0 && (
+            {user.skill_set && user.skill_set.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
-                {user.skills.slice(0, 3).map((skill: string) => (
+                {user.skill_set.slice(0, 3).map((skill: string) => (
                   <Badge key={skill} variant="outline" className="text-xs">
                     {skill}
                   </Badge>
                 ))}
-                {user.skills.length > 3 && (
+                {user.skill_set.length > 3 && (
                   <Badge variant="outline" className="text-xs">
-                    +{user.skills.length - 3}
+                    +{user.skill_set.length - 3}
                   </Badge>
                 )}
               </div>

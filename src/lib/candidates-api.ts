@@ -9,8 +9,8 @@ export interface BackendCandidate {
   phone?: string;
   appliedPosition: string;
   status: string;
-  experience?: string;
-  skills?: string[];
+  total_experience?: string;
+  skill_set?: string[];
   source?: string;
   appliedDate: string;
   recruiter?: string;

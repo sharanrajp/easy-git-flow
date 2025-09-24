@@ -136,11 +136,11 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-sm text-gray-500">Experience</span>
-                  <p className="font-medium">{candidate.experience}</p>
+                  <p className="font-medium">{candidate.total_experience}</p>
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Notice Period</span>
-                  <p className="font-medium">{candidate.noticePeriod}</p>
+                  <p className="font-medium">{candidate.notice_period}</p>
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Job Type</span>
@@ -178,11 +178,11 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-sm text-gray-500">Current CTC</span>
-                  <p className="font-medium">{candidate.currentCTC || "Not specified"}</p>
+                  <p className="font-medium">{candidate.current_ctc || "Not specified"}</p>
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Expected CTC</span>
-                  <p className="font-medium">{candidate.expectedCTC || "Not specified"}</p>
+                  <p className="font-medium">{candidate.expected_ctc || "Not specified"}</p>
                 </div>
               </div>
               <div className="flex space-x-4 mt-4">
@@ -194,8 +194,8 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-gray-500">Open to Relocation:</span>
-                  <Badge variant={candidate.relocation ? "default" : "secondary"}>
-                    {candidate.relocation ? "Yes" : "No"}
+                  <Badge variant={candidate.willing_to_relocate ? "default" : "secondary"}>
+                    {candidate.willing_to_relocate ? "Yes" : "No"}
                   </Badge>
                 </div>
               </div>
@@ -209,8 +209,8 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {candidate.skills && candidate.skills.length > 0 ? (
-                  candidate.skills.map((skill: string, skillIndex: number) => (
+                {candidate.skill_set && candidate.skill_set.length > 0 ? (
+                  candidate.skill_set.map((skill: string, skillIndex: number) => (
                     <Badge key={skillIndex} variant="secondary">
                       {skill}
                     </Badge>

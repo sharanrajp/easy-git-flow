@@ -37,7 +37,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     number_of_vacancies: vacancy?.number_of_vacancies || 1,
     experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
-    skills: vacancy?.skills || [],
+    skill_set: vacancy?.skill_set || [],
     jobDescription: vacancy?.jobDescription || "",
     about_position: vacancy?.about_position || "",
     driveDate: vacancy?.walkInDetails?.date || "",
@@ -73,7 +73,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   const filteredUsers = allUsers.filter(
     (user) =>
       (user.name?.toLowerCase().includes(panelistSearch.toLowerCase()) || false) ||
-      (user.skills && user.skills.some((skill: string) => skill?.toLowerCase().includes(panelistSearch.toLowerCase()))),
+      (user.skill_set && user.skill_set.some((skill: string) => skill?.toLowerCase().includes(panelistSearch.toLowerCase()))),
   )
 
   const selectedUsers = filteredUsers.filter((u) => formData.assignedPanelists.includes(u._id))
@@ -111,7 +111,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       number_of_vacancies: vacancy?.number_of_vacancies || 1,
       experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
       experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
-      skills: vacancy?.skills || [],
+      skill_set: vacancy?.skill_set || [],
       jobDescription: vacancy?.jobDescription || "",
       about_position: vacancy?.about_position || "",
       driveDate: vacancy?.walkInDetails?.date || "",
@@ -130,10 +130,10 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   }
 
   const addSkill = () => {
-    if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
+    if (newSkill.trim() && !formData.skill_set.includes(newSkill.trim())) {
       setFormData({
         ...formData,
-        skills: [...formData.skills, newSkill.trim()],
+        skill_set: [...formData.skill_set, newSkill.trim()],
       })
       setNewSkill("")
     }
@@ -142,7 +142,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   const removeSkill = (skill: string) => {
     setFormData({
       ...formData,
-      skills: formData.skills.filter((s) => s !== skill),
+      skill_set: formData.skill_set.filter((s) => s !== skill),
     })
   }
 
@@ -393,7 +393,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   </Button>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.skills.map((skill) => (
+                  {formData.skill_set.map((skill) => (
                     <Badge key={skill} variant="secondary" className="flex items-center gap-1">
                       {skill}
                       <X className="h-3 w-3 cursor-pointer" onClick={() => removeSkill(skill)} />
@@ -470,7 +470,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="panelistSearch"
-                    placeholder="Search by name or skills..."
+                    placeholder="Search by name or skill..."
                     value={panelistSearch}
                     onChange={(e) => setPanelistSearch(e.target.value)}
                     className="pl-10"
@@ -498,7 +498,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                             <p className="text-sm text-green-600">
                               {user.role} • {user.email || "No email"}
                             </p>
-                            {user.skills && <p className="text-sm text-green-600">Skills: {user.skills.join(", ")}</p>}
+                            {user.skill_set && <p className="text-sm text-green-600">Skills: {user.skill_set.join(", ")}</p>}
                           </div>
                         </div>
                         <Button
@@ -535,7 +535,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                           <p className="text-sm text-gray-500">
                             {user.role} • {user.email || "No email"}
                           </p>
-                          {user.skills && <p className="text-sm text-gray-500">Skills: {user.skills.join(", ")}</p>}
+                          {user.skill_set && <p className="text-sm text-gray-500">Skills: {user.skill_set.join(", ")}</p>}
                         </div>
                       </div>
                       <Button

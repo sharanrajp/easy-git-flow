@@ -156,7 +156,7 @@ export const mockInterviewSessions: InterviewSession[] = [
     elapsedTime: 2700, // 45 minutes
     feedback: {
       rating: 2,
-      notes: "Struggled with advanced React concepts and system design questions. Basic JavaScript knowledge is good but needs more experience with modern frameworks.",
+      notes: "Struggled with advanced React concepts and system design questions. Basic JavaScript knowledge is good but needs more total_experience with modern frameworks.",
       decision: "rejected",
       submittedAt: "2024-01-15T16:45:00",
       detailedRatings: {

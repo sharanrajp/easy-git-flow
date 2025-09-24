@@ -78,7 +78,7 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
             </div>
             <div>
               <span className="text-sm text-gray-500">Experience:</span>
-              <p className="font-medium">{candidate.experience}</p>
+              <p className="font-medium">{candidate.total_experience}</p>
             </div>
             <div>
               <span className="text-sm text-gray-500">Interview Round:</span>
@@ -103,8 +103,8 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
                 <SelectItem key={panelist._id} value={panelist.name}>
                   <div className="flex flex-col">
                     <span>{panelist.name}</span>
-                    {panelist.skills && (
-                      <span className="text-xs text-gray-500">Skills: {panelist.skills.join(", ")}</span>
+                    {panelist.skill_set && (
+                      <span className="text-xs text-gray-500">Skills: {panelist.skill_set.join(", ")}</span>
                     )}
                   </div>
                 </SelectItem>

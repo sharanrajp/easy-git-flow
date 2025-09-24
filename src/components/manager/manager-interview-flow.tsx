@@ -17,7 +17,7 @@ export function ManagerInterviewFlow({ candidate, onComplete }: ManagerInterview
     rating: "",
     notes: "",
     decision: "",
-    salaryRecommendation: candidate.expectedCTC || "",
+    salaryRecommendation: candidate.expected_ctc || "",
     startDate: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -67,11 +67,11 @@ export function ManagerInterviewFlow({ candidate, onComplete }: ManagerInterview
             </div>
             <div>
               <span className="text-sm text-gray-500">Experience:</span>
-              <p className="font-medium">{candidate.experience}</p>
+              <p className="font-medium">{candidate.total_experience}</p>
             </div>
             <div>
               <span className="text-sm text-gray-500">Expected CTC:</span>
-              <p className="font-medium">{candidate.expectedCTC}</p>
+              <p className="font-medium">{candidate.expected_ctc}</p>
             </div>
           </div>
         </CardContent>

@@ -96,14 +96,14 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
               <div>
                 <span className="text-sm text-gray-600 mb-2 block">Required Skills:</span>
                 <div className="flex flex-wrap gap-1">
-                  {vacancy.skills.slice(0, 6).map((skill) => (
+                  {vacancy.skill_set.slice(0, 6).map((skill) => (
                     <Badge key={skill} variant="secondary" className="px-2 py-1 text-xs">
                       {skill}
                     </Badge>
                   ))}
-                  {vacancy.skills.length > 6 && (
+                  {vacancy.skill_set.length > 6 && (
                     <Badge variant="outline" className="px-2 py-1 text-xs">
-                      +{vacancy.skills.length - 6} more
+                      +{vacancy.skill_set.length - 6} more
                     </Badge>
                   )}
                 </div>
