@@ -25,16 +25,16 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   const currentUser = null
 
   const [formData, setFormData] = useState({
-    title: vacancy?.title || "",
-    requestType: vacancy?.requestType || "new",
-    jobType: vacancy?.jobType || "full-time",
+    position_title: vacancy?.position_title || "",
+    request_type: vacancy?.request_type || "new",
+    job_type: vacancy?.job_type || "full-time",
     priority: vacancy?.priority || "P2",
     projectClientName: vacancy?.projectClientName || "",
     city: vacancy?.city || "Perungudi, Chennai", // default city value
     status: vacancy?.status || "active",
-    hiringManager: vacancy?.hiringManager || "",
-    recruiterName: vacancy?.recruiterName || "",
-    numberOfVacancies: vacancy?.numberOfVacancies || 1,
+    hiring_manager_name: vacancy?.hiring_manager_name || "",
+    recruiter_name: vacancy?.recruiter_name || "",
+    number_of_vacancies: vacancy?.number_of_vacancies || 1,
     experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
     skills: vacancy?.skills || [],
@@ -86,7 +86,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     const submitData: Partial<Vacancy> = {
       ...formData,
       experienceRange: `${formData.experienceFrom}-${formData.experienceTo} years`,
-      interviewTypes: ["walk-in"], // Only walk-in interviews for this version
+      interview_type: ["walk-in"], // Only walk-in interviews for this version
       walkInDetails: {
         date: formData.driveDate,
         location: formData.driveLocation,
@@ -99,16 +99,16 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   const handleCancel = () => {
     // Reset form data to initial state
     setFormData({
-      title: vacancy?.title || "",
-      requestType: vacancy?.requestType || "new",
-      jobType: vacancy?.jobType || "full-time",
+      position_title: vacancy?.position_title || "",
+      request_type: vacancy?.request_type || "new",
+      job_type: vacancy?.job_type || "full-time",
       priority: vacancy?.priority || "P2",
       projectClientName: vacancy?.projectClientName || "",
       city: vacancy?.city || "Perungudi, Chennai",
       status: vacancy?.status || "active",
-      hiringManager: vacancy?.hiringManager || "",
-      recruiterName: vacancy?.recruiterName || "",
-      numberOfVacancies: vacancy?.numberOfVacancies || 1,
+      hiring_manager_name: vacancy?.hiring_manager_name || "",
+      recruiter_name: vacancy?.recruiter_name || "",
+      number_of_vacancies: vacancy?.number_of_vacancies || 1,
       experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
       experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
       skills: vacancy?.skills || [],
@@ -162,14 +162,14 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
 
   const canProceedToStep2 = () => {
     return (
-      formData.title &&
-      formData.requestType &&
-      formData.jobType &&
+      formData.position_title &&
+      formData.request_type &&
+      formData.job_type &&
       formData.priority &&
       formData.city &&
-      formData.hiringManager &&
-      formData.recruiterName &&
-      formData.numberOfVacancies &&
+      formData.hiring_manager_name &&
+      formData.recruiter_name &&
+      formData.number_of_vacancies &&
       formData.experienceFrom &&
       formData.experienceTo &&
       formData.driveDate &&
@@ -211,19 +211,19 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Position Title *</Label>
+                  <Label htmlFor="position_title">Position Title *</Label>
                   <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    id="position_title"
+                    value={formData.position_title}
+                    onChange={(e) => setFormData({ ...formData, position_title: e.target.value })}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="requestType">Request Type *</Label>
+                  <Label htmlFor="request_type">Request Type *</Label>
                   <Select
-                    value={formData.requestType}
-                    onValueChange={(value: any) => setFormData({ ...formData, requestType: value })}
+                    value={formData.request_type}
+                    onValueChange={(value: any) => setFormData({ ...formData, request_type: value })}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue />
@@ -235,10 +235,10 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="jobType">Job Type *</Label>
+                  <Label htmlFor="job_type">Job Type *</Label>
                   <Select
-                    value={formData.jobType}
-                    onValueChange={(value: any) => setFormData({ ...formData, jobType: value })}
+                    value={formData.job_type}
+                    onValueChange={(value: any) => setFormData({ ...formData, job_type: value })}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue />
@@ -272,19 +272,19 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="hiringManager">Hiring Manager *</Label>
+                  <Label htmlFor="hiring_manager_name">Hiring Manager *</Label>
                   <Input
-                    id="hiringManager"
-                    value={formData.hiringManager}
-                    onChange={(e) => setFormData({ ...formData, hiringManager: e.target.value })}
+                    id="hiring_manager_name"
+                    value={formData.hiring_manager_name}
+                    onChange={(e) => setFormData({ ...formData, hiring_manager_name: e.target.value })}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="recruiterName">Recruiter Name *</Label>
+                  <Label htmlFor="recruiter_name">Recruiter Name *</Label>
                   <Select
-                    value={formData.recruiterName}
-                    onValueChange={(value: any) => setFormData({ ...formData, recruiterName: value })}
+                    value={formData.recruiter_name}
+                    onValueChange={(value: any) => setFormData({ ...formData, recruiter_name: value })}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select recruiter" />
@@ -311,14 +311,14 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="numberOfVacancies">Number of Vacancies *</Label>
+                  <Label htmlFor="number_of_vacancies">Number of Vacancies *</Label>
                   <Input
-                    id="numberOfVacancies"
+                    id="number_of_vacancies"
                     type="number"
                     min="1"
-                    value={formData.numberOfVacancies}
+                    value={formData.number_of_vacancies}
                     onChange={(e) =>
-                      setFormData({ ...formData, numberOfVacancies: Number.parseInt(e.target.value) || 1 })
+                      setFormData({ ...formData, number_of_vacancies: Number.parseInt(e.target.value) || 1 })
                     }
                     required
                   />

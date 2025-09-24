@@ -132,7 +132,7 @@ Jane Smith,jane.smith@email.com,+1234567891,Backend Developer,2-4 years,"Node.js
               break
             case "job type":
             case "jobtype":
-              candidate.jobType = value.toLowerCase().replace(" ", "-")
+              candidate.job_type = value.toLowerCase().replace(" ", "-")
               break
             case "location":
               candidate.location = value
@@ -166,7 +166,7 @@ Jane Smith,jane.smith@email.com,+1234567891,Backend Developer,2-4 years,"Node.js
         candidate.interviewType = "walk-in"
         candidate.skills = candidate.skills || []
         candidate.source = candidate.source || "Bulk Upload"
-        candidate.jobType = candidate.jobType || "full-time"
+        candidate.job_type = candidate.job_type || "full-time"
         candidate.location = candidate.location || "Not specified"
         candidate.noticePeriod = candidate.noticePeriod || "Not specified"
         candidate.currentCTC = candidate.currentCTC || "Not specified"

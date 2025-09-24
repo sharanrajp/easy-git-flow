@@ -27,7 +27,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
     fetchUsers()
   }, [])
   
-  const assignedPanelists = allUsers.filter((user: User) => vacancy.assignedPanelists.includes(user.id))
+  const assignedPanelists = allUsers.filter((user: User) => vacancy.assignedPanelists.includes(user._id))
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -62,7 +62,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{vacancy.title}</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{vacancy.position_title}</h1>
           <div className="flex items-center space-x-4 mt-2">
             <Badge className={getStatusColor(vacancy.status)} variant="outline">
               {vacancy.status}
@@ -115,7 +115,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Job Type</label>
-                  <p className="text-gray-900 capitalize">{vacancy.jobType}</p>
+                  <p className="text-gray-900 capitalize">{vacancy.job_type}</p>
                 </div>
               </div>
             </CardContent>
@@ -175,7 +175,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {vacancy.interviewTypes.map((type: string, index: number) => (
+                {vacancy.interview_type.map((type: string, index: number) => (
                   <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                     <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
                       {index + 1}
@@ -201,7 +201,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-500">Open Positions</label>
-                <p className="text-2xl font-bold text-gray-900">{vacancy.numberOfVacancies}</p>
+                <p className="text-2xl font-bold text-gray-900">{vacancy.number_of_vacancies}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Applications</label>
@@ -247,11 +247,11 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
             <CardContent className="space-y-3">
               <div>
                 <label className="text-sm font-medium text-gray-500">Hiring Manager</label>
-                <p className="text-gray-900">{vacancy.hiringManager}</p>
+                <p className="text-gray-900">{vacancy.hiring_manager_name}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Recruiter</label>
-                <p className="text-gray-900">{vacancy.recruiterName}</p>
+                <p className="text-gray-900">{vacancy.recruiter_name}</p>
               </div>
               {vacancy.projectClientName && (
                 <div>
@@ -303,7 +303,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                 <div className="grid grid-cols-1 gap-3">
                   {assignedPanelists.map((panelist: User) => (
                     <div
-                      key={panelist.id}
+                      key={panelist._id}
                       className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">

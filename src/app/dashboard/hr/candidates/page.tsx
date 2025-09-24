@@ -1148,7 +1148,7 @@ export default function CandidatesPage() {
                 {candidateToSchedule && (
                   <span className="block mt-1 font-medium text-blue-600">
                     Position:{" "}
-                    {vacancies.find((v) => v.id === candidateToSchedule.jobId)?.title ||
+                    {vacancies.find((v) => v.id === candidateToSchedule.jobId)?.position_title ||
                       candidateToSchedule.position ||
                       "Not specified"}
                   </span>

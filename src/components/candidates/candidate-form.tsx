@@ -32,7 +32,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     noticePeriod: candidate?.noticePeriod || "",
     appliedPosition: candidate?.appliedPosition || "",
     interviewType: candidate?.interviewType || "walk-in",
-    jobType: candidate?.jobType || "full-time",
+    job_type: candidate?.job_type || "full-time",
     source: candidate?.source || "",
     currentCTC: candidate?.currentCTC || "",
     expectedCTC: candidate?.expectedCTC || "",
@@ -194,8 +194,8 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
             </SelectTrigger>
             <SelectContent>
               {vacancies.map((vacancy: any) => (
-                <SelectItem key={vacancy.id} value={vacancy.title}>
-                  {vacancy.title} (#{vacancy.id}) - {vacancy.location}
+                <SelectItem key={vacancy.id} value={vacancy.position_title}>
+                  {vacancy.position_title} (#{vacancy.id}) - {vacancy.location}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -231,8 +231,8 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="jobType">Job Type *</Label>
-          <Select value={formData.jobType} onValueChange={(value: any) => setFormData({ ...formData, jobType: value })}>
+          <Label htmlFor="job_type">Job Type *</Label>
+          <Select value={formData.job_type} onValueChange={(value: any) => setFormData({ ...formData, job_type: value })}>
             <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>

@@ -19,7 +19,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
       try {
         const users = await getAllUsers()
         setAllUsers(users)
-        setAssignedPanelists(users.filter((user) => vacancy.assignedPanelists.includes(user.id)))
+        setAssignedPanelists(users.filter((user) => vacancy.assignedPanelists.includes(user._id)))
       } catch (error) {
         console.error("Failed to fetch users:", error)
         setAllUsers([])
@@ -66,7 +66,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
               <Briefcase className="h-7 w-7 text-white" />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">{vacancy.title}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">{vacancy.position_title}</h1>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                 <div className="flex items-center gap-2">
                   <Target className="h-4 w-4 text-gray-500" />
@@ -86,7 +86,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-gray-500" />
                   <span className="text-sm text-gray-600">Job Type:</span>
-                  <span className="text-sm font-medium capitalize">{vacancy.jobType}</span>
+                  <span className="text-sm font-medium capitalize">{vacancy.job_type}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">Status:</span>
@@ -129,17 +129,17 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
               </div>
               <div>
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Number of Positions</label>
-                <p className="text-sm font-semibold text-gray-900 mt-1">{vacancy.numberOfVacancies}</p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">{vacancy.number_of_vacancies}</p>
               </div>
             </div>
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Hiring Manager</label>
-                <p className="text-sm font-semibold text-gray-900 mt-1">{vacancy.hiringManager}</p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">{vacancy.hiring_manager_name}</p>
               </div>
               <div>
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Recruiter</label>
-                <p className="text-sm font-semibold text-gray-900 mt-1">{vacancy.recruiterName}</p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">{vacancy.recruiter_name}</p>
               </div>
             </div>
             <div className="space-y-4">

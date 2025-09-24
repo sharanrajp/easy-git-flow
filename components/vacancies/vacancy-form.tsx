@@ -22,15 +22,15 @@ interface VacancyFormProps {
 
 export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: VacancyFormProps) {
   const [formData, setFormData] = useState({
-    title: vacancy?.title || "",
+    position_title: vacancy?.position_title || "",
     department: vacancy?.department || "",
     location: vacancy?.location || "",
-    jobType: vacancy?.jobType || "full-time",
+    job_type: vacancy?.job_type || "full-time",
     priority: vacancy?.priority || "P3",
     status: vacancy?.status || "active",
-    hiringManager: vacancy?.hiringManager || "",
-    recruiterName: vacancy?.recruiterName || currentUser?.name || "",
-    numberOfVacancies: vacancy?.numberOfVacancies || 1,
+    hiring_manager_name: vacancy?.hiring_manager_name || "",
+    recruiter_name: vacancy?.recruiter_name || currentUser?.name || "",
+    number_of_vacancies: vacancy?.number_of_vacancies || 1,
     experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
     skills: vacancy?.skills || [],
@@ -63,10 +63,10 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
   }, [])
 
   useEffect(() => {
-    if (!vacancy && currentUser?.role === "hr" && !formData.recruiterName) {
-      setFormData((prev) => ({ ...prev, recruiterName: currentUser.name }))
+    if (!vacancy && currentUser?.role === "hr" && !formData.recruiter_name) {
+      setFormData((prev) => ({ ...prev, recruiter_name: currentUser.name }))
     }
-  }, [currentUser, vacancy, formData.recruiterName])
+  }, [currentUser, vacancy, formData.recruiter_name])
 
   const filteredUsers = allUsers.filter(
     (user) =>
@@ -74,8 +74,8 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
       (user.skills && user.skills.some((skill: string) => skill.toLowerCase().includes(panelistSearch.toLowerCase()))),
   )
 
-  const selectedUsers = filteredUsers.filter((u) => formData.assignedPanelists.includes(u.id))
-  const unselectedUsers = filteredUsers.filter((u) => !formData.assignedPanelists.includes(u.id))
+  const selectedUsers = filteredUsers.filter((u) => formData.assignedPanelists.includes(u._id))
+  const unselectedUsers = filteredUsers.filter((u) => !formData.assignedPanelists.includes(u._id))
   const sortedUsers = [...selectedUsers, ...unselectedUsers]
 
   const handleInputChange = (field: string, value: any) => {
@@ -104,7 +104,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
         date: formData.driveDate,
         location: formData.driveLocation
       } : undefined,
-      interviewTypes: ["walk-in"] as const,
+      interview_type: ["walk-in"] as const,
       id: vacancy?.id || `${Date.now()}`,
       postedOn: vacancy?.postedOn || new Date().toISOString().split('T')[0],
       applications: vacancy?.applications || 0,
@@ -181,11 +181,11 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <Label htmlFor="title">Position Title *</Label>
+                  <Label htmlFor="position_title">Position Title *</Label>
                   <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => handleInputChange("title", e.target.value)}
+                    id="position_title"
+                    value={formData.position_title}
+                    onChange={(e) => handleInputChange("position_title", e.target.value)}
                     placeholder="e.g., Senior Frontend Developer"
                     required
                   />
@@ -224,8 +224,8 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
                 </div>
 
                 <div>
-                  <Label htmlFor="jobType">Job Type *</Label>
-                  <Select value={formData.jobType} onValueChange={(value) => handleInputChange("jobType", value)}>
+                  <Label htmlFor="job_type">Job Type *</Label>
+                  <Select value={formData.job_type} onValueChange={(value) => handleInputChange("job_type", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select job type" />
                     </SelectTrigger>
@@ -238,13 +238,13 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
                 </div>
 
                 <div>
-                  <Label htmlFor="numberOfVacancies">Number of Positions *</Label>
+                  <Label htmlFor="number_of_vacancies">Number of Positions *</Label>
                   <Input
-                    id="numberOfVacancies"
+                    id="number_of_vacancies"
                     type="number"
                     min="1"
-                    value={formData.numberOfVacancies}
-                    onChange={(e) => handleInputChange("numberOfVacancies", parseInt(e.target.value) || 1)}
+                    value={formData.number_of_vacancies}
+                    onChange={(e) => handleInputChange("number_of_vacancies", parseInt(e.target.value) || 1)}
                     required
                   />
                 </div>
@@ -434,14 +434,14 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="hiringManager">Hiring Manager *</Label>
-                <Select value={formData.hiringManager} onValueChange={(value) => handleInputChange("hiringManager", value)}>
+                <Label htmlFor="hiring_manager_name">Hiring Manager *</Label>
+                <Select value={formData.hiring_manager_name} onValueChange={(value) => handleInputChange("hiring_manager_name", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select hiring manager" />
                   </SelectTrigger>
                   <SelectContent>
                     {hrUsers.map((user) => (
-                      <SelectItem key={user.id} value={user.name}>
+                      <SelectItem key={user._id} value={user.name}>
                         {user.name}
                       </SelectItem>
                     ))}
@@ -450,14 +450,14 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
               </div>
 
               <div>
-                <Label htmlFor="recruiterName">Recruiter Name *</Label>
-                <Select value={formData.recruiterName} onValueChange={(value) => handleInputChange("recruiterName", value)}>
+                <Label htmlFor="recruiter_name">Recruiter Name *</Label>
+                <Select value={formData.recruiter_name} onValueChange={(value) => handleInputChange("recruiter_name", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select recruiter" />
                   </SelectTrigger>
                   <SelectContent>
                     {hrUsers.map((user) => (
-                      <SelectItem key={user.id} value={user.name}>
+                      <SelectItem key={user._id} value={user.name}>
                         {user.name}
                       </SelectItem>
                     ))}

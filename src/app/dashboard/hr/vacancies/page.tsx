@@ -100,7 +100,7 @@ export default function VacanciesPage() {
       > = {}
 
       vacancies.forEach((vacancy) => {
-        newCounts[vacancy.title] = getCandidateCountsForVacancy(vacancy.title)
+        newCounts[vacancy.position_title] = getCandidateCountsForVacancy(vacancy.position_title)
       })
 
       setCandidateCounts(newCounts)
@@ -136,12 +136,12 @@ export default function VacanciesPage() {
 
   const filteredVacancies = vacancies.filter((vacancy) => {
     const matchesSearch =
-      vacancy.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vacancy.position_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       vacancy.location.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesStatus = statusFilter === "all" || vacancy.status === statusFilter
     const matchesPriority = priorityFilter === "all" || vacancy.priority === priorityFilter
-    const matchesRecruiter = recruiterFilter === "all" || vacancy.recruiterName === recruiterFilter
+    const matchesRecruiter = recruiterFilter === "all" || vacancy.recruiter_name === recruiterFilter
 
     return matchesSearch && matchesStatus && matchesPriority && matchesRecruiter
   })
@@ -245,7 +245,7 @@ export default function VacanciesPage() {
   }, [])
 
   const uniqueRecruiters = Array.from(
-    new Set([...vacancies.map((v) => v.recruiterName).filter(Boolean), ...hrUsers.map((user) => user.name)]),
+    new Set([...vacancies.map((v) => v.recruiter_name).filter(Boolean), ...hrUsers.map((user) => user.name)]),
   )
 
   return (
@@ -300,7 +300,7 @@ export default function VacanciesPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Search vacancies by title or location..."
+                placeholder="Search vacancies by position_title or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -387,7 +387,7 @@ export default function VacanciesPage() {
                   </TableHeader>
                   <TableBody>
                     {filteredVacancies.map((vacancy) => {
-                      const counts = candidateCounts[vacancy.title] || {
+                      const counts = candidateCounts[vacancy.position_title] || {
                         applications: 0,
                         shortlisted: 0,
                         interviewed: 0,
@@ -402,7 +402,7 @@ export default function VacanciesPage() {
                           </TableCell>
                           <TableCell>
                             <div>
-                              <div className="font-medium">{vacancy.title}</div>
+                              <div className="font-medium">{vacancy.position_title}</div>
                               <div className="text-sm text-gray-500">{vacancy.location}</div>
                             </div>
                           </TableCell>
@@ -421,9 +421,9 @@ export default function VacanciesPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="text-sm font-medium">{vacancy.numberOfVacancies}</div>
+                            <div className="text-sm font-medium">{vacancy.number_of_vacancies}</div>
                           </TableCell>
-                          <TableCell>{vacancy.recruiterName || vacancy.hiringManager}</TableCell>
+                          <TableCell>{vacancy.recruiter_name || vacancy.hiring_manager_name}</TableCell>
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -518,7 +518,7 @@ export default function VacanciesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredVacancies.map((vacancy) => {
-              const counts = candidateCounts[vacancy.title] || {
+              const counts = candidateCounts[vacancy.position_title] || {
                 applications: 0,
                 shortlisted: 0,
                 interviewed: 0,
@@ -532,7 +532,7 @@ export default function VacanciesPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-3">
                         <div>
-                          <CardTitle className="text-lg">{vacancy.title}</CardTitle>
+                          <CardTitle className="text-lg">{vacancy.position_title}</CardTitle>
                           <p className="text-sm text-gray-600">{vacancy.location}</p>
                         </div>
                       </div>
@@ -653,7 +653,7 @@ export default function VacanciesPage() {
             <DialogHeader>
               <DialogTitle className="flex items-center">
                 <Users className="h-5 w-5 mr-2" />
-                Edit Panelists - {selectedVacancy?.title}
+                Edit Panelists - {selectedVacancy?.position_title}
               </DialogTitle>
             </DialogHeader>
             {selectedVacancy && (
