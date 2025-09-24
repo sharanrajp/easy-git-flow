@@ -858,7 +858,7 @@ export default function CandidatesPage() {
                           <TableCell>{candidate.total_experience || "N/A"}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
-                              {candidate.skill_set && candidate.skill_set.length > 0 ? (
+                              {Array.isArray(candidate.skill_set) && candidate.skill_set.length > 0 ? (
                                 candidate.skill_set.slice(0, 2).map((skill: string, skillIndex: number) => (
                                   <Badge key={skillIndex} variant="secondary" className="text-xs">
                                     {skill}

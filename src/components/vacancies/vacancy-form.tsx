@@ -73,7 +73,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   const filteredUsers = allUsers.filter(
     (user) =>
       (user.name?.toLowerCase().includes(panelistSearch.toLowerCase()) || false) ||
-      (user.skill_set && user.skill_set.some((skill: string) => skill?.toLowerCase().includes(panelistSearch.toLowerCase()))),
+      (Array.isArray(user.skill_set) && user.skill_set.some((skill: string) => skill?.toLowerCase().includes(panelistSearch.toLowerCase()))),
   )
 
   const selectedUsers = filteredUsers.filter((u) => formData.assignedPanelists.includes(u._id))

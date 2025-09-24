@@ -206,7 +206,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {candidate.skill_set && candidate.skill_set.length > 0 ? (
+                {Array.isArray(candidate.skill_set) && candidate.skill_set.length > 0 ? (
                   candidate.skill_set.map((skill: string, skillIndex: number) => (
                     <Badge key={skillIndex} variant="secondary">
                       {skill}
