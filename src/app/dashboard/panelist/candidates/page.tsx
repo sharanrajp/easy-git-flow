@@ -44,7 +44,7 @@ export default function PanelistCandidatesPage() {
       candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       candidate.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       candidate.register_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate.skill_set.toLowerCase().includes(searchTerm.toLowerCase()),
+      candidate.skill_set,
   )
 
   const formatPhoneNumber = (phone: string | undefined) => {
@@ -134,8 +134,8 @@ export default function PanelistCandidatesPage() {
                         <TableCell>{candidate.email}</TableCell>
                         <TableCell>{formatPhoneNumber(candidate.phone_number)}</TableCell>
                         <TableCell>
-                          <div className="max-w-xs truncate" title={candidate.skill_set}>
-                            {candidate.skill_set}
+                          <div className="max-w-xs truncate" title={candidate.skill_set?.join(", ")}>
+                            {candidate.skill_set?.join(", ")}
                           </div>
                         </TableCell>
                         <TableCell>

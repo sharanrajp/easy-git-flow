@@ -28,7 +28,7 @@ export interface PanelistCandidate {
   name: string;
   email: string;
   phone_number?: string;
-  skill_set: string;
+  skill_set: string[];
   last_interview_round?: string;
   resume_link?: string;
   previous_rounds: Array<{
