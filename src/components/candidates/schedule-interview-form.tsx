@@ -25,7 +25,7 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
     const fetchPanelists = async () => {
       try {
         const users = await getAllUsers()
-        setPanelists(users.filter((user) => user.role === "panelist" && user.status === "active"))
+        setPanelists(users.filter((user) => user.role === "panelist" && user.current_status === "free"))
       } catch (error) {
         console.error("Failed to fetch panelists:", error)
         setPanelists([])

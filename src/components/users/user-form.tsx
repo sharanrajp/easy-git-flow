@@ -23,7 +23,7 @@ interface FormData {
   panelist_type?: User["panelist_type"]
   skills: string[]
   available_rounds: string[]
-  status?: User["status"]
+  current_status?: User["current_status"]
 }
 
 export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
@@ -34,7 +34,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     panelist_type: user?.panelist_type || ("panel_member" as const),
     skills: user?.skills || [],
     available_rounds: user?.available_rounds || [],
-    status: user?.status || ("active" as const),
+    current_status: user?.current_status || ("free" as const),
   })
 
   const [newSkill, setNewSkill] = useState("")
@@ -53,8 +53,8 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
             ? ["R1", "R2", "R3"]
             : formData.available_rounds
           : undefined,
-      // Only include status for panelists
-      status: formData.role === "panelist" ? formData.status : undefined,
+      // Only include current_status for panelists
+      current_status: formData.role === "panelist" ? formData.current_status : undefined,
     }
 
     onSubmit(submitData)
@@ -98,7 +98,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
       panelist_type: role === "panelist" ? "panel_member" : undefined,
       skills: role === "panelist" ? formData.skills : [],
       available_rounds: role === "panelist" ? formData.available_rounds : [],
-      status: role === "panelist" ? "active" : undefined,
+      current_status: role === "panelist" ? "free" : undefined,
     })
   }
 
@@ -222,16 +222,16 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
 
           {user && (
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="current_status">Status</Label>
               <Select
-                value={formData.status || "active"}
-                onValueChange={(value: string) => setFormData({ ...formData, status: value as User["status"] })}
+                value={formData.current_status || "free"}
+                onValueChange={(value: string) => setFormData({ ...formData, current_status: value as User["current_status"] })}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Available</SelectItem>
+                  <SelectItem value="free">Available</SelectItem>
                   <SelectItem value="break">Break</SelectItem>
                   <SelectItem value="unavailable">Unavailable</SelectItem>
                 </SelectContent>

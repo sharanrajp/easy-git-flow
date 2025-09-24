@@ -54,19 +54,19 @@ export function Header({ user }: HeaderProps) {
     navigate("/login")
   }
 
-  const handleStatusChange = (status: User["status"]) => {
-    if (user.role === "panelist" && status) {
-      updateUserStatus(user._id, status)
+  const handleStatusChange = (current_status: User["current_status"]) => {
+    if (user.role === "panelist" && current_status) {
+      updateUserStatus(user._id, current_status)
       // Force a page refresh to update the UI
       window.location.reload()
     }
   }
 
-  const getStatusColor = (status?: string) => {
-    switch (status) {
-      case "active":
+  const getStatusColor = (current_status?: string) => {
+    switch (current_status) {
+      case "free":
         return "bg-emerald-100 text-emerald-800 ring-emerald-200"
-      case "in-interview":
+      case "in_interview":
         return "bg-amber-100 text-amber-800 ring-amber-200"
       case "break":
         return "bg-slate-100 text-slate-800 ring-slate-200"
@@ -165,8 +165,8 @@ export function Header({ user }: HeaderProps) {
                   <div className="text-sm font-semibold text-foreground">{user.name}</div>
                   <div className="text-xs text-muted-foreground capitalize">{user.role}</div>
                 </div>
-                {user.role === "panelist" && user.status && (
-                  <Badge className={cn("status-badge", getStatusColor(user.status))}>{user.status === "active" ? "available" : user.status}</Badge>
+                {user.role === "panelist" && user.current_status && (
+                  <Badge className={cn("status-badge", getStatusColor(user.current_status))}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
                 )}
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
@@ -187,7 +187,7 @@ export function Header({ user }: HeaderProps) {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="font-semibold">Change Status</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => handleStatusChange("active")} className="smooth-transition">
+                  <DropdownMenuItem onClick={() => handleStatusChange("free")} className="smooth-transition">
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-emerald-500 rounded-full mr-3 shadow-sm"></div>
                       Available

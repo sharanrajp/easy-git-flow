@@ -6,7 +6,7 @@ export interface User {
   panelist_type?: "panel_member" | "manager"
   skills?: string[]
   available_rounds?: string[]
-  status?: "active" | "in-interview" | "break" | "on-break" | "unavailable"
+  current_status?: "free" | "in_interview" | "break" | "unavailable"
 }
 
 // Token management functions
@@ -169,7 +169,7 @@ export async function deleteUser(userId: string): Promise<void> {
   }
 }
 
-export async function updateUserStatus(userId: string, status: User["status"]): Promise<void> {
+export async function updateUserStatus(userId: string, current_status: User["current_status"]): Promise<void> {
   // TODO: Implement PATCH request to backend with authentication
   throw new Error("Not implemented - should PATCH to backend with auth")
 }

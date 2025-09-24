@@ -65,7 +65,7 @@ export default function VacanciesPage() {
     return {
       applications: vacancyCandidates.length,
       shortlisted: vacancyCandidates.filter((c: any) => c.status === "shortlisted").length,
-      interviewed: vacancyCandidates.filter((c: any) => c.status === "interviewed" || c.status === "in-interview")
+      interviewed: vacancyCandidates.filter((c: any) => c.status === "interviewed" || c.status === "in_interview")
         .length,
       joined: vacancyCandidates.filter((c: any) => c.status === "hired" || c.status === "joined").length,
     }

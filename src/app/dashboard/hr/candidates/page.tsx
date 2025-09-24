@@ -1266,8 +1266,8 @@ export default function CandidatesPage() {
                   )
 
                   const availablePanelists = filteredPanelists.filter((p) => p.status === "active")
-                  const interviewingPanelists = filteredPanelists.filter((p) => p.status === "in-interview")
-                  const breakPanelists = filteredPanelists.filter((p) => p.status === "on-break")
+                  const interviewingPanelists = filteredPanelists.filter((p) => p.status === "in_interview")
+                  const breakPanelists = filteredPanelists.filter((p) => p.status === "break")
                   const unavailablePanelists = filteredPanelists.filter((p) => p.status === "unavailable" || !p.status)
 
                   return (
@@ -1491,8 +1491,8 @@ export default function CandidatesPage() {
                   )
 
                   const availablePanelists = filteredPanelists.filter((p) => p.status === "active")
-                  const interviewingPanelists = filteredPanelists.filter((p) => p.status === "in-interview")
-                  const breakPanelists = filteredPanelists.filter((p) => p.status === "on-break")
+                  const interviewingPanelists = filteredPanelists.filter((p) => p.status === "in_interview")
+                  const breakPanelists = filteredPanelists.filter((p) => p.status === "break")
                   const unavailablePanelists = filteredPanelists.filter((p) => p.status === "unavailable" || !p.status)
 
                   return (

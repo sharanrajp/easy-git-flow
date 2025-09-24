@@ -28,19 +28,19 @@ export function Header({ user }: HeaderProps) {
     navigate("/login")
   }
 
-  const handleStatusChange = (status: User["status"]) => {
-    if (user.role === "panelist" && status) {
-      updateUserStatus(user._id, status)
+  const handleStatusChange = (current_status: User["current_status"]) => {
+    if (user.role === "panelist" && current_status) {
+      updateUserStatus(user._id, current_status)
       // Force a page refresh to update the UI
       window.location.reload()
     }
   }
 
-  const getStatusColor = (status?: string) => {
-    switch (status) {
-      case "active":
+  const getStatusColor = (current_status?: string) => {
+    switch (current_status) {
+      case "free":
         return "bg-green-100 text-green-800"
-      case "in-interview":
+      case "in_interview":
         return "bg-orange-100 text-orange-800"
       case "break":
         return "bg-gray-100 text-gray-800"
@@ -75,8 +75,8 @@ export function Header({ user }: HeaderProps) {
                   <div className="text-sm font-medium">{user.name}</div>
                   <div className="text-xs text-gray-500 capitalize">{user.role}</div>
                 </div>
-                {user.role === "panelist" && user.status && (
-                  <Badge className={getStatusColor(user.status)}>{user.status === "active" ? "available" : user.status}</Badge>
+                {user.role === "panelist" && user.current_status && (
+                  <Badge className={getStatusColor(user.current_status)}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
                 )}
               </Button>
             </DropdownMenuTrigger>
@@ -92,7 +92,7 @@ export function Header({ user }: HeaderProps) {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => handleStatusChange("active")}>
+                  <DropdownMenuItem onClick={() => handleStatusChange("free")}>
                     <div className="flex items-center">
                       <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                       Available

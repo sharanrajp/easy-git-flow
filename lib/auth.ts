@@ -6,7 +6,7 @@ export interface User {
   panelist_type?: "panel_member" | "manager"
   skills?: string[]
   available_rounds?: string[]
-  status?: "active" | "in-interview" | "break" | "on-break" | "unavailable"
+  current_status?: "free" | "in_interview" | "break" | "unavailable"
 }
 
 // Token management functions
@@ -174,16 +174,16 @@ export function deleteUser(userId: string): void {
   saveUsers(filteredUsers)
 }
 
-export function updateUserStatus(userId: string, status: User["status"]): void {
+export function updateUserStatus(userId: string, current_status: User["current_status"]): void {
   const users = getStoredUsers()
   const user = users.find((u) => u._id === userId)
   if (user) {
-    user.status = status
+    user.current_status = current_status
     saveUsers(users)
     // Update stored user if it's the current user
     const currentUser = getStoredUser()
     if (currentUser && currentUser._id === userId) {
-      localStorage.setItem("ats_user", JSON.stringify({ ...currentUser, status }))
+      localStorage.setItem("ats_user", JSON.stringify({ ...currentUser, current_status }))
     }
   }
 }

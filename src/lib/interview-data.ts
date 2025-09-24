@@ -60,19 +60,19 @@ export function getInterviewSessionForCandidate(candidateId: string): InterviewS
   return sessions.find((session) => session.candidateId === candidateId) || null
 }
 
-export function updatePanelistStatus(panelistName: string, status: "active" | "in-interview") {
+export function updatePanelistStatus(panelistName: string, current_status: "free" | "in_interview") {
   // Update user status in localStorage
   const users = JSON.parse(localStorage.getItem("users") || "[]")
   const userIndex = users.findIndex((u: any) => u.name === panelistName)
 
   if (userIndex >= 0) {
-    users[userIndex].accountStatus = status
+    users[userIndex].accountStatus = current_status
     localStorage.setItem("users", JSON.stringify(users))
 
     // Also update current user if it's the same person
     const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}")
     if (currentUser.name === panelistName) {
-      currentUser.accountStatus = status
+      currentUser.accountStatus = current_status
       localStorage.setItem("currentUser", JSON.stringify(currentUser))
     }
   }
@@ -85,7 +85,7 @@ export function startInterview(sessionId: string) {
   if (session) {
     session.status = "in-progress"
     session.startTime = new Date().toISOString()
-    updatePanelistStatus(session.panelistName, "in-interview")
+    updatePanelistStatus(session.panelistName, "in_interview")
     saveInterviewSession(session)
 
     updateCandidateStatusToInProgress(session.candidateId, session.round)
@@ -126,7 +126,7 @@ export function completeInterview(sessionId: string, feedback: InterviewSession[
     session.status = "completed"
     session.endTime = new Date().toISOString()
     session.feedback = feedback
-    updatePanelistStatus(session.panelistName, "active")
+    updatePanelistStatus(session.panelistName, "free")
 
     if (session.startTime) {
       const now = new Date().getTime()

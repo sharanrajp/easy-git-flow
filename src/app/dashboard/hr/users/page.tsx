@@ -57,7 +57,7 @@ export default function UsersPage() {
       user.role.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesRole = roleFilter === "all" || user.role === roleFilter
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter
+    const matchesStatus = statusFilter === "all" || user.current_status === statusFilter
 
     return matchesSearch && matchesRole && matchesStatus
   })
@@ -145,9 +145,9 @@ export default function UsersPage() {
     }
   }
 
-  const handleStatusChange = async (userId: string, status: User["status"]) => {
-    // TODO: Implement API call to update user status
-    console.log("Update user status:", userId, status)
+  const handleStatusChange = async (userId: string, current_status: User["current_status"]) => {
+    // TODO: Implement API call to update user current_status
+    console.log("Update user current_status:", userId, current_status)
     fetchUsers() // Refresh the list
   }
 
@@ -164,11 +164,11 @@ export default function UsersPage() {
     }
   }
 
-  const getStatusColor = (status?: string) => {
-    switch (status) {
-      case "active":
+  const getStatusColor = (current_status?: string) => {
+    switch (current_status) {
+      case "free":
         return "bg-green-100 text-green-800"
-      case "in-interview":
+      case "in_interview":
         return "bg-orange-100 text-orange-800"
       case "break":
         return "bg-gray-100 text-gray-800"
@@ -255,8 +255,8 @@ export default function UsersPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Available</SelectItem>
-                <SelectItem value="in-interview">In Interview</SelectItem>
+                <SelectItem value="free">Available</SelectItem>
+                <SelectItem value="in_interview">In Interview</SelectItem>
                 <SelectItem value="break">Break</SelectItem>
                 <SelectItem value="unavailable">Unavailable</SelectItem>
               </SelectContent>
@@ -359,19 +359,19 @@ export default function UsersPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {user.role === "panelist" && user.status ? (
-                          user.status === "in-interview" ? (
-                            <Badge className={getStatusColor(user.status)}>in-interview</Badge>
+                        {user.role === "panelist" && user.current_status ? (
+                          user.current_status === "in_interview" ? (
+                            <Badge className={getStatusColor(user.current_status)}>in_interview</Badge>
                           ) : (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="cursor-pointer">
-                                  <Badge className={getStatusColor(user.status)}>{user.status === "active" ? "available" : user.status}</Badge>
+                                  <Badge className={getStatusColor(user.current_status)}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem
-                                  onClick={() => handleStatusChange(user._id, "active")}
+                                  onClick={() => handleStatusChange(user._id, "free")}
                                   className="cursor-pointer"
                                 >
                                   <div className="flex items-center">
@@ -379,7 +379,7 @@ export default function UsersPage() {
                                     Available
                                   </div>
                                 </DropdownMenuItem>
-                                {user.status === "active" && (
+                                {user.current_status === "free" && (
                                   <>
                                     <DropdownMenuItem
                                       onClick={() => handleStatusChange(user._id, "break")}
@@ -494,19 +494,19 @@ export default function UsersPage() {
                           {formatRole(user.role, user.panelist_type)}
                         </Badge>
                         {user.role === "panelist" &&
-                          user.status &&
-                          (user.status === "in-interview" ? (
-                            <Badge className={`${getStatusColor(user.status)} text-xs`}>in-interview</Badge>
+                          user.current_status &&
+                          (user.current_status === "in_interview" ? (
+                            <Badge className={`${getStatusColor(user.current_status)} text-xs`}>in_interview</Badge>
                           ) : (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="p-0 h-auto cursor-pointer">
-                                  <Badge className={`${getStatusColor(user.status)} text-xs`}>{user.status === "active" ? "available" : user.status}</Badge>
+                                  <Badge className={`${getStatusColor(user.current_status)} text-xs`}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="start">
                                 <DropdownMenuItem
-                                  onClick={() => handleStatusChange(user._id, "active")}
+                                  onClick={() => handleStatusChange(user._id, "free")}
                                   className="cursor-pointer"
                                 >
                                   <div className="flex items-center">
@@ -514,7 +514,7 @@ export default function UsersPage() {
                                     Available
                                   </div>
                                 </DropdownMenuItem>
-                                {user.status === "active" && (
+                                {user.current_status === "free" && (
                                   <>
                                     <DropdownMenuItem
                                       onClick={() => handleStatusChange(user._id, "break")}

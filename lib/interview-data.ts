@@ -60,7 +60,7 @@ export function getInterviewSessionForCandidate(candidateId: string): InterviewS
   return sessions.find((session) => session.candidateId === candidateId) || null
 }
 
-export function updatePanelistStatus(panelistName: string, status: "available" | "in-interview") {
+export function updatePanelistStatus(panelistName: string, status: "available" | "in_interview") {
   // Update user status in localStorage
   const users = JSON.parse(localStorage.getItem("users") || "[]")
   const userIndex = users.findIndex((u: any) => u.name === panelistName)
@@ -85,7 +85,7 @@ export function startInterview(sessionId: string) {
   if (session) {
     session.status = "in-progress"
     session.startTime = new Date().toISOString()
-    updatePanelistStatus(session.panelistName, "in-interview")
+    updatePanelistStatus(session.panelistName, "in_interview")
     saveInterviewSession(session)
 
     updateCandidateStatusToInProgress(session.candidateId, session.round)
