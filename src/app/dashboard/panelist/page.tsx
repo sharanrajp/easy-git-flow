@@ -773,12 +773,14 @@ export default function PanelistDashboard() {
         </Popover>
 
         {/* Feedback Dialog */}
-        <FeedbackDialog
-          isOpen={showFeedbackDialog}
-          onClose={() => setShowFeedbackDialog(false)}
-          session={selectedSession!}
-          onSubmit={handleFeedbackSubmit}
-        />
+        {selectedSession && (
+          <FeedbackDialog
+            isOpen={showFeedbackDialog}
+            onClose={() => setShowFeedbackDialog(false)}
+            session={selectedSession}
+            onSubmit={handleFeedbackSubmit}
+          />
+        )}
 
         {/* View Feedback Modal */}
         {showViewFeedback && viewingFeedbackSession && (
