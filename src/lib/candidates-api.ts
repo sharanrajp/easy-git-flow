@@ -1,4 +1,4 @@
-import { getToken } from './auth';
+import { getToken, makeAuthenticatedRequest } from './auth';
 
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
@@ -148,20 +148,17 @@ export async function fetchPanelistAssignedCandidates(): Promise<PanelistCandida
   }
 
   try {
-    console.log('fetchPanelistAssignedCandidates - Making request to:', `${API_BASE_URL}/interviews/my-assigned-candidates`);
+    console.log('fetchPanelistAssignedCandidates - Making authenticated request to:', `${API_BASE_URL}/interviews/my-assigned-candidates`);
     
-    const response = await fetch(`${API_BASE_URL}/interviews/my-assigned-candidates`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+    const response = await makeAuthenticatedRequest(`${API_BASE_URL}/interviews/my-assigned-candidates`, {
+      method: 'GET'
     });
 
     console.log('fetchPanelistAssignedCandidates - Response status:', response.status);
     
     if (!response.ok) {
-      console.error('fetchPanelistAssignedCandidates - Response not ok:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.error('fetchPanelistAssignedCandidates - Response not ok:', response.status, response.statusText, errorText);
       throw new Error(`Failed to fetch panelist assigned candidates: ${response.status} ${response.statusText}`);
     }
 
