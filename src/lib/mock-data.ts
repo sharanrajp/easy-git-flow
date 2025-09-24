@@ -437,7 +437,7 @@ export interface Candidate {
   negotiable?: boolean
   relocation?: boolean
   skills?: string[]
-  resumeUrl?: string
+  resume?: string
   appliedDate: string
   recruiter?: string
   status:

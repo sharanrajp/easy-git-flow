@@ -111,7 +111,7 @@ export default function CandidatesPage() {
     return () => clearInterval(interval)
   }, [])
 
-  // Load unassigned candidates when tab becomes active
+  // Load unassigned candidates when tab becomes free
   useEffect(() => {
     const loadUnassignedCandidates = async () => {
       if (activeTab !== "unassigned") return
@@ -131,7 +131,7 @@ export default function CandidatesPage() {
     loadUnassignedCandidates()
   }, [activeTab])
 
-  // Load assigned candidates when tab becomes active
+  // Load assigned candidates when tab becomes free
   useEffect(() => {
     const loadAssignedCandidates = async () => {
       if (activeTab !== "assigned") return
@@ -1265,10 +1265,10 @@ export default function CandidatesPage() {
                       panelist.skills?.some((skill) => skill.toLowerCase().includes(panelistSearch.toLowerCase())),
                   )
 
-                  const availablePanelists = filteredPanelists.filter((p) => p.status === "active")
-                  const interviewingPanelists = filteredPanelists.filter((p) => p.status === "in_interview")
-                  const breakPanelists = filteredPanelists.filter((p) => p.status === "break")
-                  const unavailablePanelists = filteredPanelists.filter((p) => p.status === "unavailable" || !p.status)
+                  const availablePanelists = filteredPanelists.filter((p) => p.current_status === "free")
+                  const interviewingPanelists = filteredPanelists.filter((p) => p.current_status === "in_interview")
+                  const breakPanelists = filteredPanelists.filter((p) => p.current_status === "break")
+                  const unavailablePanelists = filteredPanelists.filter((p) => p.current_status === "unavailable" || !p.current_status)
 
                   return (
                     <>
@@ -1490,10 +1490,10 @@ export default function CandidatesPage() {
                       panelist.skills?.some((skill) => skill.toLowerCase().includes(panelistSearch.toLowerCase())),
                   )
 
-                  const availablePanelists = filteredPanelists.filter((p) => p.status === "active")
-                  const interviewingPanelists = filteredPanelists.filter((p) => p.status === "in_interview")
-                  const breakPanelists = filteredPanelists.filter((p) => p.status === "break")
-                  const unavailablePanelists = filteredPanelists.filter((p) => p.status === "unavailable" || !p.status)
+                  const availablePanelists = filteredPanelists.filter((p) => p.current_status === "free")
+                  const interviewingPanelists = filteredPanelists.filter((p) => p.current_status === "in_interview")
+                  const breakPanelists = filteredPanelists.filter((p) => p.current_status === "break")
+                  const unavailablePanelists = filteredPanelists.filter((p) => p.current_status === "unavailable" || !p.current_status)
 
                   return (
                     <>

@@ -60,13 +60,15 @@ export async function addCandidate(candidateData: Partial<BackendCandidate>): Pr
   }
 
   try {
+    const formData = new FormData()
+    formData.append("candidate_data", JSON.stringify(candidateData))
     const response = await fetch(`${API_BASE_URL}/candidates/add`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify(candidateData),
+      body: formData,
     });
 
     if (!response.ok) {

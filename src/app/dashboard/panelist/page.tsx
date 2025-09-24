@@ -148,8 +148,8 @@ export default function PanelistDashboard() {
 
   const handleViewResume = (candidateId: string) => {
     const candidateDetails = getCandidateDetails(candidateId)
-    if (candidateDetails?.resumeUrl) {
-      window.open(candidateDetails.resumeUrl, "_blank", "noopener,noreferrer")
+    if (candidateDetails?.resume) {
+      window.open(candidateDetails.resume, "_blank", "noopener,noreferrer")
     }
   }
 
