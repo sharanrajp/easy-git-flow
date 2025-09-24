@@ -75,7 +75,7 @@ export function BulkActionsToolbar({ selectedCount, onBulkAction }: BulkActionsT
                     </SelectTrigger>
                     <SelectContent>
                       {panelists.map((panelist: User) => (
-                        <SelectItem key={panelist.id} value={panelist.name}>
+                        <SelectItem key={panelist._id} value={panelist.name}>
                           {panelist.name}
                         </SelectItem>
                       ))}

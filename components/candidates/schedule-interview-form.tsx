@@ -98,7 +98,7 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
             </SelectTrigger>
             <SelectContent>
               {panelists.map((panelist: User) => (
-                <SelectItem key={panelist.id} value={panelist.name}>
+                <SelectItem key={panelist._id} value={panelist.name}>
                   <div className="flex flex-col">
                     <span>{panelist.name}</span>
                     {panelist.skills && (
