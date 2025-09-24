@@ -163,7 +163,7 @@ Jane Smith,jane.smith@email.com,+1234567891,Backend Developer,2-4 years,"Node.js
 
         // Set defaults
         candidate.id = `bulk_${Date.now()}_${i}`
-        candidate.interviewType = "Walk-In"
+        candidate.interview_type = "Walk-In"
         candidate.skill_set = candidate.skill_set || []
         candidate.source = candidate.source || "Bulk Upload"
         candidate.job_type = candidate.job_type || "full_time"

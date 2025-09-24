@@ -173,7 +173,7 @@ export default function CandidatesPage() {
     const matchesExperience = experienceFilter === "all" || candidate.total_experience.includes(experienceFilter)
     const matchesRecruiter =
       recruiterFilter === "all" || candidate.source.toLowerCase().includes(recruiterFilter.toLowerCase())
-    const matchesInterviewType = interviewTypeFilter === "all" || candidate.interviewType === interviewTypeFilter
+    const matchesInterviewType = interviewTypeFilter === "all" || candidate.interview_type === interviewTypeFilter
 
     const matchesDate = (() => {
       if (dateFilter === "all") return true

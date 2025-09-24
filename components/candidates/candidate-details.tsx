@@ -148,7 +148,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Interview Type</span>
-                  <p className="font-medium capitalize">{candidate.interviewType}</p>
+                  <p className="font-medium capitalize">{candidate.interview_type}</p>
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Source</span>

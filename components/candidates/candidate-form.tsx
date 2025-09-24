@@ -33,7 +33,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     total_experience: candidate?.total_experience || "",
     notice_period: candidate?.notice_period || "",
     applied_position: candidate?.applied_position || "",
-    interviewType: candidate?.interviewType || "Walk-In",
+    interview_type: candidate?.interview_type || "Walk-In",
     job_type: candidate?.job_type || "full_time",
     source: candidate?.source || "",
     current_ctc: candidate?.current_ctc || "",
@@ -219,10 +219,10 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
 
       <div className="grid grid-cols-3 gap-2">
         <div className="space-y-2">
-          <Label htmlFor="interviewType">Interview Type *</Label>
+          <Label htmlFor="interview_type">Interview Type *</Label>
           <Select
-            value={formData.interviewType}
-            onValueChange={(value: any) => setFormData({ ...formData, interviewType: value })}
+            value={formData.interview_type}
+            onValueChange={(value: any) => setFormData({ ...formData, interview_type: value })}
           >
             <SelectTrigger className="w-full">
               <SelectValue />

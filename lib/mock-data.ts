@@ -250,7 +250,7 @@ export interface Candidate {
   total_experience: string
   notice_period: string
   applied_position: string
-  interviewType: "Walk-In"
+  interview_type: "Walk-In"
   job_type: "full_time" | "part-time" | "contract"
   source: string
   current_ctc?: string
@@ -309,7 +309,7 @@ export function getMockCandidates(): Candidate[] {
       total_experience: "4 years",
       notice_period: "2 weeks",
       applied_position: "Senior Frontend Developer",
-      interviewType: "Walk-In",
+      interview_type: "Walk-In",
       job_type: "full_time",
       source: "LinkedIn",
       current_ctc: "$95,000",
@@ -332,7 +332,7 @@ export function getMockCandidates(): Candidate[] {
       total_experience: "3 years",
       notice_period: "1 month",
       applied_position: "Backend Developer",
-      interviewType: "Walk-In",
+      interview_type: "Walk-In",
       job_type: "full_time",
       source: "Company Website",
       current_ctc: "$85,000",
@@ -356,7 +356,7 @@ export function getMockCandidates(): Candidate[] {
       total_experience: "2 years",
       notice_period: "2 weeks",
       applied_position: "UX Designer",
-      interviewType: "Walk-In",
+      interview_type: "Walk-In",
       job_type: "contract",
       source: "Job Board",
       current_ctc: "$70,000",
@@ -380,7 +380,7 @@ export function getMockCandidates(): Candidate[] {
       total_experience: "3 years",
       notice_period: "2 weeks",
       applied_position: "Frontend Developer",
-      interviewType: "Walk-In",
+      interview_type: "Walk-In",
       job_type: "full_time",
       source: "LinkedIn",
       current_ctc: "$75,000",
@@ -421,7 +421,7 @@ export function getMockCandidates(): Candidate[] {
       total_experience: "4 years",
       notice_period: "3 weeks",
       applied_position: "Backend Developer",
-      interviewType: "Walk-In",
+      interview_type: "Walk-In",
       job_type: "full_time",
       source: "Company Website",
       current_ctc: "$88,000",
