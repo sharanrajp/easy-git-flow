@@ -183,7 +183,7 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
               <div>
                 <label className="text-sm font-medium text-gray-500">Skills</label>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {candidate.skill_set ? (
+                  {Array.isArray(candidate.skill_set) && candidate.skill_set.length > 0 ? (
                     candidate.skill_set.map((skill: string, index: number) => (
                       <Badge key={index} variant="outline" className="text-xs">
                         {skill.trim()}

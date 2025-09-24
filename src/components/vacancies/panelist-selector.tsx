@@ -37,7 +37,7 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
     (user) =>
       (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (user.skill_set && user.skill_set.some((skill: string) => skill && skill.toLowerCase().includes(searchTerm.toLowerCase()))),
+      (Array.isArray(user.skill_set) && user.skill_set.some((skill: string) => skill && skill.toLowerCase().includes(searchTerm.toLowerCase()))),
   )
 
   // Get selected and unselected panelists
