@@ -51,6 +51,36 @@ export async function fetchUnassignedCandidates(): Promise<BackendCandidate[]> {
   }
 }
 
+// Add a new candidate
+export async function addCandidate(candidateData: Partial<BackendCandidate>): Promise<BackendCandidate> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/candidates/add`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(candidateData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to add candidate: ${response.status} ${response.statusText}`);
+    }
+
+    const newCandidate: BackendCandidate = await response.json();
+    return newCandidate;
+  } catch (error) {
+    console.error('Error adding candidate:', error);
+    throw error;
+  }
+}
+
 // Fetch assigned candidates from backend
 export async function fetchAssignedCandidates(): Promise<BackendCandidate[]> {
   const token = getToken();

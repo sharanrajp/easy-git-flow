@@ -48,10 +48,12 @@ import { getAllUsers } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, type BackendCandidate } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, type BackendCandidate } from "@/lib/candidates-api"
 import { formatDate } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 export default function CandidatesPage() {
+  const { toast } = useToast()
   const [candidates, setCandidates] = useState<Candidate[]>(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("candidates")
@@ -236,21 +238,65 @@ export default function CandidatesPage() {
     (c) => c.status === "completed" || c.status === "hired" || c.status === "rejected" || c.status === "selected" || c.status === "offerReleased" || c.status === "candidateDeclined" || c.status === "joined" || c.status === "onHold" ,
   )
 
-  const handleCreateCandidate = (candidateData: Partial<Candidate>) => {
-    const newCandidate: Candidate = {
-      id: Date.now().toString(),
-      ...candidateData,
-      appliedDate: new Date().toISOString().split("T")[0],
-      status: "unassigned",
-      recruiter: currentUser?.name || "Unknown",
-      waitTime: null,
-      waitTimeStarted: null,
-      isCheckedIn: false,
-    } as Candidate
+  const handleCreateCandidate = async (candidateData: Partial<Candidate>) => {
+    try {
+      // Prepare data for backend API
+      const backendCandidateData = {
+        name: candidateData.name,
+        email: candidateData.email,
+        phone: candidateData.phone,
+        appliedPosition: candidateData.appliedPosition,
+        experience: candidateData.experience,
+        skills: candidateData.skills,
+        source: candidateData.source,
+        appliedDate: new Date().toISOString().split("T")[0],
+        status: "unassigned",
+        recruiter: currentUser?.name || "Unknown",
+      };
 
-    setCandidates([newCandidate, ...candidates])
-    setIsCreateOpen(false)
-    setFormHasChanges(false)
+      // Call the API to add candidate
+      const newBackendCandidate = await addCandidate(backendCandidateData);
+
+      // Convert backend candidate to local candidate format
+      const newCandidate: Candidate = {
+        id: newBackendCandidate._id,
+        name: newBackendCandidate.name,
+        email: newBackendCandidate.email,
+        phone: newBackendCandidate.phone || "",
+        appliedPosition: newBackendCandidate.appliedPosition,
+        status: newBackendCandidate.status as any,
+        experience: newBackendCandidate.experience || "",
+        skills: newBackendCandidate.skills || [],
+        source: newBackendCandidate.source || "",
+        appliedDate: newBackendCandidate.appliedDate,
+        recruiter: newBackendCandidate.recruiter || "",
+        assignedPanelist: newBackendCandidate.assignedPanelist,
+        currentRound: newBackendCandidate.currentRound,
+        interviewDateTime: newBackendCandidate.interviewDateTime,
+        waitTime: newBackendCandidate.waitTime,
+        waitTimeStarted: newBackendCandidate.waitTimeStarted,
+        isCheckedIn: newBackendCandidate.isCheckedIn || false,
+      };
+
+      // Update local state with new candidate
+      setCandidates([newCandidate, ...candidates]);
+      setIsCreateOpen(false);
+      setFormHasChanges(false);
+      
+      // Show success message
+      toast({
+        title: "Candidate added successfully",
+        description: `${newCandidate.name} has been added to the candidates list.`,
+      });
+
+    } catch (error) {
+      console.error("Error creating candidate:", error);
+      toast({
+        variant: "destructive",
+        title: "Error adding candidate",
+        description: "Failed to add the candidate. Please try again.",
+      });
+    }
   }
 
   const handleEditCandidate = (candidateData: Partial<Candidate>) => {
