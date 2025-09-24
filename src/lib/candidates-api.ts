@@ -22,6 +22,31 @@ export interface BackendCandidate {
   isCheckedIn?: boolean;
 }
 
+export interface PanelistCandidate {
+  _id: string;
+  register_number: string;
+  name: string;
+  email: string;
+  phone_number?: string;
+  skill_set: string;
+  last_interview_round?: string;
+  resume_link?: string;
+  previous_rounds: Array<{
+    round: string;
+    status: string;
+    feedback_submitted: boolean;
+    rating?: number;
+    feedback?: string;
+    scores?: {
+      communication?: number;
+      problem_solving?: number;
+      logical_thinking?: number;
+      code_quality?: number;
+      technical_knowledge?: number;
+    };
+  }>;
+}
+
 // Fetch unassigned candidates from backend
 export async function fetchUnassignedCandidates(): Promise<BackendCandidate[]> {
   const token = getToken();
@@ -107,6 +132,35 @@ export async function fetchAssignedCandidates(): Promise<BackendCandidate[]> {
     return candidates;
   } catch (error) {
     console.error('Error fetching assigned candidates:', error);
+    throw error;
+  }
+}
+
+// Fetch assigned candidates for panelist from backend
+export async function fetchPanelistAssignedCandidates(): Promise<PanelistCandidate[]> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/interviews/my-assigned-candidates`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch panelist assigned candidates: ${response.status} ${response.statusText}`);
+    }
+
+    const candidates: PanelistCandidate[] = await response.json();
+    return candidates;
+  } catch (error) {
+    console.error('Error fetching panelist assigned candidates:', error);
     throw error;
   }
 }
