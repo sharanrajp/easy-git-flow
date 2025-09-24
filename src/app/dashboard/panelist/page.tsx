@@ -35,6 +35,7 @@ import {
 import { getCurrentUser } from "@/lib/auth"
 import { useEffect, useState } from "react"
 import { FeedbackDialog } from "@/components/panelist/feedback-dialog"
+import { ScheduledFeedbackDialog } from "@/components/panelist/scheduled-feedback-dialog"
 import { formatDate } from "@/lib/utils"
 import { fetchPanelistAssignedCandidates, type PanelistCandidate } from "@/lib/candidates-api"
 import { useToast } from "@/hooks/use-toast"
@@ -51,6 +52,8 @@ export default function PanelistDashboard() {
   const [viewingFeedbackSession, setViewingFeedbackSession] = useState<InterviewSession | null>(null)
   const [showCandidateFeedback, setShowCandidateFeedback] = useState(false)
   const [viewingCandidate, setViewingCandidate] = useState<PanelistCandidate | null>(null)
+  const [showScheduledFeedback, setShowScheduledFeedback] = useState(false)
+  const [selectedScheduledCandidate, setSelectedScheduledCandidate] = useState<PanelistCandidate | null>(null)
   const [performanceFilter, setPerformanceFilter] = useState<string>("this-month")
   
   // Candidates state
@@ -136,6 +139,17 @@ export default function PanelistDashboard() {
   const handleViewCandidateFeedback = (candidate: PanelistCandidate) => {
     setViewingCandidate(candidate)
     setShowCandidateFeedback(true)
+  }
+
+  const handleScheduledFeedback = (candidate: PanelistCandidate) => {
+    setSelectedScheduledCandidate(candidate)
+    setShowScheduledFeedback(true)
+  }
+
+  const handleScheduledFeedbackSubmit = () => {
+    loadCandidates() // Refresh the candidates list
+    setShowScheduledFeedback(false)
+    setSelectedScheduledCandidate(null)
   }
 
   useEffect(() => {
@@ -612,11 +626,11 @@ export default function PanelistDashboard() {
                               <TableCell>
                                 <Button
                                   size="sm"
-                                  onClick={() => handleViewDetails(candidate)}
-                                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                                  onClick={() => handleScheduledFeedback(candidate)}
+                                  className="bg-green-600 hover:bg-green-700 text-white"
                                 >
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  View Details
+                                  <Star className="h-4 w-4 mr-2" />
+                                  Feedback
                                 </Button>
                               </TableCell>
                             </TableRow>
@@ -786,6 +800,16 @@ export default function PanelistDashboard() {
             onClose={() => setShowFeedbackDialog(false)}
             session={selectedSession}
             onSubmit={handleFeedbackSubmit}
+          />
+        )}
+
+        {/* Scheduled Feedback Dialog */}
+        {selectedScheduledCandidate && (
+          <ScheduledFeedbackDialog
+            isOpen={showScheduledFeedback}
+            onClose={() => setShowScheduledFeedback(false)}
+            candidate={selectedScheduledCandidate}
+            onSubmit={handleScheduledFeedbackSubmit}
           />
         )}
 
