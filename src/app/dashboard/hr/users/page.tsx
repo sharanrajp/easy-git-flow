@@ -328,7 +328,7 @@ export default function UsersPage() {
                         <Badge className={getRoleColor(user.role)}>{formatRole(user.role, user.panelist_type)}</Badge>
                       </TableCell>
                       <TableCell>
-                        {user.skill_set ? (
+                        {Array.isArray(user.skill_set) && user.skill_set.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {user.skill_set.slice(0, 2).map((skill) => (
                               <Badge key={skill} variant="outline" className="text-xs">
@@ -541,7 +541,7 @@ export default function UsersPage() {
                           ))}
                       </div>
 
-                      {user.skill_set && user.skill_set.length > 0 && (
+                      {Array.isArray(user.skill_set) && user.skill_set.length > 0 && (
                         <div>
                           <div className="flex flex-wrap gap-1">
                             {user.skill_set.slice(0, 2).map((skill) => (
