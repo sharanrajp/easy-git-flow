@@ -60,7 +60,7 @@ export default function VacanciesPage() {
     if (!storedCandidates) return { applications: 0, shortlisted: 0, interviewed: 0, joined: 0 }
 
     const candidates = JSON.parse(storedCandidates)
-    const vacancyCandidates = candidates.filter((c: any) => c.appliedPosition === vacancyTitle)
+    const vacancyCandidates = candidates.filter((c: any) => c.applied_position === vacancyTitle)
 
     return {
       applications: vacancyCandidates.length,

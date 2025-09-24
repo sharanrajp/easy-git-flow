@@ -86,7 +86,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900">{candidate.name}</h2>
-        <p className="text-gray-600">{candidate.appliedPosition}</p>
+        <p className="text-gray-600">{candidate.applied_position}</p>
         <Badge className={getStatusColor(candidate.status)}>
           {formatStatus(candidate.status)}
         </Badge>
@@ -118,7 +118,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-gray-500" />
-                <span>{candidate.phone}</span>
+                <span>{candidate.phone_number}</span>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-4 w-4 text-gray-500" />

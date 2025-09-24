@@ -21,9 +21,7 @@ export interface BackendCandidate {
   _id: string
   name: string
   email: string
-  phone?: string
   phone_number?: string
-  appliedPosition?: string
   applied_position?: string
   status?: string
   final_status?: string
@@ -88,9 +86,9 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
     }
   }
 
-  const formatPhoneNumber = (phone: any) => {
-    if (!phone) return "N/A"
-    return String(phone).replace(/\+/g, "")
+  const formatPhoneNumber = (phone_number: any) => {
+    if (!phone_number) return "N/A"
+    return String(phone_number).replace(/\+/g, "")
   }
 
   const StarRating = ({ rating }: { rating: number | null }) => {
@@ -144,7 +142,7 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Applied Position</label>
-                  <p>{(candidate as any).applied_position || candidate.appliedPosition || "N/A"}</p>
+                  <p>{(candidate as any).applied_position || candidate.applied_position || "N/A"}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Register Number</label>

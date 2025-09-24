@@ -245,11 +245,11 @@ export interface Candidate {
   id: string
   name: string
   email: string
-  phone: string
+  phone_number: string
   location: string
   total_experience: string
   notice_period: string
-  appliedPosition: string
+  applied_position: string
   interviewType: "Walk-In"
   job_type: "full_time" | "part-time" | "contract"
   source: string
@@ -304,11 +304,11 @@ export function getMockCandidates(): Candidate[] {
       id: "1",
       name: "John Smith",
       email: "john.smith@email.com",
-      phone: "+1-555-0101",
+      phone_number: "+1-555-0101",
       location: "San Francisco, CA",
       total_experience: "4 years",
       notice_period: "2 weeks",
-      appliedPosition: "Senior Frontend Developer",
+      applied_position: "Senior Frontend Developer",
       interviewType: "Walk-In",
       job_type: "full_time",
       source: "LinkedIn",
@@ -327,11 +327,11 @@ export function getMockCandidates(): Candidate[] {
       id: "2",
       name: "Sarah Wilson",
       email: "sarah.wilson@email.com",
-      phone: "+1-555-0102",
+      phone_number: "+1-555-0102",
       location: "New York, NY",
       total_experience: "3 years",
       notice_period: "1 month",
-      appliedPosition: "Backend Developer",
+      applied_position: "Backend Developer",
       interviewType: "Walk-In",
       job_type: "full_time",
       source: "Company Website",
@@ -351,11 +351,11 @@ export function getMockCandidates(): Candidate[] {
       id: "4",
       name: "Emily Davis",
       email: "emily.davis@email.com",
-      phone: "+1-555-0104",
+      phone_number: "+1-555-0104",
       location: "Seattle, WA",
       total_experience: "2 years",
       notice_period: "2 weeks",
-      appliedPosition: "UX Designer",
+      applied_position: "UX Designer",
       interviewType: "Walk-In",
       job_type: "contract",
       source: "Job Board",
@@ -375,11 +375,11 @@ export function getMockCandidates(): Candidate[] {
       id: "6",
       name: "Jessica Martinez",
       email: "jessica.martinez@email.com",
-      phone: "+1-555-0106",
+      phone_number: "+1-555-0106",
       location: "Chicago, IL",
       total_experience: "3 years",
       notice_period: "2 weeks",
-      appliedPosition: "Frontend Developer",
+      applied_position: "Frontend Developer",
       interviewType: "Walk-In",
       job_type: "full_time",
       source: "LinkedIn",
@@ -416,11 +416,11 @@ export function getMockCandidates(): Candidate[] {
       id: "7",
       name: "Robert Chen",
       email: "robert.chen@email.com",
-      phone: "+1-555-0107",
+      phone_number: "+1-555-0107",
       location: "Boston, MA",
       total_experience: "4 years",
       notice_period: "3 weeks",
-      appliedPosition: "Backend Developer",
+      applied_position: "Backend Developer",
       interviewType: "Walk-In",
       job_type: "full_time",
       source: "Company Website",

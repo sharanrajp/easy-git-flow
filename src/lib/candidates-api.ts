@@ -6,8 +6,8 @@ export interface BackendCandidate {
   _id: string;
   name: string;
   email: string;
-  phone?: string;
-  appliedPosition: string;
+  phone_number?: string;
+  applied_position: string;
   status: string;
   total_experience?: string;
   skill_set?: string[];

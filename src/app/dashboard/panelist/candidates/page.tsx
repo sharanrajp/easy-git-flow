@@ -47,9 +47,9 @@ export default function PanelistCandidatesPage() {
       candidate.skill_set,
   )
 
-  const formatPhoneNumber = (phone: string | undefined) => {
-    if (!phone) return "N/A"
-    return String(phone) // Convert to string to avoid scientific notation
+  const formatPhoneNumber = (phone_number: string | undefined) => {
+    if (!phone_number) return "N/A"
+    return String(phone_number) // Convert to string to avoid scientific notation
   }
 
   const getPreviousRoundsText = (rounds: PanelistCandidate['previous_rounds']) => {

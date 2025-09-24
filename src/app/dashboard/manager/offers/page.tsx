@@ -104,7 +104,7 @@ export default function OffersPage() {
                       .filter((c) => c.status === "selected")
                       .map((candidate) => (
                         <SelectItem key={candidate.id} value={candidate.id}>
-                          {candidate.name} - {candidate.appliedPosition}
+                          {candidate.name} - {candidate.applied_position}
                         </SelectItem>
                       ))}
                   </SelectContent>

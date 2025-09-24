@@ -112,11 +112,11 @@ Jane Smith,jane.smith@email.com,+1234567891,Backend Developer,2-4 years,"Node.js
               candidate.email = value
               break
             case "phone":
-              candidate.phone = value
+              candidate.phone_number = value
               break
             case "applied position":
             case "position":
-              candidate.appliedPosition = value
+              candidate.applied_position = value
               break
             case "total_experience":
               candidate.total_experience = value

@@ -107,7 +107,7 @@ export function InterviewFlow({ candidate, onComplete }: InterviewFlowProps) {
             </div>
             <div>
               <span className="text-sm text-gray-500">Position:</span>
-              <p className="font-medium">{candidate.appliedPosition}</p>
+              <p className="font-medium">{candidate.applied_position}</p>
             </div>
             <div>
               <span className="text-sm text-gray-500">Round:</span>

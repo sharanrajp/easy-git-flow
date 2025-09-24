@@ -28,11 +28,11 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
   const [formData, setFormData] = useState({
     name: candidate?.name || "",
     email: candidate?.email || "",
-    phone: candidate?.phone || "",
+    phone_number: candidate?.phone_number || "",
     location: candidate?.location || "",
     total_experience: candidate?.total_experience || "",
     notice_period: candidate?.notice_period || "",
-    appliedPosition: candidate?.appliedPosition || "",
+    applied_position: candidate?.applied_position || "",
     interviewType: candidate?.interviewType || "Walk-In",
     job_type: candidate?.job_type || "full_time",
     source: candidate?.source || "",
@@ -138,11 +138,11 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
 
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone *</Label>
+          <Label htmlFor="phone_number">Phone *</Label>
           <Input
-            id="phone"
-            value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            id="phone_number"
+            value={formData.phone_number}
+            onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
             required
             className="w-full"
           />
@@ -186,10 +186,10 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
 
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-2">
-          <Label htmlFor="appliedPosition">Applied Position *</Label>
+          <Label htmlFor="applied_position">Applied Position *</Label>
           <Select
-            value={formData.appliedPosition}
-            onValueChange={(value) => setFormData({ ...formData, appliedPosition: value })}
+            value={formData.applied_position}
+            onValueChange={(value) => setFormData({ ...formData, applied_position: value })}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select position" />

@@ -166,9 +166,9 @@ export default function CandidatesPage() {
     const matchesSearch =
       candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       candidate.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate.appliedPosition.toLowerCase().includes(searchTerm.toLowerCase())
+      candidate.applied_position.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesJob = jobFilter === "all" || candidate.appliedPosition.toLowerCase().includes(jobFilter.toLowerCase())
+    const matchesJob = jobFilter === "all" || candidate.applied_position.toLowerCase().includes(jobFilter.toLowerCase())
     const matchesStatus = statusFilter === "all" || candidate.status === statusFilter
     const matchesExperience = experienceFilter === "all" || candidate.total_experience.includes(experienceFilter)
     const matchesRecruiter =
@@ -247,8 +247,8 @@ export default function CandidatesPage() {
       const backendCandidateData = {
         name: candidateData.name,
         email: candidateData.email,
-        phone: candidateData.phone,
-        appliedPosition: candidateData.appliedPosition,
+        phone_number: candidateData.phone_number,
+        applied_position: candidateData.applied_position,
         total_experience: candidateData.total_experience,
         skill_set: candidateData.skill_set,
         source: candidateData.source,
@@ -265,8 +265,8 @@ export default function CandidatesPage() {
         id: newBackendCandidate._id,
         name: newBackendCandidate.name,
         email: newBackendCandidate.email,
-        phone: newBackendCandidate.phone || "",
-        appliedPosition: newBackendCandidate.appliedPosition,
+        phone_number: newBackendCandidate.phone_number || "",
+        applied_position: newBackendCandidate.applied_position,
         status: newBackendCandidate.status as any,
         total_experience: newBackendCandidate.total_experience || "",
         skill_set: newBackendCandidate.skill_set || [],
@@ -361,7 +361,7 @@ export default function CandidatesPage() {
       candidateName: candidateToSchedule.name,
       panelistId,
       panelistName,
-      position: candidateToSchedule.appliedPosition,
+      position: candidateToSchedule.applied_position,
       round: candidateToSchedule.currentRound || "R1",
       scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       status: "scheduled",
@@ -851,10 +851,10 @@ export default function CandidatesPage() {
                             <div>
                               <div className="font-medium">{candidate.name}</div>
                               <div className="text-sm text-gray-500">{candidate.email}</div>
-                              <div className="text-sm text-gray-500">{candidate.phone || "No phone"}</div>
+                              <div className="text-sm text-gray-500">{candidate.phone_number || "No phone_number"}</div>
                             </div>
                           </TableCell>
-                          <TableCell>{candidate.appliedPosition}</TableCell>
+                          <TableCell>{candidate.applied_position}</TableCell>
                           <TableCell>{candidate.total_experience || "N/A"}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
@@ -895,8 +895,8 @@ export default function CandidatesPage() {
                                     id: candidate._id,
                                     name: candidate.name,
                                     email: candidate.email,
-                                    phone: candidate.phone,
-                                    appliedPosition: candidate.appliedPosition,
+                                    phone_number: candidate.phone_number,
+                                    applied_position: candidate.applied_position,
                                     status: candidate.status,
                                     total_experience: candidate.total_experience,
                                     skill_set: candidate.skill_set,
@@ -919,8 +919,8 @@ export default function CandidatesPage() {
                                     id: candidate._id,
                                     name: candidate.name,
                                     email: candidate.email,
-                                    phone: candidate.phone,
-                                    appliedPosition: candidate.appliedPosition,
+                                    phone_number: candidate.phone_number,
+                                    applied_position: candidate.applied_position,
                                     status: candidate.status,
                                     total_experience: candidate.total_experience,
                                     skill_set: candidate.skill_set,
@@ -1012,9 +1012,9 @@ export default function CandidatesPage() {
                           }
                         }
 
-                        const formatPhoneNumber = (phone: any) => {
-                          if (!phone) return "No phone"
-                          return String(phone).replace(/\+/g, "")
+                        const formatPhoneNumber = (phone_number: any) => {
+                          if (!phone_number) return "No phone_number"
+                          return String(phone_number).replace(/\+/g, "")
                         }
 
                         return (
@@ -1038,7 +1038,7 @@ export default function CandidatesPage() {
                                 <div className="text-sm text-gray-500">{formatPhoneNumber(candidate.phone_number)}</div>
                               </div>
                             </TableCell>
-                            <TableCell>{(candidate as any).applied_position || candidate.appliedPosition || "N/A"}</TableCell>
+                            <TableCell>{(candidate as any).applied_position || candidate.applied_position || "N/A"}</TableCell>
                             <TableCell>{candidate.last_interview_round || "N/A"}</TableCell>
                             <TableCell>{candidate.panel_name || "Not assigned"}</TableCell>
                             <TableCell>
@@ -1120,10 +1120,10 @@ export default function CandidatesPage() {
                             <div>
                               <div className="font-medium">{candidate.name}</div>
                               <div className="text-sm text-gray-500">{candidate.email}</div>
-                              <div className="text-sm text-gray-500">{candidate.phone}</div>
+                              <div className="text-sm text-gray-500">{candidate.phone_number}</div>
                             </div>
                           </TableCell>
-                          <TableCell>{candidate.appliedPosition}</TableCell>
+                          <TableCell>{candidate.applied_position}</TableCell>
                           <TableCell>
                             {candidate.status !== "completed" ? (
                               <DropdownMenu>
@@ -1434,7 +1434,7 @@ export default function CandidatesPage() {
                 Reschedule {candidateToReschedule?.name}'s interview
                 {candidateToReschedule && (
                   <span className="block mt-1 font-medium text-blue-600">
-                    Position: {candidateToReschedule?.appliedPosition}
+                    Position: {candidateToReschedule?.applied_position}
                   </span>
                 )}
               </DialogDescription>

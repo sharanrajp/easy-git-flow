@@ -25,7 +25,7 @@ export default function ManagerCandidatesPage() {
     (candidate) =>
       candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       candidate.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate.appliedPosition.toLowerCase().includes(searchTerm.toLowerCase()),
+      candidate.applied_position.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   const getStatusColor = (status: string) => {
@@ -131,7 +131,7 @@ export default function ManagerCandidatesPage() {
                         <div className="text-sm text-gray-500">{candidate.email}</div>
                       </div>
                     </TableCell>
-                    <TableCell>{candidate.appliedPosition}</TableCell>
+                    <TableCell>{candidate.applied_position}</TableCell>
                     <TableCell>{candidate.expected_ctc}</TableCell>
                     <TableCell>
                       {candidate.r3InterviewDate
