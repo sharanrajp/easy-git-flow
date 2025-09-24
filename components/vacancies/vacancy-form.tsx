@@ -104,7 +104,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
         date: formData.driveDate,
         location: formData.driveLocation
       } : undefined,
-      interview_type: ["Walk-In"] as const,
+      interview_type: "Walk-In" as const,
       id: vacancy?.id || `${Date.now()}`,
       postedOn: vacancy?.postedOn || new Date().toISOString().split('T')[0],
       applications: vacancy?.applications || 0,

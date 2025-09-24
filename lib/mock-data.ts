@@ -100,7 +100,7 @@ export interface Vacancy {
   experienceRange: string
   skills: string[]
   jobDescription?: string
-  interview_type: "Walk-In"[]
+  interview_type: "Walk-In"
   walkInDetails?: {
     date: string
     location: string
@@ -133,7 +133,7 @@ export function getMockVacancies(): Vacancy[] {
       number_of_vacancies: 2,
       experienceRange: "3-5 years",
       skills: ["React", "TypeScript", "Next.js", "Tailwind CSS"],
-      interview_type: ["Walk-In"],
+      interview_type: "Walk-In",
       walkInDetails: {
         date: "2024-01-15",
         location: "Main Office, Floor 3",
@@ -159,7 +159,7 @@ export function getMockVacancies(): Vacancy[] {
       number_of_vacancies: 1,
       experienceRange: "2-4 years",
       skills: ["Node.js", "Python", "PostgreSQL", "AWS"],
-      interview_type: ["Walk-In"],
+      interview_type: "Walk-In",
       deadline: "2024-02-15",
       postedOn: "2024-01-05",
       assignedPanelists: ["4", "5"],
@@ -181,7 +181,7 @@ export function getMockVacancies(): Vacancy[] {
       number_of_vacancies: 1,
       experienceRange: "5-7 years",
       skills: ["Product Strategy", "Analytics", "User Research", "Agile"],
-      interview_type: ["Walk-In"],
+      interview_type: "Walk-In",
       deadline: "2024-01-20",
       postedOn: "2023-12-20",
       assignedPanelists: ["3", "6"],
@@ -203,7 +203,7 @@ export function getMockVacancies(): Vacancy[] {
       number_of_vacancies: 1,
       experienceRange: "2-4 years",
       skills: ["Figma", "User Research", "Prototyping", "Design Systems"],
-      interview_type: ["Walk-In"],
+      interview_type: "Walk-In",
       deadline: "2024-02-28",
       postedOn: "2024-01-10",
       assignedPanelists: ["2"],
@@ -225,7 +225,7 @@ export function getMockVacancies(): Vacancy[] {
       number_of_vacancies: 1,
       experienceRange: "4-6 years",
       skills: ["Docker", "Kubernetes", "AWS", "CI/CD", "Terraform"],
-      interview_type: ["Walk-In"],
+      interview_type: "Walk-In",
       walkInDetails: {
         date: "2024-01-25",
         location: "Seattle Office, Conference Room A",

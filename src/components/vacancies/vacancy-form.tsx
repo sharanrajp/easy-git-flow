@@ -86,7 +86,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     const submitData: Partial<Vacancy> = {
       ...formData,
       experienceRange: `${formData.experienceFrom}-${formData.experienceTo} years`,
-      interview_type: ["Walk-In"], // Only Walk-In interviews for this version
+      interview_type: "Walk-In", // Only Walk-In interviews for this version
       walkInDetails: {
         date: formData.driveDate,
         location: formData.driveLocation,

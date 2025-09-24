@@ -175,14 +175,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {vacancy.interview_type.map((type: string, index: number) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                      {index + 1}
-                    </div>
-                    <span className="text-gray-900 capitalize">{type} Interview</span>
-                  </div>
-                ))}
+                {vacancy.interview_type}
               </div>
             </CardContent>
           </Card>
