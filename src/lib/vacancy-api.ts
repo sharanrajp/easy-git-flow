@@ -60,7 +60,9 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
     skills: backendVacancy.skills_required,
     interview_type: [backendVacancy.interview_type] as "Walk-In"[],
     walkInDetails: {
-      date: backendVacancy.drive_date,
+      date: backendVacancy.drive_date
+        ? new Date(backendVacancy.drive_date).toISOString().split("T")[0] // ✅ "YYYY-MM-DD"
+        : "",
       location: backendVacancy.drive_location,
     },
     postedOn: backendVacancy.created_at,
@@ -90,7 +92,7 @@ function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyC
     experience_range: frontendVacancy.experienceRange || "",
     skills_required: frontendVacancy.skills || [],
     interview_type: frontendVacancy.interview_type?.[0] || "Walk-In",
-    drive_date: frontendVacancy.walkInDetails?.date || "",
+    drive_date: new Date(frontendVacancy.walkInDetails?.date || "").toISOString() || "",
     drive_location: frontendVacancy.walkInDetails?.location || "",
     job_desc: frontendVacancy.jobDescription || "",
     request_type: frontendVacancy.request_type || "new",
