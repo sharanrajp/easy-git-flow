@@ -63,7 +63,7 @@ export async function refreshToken(): Promise<string | null> {
 }
 
 // Authenticated API call helper
-async function makeAuthenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
+export async function makeAuthenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
   let token = getToken()
   
   if (!token) {
