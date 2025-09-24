@@ -89,7 +89,7 @@ export interface Vacancy {
   position_title: string
   department: string
   location: string
-  job_type: "full-time" | "part-time" | "contract"
+  job_type: "full_time" | "part-time" | "contract"
   priority: "P3" | "P2" | "P1" | "P0"
   status: "active" | "paused" | "closed"
   hiring_manager_name: string
@@ -100,7 +100,7 @@ export interface Vacancy {
   experienceRange: string
   skills: string[]
   jobDescription?: string
-  interview_type: "walk-in"[]
+  interview_type: "Walk-In"[]
   walkInDetails?: {
     date: string
     location: string
@@ -125,7 +125,7 @@ export function getMockVacancies(): Vacancy[] {
       position_title: "Senior Frontend Developer",
       department: "Engineering",
       location: "San Francisco, CA",
-      job_type: "full-time",
+      job_type: "full_time",
       priority: "P1",
       status: "active",
       hiring_manager_name: "Emily Davis",
@@ -133,7 +133,7 @@ export function getMockVacancies(): Vacancy[] {
       number_of_vacancies: 2,
       experienceRange: "3-5 years",
       skills: ["React", "TypeScript", "Next.js", "Tailwind CSS"],
-      interview_type: ["walk-in"],
+      interview_type: ["Walk-In"],
       walkInDetails: {
         date: "2024-01-15",
         location: "Main Office, Floor 3",
@@ -151,7 +151,7 @@ export function getMockVacancies(): Vacancy[] {
       position_title: "Backend Developer",
       department: "Engineering",
       location: "Remote",
-      job_type: "full-time",
+      job_type: "full_time",
       priority: "P2",
       status: "active",
       hiring_manager_name: "David Kim",
@@ -159,7 +159,7 @@ export function getMockVacancies(): Vacancy[] {
       number_of_vacancies: 1,
       experienceRange: "2-4 years",
       skills: ["Node.js", "Python", "PostgreSQL", "AWS"],
-      interview_type: ["walk-in"],
+      interview_type: ["Walk-In"],
       deadline: "2024-02-15",
       postedOn: "2024-01-05",
       assignedPanelists: ["4", "5"],
@@ -173,7 +173,7 @@ export function getMockVacancies(): Vacancy[] {
       position_title: "Product Manager",
       department: "Product",
       location: "New York, NY",
-      job_type: "full-time",
+      job_type: "full_time",
       priority: "P0",
       status: "active",
       hiring_manager_name: "Emily Davis",
@@ -181,7 +181,7 @@ export function getMockVacancies(): Vacancy[] {
       number_of_vacancies: 1,
       experienceRange: "5-7 years",
       skills: ["Product Strategy", "Analytics", "User Research", "Agile"],
-      interview_type: ["walk-in"],
+      interview_type: ["Walk-In"],
       deadline: "2024-01-20",
       postedOn: "2023-12-20",
       assignedPanelists: ["3", "6"],
@@ -203,7 +203,7 @@ export function getMockVacancies(): Vacancy[] {
       number_of_vacancies: 1,
       experienceRange: "2-4 years",
       skills: ["Figma", "User Research", "Prototyping", "Design Systems"],
-      interview_type: ["walk-in"],
+      interview_type: ["Walk-In"],
       deadline: "2024-02-28",
       postedOn: "2024-01-10",
       assignedPanelists: ["2"],
@@ -217,7 +217,7 @@ export function getMockVacancies(): Vacancy[] {
       position_title: "DevOps Engineer",
       department: "Engineering",
       location: "Seattle, WA",
-      job_type: "full-time",
+      job_type: "full_time",
       priority: "P1",
       status: "active",
       hiring_manager_name: "Alex Rodriguez",
@@ -225,7 +225,7 @@ export function getMockVacancies(): Vacancy[] {
       number_of_vacancies: 1,
       experienceRange: "4-6 years",
       skills: ["Docker", "Kubernetes", "AWS", "CI/CD", "Terraform"],
-      interview_type: ["walk-in"],
+      interview_type: ["Walk-In"],
       walkInDetails: {
         date: "2024-01-25",
         location: "Seattle Office, Conference Room A",
@@ -250,8 +250,8 @@ export interface Candidate {
   experience: string
   noticePeriod: string
   appliedPosition: string
-  interviewType: "walk-in"
-  job_type: "full-time" | "part-time" | "contract"
+  interviewType: "Walk-In"
+  job_type: "full_time" | "part-time" | "contract"
   source: string
   currentCTC?: string
   expectedCTC?: string
@@ -309,8 +309,8 @@ export function getMockCandidates(): Candidate[] {
       experience: "4 years",
       noticePeriod: "2 weeks",
       appliedPosition: "Senior Frontend Developer",
-      interviewType: "walk-in",
-      job_type: "full-time",
+      interviewType: "Walk-In",
+      job_type: "full_time",
       source: "LinkedIn",
       currentCTC: "$95,000",
       expectedCTC: "$110,000",
@@ -332,8 +332,8 @@ export function getMockCandidates(): Candidate[] {
       experience: "3 years",
       noticePeriod: "1 month",
       appliedPosition: "Backend Developer",
-      interviewType: "walk-in",
-      job_type: "full-time",
+      interviewType: "Walk-In",
+      job_type: "full_time",
       source: "Company Website",
       currentCTC: "$85,000",
       expectedCTC: "$100,000",
@@ -356,7 +356,7 @@ export function getMockCandidates(): Candidate[] {
       experience: "2 years",
       noticePeriod: "2 weeks",
       appliedPosition: "UX Designer",
-      interviewType: "walk-in",
+      interviewType: "Walk-In",
       job_type: "contract",
       source: "Job Board",
       currentCTC: "$70,000",
@@ -380,8 +380,8 @@ export function getMockCandidates(): Candidate[] {
       experience: "3 years",
       noticePeriod: "2 weeks",
       appliedPosition: "Frontend Developer",
-      interviewType: "walk-in",
-      job_type: "full-time",
+      interviewType: "Walk-In",
+      job_type: "full_time",
       source: "LinkedIn",
       currentCTC: "$75,000",
       expectedCTC: "$90,000",
@@ -421,8 +421,8 @@ export function getMockCandidates(): Candidate[] {
       experience: "4 years",
       noticePeriod: "3 weeks",
       appliedPosition: "Backend Developer",
-      interviewType: "walk-in",
-      job_type: "full-time",
+      interviewType: "Walk-In",
+      job_type: "full_time",
       source: "Company Website",
       currentCTC: "$88,000",
       expectedCTC: "$105,000",

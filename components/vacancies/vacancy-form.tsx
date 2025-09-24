@@ -25,7 +25,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
     position_title: vacancy?.position_title || "",
     department: vacancy?.department || "",
     location: vacancy?.location || "",
-    job_type: vacancy?.job_type || "full-time",
+    job_type: vacancy?.job_type || "full_time",
     priority: vacancy?.priority || "P3",
     status: vacancy?.status || "active",
     hiring_manager_name: vacancy?.hiring_manager_name || "",
@@ -104,7 +104,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
         date: formData.driveDate,
         location: formData.driveLocation
       } : undefined,
-      interview_type: ["walk-in"] as const,
+      interview_type: ["Walk-In"] as const,
       id: vacancy?.id || `${Date.now()}`,
       postedOn: vacancy?.postedOn || new Date().toISOString().split('T')[0],
       applications: vacancy?.applications || 0,
@@ -230,7 +230,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
                       <SelectValue placeholder="Select job type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="full-time">Full Time</SelectItem>
+                      <SelectItem value="full_time">Full Time</SelectItem>
                       <SelectItem value="part-time">Part Time</SelectItem>
                       <SelectItem value="contract">Contract</SelectItem>
                     </SelectContent>

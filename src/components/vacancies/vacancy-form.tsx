@@ -27,7 +27,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   const [formData, setFormData] = useState({
     position_title: vacancy?.position_title || "",
     request_type: vacancy?.request_type || "new",
-    job_type: vacancy?.job_type || "full-time",
+    job_type: vacancy?.job_type || "full_time",
     priority: vacancy?.priority || "P2",
     projectClientName: vacancy?.projectClientName || "",
     city: vacancy?.city || "Perungudi, Chennai", // default city value
@@ -86,7 +86,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     const submitData: Partial<Vacancy> = {
       ...formData,
       experienceRange: `${formData.experienceFrom}-${formData.experienceTo} years`,
-      interview_type: ["walk-in"], // Only walk-in interviews for this version
+      interview_type: ["Walk-In"], // Only Walk-In interviews for this version
       walkInDetails: {
         date: formData.driveDate,
         location: formData.driveLocation,
@@ -101,7 +101,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     setFormData({
       position_title: vacancy?.position_title || "",
       request_type: vacancy?.request_type || "new",
-      job_type: vacancy?.job_type || "full-time",
+      job_type: vacancy?.job_type || "full_time",
       priority: vacancy?.priority || "P2",
       projectClientName: vacancy?.projectClientName || "",
       city: vacancy?.city || "Perungudi, Chennai",
@@ -244,10 +244,10 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="full-time">Full-Time</SelectItem>
+                      <SelectItem value="full_time">Full-Time</SelectItem>
                       <SelectItem value="internship">Internship</SelectItem>
                       <SelectItem value="contract">Contract</SelectItem>
-                      <SelectItem value="contract-to-hire">Contract to Hire</SelectItem>
+                      <SelectItem value="contract_to_hire">Contract to Hire</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

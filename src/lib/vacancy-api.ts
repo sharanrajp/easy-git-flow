@@ -42,6 +42,7 @@ interface VacancyCreateRequest {
   drive_date: string;
   drive_location: string;
   job_desc?: string;
+  request_type?:string;
 }
 
 // Transform backend vacancy to frontend format
@@ -51,13 +52,13 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
     position_title: backendVacancy.position_title,
     hiring_manager_name: backendVacancy.hiring_manager_name,
     recruiter_name: backendVacancy.recruiter_name,
-    job_type: backendVacancy.job_type as "full-time" | "part-time" | "contract",
+    job_type: backendVacancy.job_type as "full_time" | "part-time" | "contract",
     priority: backendVacancy.priority as "P3" | "P2" | "P1" | "P0",
     number_of_vacancies: backendVacancy.number_of_vacancies,
     status: backendVacancy.status as "active" | "paused" | "closed",
     experienceRange: backendVacancy.experience_range,
     skills: backendVacancy.skills_required,
-    interview_type: [backendVacancy.interview_type] as "walk-in"[],
+    interview_type: [backendVacancy.interview_type] as "Walk-In"[],
     walkInDetails: {
       date: backendVacancy.drive_date,
       location: backendVacancy.drive_location,
@@ -82,16 +83,17 @@ function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyC
     position_title: frontendVacancy.position_title || "",
     hiring_manager_name: frontendVacancy.hiring_manager_name || "",
     recruiter_name: frontendVacancy.recruiter_name || "",
-    job_type: frontendVacancy.job_type || "full-time",
+    job_type: frontendVacancy.job_type || "full_time",
     priority: frontendVacancy.priority || "P3",
     number_of_vacancies: frontendVacancy.number_of_vacancies || 1,
     status: frontendVacancy.status || "active",
     experience_range: frontendVacancy.experienceRange || "",
     skills_required: frontendVacancy.skills || [],
-    interview_type: frontendVacancy.interview_type?.[0] || "walk-in",
+    interview_type: frontendVacancy.interview_type?.[0] || "Walk-In",
     drive_date: frontendVacancy.walkInDetails?.date || "",
     drive_location: frontendVacancy.walkInDetails?.location || "",
     job_desc: frontendVacancy.jobDescription || "",
+    request_type: frontendVacancy.request_type || "new",
   };
 }
 

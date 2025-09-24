@@ -33,8 +33,8 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     experience: candidate?.experience || "",
     noticePeriod: candidate?.noticePeriod || "",
     appliedPosition: candidate?.appliedPosition || "",
-    interviewType: candidate?.interviewType || "walk-in",
-    job_type: candidate?.job_type || "full-time",
+    interviewType: candidate?.interviewType || "Walk-In",
+    job_type: candidate?.job_type || "full_time",
     source: candidate?.source || "",
     currentCTC: candidate?.currentCTC || "",
     expectedCTC: candidate?.expectedCTC || "",
@@ -228,7 +228,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="walk-in">Walk-in</SelectItem>
+              <SelectItem value="Walk-In">Walk-in</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -239,10 +239,10 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="full-time">Full Time</SelectItem>
+              <SelectItem value="full_time">Full Time</SelectItem>
               <SelectItem value="contract">Contract</SelectItem>
               <SelectItem value="internship">Internship</SelectItem>
-              <SelectItem value="contract-to-hire">Contract to Hire</SelectItem>
+              <SelectItem value="contract_to_hire">Contract to Hire</SelectItem>
             </SelectContent>
           </Select>
         </div>
