@@ -168,8 +168,8 @@ export default function VacanciesPage() {
       })
 
       if (response.ok) {
-        // Update the vacancy in local state without page refresh
-        const updatedVacancies = vacancies.map((v) => (v.id === selectedVacancy.id ? { ...v, ...vacancyData } : v))
+        // Reload vacancies from API to get updated data
+        const updatedVacancies = await fetchVacancies()
         setVacancies(updatedVacancies)
         setIsEditOpen(false)
         setSelectedVacancy(null)
@@ -213,20 +213,50 @@ export default function VacanciesPage() {
     return new Date(deadline) < new Date()
   }
 
-  const handlePanelistUpdate = (panelistIds: string[]) => {
+  const handlePanelistUpdate = async (panelistIds: string[]) => {
     if (!selectedVacancy) return
 
-    const updatedVacancies = vacancies.map((v) =>
-      v.id === selectedVacancy.id ? { ...v, assignedPanelists: panelistIds } : v,
-    )
-    setVacancies(updatedVacancies)
-    setSelectedVacancy({ ...selectedVacancy, assignedPanelists: panelistIds })
-    setIsPanelistEditOpen(false)
+    try {
+      // Update vacancy in database
+      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/Vacancy/${selectedVacancy._id}`, {
+        method: "PUT",
+        body: JSON.stringify({...selectedVacancy, assignedPanelists: panelistIds})
+      })
+
+      if (response.ok) {
+        // Reload vacancies from API to get updated data  
+        const updatedVacancies = await fetchVacancies()
+        setVacancies(updatedVacancies)
+        setSelectedVacancy({ ...selectedVacancy, assignedPanelists: panelistIds })
+        setIsPanelistEditOpen(false)
+      } else {
+        console.error("Failed to update panelists:", await response.text())
+      }
+    } catch (error) {
+      console.error("Error updating panelists:", error)
+    }
   }
 
-  const handleStatusChange = (vacancyId: string, newStatus: string) => {
-    const updatedVacancies = vacancies.map((v) => (v.id === vacancyId ? { ...v, status: newStatus as "active" | "paused" | "closed" } : v))
-    setVacancies(updatedVacancies)
+  const handleStatusChange = async (vacancyId: string, newStatus: string) => {
+    const vacancy = vacancies.find(v => v._id === vacancyId)
+    if (!vacancy) return
+
+    try {
+      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/Vacancy/${vacancyId}`, {
+        method: "PUT", 
+        body: JSON.stringify({...vacancy, status: newStatus})
+      })
+
+      if (response.ok) {
+        // Reload vacancies from API to get updated data
+        const updatedVacancies = await fetchVacancies()
+        setVacancies(updatedVacancies)
+      } else {
+        console.error("Failed to update status:", await response.text())
+      }
+    } catch (error) {
+      console.error("Error updating status:", error)
+    }
   }
 
   const [hrUsers, setHrUsers] = useState<any[]>([])
@@ -395,7 +425,7 @@ export default function VacanciesPage() {
                       }
                       return (
                         <TableRow
-                          key={vacancy.id}
+                          key={vacancy._id}
                         >
                           <TableCell>
                             <div className="font-mono text-sm text-gray-600">#{filteredVacancies.indexOf(vacancy) + 1}</div>
@@ -435,13 +465,13 @@ export default function VacanciesPage() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent>
-                                <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "active")}>
+                                <DropdownMenuItem onClick={() => handleStatusChange(vacancy._id, "active")}>
                                   Active
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "paused")}>
+                                <DropdownMenuItem onClick={() => handleStatusChange(vacancy._id, "paused")}>
                                   Paused
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "closed")}>
+                                <DropdownMenuItem onClick={() => handleStatusChange(vacancy._id, "closed")}>
                                   Closed
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
@@ -526,7 +556,7 @@ export default function VacanciesPage() {
               }
               return (
                 <Card
-                  key={vacancy.id}
+                  key={vacancy._id}
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">
