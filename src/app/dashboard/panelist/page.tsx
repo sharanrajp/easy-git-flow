@@ -49,6 +49,8 @@ export default function PanelistDashboard() {
   const [interviewTimers, setInterviewTimers] = useState<Record<string, number>>({})
   const [showViewFeedback, setShowViewFeedback] = useState(false)
   const [viewingFeedbackSession, setViewingFeedbackSession] = useState<InterviewSession | null>(null)
+  const [showCandidateFeedback, setShowCandidateFeedback] = useState(false)
+  const [viewingCandidate, setViewingCandidate] = useState<PanelistCandidate | null>(null)
   const [performanceFilter, setPerformanceFilter] = useState<string>("this-month")
   
   // Candidates state
@@ -129,6 +131,11 @@ export default function PanelistDashboard() {
   const handleViewDetails = (candidate: PanelistCandidate) => {
     setSelectedCandidate(candidate)
     setIsDetailsOpen(true)
+  }
+
+  const handleViewCandidateFeedback = (candidate: PanelistCandidate) => {
+    setViewingCandidate(candidate)
+    setShowCandidateFeedback(true)
   }
 
   useEffect(() => {
@@ -708,7 +715,7 @@ export default function PanelistDashboard() {
                               <TableCell>
                                 <Button
                                   size="sm"
-                                  onClick={() => handleViewDetails(candidate)}
+                                  onClick={() => handleViewCandidateFeedback(candidate)}
                                   className="bg-green-600 hover:bg-green-700 text-white"
                                 >
                                   <Eye className="h-4 w-4 mr-2" />
@@ -827,6 +834,136 @@ export default function PanelistDashboard() {
                     )}
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* View Candidate Feedback Modal */}
+        {showCandidateFeedback && viewingCandidate && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">Interview Feedback History</h2>
+                <Button variant="outline" onClick={() => setShowCandidateFeedback(false)}>
+                  Close
+                </Button>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-medium mb-2">Candidate Information</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <p><strong>Name:</strong> {viewingCandidate.name}</p>
+                    <p><strong>Email:</strong> {viewingCandidate.email}</p>
+                    <p><strong>Registration No:</strong> {viewingCandidate.register_number}</p>
+                    <p><strong>Phone:</strong> {formatPhoneNumber(viewingCandidate.phone_number)}</p>
+                    <p><strong>Skills:</strong> {Array.isArray(viewingCandidate.skill_set) ? viewingCandidate.skill_set.join(", ") : viewingCandidate.skill_set}</p>
+                    <p><strong>Current Round:</strong> {viewingCandidate.last_interview_round || "N/A"}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-medium mb-4">Interview Rounds History</h3>
+                  {viewingCandidate.previous_rounds && viewingCandidate.previous_rounds.length > 0 ? (
+                    <div className="space-y-4">
+                      {viewingCandidate.previous_rounds.map((round: any, index: number) => (
+                        <div key={index} className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-3">
+                              <h4 className="font-medium text-lg">{round.round}</h4>
+                              <Badge variant={round.feedback_submitted ? "default" : "secondary"} className={
+                                round.status === "selected" ? "bg-green-100 text-green-800" : 
+                                round.status === "rejected" ? "bg-red-100 text-red-800" : 
+                                "bg-yellow-100 text-yellow-800"
+                              }>
+                                {round.status}
+                              </Badge>
+                              {round.feedback_submitted && (
+                                <Badge className="bg-blue-100 text-blue-800">
+                                  Feedback Submitted
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+
+                          {round.feedback_submitted && (
+                            <div className="space-y-3">
+                              {round.rating && (
+                                <div>
+                                  <p className="text-sm font-medium text-gray-700 mb-1">Overall Rating:</p>
+                                  <div className="flex items-center space-x-2">
+                                    <span className="text-lg font-bold text-gray-900">{round.rating}/5</span>
+                                    <div className="flex space-x-1">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                          key={star}
+                                          className={`h-4 w-4 ${
+                                            star <= round.rating ? "text-yellow-400 fill-current" : "text-gray-300"
+                                          }`}
+                                        />
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {round.scores && (
+                                <div>
+                                  <p className="text-sm font-medium text-gray-700 mb-2">Detailed Scores:</p>
+                                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                                    {round.scores.communication && (
+                                      <div className="bg-gray-50 p-2 rounded">
+                                        <span className="font-medium">Communication:</span> {round.scores.communication}/5
+                                      </div>
+                                    )}
+                                    {round.scores.problem_solving && (
+                                      <div className="bg-gray-50 p-2 rounded">
+                                        <span className="font-medium">Problem Solving:</span> {round.scores.problem_solving}/5
+                                      </div>
+                                    )}
+                                    {round.scores.logical_thinking && (
+                                      <div className="bg-gray-50 p-2 rounded">
+                                        <span className="font-medium">Logical Thinking:</span> {round.scores.logical_thinking}/5
+                                      </div>
+                                    )}
+                                    {round.scores.code_quality && (
+                                      <div className="bg-gray-50 p-2 rounded">
+                                        <span className="font-medium">Code Quality:</span> {round.scores.code_quality}/5
+                                      </div>
+                                    )}
+                                    {round.scores.technical_knowledge && (
+                                      <div className="bg-gray-50 p-2 rounded">
+                                        <span className="font-medium">Technical Knowledge:</span> {round.scores.technical_knowledge}/5
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              {round.feedback && (
+                                <div>
+                                  <p className="text-sm font-medium text-gray-700 mb-1">Feedback Comments:</p>
+                                  <p className="text-sm bg-gray-50 p-3 rounded border">{round.feedback}</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {!round.feedback_submitted && (
+                            <div className="text-center py-4 text-gray-500">
+                              <p className="text-sm">No feedback submitted for this round yet</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>No interview rounds found for this candidate</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
