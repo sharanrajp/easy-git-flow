@@ -35,15 +35,15 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
   // Filter based on search term
   const filteredPanelists = availablePanelists.filter(
     (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.skills && user.skills.some((skill: string) => skill.toLowerCase().includes(searchTerm.toLowerCase()))),
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.skills && user.skills.some((skill: string) => skill?.toLowerCase().includes(searchTerm.toLowerCase()))),
   )
 
   // Get selected and unselected panelists
-  const selectedPanelistsData = availablePanelists.filter((user) => selectedPanelists.includes(user.id))
+  const selectedPanelistsData = availablePanelists.filter((user) => selectedPanelists.includes(user._id))
 
-  const unselectedPanelists = filteredPanelists.filter((user) => !selectedPanelists.includes(user.id))
+  const unselectedPanelists = filteredPanelists.filter((user) => !selectedPanelists.includes(user._id))
 
   const handleAddPanelist = (panelistId: string) => {
     const updatedPanelists = [...selectedPanelists, panelistId]
@@ -176,10 +176,10 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
             <div className="space-y-3">
               {selectedPanelistsData.map((user) => (
                 <PanelistCard
-                  key={user.id}
+                  key={user._id}
                   user={user}
                   isSelected={true}
-                  onRemove={() => handleRemovePanelist(user.id)}
+                  onRemove={() => handleRemovePanelist(user._id)}
                 />
               ))}
             </div>
@@ -197,7 +197,7 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
             <div className="space-y-3 pr-4">
               {unselectedPanelists.length > 0 ? (
                 unselectedPanelists.map((user) => (
-                  <PanelistCard key={user.id} user={user} isSelected={false} onAdd={() => handleAddPanelist(user.id)} />
+                  <PanelistCard key={user._id} user={user} isSelected={false} onAdd={() => handleAddPanelist(user._id)} />
                 ))
               ) : (
                 <div className="text-center py-8 text-gray-500">

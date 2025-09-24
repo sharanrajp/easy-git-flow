@@ -72,7 +72,7 @@ export function BulkActionsToolbar({ selectedCandidates, onBulkAction, onClearSe
                 </SelectTrigger>
                 <SelectContent>
                   {panelists.map((panelist) => (
-                    <SelectItem key={panelist.id} value={panelist.name}>
+                    <SelectItem key={panelist._id} value={panelist.name}>
                       {panelist.name}
                     </SelectItem>
                   ))}
