@@ -80,17 +80,17 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
           >
             <span className="font-medium text-sm">
               {user.name
-                .split(" ")
+                ?.split(" ")
                 .map((n: string) => n[0])
-                .join("")}
+                .join("") || "?"}
             </span>
           </div>
           <div className="flex-1">
             <div className="flex items-center space-x-2">
-              <h4 className="font-semibold text-gray-900">{user.name}</h4>
+              <h4 className="font-semibold text-gray-900">{user.name || "Unknown"}</h4>
               {isSelected && <CheckCircle className="h-4 w-4 text-blue-600" />}
             </div>
-            <p className="text-sm text-gray-600">{user.email}</p>
+            <p className="text-sm text-gray-600">{user.email || "No email"}</p>
             <p className="text-xs text-gray-500 capitalize mt-1">{user.role}</p>
 
             {user.skills && user.skills.length > 0 && (

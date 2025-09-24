@@ -72,12 +72,12 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
 
   const filteredUsers = allUsers.filter(
     (user) =>
-      user.name.toLowerCase().includes(panelistSearch.toLowerCase()) ||
-      (user.skills && user.skills.some((skill: string) => skill.toLowerCase().includes(panelistSearch.toLowerCase()))),
+      (user.name?.toLowerCase().includes(panelistSearch.toLowerCase()) || false) ||
+      (user.skills && user.skills.some((skill: string) => skill?.toLowerCase().includes(panelistSearch.toLowerCase()))),
   )
 
-  const selectedUsers = filteredUsers.filter((u) => formData.assignedPanelists.includes(u.id))
-  const unselectedUsers = filteredUsers.filter((u) => !formData.assignedPanelists.includes(u.id))
+  const selectedUsers = filteredUsers.filter((u) => formData.assignedPanelists.includes(u._id))
+  const unselectedUsers = filteredUsers.filter((u) => !formData.assignedPanelists.includes(u._id))
   const sortedUsers = [...selectedUsers, ...unselectedUsers]
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -290,11 +290,11 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                       <SelectValue placeholder="Select recruiter" />
                     </SelectTrigger>
                     <SelectContent>
-                      {hrUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.name}>
-                          {user.name}
-                        </SelectItem>
-                      ))}
+                    {hrUsers.map((user) => (
+                      <SelectItem key={user._id} value={user.name}>
+                        {user.name}
+                      </SelectItem>
+                    ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -483,20 +483,20 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   <Label className="text-green-700">Selected Users ({selectedUsers.length})</Label>
                   <div className="space-y-2 p-3 bg-green-50 rounded-lg max-h-40 overflow-y-auto">
                     {selectedUsers.map((user) => (
-                      <div key={user.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                      <div key={user._id} className="flex items-center justify-between p-2 bg-white rounded border">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                             <span className="text-green-700 font-medium text-sm">
                               {user.name
-                                .split(" ")
+                                ?.split(" ")
                                 .map((n: string) => n[0])
-                                .join("")}
+                                .join("") || "?"}
                             </span>
                           </div>
                           <div>
-                            <p className="font-medium text-green-900">{user.name}</p>
+                            <p className="font-medium text-green-900">{user.name || "Unknown"}</p>
                             <p className="text-sm text-green-600">
-                              {user.role} • {user.email}
+                              {user.role} • {user.email || "No email"}
                             </p>
                             {user.skills && <p className="text-sm text-green-600">Skills: {user.skills.join(", ")}</p>}
                           </div>
@@ -505,7 +505,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => handlePanelistChange(user.id, false)}
+                          onClick={() => handlePanelistChange(user._id, false)}
                           className="text-red-600 hover:text-red-700"
                         >
                           <UserMinus className="h-4 w-4" />
@@ -520,20 +520,20 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                 <Label>Available Users</Label>
                 <div className="space-y-2 max-h-96 overflow-y-auto border rounded-lg p-3">
                   {unselectedUsers.slice(0, Math.max(20, unselectedUsers.length)).map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+                    <div key={user._id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
                           <span className="text-gray-700 font-medium text-sm">
                             {user.name
-                              .split(" ")
+                              ?.split(" ")
                               .map((n: string) => n[0])
-                              .join("")}
+                              .join("") || "?"}
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium">{user.name}</p>
+                          <p className="font-medium">{user.name || "Unknown"}</p>
                           <p className="text-sm text-gray-500">
-                            {user.role} • {user.email}
+                            {user.role} • {user.email || "No email"}
                           </p>
                           {user.skills && <p className="text-sm text-gray-500">Skills: {user.skills.join(", ")}</p>}
                         </div>
@@ -542,7 +542,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => handlePanelistChange(user.id, true)}
+                        onClick={() => handlePanelistChange(user._id, true)}
                         className="text-blue-600 hover:text-blue-700"
                       >
                         <UserPlus className="h-4 w-4" />
