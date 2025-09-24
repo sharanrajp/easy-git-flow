@@ -1,6 +1,8 @@
 // @ts-nocheck
 
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DialogDescription } from "@/components/ui/dialog"
+import { AssignedCandidateDetails } from "@/components/candidates/assigned-candidate-details"
 
 import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
@@ -91,6 +93,8 @@ export default function CandidatesPage() {
   const [assignedCandidates, setAssignedCandidates] = useState<BackendCandidate[]>([])
   const [loadingUnassigned, setLoadingUnassigned] = useState(false)
   const [loadingAssigned, setLoadingAssigned] = useState(false)
+  const [selectedAssignedCandidate, setSelectedAssignedCandidate] = useState<BackendCandidate | null>(null)
+  const [isAssignedDetailsOpen, setIsAssignedDetailsOpen] = useState(false)
 
   // No stored user available since we removed localStorage
   const currentUser = null
@@ -988,85 +992,79 @@ export default function CandidatesPage() {
                         <TableHead>Position</TableHead>
                         <TableHead>Current Round</TableHead>
                         <TableHead>Panelist</TableHead>
-                        <TableHead>Interview Date</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {assignedCandidates.map((candidate) => (
-                        <TableRow key={candidate._id}>
-                          <TableCell>
-                            <Checkbox
-                              checked={selectedCandidates.includes(candidate._id)}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setSelectedCandidates([...selectedCandidates, candidate._id])
-                                } else {
-                                  setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id))
-                                }
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{candidate.name}</div>
-                              <div className="text-sm text-gray-500">{candidate.email}</div>
-                              <div className="text-sm text-gray-500">{candidate.phone || "No phone"}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>{candidate.appliedPosition}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{candidate.currentRound || "N/A"}</Badge>
-                          </TableCell>
-                          <TableCell>{candidate.assignedPanelist || "Not assigned"}</TableCell>
-                          <TableCell>
-                            {candidate.interviewDateTime
-                              ? new Date(candidate.interviewDateTime).toLocaleDateString()
-                              : "Not scheduled"}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className="bg-blue-100 text-blue-800">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                {candidate.status || "Assigned"}
-                              </div>
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="cursor-pointer"
-                                onClick={() => {
-                                  // Convert to frontend format for details view
-                                  const frontendCandidate = {
-                                    id: candidate._id,
-                                    name: candidate.name,
-                                    email: candidate.email,
-                                    phone: candidate.phone,
-                                    appliedPosition: candidate.appliedPosition,
-                                    status: candidate.status,
-                                    experience: candidate.experience,
-                                    skills: candidate.skills,
-                                    source: candidate.source,
-                                    appliedDate: candidate.appliedDate,
-                                    recruiter: candidate.recruiter,
-                                    currentRound: candidate.currentRound,
-                                    assignedPanelist: candidate.assignedPanelist,
-                                    interviewDateTime: candidate.interviewDateTime
+                      {assignedCandidates.map((candidate) => {
+                        const getStatusColor = (status: string) => {
+                          switch (status) {
+                            case "selected":
+                              return "bg-green-100 text-green-800"
+                            case "rejected":
+                              return "bg-red-100 text-red-800"
+                            case "on-hold":
+                              return "bg-yellow-100 text-yellow-800"
+                            case "assigned":
+                              return "bg-gray-100 text-gray-800"
+                            default:
+                              return "bg-gray-100 text-gray-800"
+                          }
+                        }
+
+                        const formatPhoneNumber = (phone: any) => {
+                          if (!phone) return "No phone"
+                          return String(phone).replace(/\+/g, "")
+                        }
+
+                        return (
+                          <TableRow key={candidate._id}>
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedCandidates.includes(candidate._id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedCandidates([...selectedCandidates, candidate._id])
+                                  } else {
+                                    setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id))
                                   }
-                                  setSelectedCandidate(frontendCandidate)
-                                  setIsDetailsOpen(true)
                                 }}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <div className="font-medium">{candidate.name}</div>
+                                <div className="text-sm text-gray-500">{candidate.email}</div>
+                                <div className="text-sm text-gray-500">{formatPhoneNumber(candidate.phone_number)}</div>
+                              </div>
+                            </TableCell>
+                            <TableCell>{(candidate as any).applied_position || candidate.appliedPosition || "N/A"}</TableCell>
+                            <TableCell>{candidate.last_interview_round || "N/A"}</TableCell>
+                            <TableCell>{candidate.panel_name || "Not assigned"}</TableCell>
+                            <TableCell>
+                              <Badge className={getStatusColor(candidate.final_status || "assigned")}>
+                                {candidate.final_status || "assigned"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="cursor-pointer"
+                                  onClick={() => {
+                                    setSelectedAssignedCandidate(candidate)
+                                    setIsAssignedDetailsOpen(true)
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -1751,6 +1749,15 @@ export default function CandidatesPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        {/* Assigned Candidate Details Modal */}
+        <AssignedCandidateDetails
+          candidate={selectedAssignedCandidate}
+          isOpen={isAssignedDetailsOpen}
+          onClose={() => {
+            setIsAssignedDetailsOpen(false)
+            setSelectedAssignedCandidate(null)
+          }}
+        />
       </div>
     </DashboardLayout>
   )
