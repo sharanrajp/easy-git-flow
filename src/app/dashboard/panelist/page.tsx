@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -398,141 +396,6 @@ export default function PanelistDashboard() {
     )
   }
 
-  const CandidateCard = ({ session }: { session: InterviewSession }) => {
-    const candidateDetails = getCandidateDetails(session.candidateId)
-    const currentTimer = interviewTimers[session.id] || 0
-
-    return (
-      <Card className="border-l-4 border-l-blue-500">
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <h3 className="text-lg font-semibold text-gray-900">{session.candidateName}</h3>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                    {session.round}
-                  </Badge>
-                  <Badge
-                    className={
-                      session.status === "scheduled"
-                        ? "bg-blue-100 text-blue-800"
-                        : session.status === "in-progress"
-                          ? "bg-orange-100 text-orange-800"
-                          : session.status === "paused"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-green-100 text-green-800"
-                    }
-                  >
-                    {session.status === "in-progress" ? "In Progress" : session.status}
-                  </Badge>
-                </div>
-                <div className="flex flex-col items-end space-y-1">
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">
-                      {formatDate(session.scheduledTime)}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">
-                      {new Date(session.scheduledTime).toLocaleTimeString()}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <p className="text-base font-medium text-gray-800">{session.position}</p>
-                </div>
-
-                <div className="flex items-center space-x-6">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-700">Skills:</span>
-                    <div className="flex flex-wrap gap-1">
-                      {candidateDetails?.skill_set?.slice(0, 3).map((skill: string, index: number) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {skill}
-                        </Badge>
-                      ))}
-                      {candidateDetails?.skill_set?.length > 3 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{candidateDetails.skill_set.length - 3} more
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-700">Experience:</span>
-                    <span className="text-sm text-gray-600">{candidateDetails?.total_experience || "N/A"}</span>
-                  </div>
-                </div>
-              </div>
-
-              {session.status === "in-progress" && (
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Timer className="h-4 w-4 text-orange-600" />
-                      <span className="text-sm font-medium text-orange-800">Interview in Progress</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Clock className="h-4 w-4 text-orange-600" />
-                      <span className="text-lg font-mono font-bold text-orange-800">{formatTimer(currentTimer)}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {session.status === "paused" && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                  <div className="flex items-center space-x-2">
-                    <Pause className="h-4 w-4 text-yellow-600" />
-                    <span className="text-sm font-medium text-yellow-800">Interview Paused - Timer Stopped</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="ml-6 flex flex-col space-y-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                View Resume
-              </Button>
-              {session.status === "scheduled" && (
-                <Button
-                  size="sm"
-                  className="bg-green-600 hover:bg-green-700"
-                  onClick={() => handleStartInterview(session.id)}
-                >
-                  <Play className="h-4 w-4 mr-2" />
-                  Start Interview
-                </Button>
-              )}
-              {session.status === "in-progress" && (
-                <Button
-                  size="sm"
-                  className="bg-red-600 hover:bg-red-700"
-                  onClick={() => handleEndWithFeedback(session)}
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  End with Feedback
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
     <DashboardLayout requiredRole="panelist">
       <div className="space-y-6">
@@ -606,149 +469,14 @@ export default function PanelistDashboard() {
           </div>
         </div>
 
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Calendar className="h-5 w-5 mr-2" />
-            Scheduled Interview
-          </h2>
-          <div className="space-y-4">
-            {interviewSessions.slice(0, 1).map((session) => (
-              <CandidateCard key={session.id} session={session} />
-            ))}
-            {interviewSessions.length === 0 && (
-              <Card>
-                <CardContent className="p-8">
-                  <div className="text-center text-gray-500">
-                    <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-lg font-medium">No interviews scheduled</p>
-                    <p className="text-sm">You'll see your next interview here when it's assigned.</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 mr-2" />
-                Completed Interviews
-              </div>
-              {completedInterviews.length > itemsPerPage && (
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm text-gray-600">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Candidate</TableHead>
-                  <TableHead>Position</TableHead>
-                  <TableHead>Round</TableHead>
-                  <TableHead>Experience</TableHead>
-                  <TableHead>Skills</TableHead>
-                  <TableHead>Date & Time</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>Decision</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedCompletedInterviews.map((session) => {
-                  const candidateDetails = getCandidateDetails(session.candidateId)
-                  return (
-                    <TableRow key={session.id}>
-                      <TableCell className="font-medium">{session.candidateName}</TableCell>
-                      <TableCell>{session.position}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{session.round}</Badge>
-                      </TableCell>
-                      <TableCell>{candidateDetails?.total_experience || "N/A"}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {candidateDetails?.skill_set?.slice(0, 2).map((skill: string, index: number) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
-                              {skill}
-                            </Badge>
-                          ))}
-                          {candidateDetails?.skill_set?.length > 2 && (
-                            <Badge variant="secondary" className="text-xs">
-                              +{candidateDetails.skill_set.length - 2}
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          <div>{formatDate(session.scheduledTime)}</div>
-                          <div className="text-gray-500">{new Date(session.scheduledTime).toLocaleTimeString()}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{session.elapsedTime ? `${Math.floor(session.elapsedTime / 60)}m` : "60m"}</TableCell>
-                      <TableCell>
-                        <Badge
-                          className={
-                            session.feedback?.decision === "selected"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }
-                        >
-                          {session.feedback?.decision === "selected" ? "Selected" : "Rejected"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline" onClick={() => handleViewResume(session.candidateId)}>
-                            <FileText className="h-4 w-4 mr-1" />
-                            View Resume
-                          </Button>
-                          {session.feedback && (
-                            <Button size="sm" variant="outline" onClick={() => handleViewFeedback(session)}>
-                              <Star className="h-4 w-4 mr-1" />
-                              View Feedback
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-            {completedInterviews.length === 0 && (
-              <div className="text-center py-8 text-gray-500">No completed interviews yet</div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Candidates Section */}
+        {/* Interview Management Section */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">My Interview Schedule</h2>
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                <Calendar className="h-5 w-5 mr-2" />
+                Scheduled Interview
+              </h2>
               <p className="text-gray-600">Manage your scheduled and completed interviews</p>
             </div>
             <div className="flex gap-4">
@@ -866,23 +594,22 @@ export default function PanelistDashboard() {
                               </TableCell>
                               <TableCell>
                                 <Button
-                                  variant="ghost"
+                                  variant="outline"
                                   size="sm"
                                   onClick={() => handleViewDetails(candidate)}
-                                  className="p-0 h-auto text-purple-600 hover:text-purple-800"
+                                  className="text-blue-600 hover:text-blue-800 border-blue-200 hover:bg-blue-50"
                                 >
-                                  <Users className="h-4 w-4 mr-1" />
                                   {getPreviousRoundsText(candidate.previous_rounds)}
                                 </Button>
                               </TableCell>
                               <TableCell>
                                 <Button
-                                  variant="default"
                                   size="sm"
+                                  onClick={() => handleViewDetails(candidate)}
                                   className="bg-blue-600 hover:bg-blue-700 text-white"
                                 >
-                                  <FileText className="h-4 w-4 mr-1" />
-                                  Start Interview
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View Details
                                 </Button>
                               </TableCell>
                             </TableRow>
@@ -920,7 +647,7 @@ export default function PanelistDashboard() {
                           <TableHead>Interview Round</TableHead>
                           <TableHead>Resume</TableHead>
                           <TableHead>Previous Rounds</TableHead>
-                          <TableHead>Status</TableHead>
+                          <TableHead>Action</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -970,20 +697,23 @@ export default function PanelistDashboard() {
                               </TableCell>
                               <TableCell>
                                 <Button
-                                  variant="ghost"
+                                  variant="outline"
                                   size="sm"
                                   onClick={() => handleViewDetails(candidate)}
-                                  className="p-0 h-auto text-purple-600 hover:text-purple-800"
+                                  className="text-green-600 hover:text-green-800 border-green-200 hover:bg-green-50"
                                 >
-                                  <Users className="h-4 w-4 mr-1" />
                                   {getPreviousRoundsText(candidate.previous_rounds)}
                                 </Button>
                               </TableCell>
                               <TableCell>
-                                <Badge variant="default" className="bg-green-600 text-white">
-                                  <CheckCircle className="h-3 w-3 mr-1" />
-                                  Completed
-                                </Badge>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleViewDetails(candidate)}
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                >
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View Feedback
+                                </Button>
                               </TableCell>
                             </TableRow>
                           ))
@@ -999,329 +729,102 @@ export default function PanelistDashboard() {
 
         {/* Candidate Details Popover */}
         <Popover open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-          <PopoverContent className="w-[800px] max-h-[600px] overflow-y-auto">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Candidate Details</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsDetailsOpen(false)}
-                >
-                  ✕
-                </Button>
-              </div>
-              
-              {selectedCandidate && (
-                <div className="space-y-6">
-                  {/* Basic Information */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Registration Number</label>
-                      <p className="text-sm">{selectedCandidate.register_number}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Name</label>
-                      <p className="text-sm">{selectedCandidate.name}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Email</label>
-                      <p className="text-sm">{selectedCandidate.email}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Phone</label>
-                      <p className="text-sm">{formatPhoneNumber(selectedCandidate.phone_number)}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <label className="text-sm font-medium text-muted-foreground">Skill Set</label>
-                      <p className="text-sm">{selectedCandidate.skill_set}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Current Interview Round</label>
-                      <p className="text-sm">{selectedCandidate.last_interview_round || "N/A"}</p>
-                    </div>
-                  </div>
-
-                  {/* Previous Rounds */}
-                  <div>
-                    <h4 className="text-md font-semibold mb-3">Previous Interview Rounds</h4>
-                    {selectedCandidate.previous_rounds && selectedCandidate.previous_rounds.length > 0 ? (
-                      <div className="space-y-3">
-                        {selectedCandidate.previous_rounds.map((round: any, index: number) => (
-                          <div key={index} className="border rounded-lg p-4 bg-gray-50">
-                            <div className="flex items-center justify-between mb-2">
-                              <h5 className="font-medium">Round: {round.round}</h5>
-                              <Badge variant={round.feedback_submitted ? "default" : "secondary"}>
-                                {round.feedback_submitted ? "Completed" : "Pending"}
-                              </Badge>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <span className="font-medium">Panelist:</span> {round.panelist_name || "N/A"}
-                              </div>
-                              <div>
-                                <span className="font-medium">Interview Date:</span> {round.interview_date || "N/A"}
-                              </div>
-                            </div>
-                            {round.feedback_submitted && (
-                              <div className="mt-2 text-sm">
-                                <span className="font-medium">Feedback:</span> Feedback has been submitted
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No previous interview rounds found.</p>
-                    )}
-                  </div>
+          <PopoverContent className="w-96">
+            {selectedCandidate && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">{selectedCandidate.name}</h3>
+                  <Badge className="bg-blue-100 text-blue-800">{selectedCandidate.register_number}</Badge>
                 </div>
-              )}
-            </div>
+                
+                <div className="space-y-2">
+                  <p><span className="font-medium">Email:</span> {selectedCandidate.email}</p>
+                  <p><span className="font-medium">Phone:</span> {formatPhoneNumber(selectedCandidate.phone_number)}</p>
+                  <p><span className="font-medium">Skills:</span> {Array.isArray(selectedCandidate.skill_set) ? selectedCandidate.skill_set.join(", ") : selectedCandidate.skill_set}</p>
+                  <p><span className="font-medium">Current Round:</span> {selectedCandidate.last_interview_round || "N/A"}</p>
+                </div>
+
+                {selectedCandidate.previous_rounds && selectedCandidate.previous_rounds.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Previous Rounds:</h4>
+                    <div className="space-y-1">
+                      {selectedCandidate.previous_rounds.map((round: any, index: number) => (
+                        <div key={index} className="text-sm p-2 bg-gray-50 rounded">
+                          <div className="flex justify-between">
+                            <span className="font-medium">{round.round}</span>
+                            <Badge variant={round.feedback_submitted ? "default" : "secondary"}>
+                              {round.status}
+                            </Badge>
+                          </div>
+                          {round.feedback_submitted && (
+                            <div className="mt-1 text-xs text-gray-600">
+                              <p>Rating: {round.rating || "N/A"}</p>
+                              {round.feedback && <p>Feedback: {round.feedback}</p>}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </PopoverContent>
         </Popover>
 
-        {selectedSession && (
-          <FeedbackDialog
-            isOpen={showFeedbackDialog}
-            onClose={() => setShowFeedbackDialog(false)}
-            session={selectedSession}
-            onSubmit={handleFeedbackSubmit}
-          />
-        )}
+        {/* Feedback Dialog */}
+        <FeedbackDialog
+          isOpen={showFeedbackDialog}
+          onClose={() => setShowFeedbackDialog(false)}
+          session={selectedSession!}
+          onSubmit={handleFeedbackSubmit}
+        />
 
-        {viewingFeedbackSession && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold text-white">Interview Feedback Details</h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setShowViewFeedback(false)
-                      setViewingFeedbackSession(null)
-                    }}
-                    className="text-white hover:bg-white/20 h-8 w-8 p-0"
-                  >
-                    <span className="text-xl">×</span>
-                  </Button>
-                </div>
+        {/* View Feedback Modal */}
+        {showViewFeedback && viewingFeedbackSession && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Interview Feedback</h2>
+                <Button variant="outline" onClick={() => setShowViewFeedback(false)}>
+                  Close
+                </Button>
               </div>
-
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
-                <div className="space-y-6">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="text-lg font-medium text-gray-900 mb-3">Candidate Information</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Candidate Name</p>
-                        <p className="text-base text-gray-900 font-medium">{viewingFeedbackSession.candidateName}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Position Applied</p>
-                        <p className="text-base text-gray-900">{viewingFeedbackSession.position}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Interview Round</p>
-                        <Badge variant="outline" className="mt-1">
-                          {viewingFeedbackSession.round}
-                        </Badge>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Final Decision</p>
-                        <Badge
-                          className={`mt-1 ${
-                            viewingFeedbackSession.feedback?.decision === "selected"
-                              ? "bg-green-100 text-green-800 border-green-200"
-                              : "bg-red-100 text-red-800 border-red-200"
-                          }`}
-                        >
-                          {viewingFeedbackSession.feedback?.decision === "selected" ? "Selected" : "Rejected"}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-
-                  {viewingFeedbackSession.feedback && (
-                    <div className="bg-blue-50 rounded-lg p-4">
-                      <h4 className="text-lg font-medium text-gray-900 mb-4">Detailed Rating Breakdown</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-white rounded-lg p-3 border">
-                          <p className="text-sm font-medium text-gray-700 mb-2">Problem Solving</p>
-                          <div className="flex items-center space-x-2">
-                            <div className="flex items-center space-x-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`h-5 w-5 ${
-                                    star <= (viewingFeedbackSession.feedback?.detailedRatings?.problemSolving || 0)
-                                      ? "text-yellow-500 fill-current"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-sm font-semibold text-gray-900">
-                              {viewingFeedbackSession.feedback?.detailedRatings?.problemSolving || 0}/5
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="bg-white rounded-lg p-3 border">
-                          <p className="text-sm font-medium text-gray-700 mb-2">Communication</p>
-                          <div className="flex items-center space-x-2">
-                            <div className="flex items-center space-x-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`h-5 w-5 ${
-                                    star <= (viewingFeedbackSession.feedback?.detailedRatings?.communication || 0)
-                                      ? "text-yellow-500 fill-current"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-sm font-semibold text-gray-900">
-                              {viewingFeedbackSession.feedback?.detailedRatings?.communication || 0}/5
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="bg-white rounded-lg p-3 border">
-                          <p className="text-sm font-medium text-gray-700 mb-2">Code Quality</p>
-                          <div className="flex items-center space-x-2">
-                            <div className="flex items-center space-x-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`h-5 w-5 ${
-                                    star <= (viewingFeedbackSession.feedback?.detailedRatings?.codeQuality || 0)
-                                      ? "text-yellow-500 fill-current"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-sm font-semibold text-gray-900">
-                              {viewingFeedbackSession.feedback?.detailedRatings?.codeQuality || 0}/5
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="bg-white rounded-lg p-3 border">
-                          <p className="text-sm font-medium text-gray-700 mb-2">Technical Knowledge</p>
-                          <div className="flex items-center space-x-2">
-                            <div className="flex items-center space-x-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`h-5 w-5 ${
-                                    star <= (viewingFeedbackSession.feedback?.detailedRatings?.technicalKnowledge || 0)
-                                      ? "text-yellow-500 fill-current"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-sm font-semibold text-gray-900">
-                              {viewingFeedbackSession.feedback?.detailedRatings?.technicalKnowledge || 0}/5
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="bg-white rounded-lg p-3 border">
-                          <p className="text-sm font-medium text-gray-700 mb-2">Teamwork</p>
-                          <div className="flex items-center space-x-2">
-                            <div className="flex items-center space-x-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`h-5 w-5 ${
-                                    star <= (viewingFeedbackSession.feedback?.detailedRatings?.teamwork || 0)
-                                      ? "text-yellow-500 fill-current"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-sm font-semibold text-gray-900">
-                              {viewingFeedbackSession.feedback?.detailedRatings?.teamwork || 0}/5
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="bg-gradient-to-r from-blue-100 to-blue-50 rounded-lg p-3 border-2 border-blue-200">
-                          <p className="text-sm font-medium text-blue-800 mb-2">Overall Average</p>
-                          <div className="flex items-center space-x-2">
-                            <div className="flex items-center space-x-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`h-6 w-6 ${
-                                    star <= (viewingFeedbackSession.feedback?.rating || 0)
-                                      ? "text-yellow-500 fill-current"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-lg font-bold text-blue-900">
-                              {viewingFeedbackSession.feedback?.rating || 0}/5
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {viewingFeedbackSession.feedback?.notes && (
-                    <div>
-                      <h4 className="text-lg font-medium text-gray-900 mb-3">Detailed Feedback Comments</h4>
-                      <div className="bg-white border border-gray-200 rounded-lg p-4">
-                        <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
-                          {viewingFeedbackSession.feedback.notes}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="text-lg font-medium text-gray-900 mb-3">Interview Details</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Interview Date</p>
-                        <p className="text-base text-gray-900">
-                          {formatDate(viewingFeedbackSession.scheduledTime)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Interview Time</p>
-                        <p className="text-base text-gray-900">
-                          {new Date(viewingFeedbackSession.scheduledTime).toLocaleTimeString()}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Duration</p>
-                        <p className="text-base text-gray-900">
-                          {viewingFeedbackSession.elapsedTime
-                            ? `${Math.floor(viewingFeedbackSession.elapsedTime / 60)} minutes`
-                            : "60 minutes"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Feedback Submitted</p>
-                        <p className="text-base text-gray-900">
-                          {viewingFeedbackSession.feedback?.submittedAt
-                            ? new Date(viewingFeedbackSession.feedback.submittedAt).toLocaleString()
-                            : "N/A"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <p><strong>Candidate:</strong> {viewingFeedbackSession.candidateName}</p>
+                  <p><strong>Position:</strong> {viewingFeedbackSession.position}</p>
+                  <p><strong>Round:</strong> {viewingFeedbackSession.round}</p>
+                  <p><strong>Date:</strong> {formatDate(viewingFeedbackSession.scheduledTime)}</p>
                 </div>
+                
+                {viewingFeedbackSession.feedback && (
+                  <div className="space-y-3">
+                    <h3 className="font-medium">Ratings:</h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>Problem Solving: {viewingFeedbackSession.feedback.detailedRatings?.problemSolving || viewingFeedbackSession.feedback.rating}/5 ⭐</div>
+                      <div>Communication: {viewingFeedbackSession.feedback.detailedRatings?.communication || viewingFeedbackSession.feedback.rating}/5 ⭐</div>
+                      <div>Code Quality: {viewingFeedbackSession.feedback.detailedRatings?.codeQuality || viewingFeedbackSession.feedback.rating}/5 ⭐</div>
+                      <div>Technical Knowledge: {viewingFeedbackSession.feedback.detailedRatings?.technicalKnowledge || viewingFeedbackSession.feedback.rating}/5 ⭐</div>
+                      <div>Teamwork: {viewingFeedbackSession.feedback.detailedRatings?.teamwork || viewingFeedbackSession.feedback.rating}/5 ⭐</div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-medium">Decision:</h3>
+                      <Badge className={viewingFeedbackSession.feedback.decision === "selected" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                        {viewingFeedbackSession.feedback.decision === "selected" ? "Selected" : "Rejected"}
+                      </Badge>
+                    </div>
+                    
+                    {viewingFeedbackSession.feedback.notes && (
+                      <div>
+                        <h3 className="font-medium">Comments:</h3>
+                        <p className="text-sm bg-gray-50 p-3 rounded">{viewingFeedbackSession.feedback.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
