@@ -65,7 +65,6 @@ export async function addCandidate(candidateData: Partial<BackendCandidate>): Pr
     const response = await fetch(`${API_BASE_URL}/candidates/add`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
       body: formData,
