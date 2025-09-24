@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Popover, PopoverContent } from "@/components/ui/popover"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Calendar,
   Clock,
@@ -20,6 +23,9 @@ import {
   Star,
   Timer,
   Filter,
+  Search,
+  Eye,
+  ExternalLink,
 } from "lucide-react"
 import { getPanelistDashboardData } from "@/lib/panelist-data"
 import {
@@ -32,6 +38,8 @@ import { getCurrentUser } from "@/lib/auth"
 import { useEffect, useState } from "react"
 import { FeedbackDialog } from "@/components/panelist/feedback-dialog"
 import { formatDate } from "@/lib/utils"
+import { fetchPanelistAssignedCandidates, type PanelistCandidate } from "@/lib/candidates-api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function PanelistDashboard() {
   const [interviewSessions, setInterviewSessions] = useState<InterviewSession[]>([])
@@ -44,12 +52,86 @@ export default function PanelistDashboard() {
   const [showViewFeedback, setShowViewFeedback] = useState(false)
   const [viewingFeedbackSession, setViewingFeedbackSession] = useState<InterviewSession | null>(null)
   const [performanceFilter, setPerformanceFilter] = useState<string>("this-month")
+  
+  // Candidates state
+  const [candidates, setCandidates] = useState<PanelistCandidate[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCandidate, setSelectedCandidate] = useState<PanelistCandidate | null>(null)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+  const [isCandidatesLoading, setIsCandidatesLoading] = useState(true)
+  
   const itemsPerPage = 5
+  const { toast } = useToast()
 
   useEffect(() => {
     const user = getCurrentUser()
     setCurrentUser(user)
+    if (user) {
+      loadCandidates()
+    }
   }, [])
+
+  const loadCandidates = async () => {
+    try {
+      setIsCandidatesLoading(true)
+      const data = await fetchPanelistAssignedCandidates()
+      setCandidates(data)
+    } catch (error) {
+      console.error('Error loading candidates:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load assigned candidates",
+        variant: "destructive",
+      })
+    } finally {
+      setIsCandidatesLoading(false)
+    }
+  }
+
+  // Check if candidate has completed feedback for current round
+  const hasFeedbackCompleted = (candidate: PanelistCandidate) => {
+    if (!candidate.previous_rounds || candidate.previous_rounds.length === 0) return false
+    
+    // Find the most recent round that matches the current interview round
+    const currentRound = candidate.previous_rounds.find((round: any) => 
+      round.round === candidate.last_interview_round
+    )
+    
+    return currentRound?.feedback_submitted === true
+  }
+
+  const filteredCandidates = candidates.filter(
+    (candidate) =>
+      candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      candidate.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      candidate.register_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (candidate.skill_set && Array.isArray(candidate.skill_set) && 
+       candidate.skill_set.some((skill: string) => 
+         skill.toLowerCase().includes(searchTerm.toLowerCase())
+       ))
+  )
+
+  const scheduledInterviews = filteredCandidates.filter(candidate => !hasFeedbackCompleted(candidate))
+  const completedCandidateInterviews = filteredCandidates.filter(candidate => hasFeedbackCompleted(candidate))
+
+  const formatPhoneNumber = (phone_number: string | undefined) => {
+    if (!phone_number) return "N/A"
+    return String(phone_number) // Convert to string to avoid scientific notation
+  }
+
+  const getPreviousRoundsText = (rounds: PanelistCandidate['previous_rounds']) => {
+    if (!rounds || rounds.length === 0) return "No Previous Rounds"
+    
+    const completedCount = rounds.filter((r: any) => r.feedback_submitted).length
+    const totalCount = rounds.length
+    
+    return `View ${totalCount} Round(s) Feedback (${completedCount}/${totalCount} Completed)`
+  }
+
+  const handleViewDetails = (candidate: PanelistCandidate) => {
+    setSelectedCandidate(candidate)
+    setIsDetailsOpen(true)
+  }
 
   useEffect(() => {
     if (currentUser?.name) {
@@ -661,6 +743,343 @@ export default function PanelistDashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* Candidates Section */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">My Interview Schedule</h2>
+              <p className="text-gray-600">Manage your scheduled and completed interviews</p>
+            </div>
+            <div className="flex gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{scheduledInterviews.length}</div>
+                <div className="text-sm text-muted-foreground">Scheduled</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{completedCandidateInterviews.length}</div>
+                <div className="text-sm text-muted-foreground">Completed</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Search */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search candidates..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Interview Tabs */}
+          <Tabs defaultValue="scheduled" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="scheduled" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Scheduled Interviews ({scheduledInterviews.length})
+              </TabsTrigger>
+              <TabsTrigger value="completed" className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" />
+                Completed Interviews ({completedCandidateInterviews.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="scheduled" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-blue-600" />
+                    Scheduled Interviews
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isCandidatesLoading ? (
+                    <div className="flex justify-center py-8">
+                      <div className="text-sm text-muted-foreground">Loading candidates...</div>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Reg. No.</TableHead>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Phone</TableHead>
+                          <TableHead>Skill Set</TableHead>
+                          <TableHead>Interview Round</TableHead>
+                          <TableHead>Resume</TableHead>
+                          <TableHead>Previous Rounds</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {scheduledInterviews.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                              No scheduled interviews found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          scheduledInterviews.map((candidate) => (
+                            <TableRow key={candidate._id}>
+                              <TableCell className="font-medium">
+                                {candidate.register_number}
+                              </TableCell>
+                              <TableCell>{candidate.name}</TableCell>
+                              <TableCell>{candidate.email}</TableCell>
+                              <TableCell>{formatPhoneNumber(candidate.phone_number)}</TableCell>
+                              <TableCell>
+                                <div className="max-w-xs truncate" title={Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}>
+                                  {Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {candidate.last_interview_round ? (
+                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                    {candidate.last_interview_round}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-muted-foreground">N/A</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {candidate.resume_link ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => window.open(candidate.resume_link, '_blank')}
+                                    className="p-0 h-auto text-blue-600 hover:text-blue-800"
+                                  >
+                                    <ExternalLink className="h-4 w-4 mr-1" />
+                                    View Resume
+                                  </Button>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">Resume Not Found</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleViewDetails(candidate)}
+                                  className="p-0 h-auto text-purple-600 hover:text-purple-800"
+                                >
+                                  <Users className="h-4 w-4 mr-1" />
+                                  {getPreviousRoundsText(candidate.previous_rounds)}
+                                </Button>
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                                >
+                                  <FileText className="h-4 w-4 mr-1" />
+                                  Start Interview
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="completed" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    Completed Interviews
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isCandidatesLoading ? (
+                    <div className="flex justify-center py-8">
+                      <div className="text-sm text-muted-foreground">Loading candidates...</div>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Reg. No.</TableHead>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Phone</TableHead>
+                          <TableHead>Skill Set</TableHead>
+                          <TableHead>Interview Round</TableHead>
+                          <TableHead>Resume</TableHead>
+                          <TableHead>Previous Rounds</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {completedCandidateInterviews.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                              No completed interviews found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          completedCandidateInterviews.map((candidate) => (
+                            <TableRow key={candidate._id}>
+                              <TableCell className="font-medium">
+                                {candidate.register_number}
+                              </TableCell>
+                              <TableCell>{candidate.name}</TableCell>
+                              <TableCell>{candidate.email}</TableCell>
+                              <TableCell>{formatPhoneNumber(candidate.phone_number)}</TableCell>
+                              <TableCell>
+                                <div className="max-w-xs truncate" title={Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}>
+                                  {Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {candidate.last_interview_round ? (
+                                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                    {candidate.last_interview_round}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-muted-foreground">N/A</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {candidate.resume_link ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => window.open(candidate.resume_link, '_blank')}
+                                    className="p-0 h-auto text-blue-600 hover:text-blue-800"
+                                  >
+                                    <ExternalLink className="h-4 w-4 mr-1" />
+                                    View Resume
+                                  </Button>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">Resume Not Found</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleViewDetails(candidate)}
+                                  className="p-0 h-auto text-purple-600 hover:text-purple-800"
+                                >
+                                  <Users className="h-4 w-4 mr-1" />
+                                  {getPreviousRoundsText(candidate.previous_rounds)}
+                                </Button>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="default" className="bg-green-600 text-white">
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Completed
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Candidate Details Popover */}
+        <Popover open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+          <PopoverContent className="w-[800px] max-h-[600px] overflow-y-auto">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Candidate Details</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsDetailsOpen(false)}
+                >
+                  ✕
+                </Button>
+              </div>
+              
+              {selectedCandidate && (
+                <div className="space-y-6">
+                  {/* Basic Information */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Registration Number</label>
+                      <p className="text-sm">{selectedCandidate.register_number}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Name</label>
+                      <p className="text-sm">{selectedCandidate.name}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Email</label>
+                      <p className="text-sm">{selectedCandidate.email}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Phone</label>
+                      <p className="text-sm">{formatPhoneNumber(selectedCandidate.phone_number)}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-sm font-medium text-muted-foreground">Skill Set</label>
+                      <p className="text-sm">{selectedCandidate.skill_set}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Current Interview Round</label>
+                      <p className="text-sm">{selectedCandidate.last_interview_round || "N/A"}</p>
+                    </div>
+                  </div>
+
+                  {/* Previous Rounds */}
+                  <div>
+                    <h4 className="text-md font-semibold mb-3">Previous Interview Rounds</h4>
+                    {selectedCandidate.previous_rounds && selectedCandidate.previous_rounds.length > 0 ? (
+                      <div className="space-y-3">
+                        {selectedCandidate.previous_rounds.map((round: any, index: number) => (
+                          <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                            <div className="flex items-center justify-between mb-2">
+                              <h5 className="font-medium">Round: {round.round}</h5>
+                              <Badge variant={round.feedback_submitted ? "default" : "secondary"}>
+                                {round.feedback_submitted ? "Completed" : "Pending"}
+                              </Badge>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <span className="font-medium">Panelist:</span> {round.panelist_name || "N/A"}
+                              </div>
+                              <div>
+                                <span className="font-medium">Interview Date:</span> {round.interview_date || "N/A"}
+                              </div>
+                            </div>
+                            {round.feedback_submitted && (
+                              <div className="mt-2 text-sm">
+                                <span className="font-medium">Feedback:</span> Feedback has been submitted
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No previous interview rounds found.</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
 
         {selectedSession && (
           <FeedbackDialog
