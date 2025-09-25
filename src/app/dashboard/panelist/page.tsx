@@ -499,13 +499,6 @@ export default function PanelistDashboard() {
         {/* Interview Management Section */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-                <Calendar className="h-5 w-5 mr-2" />
-                Scheduled Interview
-              </h2>
-              <p className="text-gray-600">Manage your scheduled and completed interviews</p>
-            </div>
             <div className="flex gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">{scheduledInterviews.length}</div>
