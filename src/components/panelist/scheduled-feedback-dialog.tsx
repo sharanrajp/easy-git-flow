@@ -61,7 +61,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
       setIsSubmitting(true)
       
       const response = await makeAuthenticatedRequest('http://127.0.0.1:8000/interviews/update-interview', {
-        method: 'PUT',
+        method: 'POST',
         body: JSON.stringify({
           candidate_id: candidate._id,
           panel_id: currentUser._id,
