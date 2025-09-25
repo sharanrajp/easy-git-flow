@@ -11,6 +11,9 @@ interface UnassignedCandidateDetailsProps {
 }
 
 export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInterview }: UnassignedCandidateDetailsProps) {
+  // Debug logging to inspect candidate data structure
+  console.log("Candidate data in UnassignedCandidateDetails:", candidate)
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "unassigned":
@@ -29,14 +32,28 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
     return String(phone_number).replace(/\+/g, "")
   }
 
+  const formatDate = (dateValue: any) => {
+    if (!dateValue) return "N/A"
+    try {
+      const date = new Date(dateValue)
+      if (isNaN(date.getTime())) return "N/A"
+      return date.toLocaleDateString()
+    } catch {
+      return "N/A"
+    }
+  }
+
+  // Get status with proper fallback
+  const candidateStatus = candidate.status || "unassigned"
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900">{candidate.name}</h2>
         <p className="text-gray-600">{candidate.applied_position || "N/A"}</p>
-        <Badge className={getStatusColor(candidate.status || "unassigned")}>
-          {candidate.status || "Unassigned"}
+        <Badge className={getStatusColor(candidateStatus)}>
+          {candidateStatus || "Unassigned"}
         </Badge>
       </div>
 
@@ -75,7 +92,7 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
               </div>
               <div>
                 <span className="text-sm text-gray-500">Applied Date</span>
-                <p className="font-medium">{candidate.appliedDate || "N/A"}</p>
+                <p className="font-medium">{formatDate(candidate.appliedDate)}</p>
               </div>
               <div>
                 <span className="text-sm text-gray-500">Recruiter</span>
@@ -106,7 +123,7 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
         </Card>
 
         {/* Action Buttons */}
-        {candidate.status === "unassigned" && onScheduleInterview && (
+        {candidateStatus === "unassigned" && onScheduleInterview && (
           <Card>
             <CardContent className="pt-6">
               <Button onClick={onScheduleInterview} className="w-full">
