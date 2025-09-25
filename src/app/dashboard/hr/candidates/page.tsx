@@ -508,8 +508,8 @@ export default function CandidatesPage() {
     return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
   }
 
-  // Handle candidate check-in
-  const handleCheckIn = async (candidate: BackendCandidate, checked: boolean) => {
+  // Handle backend candidate check-in
+  const handleBackendCheckIn = async (candidate: BackendCandidate, checked: boolean) => {
     if (!checked) return // Only handle check-in, not check-out
     
     setCheckingInCandidate(candidate._id)
@@ -997,7 +997,7 @@ export default function CandidatesPage() {
                             <Checkbox
                               checked={candidate.checked_in || false}
                               disabled={checkingInCandidate === candidate._id}
-                              onCheckedChange={(checked) => handleCheckIn(candidate, checked as boolean)}
+                              onCheckedChange={(checked) => handleBackendCheckIn(candidate, checked as boolean)}
                             />
                           </TableCell>
                           <TableCell>
