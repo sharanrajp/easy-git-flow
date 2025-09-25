@@ -219,7 +219,7 @@ export default function CandidatesPage() {
 
       const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
       const matchesStatus = statusFilter === "all" || candidate.status === statusFilter
-      const matchesExperience = experienceFilter === "all" || (candidate.total_experience || "").includes(experienceFilter)
+      const matchesExperience = experienceFilter === "all" || String(candidate.total_experience || "").includes(experienceFilter)
       const matchesRecruiter =
         recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
       
@@ -261,7 +261,7 @@ export default function CandidatesPage() {
 
     const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
     const matchesStatus = statusFilter === "all" || candidate.status === statusFilter
-    const matchesExperience = experienceFilter === "all" || (candidate.total_experience || "").includes(experienceFilter)
+    const matchesExperience = experienceFilter === "all" || String(candidate.total_experience || "").includes(experienceFilter)
     const matchesRecruiter =
       recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
     const matchesInterviewType = interviewTypeFilter === "all" || candidate.interview_type === interviewTypeFilter
