@@ -91,24 +91,34 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
     return String(phone_number).replace(/\+/g, "")
   }
 
-  const StarRating = ({ rating }: { rating: number | null }) => {
-    if (!rating) return <span className="text-gray-400 text-sm">Not rated</span>
+  const StarRating = ({ rating, label }: { rating: number | null; label: string }) => {
+    if (!rating) return (
+      <div className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg">
+        <span className="text-sm font-medium text-gray-700">{label}</span>
+        <span className="text-gray-400 text-sm">Not rated</span>
+      </div>
+    )
     
     return (
-      <div className="flex items-center gap-1 group">
-        {Array.from({ length: 5 }, (_, i) => (
-          <span
-            key={i}
-            className={`transition-all duration-200 ${
-              i < rating 
-                ? "text-yellow-400 group-hover:scale-110" 
-                : "text-gray-300"
-            }`}
-          >
-            ⭐
+      <div className="flex items-center justify-between py-3 px-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 hover:shadow-sm transition-all duration-200">
+        <span className="text-sm font-semibold text-gray-800">{label}</span>
+        <div className="flex items-center gap-1 group">
+          {Array.from({ length: 5 }, (_, i) => (
+            <span
+              key={i}
+              className={`text-lg transition-all duration-200 cursor-default ${
+                i < rating 
+                  ? "text-yellow-500 drop-shadow-sm group-hover:scale-110 group-hover:text-yellow-400" 
+                  : "text-gray-300 group-hover:text-gray-400"
+              }`}
+            >
+              ⭐
+            </span>
+          ))}
+          <span className="ml-3 text-sm font-bold text-indigo-700 bg-white px-2 py-1 rounded-full border">
+            {rating}/5
           </span>
-        ))}
-        <span className="ml-2 text-sm font-medium text-gray-700">{rating}/5</span>
+        </div>
       </div>
     )
   }
@@ -273,36 +283,21 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                               <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                                 ⭐ Technical Skills Assessment
                               </h4>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border">
+                              <div className="space-y-2">
                                 {round.communication !== null && round.communication !== undefined && (
-                                  <div className="flex items-center justify-between py-2">
-                                    <span className="text-sm font-medium text-gray-700">Communication</span>
-                                    <StarRating rating={round.communication} />
-                                  </div>
+                                  <StarRating rating={round.communication} label="Communication" />
                                 )}
                                 {round.problem_solving !== null && round.problem_solving !== undefined && (
-                                  <div className="flex items-center justify-between py-2">
-                                    <span className="text-sm font-medium text-gray-700">Problem Solving</span>
-                                    <StarRating rating={round.problem_solving} />
-                                  </div>
+                                  <StarRating rating={round.problem_solving} label="Problem Solving" />
                                 )}
                                 {round.logical_thinking !== null && round.logical_thinking !== undefined && (
-                                  <div className="flex items-center justify-between py-2">
-                                    <span className="text-sm font-medium text-gray-700">Logical Thinking</span>
-                                    <StarRating rating={round.logical_thinking} />
-                                  </div>
+                                  <StarRating rating={round.logical_thinking} label="Logical Thinking" />
                                 )}
                                 {round.code_quality !== null && round.code_quality !== undefined && (
-                                  <div className="flex items-center justify-between py-2">
-                                    <span className="text-sm font-medium text-gray-700">Code Quality</span>
-                                    <StarRating rating={round.code_quality} />
-                                  </div>
+                                  <StarRating rating={round.code_quality} label="Code Quality" />
                                 )}
                                 {round.technical_knowledge !== null && round.technical_knowledge !== undefined && (
-                                  <div className="flex items-center justify-between py-2">
-                                    <span className="text-sm font-medium text-gray-700">Technical Knowledge</span>
-                                    <StarRating rating={round.technical_knowledge} />
-                                  </div>
+                                  <StarRating rating={round.technical_knowledge} label="Technical Knowledge" />
                                 )}
                               </div>
                             </div>
