@@ -40,6 +40,7 @@ import {
   Award,
   ChevronDown,
   List,
+  Download,
 } from "lucide-react"
 import { getMockCandidates, type Candidate, type Vacancy } from "@/lib/mock-data"
 import { fetchVacancies } from "@/lib/vacancy-api"
@@ -52,7 +53,7 @@ import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 
@@ -117,6 +118,7 @@ export default function CandidatesPage() {
   const [ongoingInterviews, setOngoingInterviews] = useState<OngoingInterview[]>([])
   const [isInterviewsDialogOpen, setIsInterviewsDialogOpen] = useState(false)
   const [loadingInterviews, setLoadingInterviews] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   // Helper function to get next round
   const getNextRound = (currentRound: string): string => {
@@ -286,6 +288,52 @@ export default function CandidatesPage() {
   const completedCandidates = filteredCandidates.filter(
     (c) => c.status === "completed" || c.status === "hired" || c.status === "rejected" || c.status === "selected" || c.status === "offerReleased" || c.status === "candidateDeclined" || c.status === "joined" || c.status === "onHold" ,
   )
+
+  const handleViewInterviews = async () => {
+    try {
+      setLoadingInterviews(true)
+      const interviews = await fetchOngoingInterviews()
+      setOngoingInterviews(interviews)
+      setIsInterviewsDialogOpen(true)
+    } catch (error) {
+      console.error('Failed to fetch ongoing interviews:', error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch ongoing interviews",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingInterviews(false)
+    }
+  }
+
+  const handleExportCandidates = async () => {
+    try {
+      setIsExporting(true)
+      const blob = await exportCandidatesExcel()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'candidates.csv'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+      toast({
+        title: "Success",
+        description: "Candidates exported successfully",
+      })
+    } catch (error) {
+      console.error('Failed to export candidates:', error)
+      toast({
+        title: "Error",
+        description: "Failed to export candidates",
+        variant: "destructive",
+      })
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   const handleCreateCandidate = async (candidateData: Partial<Candidate>) => {
     try {
@@ -1023,6 +1071,15 @@ export default function CandidatesPage() {
             >
               <Upload className="h-4 w-4 mr-2" />
               Bulk Upload
+            </Button>
+            <Button 
+              variant="outline" 
+              className="cursor-pointer bg-transparent"
+              onClick={handleExportCandidates}
+              disabled={isExporting}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              {isExporting ? "Exporting..." : "Export"}
             </Button>
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <Button 

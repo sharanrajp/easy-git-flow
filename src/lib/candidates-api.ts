@@ -305,6 +305,17 @@ export async function fetchOngoingInterviews(): Promise<OngoingInterview[]> {
 }
 
 // Fetch assigned candidates for panelist from backend
+// Export candidates to Excel/CSV
+export async function exportCandidatesExcel(): Promise<Blob> {
+  const response = await makeAuthenticatedRequest(`${API_BASE_URL}/export/candidates-excel`);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to export candidates: ${response.status} ${response.statusText}`);
+  }
+  
+  return response.blob();
+}
+
 export async function fetchPanelistAssignedCandidates(): Promise<PanelistCandidate[]> {
   const token = getToken();
   
