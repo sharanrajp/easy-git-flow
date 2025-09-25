@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Star } from "lucide-react"
 import { type PanelistCandidate } from "@/lib/candidates-api"
 import { useToast } from "@/hooks/use-toast"
-import { getCurrentUser } from "@/lib/auth"
+import { getCurrentUser, makeAuthenticatedRequest } from "@/lib/auth"
 
 interface ScheduledFeedbackDialogProps {
   isOpen: boolean
@@ -60,12 +60,8 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
     try {
       setIsSubmitting(true)
       
-      const response = await fetch('http://127.0.0.1:8000/interviews/update-interview', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+      const response = await makeAuthenticatedRequest('http://127.0.0.1:8000/interviews/update-interview', {
+        method: 'PUT',
         body: JSON.stringify({
           candidate_id: candidate._id,
           panel_id: currentUser._id,
