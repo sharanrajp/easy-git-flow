@@ -92,18 +92,23 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
   }
 
   const StarRating = ({ rating }: { rating: number | null }) => {
-    if (!rating) return <span className="text-gray-400">Not rated</span>
+    if (!rating) return <span className="text-gray-400 text-sm">Not rated</span>
     
     return (
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 group">
         {Array.from({ length: 5 }, (_, i) => (
           <span
             key={i}
-            className={i < rating ? "text-yellow-400" : "text-gray-300"}
+            className={`transition-all duration-200 ${
+              i < rating 
+                ? "text-yellow-400 group-hover:scale-110" 
+                : "text-gray-300"
+            }`}
           >
             ⭐
           </span>
         ))}
+        <span className="ml-2 text-sm font-medium text-gray-700">{rating}/5</span>
       </div>
     )
   }
@@ -227,85 +232,106 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
             </TabsContent>
 
             <TabsContent value="interviews" className="space-y-6">
-              {/* Interview Feedback */}
+              {/* Interview Feedback History */}
               {candidate.previous_rounds && candidate.previous_rounds.length > 0 ? (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Interview Feedback History</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      📝 Interview Feedback History
+                      <Badge variant="secondary" className="text-xs">
+                        {candidate.previous_rounds.length} {candidate.previous_rounds.length === 1 ? 'Round' : 'Rounds'}
+                      </Badge>
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    {candidate.previous_rounds!.map((round: any, index: number) => (
-                      <div key={index} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="font-medium text-lg">Round {round.round?.toUpperCase()}</h4>
-                          <Badge className={getStatusColor(round.status)}>
-                            {round.status}
-                          </Badge>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                          <div>
-                            <label className="text-sm font-medium text-gray-500">Panelist</label>
-                            <p>{round.panel_name || "N/A"}</p>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-gray-500">Feedback Submitted</label>
-                            <p>{round.feedback_submitted ? "Yes" : "No"}</p>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-gray-500">Overall Rating</label>
-                            <p>{round.rating || "N/A"}</p>
-                          </div>
-                        </div>
-
-                        {round.feedback && (
-                          <div className="mb-4">
-                            <label className="text-sm font-medium text-gray-500">Feedback</label>
-                            <p className="mt-1 p-3 bg-gray-50 rounded-md">{round.feedback}</p>
-                          </div>
-                        )}
-
-                        {/* Technical Scores */}
-                        {(round.communication || round.problem_solving || round.logical_thinking || 
-                          round.code_quality || round.technical_knowledge) && (
-                          <div>
-                            <label className="text-sm font-medium text-gray-500 mb-2 block">Technical Scores</label>
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              {round.communication && (
-                                <div className="flex items-center justify-between">
-                                  <span>Communication:</span>
-                                  <StarRating rating={round.communication} />
-                                </div>
-                              )}
-                              {round.problem_solving && (
-                                <div className="flex items-center justify-between">
-                                  <span>Problem Solving:</span>
-                                  <StarRating rating={round.problem_solving} />
-                                </div>
-                              )}
-                              {round.logical_thinking && (
-                                <div className="flex items-center justify-between">
-                                  <span>Logical Thinking:</span>
-                                  <StarRating rating={round.logical_thinking} />
-                                </div>
-                              )}
-                              {round.code_quality && (
-                                <div className="flex items-center justify-between">
-                                  <span>Code Quality:</span>
-                                  <StarRating rating={round.code_quality} />
-                                </div>
-                              )}
-                              {round.technical_knowledge && (
-                                <div className="flex items-center justify-between">
-                                  <span>Technical Knowledge:</span>
-                                  <StarRating rating={round.technical_knowledge} />
-                                </div>
-                              )}
+                  <CardContent>
+                    <div className="space-y-6">
+                      {candidate.previous_rounds!.map((round: any, index: number) => (
+                        <div 
+                          key={index} 
+                          className="border border-gray-200 rounded-xl p-6 bg-gradient-to-r from-white to-gray-50 hover:shadow-md transition-all duration-200"
+                        >
+                          {/* Round Header */}
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <Badge variant="outline" className="text-lg font-bold px-3 py-1 bg-blue-50 text-blue-700 border-blue-200">
+                                {round.round?.toUpperCase()}
+                              </Badge>
+                              <div>
+                                <p className="font-semibold text-gray-900">{round.panel_name || "Unknown Panelist"}</p>
+                                <p className="text-sm text-gray-500">{round.panel_email || ""}</p>
+                              </div>
                             </div>
+                            <Badge className={`${getStatusColor(round.status)} font-medium px-3 py-1`}>
+                              {round.status?.charAt(0).toUpperCase() + round.status?.slice(1) || "Unknown"}
+                            </Badge>
                           </div>
-                        )}
-                      </div>
-                    ))}
+
+                          {/* Technical Skills Ratings */}
+                          {(round.communication || round.problem_solving || round.logical_thinking || 
+                            round.code_quality || round.technical_knowledge) && (
+                            <div className="mb-6">
+                              <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                ⭐ Technical Skills Assessment
+                              </h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border">
+                                {round.communication !== null && round.communication !== undefined && (
+                                  <div className="flex items-center justify-between py-2">
+                                    <span className="text-sm font-medium text-gray-700">Communication</span>
+                                    <StarRating rating={round.communication} />
+                                  </div>
+                                )}
+                                {round.problem_solving !== null && round.problem_solving !== undefined && (
+                                  <div className="flex items-center justify-between py-2">
+                                    <span className="text-sm font-medium text-gray-700">Problem Solving</span>
+                                    <StarRating rating={round.problem_solving} />
+                                  </div>
+                                )}
+                                {round.logical_thinking !== null && round.logical_thinking !== undefined && (
+                                  <div className="flex items-center justify-between py-2">
+                                    <span className="text-sm font-medium text-gray-700">Logical Thinking</span>
+                                    <StarRating rating={round.logical_thinking} />
+                                  </div>
+                                )}
+                                {round.code_quality !== null && round.code_quality !== undefined && (
+                                  <div className="flex items-center justify-between py-2">
+                                    <span className="text-sm font-medium text-gray-700">Code Quality</span>
+                                    <StarRating rating={round.code_quality} />
+                                  </div>
+                                )}
+                                {round.technical_knowledge !== null && round.technical_knowledge !== undefined && (
+                                  <div className="flex items-center justify-between py-2">
+                                    <span className="text-sm font-medium text-gray-700">Technical Knowledge</span>
+                                    <StarRating rating={round.technical_knowledge} />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Feedback Text */}
+                          {round.feedback && (
+                            <div className="mb-4">
+                              <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                💭 Interviewer Comments
+                              </h4>
+                              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                                <p className="text-gray-700 italic leading-relaxed">"{round.feedback}"</p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Additional Info */}
+                          <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t">
+                            <span>
+                              Feedback Status: {round.feedback_submitted ? "✅ Submitted" : "❌ Pending"}
+                            </span>
+                            {round.rating && (
+                              <span>Overall Rating: {round.rating}</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </CardContent>
                 </Card>
               ) : (
