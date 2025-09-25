@@ -5,7 +5,7 @@ import { DialogDescription } from "@/components/ui/dialog"
 import { AssignedCandidateDetails } from "@/components/candidates/assigned-candidate-details"
 import { UnassignedCandidateDetails } from "@/components/candidates/unassigned-candidate-details"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -296,9 +296,14 @@ export default function CandidatesPage() {
     )
   })
 
-  // Apply filters to backend candidates
-  const filteredUnassignedCandidates = filterBackendCandidates(unassignedCandidates)
-  const filteredAssignedCandidates = filterBackendCandidates(assignedCandidates)
+  // Apply filters to backend candidates with memoization
+  const filteredUnassignedCandidates = useMemo(() => {
+    return filterBackendCandidates(unassignedCandidates)
+  }, [unassignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, dateFilter])
+  
+  const filteredAssignedCandidates = useMemo(() => {
+    return filterBackendCandidates(assignedCandidates)
+  }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, dateFilter])
 
   const statusOptions: Record<string, { value: string; label: string }[]> = {
   unassigned: [],
