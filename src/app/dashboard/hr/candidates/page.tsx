@@ -1930,16 +1930,14 @@ export default function CandidatesPage() {
               <div className="space-y-4">
                 {availablePanels.length > 0 ? (
                   availablePanels.map((panel) => (
-                    <Card key={panel.panel_id} className="p-4">
+                    <Card key={panel.id} className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <h3 className="font-medium text-gray-900">Panel ID: {panel.panel_id}</h3>
+                          <h3 className="font-medium text-gray-900">Panel ID: {panel.id}</h3>
                           <div className="mt-2 space-y-1">
-                             {panel.members?.map((member: any, index: number) => (
-                               <div key={index} className="text-sm text-gray-600">
-                                 <span className="font-medium">{member.name || 'N/A'}</span> - {member.email || 'N/A'}
-                               </div>
-                             )) || <div className="text-sm text-gray-500">No members found</div>}
+                            <div className="text-sm text-gray-600">
+                              <span className="font-medium">{panel.name || 'N/A'}</span> - {panel.email || 'N/A'}
+                            </div>
                           </div>
                         </div>
                         <div className="ml-4">
@@ -1951,7 +1949,7 @@ export default function CandidatesPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleUndoAssignment(panel.assigned_candidate.candidate_id, panel.panel_id)}
+                                onClick={() => handleUndoAssignment(panel.assigned_candidate.candidate_id, panel.id)}
                                 disabled={assigningCandidate === panel.assigned_candidate.candidate_id}
                               >
                                 {assigningCandidate === panel.assigned_candidate.candidate_id ? "Processing..." : "Undo Assignment"}
@@ -1959,7 +1957,7 @@ export default function CandidatesPage() {
                             </div>
                           ) : (
                             <Button
-                              onClick={() => handlePanelAssignment(panel.panel_id)}
+                              onClick={() => handlePanelAssignment(panel.id)}
                               disabled={assigningCandidate === selectedCandidateForPanel?._id}
                             >
                               {assigningCandidate === selectedCandidateForPanel?._id ? "Assigning..." : "Map Candidate"}
