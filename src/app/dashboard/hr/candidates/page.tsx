@@ -1181,7 +1181,6 @@ export default function CandidatesPage() {
                 <div className="ml-auto">
                   <BulkActionsToolbar
                     selectedCandidates={getSelectedCandidateObjects()}
-                    onClearSelection={clearSelection}
                     onBulkAction={handleBulkAction}
                   />
                 </div>
