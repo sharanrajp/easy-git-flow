@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { makeAuthenticatedRequest } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
-import { getMockVacancies, type Vacancy } from "@/lib/mock-data"
+import { fetchVacancies } from "@/lib/vacancy-api"
+import type { Vacancy } from "@/lib/mock-data"
 
 interface BulkUploadDialogProps {
   onSubmit: (candidates: any[]) => void
@@ -40,6 +41,7 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
   const [source, setSource] = useState("")
   const [otherSource, setOtherSource] = useState("")
   const [vacancies, setVacancies] = useState<Vacancy[]>([])
+  const [selectedRecruiter, setSelectedRecruiter] = useState("")
   const [loadingVacancies, setLoadingVacancies] = useState(true)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -49,8 +51,7 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
     const loadVacancies = async () => {
       try {
         setLoadingVacancies(true)
-        // For now, use mock data - can be replaced with API call later
-        const allVacancies = getMockVacancies()
+        const allVacancies = await fetchVacancies()
         const activeVacancies = allVacancies.filter((v: Vacancy) => v.status === "active")
         setVacancies(activeVacancies)
       } catch (error) {
@@ -67,6 +68,19 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
 
     loadVacancies()
   }, [])
+
+  // Auto-select recruiter when applied position changes
+  const handleAppliedPositionChange = (positionTitle: string) => {
+    setAppliedPosition(positionTitle)
+    
+    // Find the selected vacancy and auto-fill recruiter
+    const selectedVacancy = vacancies.find(v => v.position_title === positionTitle)
+    if (selectedVacancy) {
+      setSelectedRecruiter(selectedVacancy.recruiter_name)
+    } else {
+      setSelectedRecruiter("")
+    }
+  }
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0]
@@ -138,6 +152,9 @@ Jane Smith,jane.smith@email.com,+1234567891,2-4 years,"Node.js,Python,MongoDB",C
       formData.append('file', file!)
       formData.append('applied_position', appliedPosition)
       formData.append('source', source === 'other' ? otherSource : source)
+      if (selectedRecruiter) {
+        formData.append('recruiter_name', selectedRecruiter)
+      }
       if (source === 'other') {
         formData.append('other_source', otherSource)
       }
@@ -179,6 +196,7 @@ Jane Smith,jane.smith@email.com,+1234567891,2-4 years,"Node.js,Python,MongoDB",C
         setAppliedPosition("")
         setSource("")
         setOtherSource("")
+        setSelectedRecruiter("")
         setResults(null)
         if (fileInputRef.current) {
           fileInputRef.current.value = ""
@@ -240,7 +258,7 @@ Jane Smith,jane.smith@email.com,+1234567891,2-4 years,"Node.js,Python,MongoDB",C
         {/* Applied Position Dropdown */}
         <div className="space-y-1.5">
           <Label htmlFor="appliedPosition" className="text-xs font-medium">Applied Position *</Label>
-          <Select value={appliedPosition} onValueChange={setAppliedPosition} disabled={loadingVacancies}>
+          <Select value={appliedPosition} onValueChange={handleAppliedPositionChange} disabled={loadingVacancies}>
             <SelectTrigger className="text-sm">
               <SelectValue placeholder={loadingVacancies ? "Loading positions..." : "Select applied position"} />
             </SelectTrigger>
