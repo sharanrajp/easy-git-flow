@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input" 
@@ -13,6 +13,13 @@ function LoginPage() {
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+
+  // Clear any stale authentication data on mount
+  useEffect(() => {
+    localStorage.removeItem("ats_token")
+    localStorage.removeItem("ats_user")
+    localStorage.removeItem("ats_users")
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,7 +39,13 @@ function LoginPage() {
 
       if (!loginResponse.ok) {
         const errorData = await loginResponse.json().catch(() => ({}))
-        setError(errorData.message || "Invalid email or password")
+        if (loginResponse.status === 0) {
+          setError("Unable to connect to server. Please check if the backend is running.")
+        } else if (loginResponse.status === 401) {
+          setError("Invalid email or password")
+        } else {
+          setError(errorData.message || `Server error (${loginResponse.status})`)
+        }
         return
       }
 
@@ -57,7 +70,11 @@ function LoginPage() {
       })
 
       if (!usersResponse.ok) {
-        setError("Failed to fetch user data. Please try again.")
+        if (usersResponse.status === 401) {
+          setError("Authentication failed. Please try logging in again.")
+        } else {
+          setError(`Failed to fetch user data (${usersResponse.status}). Please try again.`)
+        }
         return
       }
 
@@ -88,7 +105,11 @@ function LoginPage() {
       }
 
     } catch (err) {
-      setError("Unable to connect to server. Please try again.")
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError("Unable to connect to server. Please ensure the backend is running on port 8000.")
+      } else {
+        setError("An unexpected error occurred. Please try again.")
+      }
       console.error("Login error:", err)
     } finally {
       setIsLoading(false)
