@@ -598,6 +598,14 @@ export default function CandidatesPage() {
       const updatedPanels = await fetchAvailablePanels()
       setAvailablePanels(updatedPanels)
       
+      // Refresh candidate lists to move candidate from unassigned to assigned
+      const [updatedUnassigned, updatedAssigned] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates()
+      ])
+      setUnassignedCandidates(updatedUnassigned)
+      setAssignedCandidates(updatedAssigned)
+      
       toast({
         title: "Success",
         description: `${selectedCandidateForPanel.name} has been assigned to the panel successfully.`,
@@ -623,6 +631,14 @@ export default function CandidatesPage() {
       // Refresh panels to show updated status
       const updatedPanels = await fetchAvailablePanels()
       setAvailablePanels(updatedPanels)
+      
+      // Refresh candidate lists to move candidate from assigned back to unassigned
+      const [updatedUnassigned, updatedAssigned] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates()
+      ])
+      setUnassignedCandidates(updatedUnassigned)
+      setAssignedCandidates(updatedAssigned)
       
       toast({
         title: "Success",
