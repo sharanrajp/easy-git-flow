@@ -51,7 +51,7 @@ import { getAllUsers } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, type BackendCandidate } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, checkInCandidate, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, type BackendCandidate } from "@/lib/candidates-api"
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 
@@ -101,6 +101,14 @@ export default function CandidatesPage() {
   const [vacancies, setVacancies] = useState<Vacancy[]>([])
   const [loadingVacancies, setLoadingVacancies] = useState(false)
   const [vacancyError, setVacancyError] = useState<string | null>(null)
+  
+  // Panel assignment states
+  const [availablePanels, setAvailablePanels] = useState<any[]>([])
+  const [loadingPanels, setLoadingPanels] = useState(false)
+  const [selectedCandidateForPanel, setSelectedCandidateForPanel] = useState<BackendCandidate | null>(null)
+  const [isPanelDialogOpen, setIsPanelDialogOpen] = useState(false)
+  const [checkingInCandidate, setCheckingInCandidate] = useState<string | null>(null)
+  const [assigningCandidate, setAssigningCandidate] = useState<string | null>(null)
 
   // No stored user available since we removed localStorage
   const currentUser = null
@@ -491,6 +499,123 @@ export default function CandidatesPage() {
     return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
   }
 
+  // Format wait time for backend candidates
+  const formatBackendWaitTime = (waitMinutes?: number) => {
+    if (!waitMinutes || waitMinutes === 0) return "0m"
+    if (waitMinutes < 60) return `${waitMinutes}m`
+    const hours = Math.floor(waitMinutes / 60)
+    const minutes = waitMinutes % 60
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
+  }
+
+  // Handle candidate check-in
+  const handleCheckIn = async (candidate: BackendCandidate, checked: boolean) => {
+    if (!checked) return // Only handle check-in, not check-out
+    
+    setCheckingInCandidate(candidate._id)
+    try {
+      await checkInCandidate(candidate._id)
+      
+      // Update local state
+      setUnassignedCandidates(prev => 
+        prev.map(c => 
+          c._id === candidate._id 
+            ? { ...c, checked_in: true }
+            : c
+        )
+      )
+      
+      toast({
+        title: "Success",
+        description: `${candidate.name} has been checked in successfully.`,
+      })
+    } catch (error) {
+      console.error('Error checking in candidate:', error)
+      toast({
+        title: "Error",
+        description: "Failed to check in candidate. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setCheckingInCandidate(null)
+    }
+  }
+
+  // Handle assign panel button click
+  const handleAssignPanel = async (candidate: BackendCandidate) => {
+    setSelectedCandidateForPanel(candidate)
+    setLoadingPanels(true)
+    
+    try {
+      const panels = await fetchAvailablePanels()
+      setAvailablePanels(panels)
+      setIsPanelDialogOpen(true)
+    } catch (error) {
+      console.error('Error fetching available panels:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load available panels. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingPanels(false)
+    }
+  }
+
+  // Handle panel assignment
+  const handlePanelAssignment = async (panelId: string) => {
+    if (!selectedCandidateForPanel) return
+    
+    setAssigningCandidate(selectedCandidateForPanel._id)
+    try {
+      await assignCandidateToPanel(selectedCandidateForPanel._id, panelId)
+      
+      // Refresh panels to show updated status
+      const updatedPanels = await fetchAvailablePanels()
+      setAvailablePanels(updatedPanels)
+      
+      toast({
+        title: "Success",
+        description: `${selectedCandidateForPanel.name} has been assigned to the panel successfully.`,
+      })
+    } catch (error) {
+      console.error('Error assigning candidate to panel:', error)
+      toast({
+        title: "Error",
+        description: "Failed to assign candidate to panel. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setAssigningCandidate(null)
+    }
+  }
+
+  // Handle undo assignment
+  const handleUndoAssignment = async (candidateId: string, panelId: string) => {
+    setAssigningCandidate(candidateId)
+    try {
+      await undoAssignment(candidateId, panelId)
+      
+      // Refresh panels to show updated status
+      const updatedPanels = await fetchAvailablePanels()
+      setAvailablePanels(updatedPanels)
+      
+      toast({
+        title: "Success",
+        description: "Assignment has been undone successfully.",
+      })
+    } catch (error) {
+      console.error('Error undoing assignment:', error)
+      toast({
+        title: "Error",
+        description: "Failed to undo assignment. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setAssigningCandidate(null)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "unassigned":
@@ -841,12 +966,14 @@ export default function CandidatesPage() {
                             }}
                           />
                         </TableHead>
+                        <TableHead>Check-In</TableHead>
                         <TableHead>Candidate</TableHead>
                         <TableHead>Position</TableHead>
                         <TableHead>Experience</TableHead>
                         <TableHead>Skills</TableHead>
                         <TableHead>Source</TableHead>
                         <TableHead>Applied Date</TableHead>
+                        <TableHead>Wait Time</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
@@ -864,6 +991,13 @@ export default function CandidatesPage() {
                                   setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id))
                                 }
                               }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Checkbox
+                              checked={candidate.checked_in || false}
+                              disabled={checkingInCandidate === candidate._id}
+                              onCheckedChange={(checked) => handleCheckIn(candidate, checked as boolean)}
                             />
                           </TableCell>
                           <TableCell>
@@ -896,6 +1030,11 @@ export default function CandidatesPage() {
                           <TableCell>{candidate.source || "Not specified"}</TableCell>
                           <TableCell>{new Date(candidate.appliedDate).toLocaleDateString()}</TableCell>
                           <TableCell>
+                            <span className={candidate.checked_in ? "font-medium text-orange-600" : "text-gray-500"}>
+                              {formatBackendWaitTime(candidate.wait_duration_minutes)}
+                            </span>
+                          </TableCell>
+                          <TableCell>
                             <Badge className="bg-gray-100 text-gray-800">
                               <div className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
@@ -905,33 +1044,19 @@ export default function CandidatesPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center space-x-2">
-                              <Button
-                                size="sm"
-                                className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
-                                onClick={() => {
-                                  // Convert backend candidate to frontend format for assignment
-                                  const frontendCandidate = {
-                                    id: candidate._id,
-                                    name: candidate.name,
-                                    email: candidate.email,
-                                    phone_number: candidate.phone_number,
-                                    applied_position: candidate.applied_position,
-                                    status: candidate.status,
-                                    total_experience: candidate.total_experience,
-                                    skill_set: candidate.skill_set,
-                                    source: candidate.source,
-                                    appliedDate: candidate.appliedDate,
-                                    recruiter: candidate.recruiter
-                                  }
-                                  handleScheduleInterview(frontendCandidate)
-                                }}
-                              >
-                                Assign Panel
-                              </Button>
+                              {candidate.checked_in && (
+                                <Button
+                                  size="sm"
+                                  className="bg-blue-600 hover:bg-blue-700"
+                                  onClick={() => handleAssignPanel(candidate)}
+                                  disabled={loadingPanels}
+                                >
+                                  {loadingPanels ? "Loading..." : "Assign Panel"}
+                                </Button>
+                              )}
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="cursor-pointer"
                                 onClick={() => {
                                   setSelectedUnassignedCandidate(candidate)
                                   setIsUnassignedDetailsOpen(true)
@@ -1763,6 +1888,73 @@ export default function CandidatesPage() {
           }}
         />
         
+        {/* Panel Assignment Dialog */}
+        <Dialog open={isPanelDialogOpen} onOpenChange={setIsPanelDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Assign Panel - {selectedCandidateForPanel?.name}</DialogTitle>
+              <DialogDescription>
+                Select an available panel to assign this candidate for interview.
+              </DialogDescription>
+            </DialogHeader>
+            {loadingPanels ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-2 text-gray-600">Loading available panels...</span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {availablePanels.length > 0 ? (
+                  availablePanels.map((panel) => (
+                    <Card key={panel.panel_id} className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900">Panel ID: {panel.panel_id}</h3>
+                          <div className="mt-2 space-y-1">
+                            {panel.members?.map((member: any, index: number) => (
+                              <div key={index} className="text-sm text-gray-600">
+                                <span className="font-medium">{member.name}</span> - {member.email}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          {panel.assigned_candidate ? (
+                            <div className="space-y-2">
+                              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                Assigned
+                              </Badge>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleUndoAssignment(panel.assigned_candidate.candidate_id, panel.panel_id)}
+                                disabled={assigningCandidate === panel.assigned_candidate.candidate_id}
+                              >
+                                {assigningCandidate === panel.assigned_candidate.candidate_id ? "Processing..." : "Undo Assignment"}
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              onClick={() => handlePanelAssignment(panel.panel_id)}
+                              disabled={assigningCandidate === selectedCandidateForPanel?._id}
+                            >
+                              {assigningCandidate === selectedCandidateForPanel?._id ? "Assigning..." : "Map Candidate"}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No available panels found.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Unassigned Candidate Details Modal */}
         <Dialog open={isUnassignedDetailsOpen} onOpenChange={setIsUnassignedDetailsOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">

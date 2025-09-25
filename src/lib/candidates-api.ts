@@ -19,7 +19,8 @@ export interface BackendCandidate {
   interviewDateTime?: string;
   waitTime?: string | null;
   waitTimeStarted?: string | null;
-  isCheckedIn?: boolean;
+  checked_in?: boolean;
+  wait_duration_minutes?: number;
 }
 
 export interface PanelistCandidate {
@@ -139,6 +140,117 @@ export async function fetchAssignedCandidates(): Promise<BackendCandidate[]> {
     return candidates;
   } catch (error) {
     console.error('Error fetching assigned candidates:', error);
+    throw error;
+  }
+}
+
+// Check-in a candidate
+export async function checkInCandidate(candidateId: string): Promise<void> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/candidates/${candidateId}/checked-in`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to check-in candidate: ${response.status} ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error('Error checking in candidate:', error);
+    throw error;
+  }
+}
+
+// Fetch available panels
+export async function fetchAvailablePanels(): Promise<any[]> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/mapping/available-panels`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch available panels: ${response.status} ${response.statusText}`);
+    }
+
+    const panels = await response.json();
+    return panels;
+  } catch (error) {
+    console.error('Error fetching available panels:', error);
+    throw error;
+  }
+}
+
+// Assign candidate to panel
+export async function assignCandidateToPanel(candidateId: string, panelId: string): Promise<void> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/mapping/assign`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        candidate_id: candidateId,
+        panel_id: panelId
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to assign candidate to panel: ${response.status} ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error('Error assigning candidate to panel:', error);
+    throw error;
+  }
+}
+
+// Undo assignment
+export async function undoAssignment(candidateId: string, panelId: string): Promise<void> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/mapping/undo-assignment/${candidateId}/${panelId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to undo assignment: ${response.status} ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error('Error undoing assignment:', error);
     throw error;
   }
 }
