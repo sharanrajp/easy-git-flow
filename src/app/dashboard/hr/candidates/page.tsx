@@ -219,11 +219,27 @@ export default function CandidatesPage() {
         (candidate.applied_position || "").toLowerCase().includes(searchTerm.toLowerCase())
 
       const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
-      const matchesStatus = statusFilter === "all" || candidate.status === statusFilter
+      const matchesStatus = statusFilter === "all" || (candidate.status || "").toLowerCase() === statusFilter.toLowerCase()
       const matchesExperience = experienceFilter === "all" || String(candidate.total_experience || "").includes(experienceFilter)
       const matchesRecruiter =
         recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
-      const matchesRound = roundFilter === "all" || candidate.currentRound === roundFilter
+      const matchesRound = roundFilter === "all" || (candidate.currentRound || "").toLowerCase() === roundFilter.toLowerCase()
+      
+      // Debug logging
+      if (statusFilter !== "all") {
+        console.log("Status Filter Debug:", {
+          candidateStatus: candidate.status,
+          statusFilter,
+          matchesStatus
+        })
+      }
+      if (roundFilter !== "all") {
+        console.log("Round Filter Debug:", {
+          candidateRound: candidate.currentRound,
+          roundFilter,
+          matchesRound
+        })
+      }
       
       const matchesDate = (() => {
         if (dateFilter === "all") return true
@@ -263,11 +279,11 @@ export default function CandidatesPage() {
       (candidate.applied_position || "").toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
-    const matchesStatus = statusFilter === "all" || candidate.status === statusFilter
+    const matchesStatus = statusFilter === "all" || (candidate.status || "").toLowerCase() === statusFilter.toLowerCase()
     const matchesExperience = experienceFilter === "all" || String(candidate.total_experience || "").includes(experienceFilter)
     const matchesRecruiter =
       recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
-    const matchesRound = roundFilter === "all" || candidate.currentRound === roundFilter
+    const matchesRound = roundFilter === "all" || (candidate.currentRound || "").toLowerCase() === roundFilter.toLowerCase()
     const matchesInterviewType = interviewTypeFilter === "all" || candidate.interview_type === interviewTypeFilter
 
     const matchesDate = (() => {
@@ -314,6 +330,16 @@ export default function CandidatesPage() {
     { value: "rejected", label: "Rejected" },
     { value: "on-hold", label: "On Hold" },
     { value: "assigned", label: "Assigned" },
+    { value: "unassigned", label: "Unassigned" },
+    { value: "pending", label: "Pending" },
+    { value: "completed", label: "Completed" },
+    { value: "hired", label: "Hired" },
+    { value: "r1-scheduled", label: "R1 Scheduled" },
+    { value: "r1-in-progress", label: "R1 In Progress" },
+    { value: "r2-scheduled", label: "R2 Scheduled" },
+    { value: "r2-in-progress", label: "R2 In Progress" },
+    { value: "r3-scheduled", label: "R3 Scheduled" },
+    { value: "r3-in-progress", label: "R3 In Progress" },
   ]
 
   const roundOptions = [
