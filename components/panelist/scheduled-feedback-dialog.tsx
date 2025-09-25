@@ -61,7 +61,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
       setIsSubmitting(true)
       
       const response = await fetch('http://127.0.0.1:8000/interviews/update-interview', {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
