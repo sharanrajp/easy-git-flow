@@ -470,7 +470,7 @@ export default function PanelistDashboard() {
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <MetricCard
               title="Completed Interviews"
               value={metrics.completedInterviews}
@@ -492,20 +492,6 @@ export default function PanelistDashboard() {
               icon={Timer}
               color="red"
             />
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Current Status</p>
-                    <Badge className={`mt-2 ${panelistStatus.color}`}>{panelistStatus.status}</Badge>
-                    <p className="text-sm text-gray-500 mt-1">Real-time status</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-blue-50 text-blue-600">
-                    <Users className="h-6 w-6" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
         <div className="space-y-6">
