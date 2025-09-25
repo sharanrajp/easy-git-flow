@@ -181,15 +181,15 @@ export default function CandidatesPage() {
 
   const filteredCandidates = candidates.filter((candidate) => {
     const matchesSearch =
-      candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate.applied_position.toLowerCase().includes(searchTerm.toLowerCase())
+      (candidate.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (candidate.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (candidate.applied_position || "").toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesJob = jobFilter === "all" || candidate.applied_position.toLowerCase().includes(jobFilter.toLowerCase())
+    const matchesJob = jobFilter === "all" || (candidate.applied_position || "").toLowerCase().includes(jobFilter.toLowerCase())
     const matchesStatus = statusFilter === "all" || candidate.status === statusFilter
-    const matchesExperience = experienceFilter === "all" || candidate.total_experience.includes(experienceFilter)
+    const matchesExperience = experienceFilter === "all" || (candidate.total_experience || "").includes(experienceFilter)
     const matchesRecruiter =
-      recruiterFilter === "all" || candidate.source.toLowerCase().includes(recruiterFilter.toLowerCase())
+      recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
     const matchesInterviewType = interviewTypeFilter === "all" || candidate.interview_type === interviewTypeFilter
 
     const matchesDate = (() => {
@@ -1263,8 +1263,8 @@ export default function CandidatesPage() {
 
                   const filteredPanelists = jobPanelists.filter(
                     (panelist) =>
-                      panelist.name.toLowerCase().includes(panelistSearch.toLowerCase()) ||
-                      panelist.skill_set?.some((skill) => skill.toLowerCase().includes(panelistSearch.toLowerCase())),
+                      (panelist.name || "").toLowerCase().includes(panelistSearch.toLowerCase()) ||
+                      panelist.skill_set?.some((skill) => (skill || "").toLowerCase().includes(panelistSearch.toLowerCase())),
                   )
 
                   const availablePanelists = filteredPanelists.filter((p) => p.current_status === "free")
@@ -1488,8 +1488,8 @@ export default function CandidatesPage() {
 
                   const filteredPanelists = availablePanelistsExcludingCurrent.filter(
                     (panelist) =>
-                      panelist.name.toLowerCase().includes(panelistSearch.toLowerCase()) ||
-                      panelist.skill_set?.some((skill) => skill.toLowerCase().includes(panelistSearch.toLowerCase())),
+                      (panelist.name || "").toLowerCase().includes(panelistSearch.toLowerCase()) ||
+                      panelist.skill_set?.some((skill) => (skill || "").toLowerCase().includes(panelistSearch.toLowerCase())),
                   )
 
                   const availablePanelists = filteredPanelists.filter((p) => p.current_status === "free")
