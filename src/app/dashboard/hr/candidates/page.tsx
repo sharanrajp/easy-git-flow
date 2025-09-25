@@ -72,6 +72,7 @@ export default function CandidatesPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [experienceFilter, setExperienceFilter] = useState("all")
   const [recruiterFilter, setRecruiterFilter] = useState("all")
+  const [roundFilter, setRoundFilter] = useState("all")
   const [interviewTypeFilter, setInterviewTypeFilter] = useState("all")
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
@@ -222,6 +223,7 @@ export default function CandidatesPage() {
       const matchesExperience = experienceFilter === "all" || String(candidate.total_experience || "").includes(experienceFilter)
       const matchesRecruiter =
         recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
+      const matchesRound = roundFilter === "all" || candidate.currentRound === roundFilter
       
       const matchesDate = (() => {
         if (dateFilter === "all") return true
@@ -248,6 +250,7 @@ export default function CandidatesPage() {
         matchesStatus &&
         matchesExperience &&
         matchesRecruiter &&
+        matchesRound &&
         matchesDate
       )
     })
@@ -264,6 +267,7 @@ export default function CandidatesPage() {
     const matchesExperience = experienceFilter === "all" || String(candidate.total_experience || "").includes(experienceFilter)
     const matchesRecruiter =
       recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
+    const matchesRound = roundFilter === "all" || candidate.currentRound === roundFilter
     const matchesInterviewType = interviewTypeFilter === "all" || candidate.interview_type === interviewTypeFilter
 
     const matchesDate = (() => {
@@ -290,6 +294,7 @@ export default function CandidatesPage() {
       matchesStatus &&
       matchesExperience &&
       matchesRecruiter &&
+      matchesRound &&
       matchesInterviewType &&
       matchesDate
     )
@@ -298,33 +303,24 @@ export default function CandidatesPage() {
   // Apply filters to backend candidates with memoization
   const filteredUnassignedCandidates = useMemo(() => {
     return filterBackendCandidates(unassignedCandidates)
-  }, [unassignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, dateFilter])
+  }, [unassignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
   
   const filteredAssignedCandidates = useMemo(() => {
     return filterBackendCandidates(assignedCandidates)
-  }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, dateFilter])
+  }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
 
-  const statusOptions: Record<string, { value: string; label: string }[]> = {
-  unassigned: [],
-  assigned: [
-    { value: "r1-scheduled", label: "R1 Scheduled" },
-    { value: "r1-in-progress", label: "R1 In Progress" },
-    { value: "r2-scheduled", label: "Schedule R2" },
-    { value: "r2-in-progress", label: "R2 In Progress" },
-    { value: "r3-scheduled", label: "Schedule R3" },
-    { value: "r3-in-progress", label: "R3 In Progress" },
-  ],
-  completed: [
+  const statusOptions = [
     { value: "selected", label: "Selected" },
-    { value: "hired", label: "Hired" },
     { value: "rejected", label: "Rejected" },
-    { value: "offerReleased", label: "Offer Released" },
-    { value: "candidateDeclined", label: "Candidate Declined" },
-    { value: "onHold", label: "On Hold" },
-    { value: "joined", label: "Joined" },
-    { value: "completed", label: "Completed" }
-  ],
-}
+    { value: "on-hold", label: "On Hold" },
+    { value: "assigned", label: "Assigned" },
+  ]
+
+  const roundOptions = [
+    { value: "r1", label: "R1" },
+    { value: "r2", label: "R2" },
+    { value: "r3", label: "R3" },
+  ]
 
   const localUnassignedCandidates = filteredCandidates.filter((c) => c.status === "unassigned")
   const localAssignedCandidates = filteredCandidates.filter(
@@ -1216,13 +1212,26 @@ export default function CandidatesPage() {
                   className="max-w-sm"
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  {statusOptions[activeTab].map((opt) => (
+                  {statusOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={roundFilter} onValueChange={setRoundFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by round" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Rounds</SelectItem>
+                  {roundOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {opt.label}
                     </SelectItem>
@@ -1731,6 +1740,7 @@ export default function CandidatesPage() {
                     statusFilter !== "all" ||
                     experienceFilter !== "all" ||
                     recruiterFilter !== "all" ||
+                    roundFilter !== "all" ||
                     interviewTypeFilter !== "all" ||
                     dateFilter !== "all"
                       ? "No completed candidates match your current filters. Try adjusting your search criteria."
