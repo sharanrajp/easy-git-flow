@@ -201,7 +201,7 @@ export async function fetchAvailablePanels(round: string = 'r1'): Promise<any[]>
 }
 
 // Assign candidate to panel
-export async function assignCandidateToPanel(candidateId: string, panelId: string): Promise<void> {
+export async function assignCandidateToPanel(candidateId: string, panelId: string, round: string = 'r1', assignedBy: string): Promise<void> {
   const token = getToken();
   
   if (!token) {
@@ -217,7 +217,9 @@ export async function assignCandidateToPanel(candidateId: string, panelId: strin
       },
       body: JSON.stringify({
         candidate_id: candidateId,
-        panel_id: panelId
+        panel_id: panelId,
+        round: round,
+        assigned_by: assignedBy
       }),
     });
 

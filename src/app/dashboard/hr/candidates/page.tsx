@@ -47,7 +47,7 @@ import { CandidateDetails } from "@/components/candidates/candidate-details"
 import { BulkActionsToolbar } from "@/components/candidates/bulk-actions-toolbar"
 import { BulkUploadDialog } from "@/components/candidates/bulk-upload-dialog"
 import { Checkbox } from "@/components/ui/checkbox"
-import { getAllUsers } from "@/lib/auth"
+import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -109,9 +109,13 @@ export default function CandidatesPage() {
   const [isPanelDialogOpen, setIsPanelDialogOpen] = useState(false)
   const [checkingInCandidate, setCheckingInCandidate] = useState<string | null>(null)
   const [assigningCandidate, setAssigningCandidate] = useState<string | null>(null)
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
 
-  // No stored user available since we removed localStorage
-  const currentUser = null
+  useEffect(() => {
+    // Get current user on component mount
+    const user = getCurrentUser()
+    setCurrentUser(user)
+  }, [])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -564,9 +568,18 @@ export default function CandidatesPage() {
   const handlePanelAssignment = async (panelId: string) => {
     if (!selectedCandidateForPanel) return
     
+    if (!currentUser?._id) {
+      toast({
+        title: "Error",
+        description: "Unable to identify current user. Please refresh and try again.",
+        variant: "destructive",
+      })
+      return
+    }
+    
     setAssigningCandidate(selectedCandidateForPanel._id)
     try {
-      await assignCandidateToPanel(selectedCandidateForPanel._id, panelId)
+      await assignCandidateToPanel(selectedCandidateForPanel._id, panelId, 'r1', currentUser._id)
       
       // Refresh panels to show updated status
       const updatedPanels = await fetchAvailablePanels()
