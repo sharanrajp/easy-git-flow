@@ -18,10 +18,10 @@ export interface InterviewSession {
     decision: "selected" | "rejected"
     submittedAt: string
     detailedRatings?: {
-      problemSolving: number
+      problem_solving: number
       communication: number
-      codeQuality: number
-      technicalKnowledge: number
+      code_quality: number
+      technical_knowledge: number
       teamwork: number
     }
   }

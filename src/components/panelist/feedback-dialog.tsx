@@ -14,10 +14,10 @@ interface FeedbackDialogProps {
 }
 
 interface FeedbackData {
-  problemSolving: number
+  problem_solving: number
   communication: number
-  codeQuality: number
-  technicalKnowledge: number
+  code_quality: number
+  technical_knowledge: number
   teamwork: number
   overallDecision: string
   comments: string
@@ -25,10 +25,10 @@ interface FeedbackData {
 
 export function FeedbackDialog({ isOpen, onClose, session, onSubmit }: FeedbackDialogProps) {
   const [feedback, setFeedback] = useState<FeedbackData>({
-    problemSolving: 0,
+    problem_solving: 0,
     communication: 0,
-    codeQuality: 0,
-    technicalKnowledge: 0,
+    code_quality: 0,
+    technical_knowledge: 0,
     teamwork: 0,
     overallDecision: "",
     comments: "",
@@ -44,10 +44,10 @@ export function FeedbackDialog({ isOpen, onClose, session, onSubmit }: FeedbackD
     // Complete the interview with feedback
     completeInterview(session.id, {
       rating: Math.round(
-        (feedback.problemSolving +
+        (feedback.problem_solving +
           feedback.communication +
-          feedback.codeQuality +
-          feedback.technicalKnowledge +
+          feedback.code_quality +
+          feedback.technical_knowledge +
           feedback.teamwork) /
           5,
       ),
@@ -55,10 +55,10 @@ export function FeedbackDialog({ isOpen, onClose, session, onSubmit }: FeedbackD
       decision: feedback.overallDecision === "Move to R2" ? "selected" : "rejected",
       submittedAt: new Date().toISOString(),
       detailedRatings: {
-        problemSolving: feedback.problemSolving,
+        problem_solving: feedback.problem_solving,
         communication: feedback.communication,
-        codeQuality: feedback.codeQuality,
-        technicalKnowledge: feedback.technicalKnowledge,
+        code_quality: feedback.code_quality,
+        technical_knowledge: feedback.technical_knowledge,
         teamwork: feedback.teamwork,
       },
     })
@@ -68,10 +68,10 @@ export function FeedbackDialog({ isOpen, onClose, session, onSubmit }: FeedbackD
 
     // Reset form
     setFeedback({
-      problemSolving: 0,
+      problem_solving: 0,
       communication: 0,
-      codeQuality: 0,
-      technicalKnowledge: 0,
+      code_quality: 0,
+      technical_knowledge: 0,
       teamwork: 0,
       overallDecision: "",
       comments: "",
@@ -101,10 +101,10 @@ export function FeedbackDialog({ isOpen, onClose, session, onSubmit }: FeedbackD
   )
 
   const isFormValid =
-    feedback.problemSolving > 0 &&
+    feedback.problem_solving > 0 &&
     feedback.communication > 0 &&
-    feedback.codeQuality > 0 &&
-    feedback.technicalKnowledge > 0 &&
+    feedback.code_quality > 0 &&
+    feedback.technical_knowledge > 0 &&
     feedback.teamwork > 0 &&
     feedback.overallDecision &&
     feedback.comments.trim()
@@ -118,10 +118,10 @@ export function FeedbackDialog({ isOpen, onClose, session, onSubmit }: FeedbackD
 
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <StarRating category="problemSolving" label="Problem Solving" />
+            <StarRating category="problem_solving" label="Problem Solving" />
             <StarRating category="communication" label="Communication" />
-            <StarRating category="codeQuality" label="Code Quality" />
-            <StarRating category="technicalKnowledge" label="Technical Knowledge" />
+            <StarRating category="code_quality" label="Code Quality" />
+            <StarRating category="technical_knowledge" label="Technical Knowledge" />
             <StarRating category="teamwork" label="Teamwork" />
           </div>
 

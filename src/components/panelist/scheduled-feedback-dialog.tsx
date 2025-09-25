@@ -17,10 +17,10 @@ interface ScheduledFeedbackDialogProps {
 
 interface FeedbackData {
   communication: number
-  problemSolving: number
-  logicalThinking: number
-  codeQuality: number
-  technicalKnowledge: number
+  problem_solving: number
+  logical_thinking: number
+  code_quality: number
+  technical_knowledge: number
   status: string
   feedback: string
 }
@@ -29,10 +29,10 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
   const { toast } = useToast()
   const [feedback, setFeedback] = useState<FeedbackData>({
     communication: 0,
-    problemSolving: 0,
-    logicalThinking: 0,
-    codeQuality: 0,
-    technicalKnowledge: 0,
+    problem_solving: 0,
+    logical_thinking: 0,
+    code_quality: 0,
+    technical_knowledge: 0,
     status: "",
     feedback: "",
   })
@@ -67,10 +67,10 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
           panel_id: currentUser._id,
           round: candidate.last_interview_round,
           communication: feedback.communication,
-          problem_solving: feedback.problemSolving,
-          logical_thinking: feedback.logicalThinking,
-          code_quality: feedback.codeQuality,
-          technical_knowledge: feedback.technicalKnowledge,
+          problem_solving: feedback.problem_solving,
+          logical_thinking: feedback.logical_thinking,
+          code_quality: feedback.code_quality,
+          technical_knowledge: feedback.technical_knowledge,
           status: feedback.status,
           feedback: feedback.feedback
         })
@@ -88,10 +88,10 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
       // Reset form first
       setFeedback({
         communication: 0,
-        problemSolving: 0,
-        logicalThinking: 0,
-        codeQuality: 0,
-        technicalKnowledge: 0,
+        problem_solving: 0,
+        logical_thinking: 0,
+        code_quality: 0,
+        technical_knowledge: 0,
         status: "",
         feedback: "",
       })
@@ -138,10 +138,10 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
 
   const isFormValid = 
     feedback.communication > 0 &&
-    feedback.problemSolving > 0 &&
-    feedback.logicalThinking > 0 &&
-    feedback.codeQuality > 0 &&
-    feedback.technicalKnowledge > 0 &&
+    feedback.problem_solving > 0 &&
+    feedback.logical_thinking > 0 &&
+    feedback.code_quality > 0 &&
+    feedback.technical_knowledge > 0 &&
     feedback.status &&
     feedback.feedback.trim()
 
@@ -157,10 +157,10 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <StarRating category="communication" label="Communication" />
-            <StarRating category="problemSolving" label="Problem Solving" />
-            <StarRating category="logicalThinking" label="Logical Thinking" />
-            <StarRating category="codeQuality" label="Code Quality" />
-            <StarRating category="technicalKnowledge" label="Technical Knowledge" />
+            <StarRating category="problem_solving" label="Problem Solving" />
+            <StarRating category="logical_thinking" label="Logical Thinking" />
+            <StarRating category="code_quality" label="Code Quality" />
+            <StarRating category="technical_knowledge" label="Technical Knowledge" />
           </div>
 
           <div className="space-y-2">

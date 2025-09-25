@@ -836,10 +836,10 @@ export default function PanelistDashboard() {
                   <div className="space-y-3">
                     <h3 className="font-medium">Ratings:</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>Problem Solving: {viewingFeedbackSession.feedback.detailedRatings?.problemSolving || viewingFeedbackSession.feedback.rating}/5 ⭐</div>
+                      <div>Problem Solving: {viewingFeedbackSession.feedback.detailedRatings?.problem_solving || viewingFeedbackSession.feedback.rating}/5 ⭐</div>
                       <div>Communication: {viewingFeedbackSession.feedback.detailedRatings?.communication || viewingFeedbackSession.feedback.rating}/5 ⭐</div>
-                      <div>Code Quality: {viewingFeedbackSession.feedback.detailedRatings?.codeQuality || viewingFeedbackSession.feedback.rating}/5 ⭐</div>
-                      <div>Technical Knowledge: {viewingFeedbackSession.feedback.detailedRatings?.technicalKnowledge || viewingFeedbackSession.feedback.rating}/5 ⭐</div>
+                      <div>Code Quality: {viewingFeedbackSession.feedback.detailedRatings?.code_quality || viewingFeedbackSession.feedback.rating}/5 ⭐</div>
+                      <div>Technical Knowledge: {viewingFeedbackSession.feedback.detailedRatings?.technical_knowledge || viewingFeedbackSession.feedback.rating}/5 ⭐</div>
                       <div>Teamwork: {viewingFeedbackSession.feedback.detailedRatings?.teamwork || viewingFeedbackSession.feedback.rating}/5 ⭐</div>
                     </div>
                     
