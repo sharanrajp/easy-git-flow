@@ -159,6 +159,7 @@ export async function checkInCandidate(candidateId: string): Promise<void> {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
+      body: JSON.stringify({ checked_in: true }),
     });
 
     if (!response.ok) {
@@ -171,7 +172,7 @@ export async function checkInCandidate(candidateId: string): Promise<void> {
 }
 
 // Fetch available panels
-export async function fetchAvailablePanels(): Promise<any[]> {
+export async function fetchAvailablePanels(round: string = 'R1'): Promise<any[]> {
   const token = getToken();
   
   if (!token) {
@@ -179,7 +180,7 @@ export async function fetchAvailablePanels(): Promise<any[]> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/mapping/available-panels`, {
+    const response = await fetch(`${API_BASE_URL}/mapping/available-panels?round=${round}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
