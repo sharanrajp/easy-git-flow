@@ -39,6 +39,7 @@ import {
   UserCheck,
   Award,
   ChevronDown,
+  List,
 } from "lucide-react"
 import { getMockCandidates, type Candidate, type Vacancy } from "@/lib/mock-data"
 import { fetchVacancies } from "@/lib/vacancy-api"
@@ -51,7 +52,7 @@ import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, type BackendCandidate } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 
@@ -110,6 +111,11 @@ export default function CandidatesPage() {
   const [checkingInCandidate, setCheckingInCandidate] = useState<string | null>(null)
   const [assigningCandidate, setAssigningCandidate] = useState<string | null>(null)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
+  
+  // Ongoing interviews states
+  const [ongoingInterviews, setOngoingInterviews] = useState<OngoingInterview[]>([])
+  const [isInterviewsDialogOpen, setIsInterviewsDialogOpen] = useState(false)
+  const [loadingInterviews, setLoadingInterviews] = useState(false)
 
   useEffect(() => {
     // Get current user on component mount
@@ -625,6 +631,83 @@ export default function CandidatesPage() {
   // Handle undo assignment
   const handleUndoAssignment = async (candidateId: string, panelId: string) => {
     setAssigningCandidate(candidateId)
+    
+    try {
+      await undoAssignment(candidateId, panelId)
+      
+      // Refresh both candidate lists and ongoing interviews
+      const [unassignedData, assignedData, interviewsData] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates(), 
+        loadingInterviews ? Promise.resolve(ongoingInterviews) : fetchOngoingInterviews()
+      ])
+      
+      setUnassignedCandidates(unassignedData)
+      setAssignedCandidates(assignedData)
+      if (!loadingInterviews) {
+        setOngoingInterviews(interviewsData)
+      }
+
+      toast({
+        title: "Success",
+        description: "Assignment has been undone successfully.",
+      })
+    } catch (error) {
+      console.error('Error undoing assignment:', error)
+      toast({
+        title: "Error",
+        description: "Failed to undo assignment. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setAssigningCandidate(null)
+    }
+  }
+  
+  const handleViewInterviews = async () => {
+    setIsInterviewsDialogOpen(true)
+    setLoadingInterviews(true)
+    
+    try {
+      const interviewsData = await fetchOngoingInterviews()
+      setOngoingInterviews(interviewsData)
+    } catch (error) {
+      console.error('Error fetching ongoing interviews:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load ongoing interviews. Please try again.",
+        variant: "destructive",
+      })
+      setOngoingInterviews([])
+    } finally {
+      setLoadingInterviews(false)
+    }
+  }
+  
+  const handleUnassignInterview = async (candidateId: string, panelId: string) => {
+    try {
+      await undoAssignment(candidateId, panelId)
+      
+      // Refresh ongoing interviews list
+      const interviewsData = await fetchOngoingInterviews()
+      setOngoingInterviews(interviewsData)
+      
+      toast({
+        title: "Success", 
+        description: "Interview assignment has been removed successfully.",
+      })
+    } catch (error) {
+      console.error('Error unassigning interview:', error)
+      toast({
+        title: "Error",
+        description: "Failed to unassign interview. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleUndoAssignmentOld = async (candidateId: string, panelId: string) => {
+    setAssigningCandidate(candidateId)
     try {
       await undoAssignment(candidateId, panelId)
       
@@ -841,6 +924,14 @@ export default function CandidatesPage() {
             <p className="text-gray-600">Manage and track candidate applications</p>
           </div>
           <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              className="cursor-pointer bg-transparent"
+              onClick={handleViewInterviews}
+            >
+              <List className="h-4 w-4 mr-2" />
+              View List of Interviews
+            </Button>
             <Button 
               variant="outline" 
               className="cursor-pointer bg-transparent"
@@ -2007,6 +2098,61 @@ export default function CandidatesPage() {
                   setSelectedUnassignedCandidate(null)
                 }}
               />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Ongoing Interviews Dialog */}
+        <Dialog open={isInterviewsDialogOpen} onOpenChange={setIsInterviewsDialogOpen}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Ongoing Interviews</DialogTitle>
+              <DialogDescription>
+                View and manage all ongoing interviews
+              </DialogDescription>
+            </DialogHeader>
+            
+            {loadingInterviews ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-2 text-gray-600">Loading interviews...</span>
+              </div>
+            ) : ongoingInterviews.length > 0 ? (
+              <div className="max-h-96 overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Candidate Name</TableHead>
+                      <TableHead>Panel Member Name</TableHead>
+                      <TableHead>Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {ongoingInterviews.map((interview) => (
+                      <TableRow key={`${interview.candidate_id}-${interview.panel_id}`}>
+                        <TableCell className="font-medium">
+                          {interview.candidate_name}
+                        </TableCell>
+                        <TableCell>{interview.panel_member_name}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleUnassignInterview(interview.candidate_id, interview.panel_id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            Unassign
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                No ongoing interviews found
+              </div>
             )}
           </DialogContent>
         </Dialog>

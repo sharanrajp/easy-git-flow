@@ -55,6 +55,13 @@ export interface PanelistCandidate {
   }>;
 }
 
+export interface OngoingInterview {
+  candidate_id: string;
+  candidate_name: string;
+  panel_id: string;
+  panel_member_name: string;
+}
+
 // Fetch unassigned candidates from backend
 export async function fetchUnassignedCandidates(): Promise<BackendCandidate[]> {
   const token = getToken();
@@ -264,6 +271,35 @@ export async function undoAssignment(candidateId: string, panelId: string): Prom
     }
   } catch (error) {
     console.error('Error undoing assignment:', error);
+    throw error;
+  }
+}
+
+// Fetch ongoing interviews from backend
+export async function fetchOngoingInterviews(): Promise<OngoingInterview[]> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/interviews/ongoing`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ongoing interviews: ${response.status} ${response.statusText}`);
+    }
+
+    const interviews: OngoingInterview[] = await response.json();
+    return interviews;
+  } catch (error) {
+    console.error('Error fetching ongoing interviews:', error);
     throw error;
   }
 }
