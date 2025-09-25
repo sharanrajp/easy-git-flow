@@ -9,7 +9,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { X, FileText } from "lucide-react"
 import type { Candidate } from "@/lib/mock-data"
-import { getMockVacancies } from "@/lib/mock-data"
 
 interface CandidateFormProps {
   candidate?: Candidate
@@ -45,28 +44,37 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
 
   const [newSkill, setNewSkill] = useState("")
   const [initialFormData] = useState(formData)
-  const [vacancies, setVacancies] = useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("vacancies")
-      return stored ? JSON.parse(stored) : getMockVacancies()
-    }
-    return getMockVacancies()
-  })
+  const [vacancies, setVacancies] = useState<any[]>([])
+  const [loadingVacancies, setLoadingVacancies] = useState(false)
 
+  // Load vacancies from API
   useEffect(() => {
-    const updateVacancies = () => {
-      if (typeof window !== "undefined") {
-        const stored = localStorage.getItem("vacancies")
-        setVacancies(stored ? JSON.parse(stored) : getMockVacancies())
+    const loadVacancies = async () => {
+      setLoadingVacancies(true)
+      try {
+        const { fetchVacancies } = await import("../../lib/vacancy-api")
+        const vacancyData = await fetchVacancies()
+        // Filter only active vacancies
+        const activeVacancies = vacancyData.filter(vacancy => vacancy.status === "active")
+        setVacancies(activeVacancies)
+      } catch (error) {
+        console.error('Failed to load vacancies:', error)
+        setVacancies([])
+      } finally {
+        setLoadingVacancies(false)
       }
     }
 
-    window.addEventListener("storage", updateVacancies)
-    window.addEventListener("vacancyUpdated", updateVacancies)
+    loadVacancies()
+
+    const handleVacancyUpdate = () => {
+      loadVacancies()
+    }
+
+    window.addEventListener("vacancyUpdated", handleVacancyUpdate)
 
     return () => {
-      window.removeEventListener("storage", updateVacancies)
-      window.removeEventListener("vacancyUpdated", updateVacancies)
+      window.removeEventListener("vacancyUpdated", handleVacancyUpdate)
     }
   }, [])
 
@@ -208,19 +216,25 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
               setFormData({ 
                 ...formData, 
                 applied_position: value,
-                recruiter: selectedVacancy?.recruiter || "Auto-assigned"
+                recruiter: selectedVacancy?.recruiter_name || "Auto-assigned"
               })
             }}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select position" />
+              <SelectValue placeholder={loadingVacancies ? "Loading positions..." : "Select position"} />
             </SelectTrigger>
             <SelectContent>
-              {vacancies.filter((vacancy: any) => vacancy.status === 'active').map((vacancy: any) => (
-                <SelectItem key={vacancy.id} value={vacancy.position_title}>
-                  {vacancy.position_title} (#{vacancy.id}) - {vacancy.location}
-                </SelectItem>
-              ))}
+              {loadingVacancies ? (
+                <SelectItem value="" disabled>Loading vacancies...</SelectItem>
+              ) : vacancies.length === 0 ? (
+                <SelectItem value="" disabled>No active vacancies available</SelectItem>
+              ) : (
+                vacancies.map((vacancy: any) => (
+                  <SelectItem key={vacancy.id} value={vacancy.position_title}>
+                    {vacancy.position_title} (#{vacancy.id}) - {vacancy.location || 'No location'}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>

@@ -40,7 +40,8 @@ import {
   Award,
   ChevronDown,
 } from "lucide-react"
-import { getMockCandidates, getMockVacancies, type Candidate } from "@/lib/mock-data"
+import { getMockCandidates, type Candidate, type Vacancy } from "@/lib/mock-data"
+import { fetchVacancies } from "@/lib/vacancy-api"
 import { CandidateForm } from "@/components/candidates/candidate-form"
 import { CandidateDetails } from "@/components/candidates/candidate-details"
 import { BulkActionsToolbar } from "@/components/candidates/bulk-actions-toolbar"
@@ -97,10 +98,12 @@ export default function CandidatesPage() {
   const [isAssignedDetailsOpen, setIsAssignedDetailsOpen] = useState(false)
   const [selectedUnassignedCandidate, setSelectedUnassignedCandidate] = useState<BackendCandidate | null>(null)
   const [isUnassignedDetailsOpen, setIsUnassignedDetailsOpen] = useState(false)
+  const [vacancies, setVacancies] = useState<Vacancy[]>([])
+  const [loadingVacancies, setLoadingVacancies] = useState(false)
+  const [vacancyError, setVacancyError] = useState<string | null>(null)
 
   // No stored user available since we removed localStorage
   const currentUser = null
-  const vacancies = getMockVacancies()
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -115,6 +118,29 @@ export default function CandidatesPage() {
     }, 1000) // Update every second for dynamic timer
 
     return () => clearInterval(interval)
+  }, [])
+
+  // Load vacancies when page loads
+  useEffect(() => {
+    const loadVacancies = async () => {
+      setLoadingVacancies(true)
+      setVacancyError(null)
+      
+      try {
+        const vacancyData = await fetchVacancies()
+        // Filter only active vacancies
+        const activeVacancies = vacancyData.filter(vacancy => vacancy.status === "active")
+        setVacancies(activeVacancies)
+      } catch (error) {
+        console.error('Failed to load vacancies:', error)
+        setVacancyError('Failed to load vacancies')
+        setVacancies([])
+      } finally {
+        setLoadingVacancies(false)
+      }
+    }
+
+    loadVacancies()
   }, [])
 
   // Load both assigned and unassigned candidates in parallel when page loads
