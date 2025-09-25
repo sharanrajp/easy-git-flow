@@ -92,32 +92,32 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
   }
 
   const StarRating = ({ rating, label }: { rating: number | null; label: string }) => {
-    if (!rating) return (
-      <div className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg">
-        <span className="text-sm font-medium text-gray-700">{label}</span>
-        <span className="text-gray-400 text-sm">Not rated</span>
-      </div>
-    )
+    if (rating === null || rating === undefined) {
+      return (
+        <div className="flex items-center justify-between py-2">
+          <span className="text-sm font-medium text-gray-700">{label}:</span>
+          <span className="text-gray-400 text-sm">Not rated</span>
+        </div>
+      )
+    }
     
     return (
-      <div className="flex items-center justify-between py-3 px-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 hover:shadow-sm transition-all duration-200">
-        <span className="text-sm font-semibold text-gray-800">{label}</span>
-        <div className="flex items-center gap-1 group">
+      <div className="flex items-center justify-between py-2">
+        <span className="text-sm font-medium text-gray-700">{label}:</span>
+        <div className="flex items-center gap-1">
           {Array.from({ length: 5 }, (_, i) => (
             <span
               key={i}
-              className={`text-lg transition-all duration-200 cursor-default ${
+              className={`text-base transition-all duration-200 ${
                 i < rating 
-                  ? "text-yellow-500 drop-shadow-sm group-hover:scale-110 group-hover:text-yellow-400" 
-                  : "text-gray-300 group-hover:text-gray-400"
+                  ? "text-yellow-500" 
+                  : "text-gray-300"
               }`}
             >
-              ⭐
+              {i < rating ? "⭐" : "☆"}
             </span>
           ))}
-          <span className="ml-3 text-sm font-bold text-indigo-700 bg-white px-2 py-1 rounded-full border">
-            {rating}/5
-          </span>
+          <span className="ml-2 text-xs text-gray-600 font-medium">({rating}/5)</span>
         </div>
       </div>
     )
@@ -263,57 +263,37 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                           {/* Round Header */}
                           <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-3">
-                              <Badge variant="outline" className="text-lg font-bold px-3 py-1 bg-blue-50 text-blue-700 border-blue-200">
-                                {round.round?.toUpperCase()}
+                              <Badge variant="outline" className="text-sm font-bold px-3 py-1">
+                                Round: {round.round?.toUpperCase()}
                               </Badge>
-                              <div>
-                                <p className="font-semibold text-gray-900">{round.panel_name || "Unknown Panelist"}</p>
-                                <p className="text-sm text-gray-500">{round.panel_email || ""}</p>
-                              </div>
+                              <span className="text-sm text-gray-600">Panel: <span className="font-semibold">{round.panel_name || "Unknown Panelist"}</span></span>
                             </div>
                             <Badge className={`${getStatusColor(round.status)} font-medium px-3 py-1`}>
                               {round.status?.charAt(0).toUpperCase() + round.status?.slice(1) || "Unknown"}
                             </Badge>
                           </div>
 
-                          {/* Technical Skills Ratings */}
-                          {(round.communication || round.problem_solving || round.logical_thinking || 
-                            round.code_quality || round.technical_knowledge) && (
-                            <div className="mb-6">
-                              <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                ⭐ Technical Skills Assessment
-                              </h4>
-                              <div className="space-y-2">
-                                {round.communication !== null && round.communication !== undefined && (
-                                  <StarRating rating={round.communication} label="Communication" />
-                                )}
-                                {round.problem_solving !== null && round.problem_solving !== undefined && (
-                                  <StarRating rating={round.problem_solving} label="Problem Solving" />
-                                )}
-                                {round.logical_thinking !== null && round.logical_thinking !== undefined && (
-                                  <StarRating rating={round.logical_thinking} label="Logical Thinking" />
-                                )}
-                                {round.code_quality !== null && round.code_quality !== undefined && (
-                                  <StarRating rating={round.code_quality} label="Code Quality" />
-                                )}
-                                {round.technical_knowledge !== null && round.technical_knowledge !== undefined && (
-                                  <StarRating rating={round.technical_knowledge} label="Technical Knowledge" />
-                                )}
+                          {/* Feedback Text */}
+                          {round.feedback && (
+                            <div className="mb-4">
+                              <p className="text-sm text-gray-600 mb-1">Feedback:</p>
+                              <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-lg">
+                                <p className="text-gray-700 italic">"{round.feedback}"</p>
                               </div>
                             </div>
                           )}
 
-                          {/* Feedback Text */}
-                          {round.feedback && (
-                            <div className="mb-4">
-                              <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                💭 Interviewer Comments
-                              </h4>
-                              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
-                                <p className="text-gray-700 italic leading-relaxed">"{round.feedback}"</p>
-                              </div>
+                          {/* Technical Skills Ratings */}
+                          <div className="bg-white p-4 rounded-lg border border-gray-200">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-3">Technical Skills Assessment</h4>
+                            <div className="space-y-1">
+                              <StarRating rating={round.communication} label="Communication" />
+                              <StarRating rating={round.problem_solving} label="Problem Solving" />
+                              <StarRating rating={round.logical_thinking} label="Logical Thinking" />
+                              <StarRating rating={round.code_quality} label="Code Quality" />
+                              <StarRating rating={round.technical_knowledge} label="Technical Knowledge" />
                             </div>
-                          )}
+                          </div>
 
                           {/* Additional Info */}
                           <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t">
