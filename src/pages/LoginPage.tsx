@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Building2 } from "lucide-react"
+import { fetchUserProfile } from '../lib/auth'
 
 function LoginPage() {
   const [email, setEmail] = useState("")
@@ -87,18 +88,41 @@ function LoginPage() {
       const currentUser = users.find((u: any) => u.email === email || u.username === email)
       
       if (currentUser) {
-        // Store current user info
-        localStorage.setItem("ats_user", JSON.stringify(currentUser))
-        
-        // Redirect based on role
-        if (currentUser.role === "admin") {
-          navigate("/dashboard/hr")
-        } else if (currentUser.role === "panelist") {
-          navigate("/dashboard/panelist")
-        } else if (currentUser.role === "manager") {
-          navigate("/dashboard/manager")
-        } else {
-          navigate("/dashboard/hr") // Default fallback
+        try {
+          // Fetch detailed user profile
+          const userProfile = await fetchUserProfile()
+          
+          // Merge profile data with user data from panels endpoint
+          const enrichedUser = { ...currentUser, ...userProfile }
+          
+          // Store enriched user info
+          localStorage.setItem("ats_user", JSON.stringify(enrichedUser))
+          
+          // Redirect based on role
+          if (enrichedUser.role === "admin") {
+            navigate("/dashboard/hr")
+          } else if (enrichedUser.role === "panelist") {
+            navigate("/dashboard/panelist")
+          } else if (enrichedUser.role === "manager") {
+            navigate("/dashboard/manager")
+          } else {
+            navigate("/dashboard/hr") // Default fallback
+          }
+        } catch (profileError) {
+          console.warn("Failed to fetch user profile, using basic user data:", profileError)
+          // Fallback to basic user data if profile fetch fails
+          localStorage.setItem("ats_user", JSON.stringify(currentUser))
+          
+          // Redirect based on role
+          if (currentUser.role === "admin") {
+            navigate("/dashboard/hr")
+          } else if (currentUser.role === "panelist") {
+            navigate("/dashboard/panelist")
+          } else if (currentUser.role === "manager") {
+            navigate("/dashboard/manager")
+          } else {
+            navigate("/dashboard/hr") // Default fallback
+          }
         }
       } else {
         setError("User role not recognized. Please contact administrator.")

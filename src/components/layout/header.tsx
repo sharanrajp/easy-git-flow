@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useNavigate, Link, useLocation } from "react-router-dom"
+import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils"
 
 interface HeaderProps {
   user: User
+  onUserUpdate?: (user: User) => void
 }
 
 const navigationItems = {
@@ -43,9 +45,11 @@ const navigationItems = {
   ],
 }
 
-export function Header({ user }: HeaderProps) {
+export function Header({ user, onUserUpdate }: HeaderProps) {
   const navigate = useNavigate()
   const pathname = useLocation().pathname
+  const { toast } = useToast()
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
   const items = navigationItems[user.role] || []
 
@@ -54,11 +58,30 @@ export function Header({ user }: HeaderProps) {
     navigate("/login")
   }
 
-  const handleStatusChange = (current_status: User["current_status"]) => {
-    if (user.role === "panelist" && current_status) {
-      updateUserStatus(user._id, current_status)
-      // Force a page refresh to update the UI
-      window.location.reload()
+  const handleStatusChange = async (current_status: User["current_status"]) => {
+    if (user.role === "panelist" && current_status && !isUpdatingStatus) {
+      try {
+        setIsUpdatingStatus(true)
+        await updateUserStatus(user._id, current_status)
+        
+        // Update the user object and notify parent component
+        const updatedUser = { ...user, current_status }
+        onUserUpdate?.(updatedUser)
+        
+        toast({
+          title: "Status Updated",
+          description: `Your status has been changed to ${current_status === "free" ? "available" : current_status}`,
+        })
+      } catch (error) {
+        console.error('Failed to update status:', error)
+        toast({
+          title: "Error",
+          description: "Failed to update status. Please try again.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsUpdatingStatus(false)
+      }
     }
   }
 
@@ -187,22 +210,34 @@ export function Header({ user }: HeaderProps) {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="font-semibold">Change Status</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => handleStatusChange("free")} className="smooth-transition">
+                  <DropdownMenuItem 
+                    onClick={() => handleStatusChange("free")} 
+                    className="smooth-transition"
+                    disabled={isUpdatingStatus}
+                  >
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-emerald-500 rounded-full mr-3 shadow-sm"></div>
-                      Available
+                      Available {isUpdatingStatus && user.current_status !== "free" ? "(updating...)" : ""}
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleStatusChange("break")} className="smooth-transition">
+                  <DropdownMenuItem 
+                    onClick={() => handleStatusChange("break")} 
+                    className="smooth-transition"
+                    disabled={isUpdatingStatus}
+                  >
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-slate-500 rounded-full mr-3 shadow-sm"></div>
-                      Break
+                      Break {isUpdatingStatus && user.current_status !== "break" ? "(updating...)" : ""}
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleStatusChange("unavailable")} className="smooth-transition">
+                  <DropdownMenuItem 
+                    onClick={() => handleStatusChange("unavailable")} 
+                    className="smooth-transition"
+                    disabled={isUpdatingStatus}
+                  >
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-rose-500 rounded-full mr-3 shadow-sm"></div>
-                      Unavailable
+                      Unavailable {isUpdatingStatus && user.current_status !== "unavailable" ? "(updating...)" : ""}
                     </div>
                   </DropdownMenuItem>
                 </>

@@ -188,8 +188,31 @@ export async function deleteUser(userId: string): Promise<void> {
 }
 
 export async function updateUserStatus(userId: string, current_status: User["current_status"]): Promise<void> {
-  // TODO: Implement PATCH request to backend with authentication
-  throw new Error("Not implemented - should PATCH to backend with auth")
+  const response = await makeAuthenticatedRequest("/privileges/my-status", {
+    method: "PUT",
+    body: JSON.stringify({ current_status })
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to update status")
+  }
+
+  // Update local storage
+  const currentUser = getStoredUser()
+  if (currentUser) {
+    currentUser.current_status = current_status
+    localStorage.setItem("ats_user", JSON.stringify(currentUser))
+  }
+}
+
+export async function fetchUserProfile(): Promise<User> {
+  const response = await makeAuthenticatedRequest("/user/me")
+  
+  if (!response.ok) {
+    throw new Error("Failed to fetch user profile")
+  }
+  
+  return response.json()
 }
 
 export function getCurrentUser(): User | null {
