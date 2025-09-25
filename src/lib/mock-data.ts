@@ -432,11 +432,13 @@ export interface Candidate {
   interview_type: "Walk-In"
   job_type: "full_time" | "part-time" | "contract"
   source: string
+  other_source?: string
   current_ctc?: string
   expected_ctc?: string
   negotiable?: boolean
   willing_to_relocate?: boolean
   skills?: string[]
+  skill_set?: string[] // alias for skills
   resume?: string
   appliedDate: string
   recruiter?: string
