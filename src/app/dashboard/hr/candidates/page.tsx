@@ -769,7 +769,7 @@ export default function CandidatesPage() {
           </div>
         </div>
 
-        <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="space-y-6">
+        <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="space-y-4">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="unassigned">
               Unassigned ({loadingUnassigned ? "..." : unassignedCandidates.length})
