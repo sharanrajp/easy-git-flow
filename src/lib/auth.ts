@@ -64,24 +64,34 @@ export async function refreshToken(): Promise<string | null> {
   }
 }
 
+// API Base URL Configuration
+const API_BASE_URL = "http://127.0.0.1:8000"
+
 // Authenticated API call helper
 export async function makeAuthenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
   let token = getToken()
   
   if (!token) {
-    throw new Error("No authentication token available")
+    throw new Error("No authentication token found")
   }
 
-  const authOptions = {
+  // Prepend base URL if the URL is relative
+  const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`
+
+  // Check if the body is FormData to avoid setting Content-Type
+  const isFormData = options.body instanceof FormData
+
+  const authOptions: RequestInit = {
     ...options,
     headers: {
       ...options.headers,
       "Authorization": `Bearer ${token}`,
-      "Content-Type": "application/json"
+      // Only set Content-Type for non-FormData requests
+      ...(isFormData ? {} : { "Content-Type": "application/json" })
     }
   }
 
-  let response = await fetch(url, authOptions)
+  let response = await fetch(fullUrl, authOptions)
 
   // If unauthorized, try to refresh token and retry
   if (response.status === 401) {
@@ -91,8 +101,14 @@ export async function makeAuthenticatedRequest(url: string, options: RequestInit
         ...authOptions.headers,
         "Authorization": `Bearer ${newToken}`
       }
-      response = await fetch(url, authOptions)
+      response = await fetch(fullUrl, authOptions)
     }
+  }
+
+  // Check if response is HTML instead of JSON (common when endpoints don't exist)
+  const contentType = response.headers.get('content-type')
+  if (!response.ok && contentType?.includes('text/html')) {
+    throw new Error(`API endpoint not found: ${fullUrl}. Server returned HTML instead of JSON.`)
   }
 
   return response

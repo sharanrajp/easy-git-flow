@@ -169,9 +169,25 @@ Jane Smith,jane.smith@email.com,+1234567891,2-4 years,"Node.js,Python,MongoDB",C
 
       setProgress(100)
 
+      // Check if response is HTML instead of JSON (common error case)
+      const contentType = response.headers.get('content-type')
       if (!response.ok) {
-        const errorData: UploadError = await response.json()
-        throw new Error(errorData.error || 'Upload failed')
+        if (contentType?.includes('text/html')) {
+          throw new Error(`API endpoint not found. Server returned HTML instead of JSON. Status: ${response.status}`)
+        }
+        // Try to get error details from JSON response
+        try {
+          const errorData: UploadError = await response.json()
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+        } catch {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+      }
+
+      // Ensure we can parse JSON
+      if (!contentType?.includes('application/json')) {
+        const text = await response.text()
+        throw new Error(`Expected JSON response but got: ${contentType}. Response: ${text.substring(0, 200)}`)
       }
 
       const successData: UploadResponse = await response.json()
