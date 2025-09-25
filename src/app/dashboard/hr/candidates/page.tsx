@@ -777,7 +777,7 @@ export default function CandidatesPage() {
             <TabsTrigger value="assigned">
               Assigned ({loadingAssigned ? "..." : assignedCandidates.length})
             </TabsTrigger>
-            <TabsTrigger value="completed">Completed ({completedCandidates.length})</TabsTrigger>
+            {/* <TabsTrigger value="completed">Completed ({completedCandidates.length})</TabsTrigger> */}
           </TabsList>
 
           <TabsContent value="unassigned">
@@ -1060,7 +1060,7 @@ export default function CandidatesPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="completed">
+          {/* <TabsContent value="completed"> */}
             {completedCandidates.length > 0 ? (
               <Card>
                 <CardContent className="p-0">
@@ -1208,7 +1208,7 @@ export default function CandidatesPage() {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
+          {/* </TabsContent> */}
         </Tabs>
 
         <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
