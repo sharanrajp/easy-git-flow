@@ -957,7 +957,7 @@ export default function CandidatesPage() {
     }
   }
 
-  const handleBulkAction = (action: string, data?: any) => {
+  const handleBulkAction = async (action: string, data?: any) => {
     const selectedCandidateObjects = candidates.filter((c) => selectedCandidates.includes(c.id))
 
     switch (action) {
