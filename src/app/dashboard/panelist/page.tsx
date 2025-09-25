@@ -41,6 +41,7 @@ import { ScheduledFeedbackDialog } from "@/components/panelist/scheduled-feedbac
 import { formatDate } from "@/lib/utils"
 import { fetchPanelistAssignedCandidates, type PanelistCandidate } from "@/lib/candidates-api"
 import { useToast } from "@/hooks/use-toast"
+import { AssignedCandidateDetails } from "../../../components/candidates/assigned-candidate-details"
 
 export default function PanelistDashboard() {
   const [interviewSessions, setInterviewSessions] = useState<InterviewSession[]>([])
@@ -141,6 +142,47 @@ export default function PanelistDashboard() {
   const handleViewCandidateFeedback = (candidate: PanelistCandidate) => {
     setViewingCandidate(candidate)
     setShowCandidateFeedback(true)
+  }
+
+  // Convert PanelistCandidate to BackendCandidate format for the details component
+  const convertToBackendCandidate = (candidate: PanelistCandidate): any => {
+    return {
+      ...candidate,
+      applied_position: candidate.last_interview_round || "N/A",
+      final_status: "assigned",
+      total_experience: undefined,
+      source: undefined,
+      appliedDate: undefined,
+      created_at: undefined,
+      recruiter: undefined,
+      assignedPanelist: undefined,
+      panel_name: undefined,
+      currentRound: candidate.last_interview_round,
+      last_interview_round: candidate.last_interview_round,
+      interviewDateTime: undefined,
+      waitTime: null,
+      waitTimeStarted: null,
+      isCheckedIn: false,
+      interview_type: undefined,
+      notice_period: undefined,
+      current_ctc: undefined,
+      expected_ctc: undefined,
+      willing_to_relocate: undefined,
+      previous_rounds: candidate.previous_rounds?.map(round => ({
+        round: round.round,
+        status: round.status,
+        feedback_submitted: round.feedback_submitted,
+        rating: round.rating?.toString(),
+        feedback: round.feedback,
+        panel_name: "Unknown Panel", // Default since not in PanelistCandidate
+        panel_email: undefined,
+        communication: round.scores?.communication,
+        problem_solving: round.scores?.problem_solving,
+        logical_thinking: round.scores?.logical_thinking,
+        code_quality: round.scores?.code_quality,
+        technical_knowledge: round.scores?.technical_knowledge,
+      })) || []
+    }
   }
 
   const handleScheduledFeedbackClose = useCallback(() => {
@@ -544,14 +586,13 @@ export default function PanelistDashboard() {
                           <TableHead>Skill Set</TableHead>
                           <TableHead>Interview Round</TableHead>
                           <TableHead>Resume</TableHead>
-                          <TableHead>Previous Rounds</TableHead>
                           <TableHead>Action</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {scheduledInterviews.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                               No scheduled interviews found
                             </TableCell>
                           </TableRow>
@@ -592,16 +633,6 @@ export default function PanelistDashboard() {
                                 ) : (
                                   <span className="text-muted-foreground text-sm">Resume Not Found</span>
                                 )}
-                              </TableCell>
-                              <TableCell>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleViewDetails(candidate)}
-                                  className="text-blue-600 hover:text-blue-800 border-blue-200 hover:bg-blue-50"
-                                >
-                                  {getPreviousRoundsText(candidate.previous_rounds)}
-                                </Button>
                               </TableCell>
                               <TableCell>
                                 <Button
@@ -647,14 +678,13 @@ export default function PanelistDashboard() {
                           <TableHead>Skill Set</TableHead>
                           <TableHead>Interview Round</TableHead>
                           <TableHead>Resume</TableHead>
-                          <TableHead>Previous Rounds</TableHead>
                           <TableHead>Action</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {completedCandidateInterviews.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                               No completed interviews found
                             </TableCell>
                           </TableRow>
@@ -695,16 +725,6 @@ export default function PanelistDashboard() {
                                 ) : (
                                   <span className="text-muted-foreground text-sm">Resume Not Found</span>
                                 )}
-                              </TableCell>
-                              <TableCell>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleViewDetails(candidate)}
-                                  className="text-green-600 hover:text-green-800 border-green-200 hover:bg-green-50"
-                                >
-                                  {getPreviousRoundsText(candidate.previous_rounds)}
-                                </Button>
                               </TableCell>
                               <TableCell>
                                 <Button
@@ -844,134 +864,11 @@ export default function PanelistDashboard() {
         )}
 
         {/* View Candidate Feedback Modal */}
-        {showCandidateFeedback && viewingCandidate && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">Interview Feedback History</h2>
-                <Button variant="outline" onClick={() => setShowCandidateFeedback(false)}>
-                  Close
-                </Button>
-              </div>
-              
-              <div className="space-y-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-medium mb-2">Candidate Information</h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <p><strong>Name:</strong> {viewingCandidate.name}</p>
-                    <p><strong>Email:</strong> {viewingCandidate.email}</p>
-                    <p><strong>Registration No:</strong> {viewingCandidate.register_number}</p>
-                    <p><strong>Phone:</strong> {formatPhoneNumber(viewingCandidate.phone_number)}</p>
-                    <p><strong>Skills:</strong> {Array.isArray(viewingCandidate.skill_set) ? viewingCandidate.skill_set.join(", ") : viewingCandidate.skill_set}</p>
-                    <p><strong>Current Round:</strong> {viewingCandidate.last_interview_round || "N/A"}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-medium mb-4">Interview Rounds History</h3>
-                  {viewingCandidate.previous_rounds && viewingCandidate.previous_rounds.length > 0 ? (
-                    <div className="space-y-4">
-                      {viewingCandidate.previous_rounds.map((round: any, index: number) => (
-                        <div key={index} className="border border-gray-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center space-x-3">
-                              <h4 className="font-medium text-lg">{round.round}</h4>
-                              <Badge variant={round.feedback_submitted ? "default" : "secondary"} className={
-                                round.status === "selected" ? "bg-green-100 text-green-800" : 
-                                round.status === "rejected" ? "bg-red-100 text-red-800" : 
-                                "bg-yellow-100 text-yellow-800"
-                              }>
-                                {round.status}
-                              </Badge>
-                              {round.feedback_submitted && (
-                                <Badge className="bg-blue-100 text-blue-800">
-                                  Feedback Submitted
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-
-                          {round.feedback_submitted && (
-                            <div className="space-y-3">
-                              {round.rating && (
-                                <div>
-                                  <p className="text-sm font-medium text-gray-700 mb-1">Overall Rating:</p>
-                                  <div className="flex items-center space-x-2">
-                                    <span className="text-lg font-bold text-gray-900">{round.rating}/5</span>
-                                    <div className="flex space-x-1">
-                                      {[1, 2, 3, 4, 5].map((star) => (
-                                        <Star
-                                          key={star}
-                                          className={`h-4 w-4 ${
-                                            star <= round.rating ? "text-yellow-400 fill-current" : "text-gray-300"
-                                          }`}
-                                        />
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-
-                              {round.scores && (
-                                <div>
-                                  <p className="text-sm font-medium text-gray-700 mb-2">Detailed Scores:</p>
-                                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                                    {round.scores.communication && (
-                                      <div className="bg-gray-50 p-2 rounded">
-                                        <span className="font-medium">Communication:</span> {round.scores.communication}/5
-                                      </div>
-                                    )}
-                                    {round.scores.problem_solving && (
-                                      <div className="bg-gray-50 p-2 rounded">
-                                        <span className="font-medium">Problem Solving:</span> {round.scores.problem_solving}/5
-                                      </div>
-                                    )}
-                                    {round.scores.logical_thinking && (
-                                      <div className="bg-gray-50 p-2 rounded">
-                                        <span className="font-medium">Logical Thinking:</span> {round.scores.logical_thinking}/5
-                                      </div>
-                                    )}
-                                    {round.scores.code_quality && (
-                                      <div className="bg-gray-50 p-2 rounded">
-                                        <span className="font-medium">Code Quality:</span> {round.scores.code_quality}/5
-                                      </div>
-                                    )}
-                                    {round.scores.technical_knowledge && (
-                                      <div className="bg-gray-50 p-2 rounded">
-                                        <span className="font-medium">Technical Knowledge:</span> {round.scores.technical_knowledge}/5
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-
-                              {round.feedback && (
-                                <div>
-                                  <p className="text-sm font-medium text-gray-700 mb-1">Feedback Comments:</p>
-                                  <p className="text-sm bg-gray-50 p-3 rounded border">{round.feedback}</p>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {!round.feedback_submitted && (
-                            <div className="text-center py-4 text-gray-500">
-                              <p className="text-sm">No feedback submitted for this round yet</p>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <p>No interview rounds found for this candidate</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <AssignedCandidateDetails
+          candidate={viewingCandidate ? convertToBackendCandidate(viewingCandidate) : null}
+          isOpen={showCandidateFeedback}
+          onClose={() => setShowCandidateFeedback(false)}
+        />
       </div>
     </DashboardLayout>
   )

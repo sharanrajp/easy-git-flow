@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, Eye, ExternalLink, FileText, Users, Clock, CheckCircle } from "lucide-react"
 import { fetchPanelistAssignedCandidates, type PanelistCandidate } from "../../../../lib/candidates-api"
 import { useToast } from "@/hooks/use-toast"
+import { AssignedCandidateDetails } from "../../../../components/candidates/assigned-candidate-details"
 
 export default function PanelistCandidatesPage() {
   const [candidates, setCandidates] = useState<PanelistCandidate[]>([])
@@ -85,6 +86,47 @@ export default function PanelistCandidatesPage() {
     setIsDetailsOpen(true)
   }
 
+  // Convert PanelistCandidate to BackendCandidate format for the details component
+  const convertToBackendCandidate = (candidate: PanelistCandidate): any => {
+    return {
+      ...candidate,
+      applied_position: candidate.last_interview_round || "N/A",
+      final_status: "assigned",
+      total_experience: undefined,
+      source: undefined,
+      appliedDate: undefined,
+      created_at: undefined,
+      recruiter: undefined,
+      assignedPanelist: undefined,
+      panel_name: undefined,
+      currentRound: candidate.last_interview_round,
+      last_interview_round: candidate.last_interview_round,
+      interviewDateTime: undefined,
+      waitTime: null,
+      waitTimeStarted: null,
+      isCheckedIn: false,
+      interview_type: undefined,
+      notice_period: undefined,
+      current_ctc: undefined,
+      expected_ctc: undefined,
+      willing_to_relocate: undefined,
+      previous_rounds: candidate.previous_rounds?.map(round => ({
+        round: round.round,
+        status: round.status,
+        feedback_submitted: round.feedback_submitted,
+        rating: round.rating?.toString(),
+        feedback: round.feedback,
+        panel_name: "Unknown Panel", // Default since not in PanelistCandidate
+        panel_email: undefined,
+        communication: round.scores?.communication,
+        problem_solving: round.scores?.problem_solving,
+        logical_thinking: round.scores?.logical_thinking,
+        code_quality: round.scores?.code_quality,
+        technical_knowledge: round.scores?.technical_knowledge,
+      })) || []
+    }
+  }
+
   return (
     <DashboardLayout requiredRole="panelist">
       <div className="space-y-6">
@@ -136,14 +178,13 @@ export default function PanelistCandidatesPage() {
                         <TableHead>Skill Set</TableHead>
                         <TableHead>Interview Round</TableHead>
                         <TableHead>Resume</TableHead>
-                        <TableHead>Previous Rounds</TableHead>
                         <TableHead>Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {scheduledInterviews.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                          <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                             No scheduled interviews found
                           </TableCell>
                         </TableRow>
@@ -184,17 +225,6 @@ export default function PanelistCandidatesPage() {
                               ) : (
                                 <span className="text-muted-foreground text-sm">Resume Not Found</span>
                               )}
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleViewDetails(candidate)}
-                                className="p-0 h-auto text-purple-600 hover:text-purple-800"
-                              >
-                                <Users className="h-4 w-4 mr-1" />
-                                {getPreviousRoundsText(candidate.previous_rounds)}
-                              </Button>
                             </TableCell>
                             <TableCell>
                               <Button
@@ -240,14 +270,13 @@ export default function PanelistCandidatesPage() {
                         <TableHead>Skill Set</TableHead>
                         <TableHead>Interview Round</TableHead>
                         <TableHead>Resume</TableHead>
-                        <TableHead>Previous Rounds</TableHead>
-                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {completedInterviews.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                          <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                             No completed interviews found
                           </TableCell>
                         </TableRow>
@@ -291,20 +320,14 @@ export default function PanelistCandidatesPage() {
                             </TableCell>
                             <TableCell>
                               <Button
-                                variant="ghost"
+                                variant="default"
                                 size="sm"
                                 onClick={() => handleViewDetails(candidate)}
-                                className="p-0 h-auto text-purple-600 hover:text-purple-800"
+                                className="bg-green-600 hover:bg-green-700 text-white"
                               >
-                                <Users className="h-4 w-4 mr-1" />
-                                {getPreviousRoundsText(candidate.previous_rounds)}
+                                <Eye className="h-4 w-4 mr-1" />
+                                View Feedback
                               </Button>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="default" className="bg-green-600 text-white">
-                                <CheckCircle className="h-3 w-3 mr-1" />
-                                Completed
-                              </Badge>
                             </TableCell>
                           </TableRow>
                         ))
@@ -316,6 +339,13 @@ export default function PanelistCandidatesPage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Candidate Details Dialog */}
+        <AssignedCandidateDetails
+          candidate={selectedCandidate ? convertToBackendCandidate(selectedCandidate) : null}
+          isOpen={isDetailsOpen}
+          onClose={() => setIsDetailsOpen(false)}
+        />
 
         {/* Candidate Details Popover */}
         <Popover open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
