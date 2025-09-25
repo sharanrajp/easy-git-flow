@@ -67,8 +67,6 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
         return "bg-orange-100 text-orange-800"
       case "break":
         return "bg-gray-100 text-gray-800"
-      case "unavailable":
-        return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -131,15 +129,6 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
                     <div className="flex items-center">
                       <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
                       Break {isUpdatingStatus && user.current_status !== "break" ? "(updating...)" : ""}
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleStatusChange("unavailable")}
-                    disabled={isUpdatingStatus}
-                  >
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                      Unavailable {isUpdatingStatus && user.current_status !== "unavailable" ? "(updating...)" : ""}
                     </div>
                   </DropdownMenuItem>
                 </>
