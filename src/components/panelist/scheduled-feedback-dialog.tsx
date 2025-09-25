@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -38,15 +38,13 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleStarClick = (category: keyof FeedbackData, rating: number) => {
-    console.log('Star clicked:', category, rating)
+  const handleStarClick = useCallback((category: keyof FeedbackData, rating: number) => {
     if (typeof feedback[category] === "number") {
       setFeedback((prev) => ({ ...prev, [category]: rating }))
     }
-  }
+  }, [feedback])
 
-  const handleSubmit = async () => {
-    console.log('Submit button clicked')
+  const handleSubmit = useCallback(async () => {
     const currentUser = getCurrentUser()
     if (!currentUser) {
       toast({
@@ -57,9 +55,10 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
       return
     }
 
+    if (isSubmitting) return // Prevent double submission
+
     try {
       setIsSubmitting(true)
-      console.log('Making API request to update interview')
       
       const response = await fetch('http://127.0.0.1:8000/interviews/update-interview', {
         method: 'PUT',
@@ -81,8 +80,6 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
         })
       })
 
-      console.log('API response status:', response.status)
-
       if (!response.ok) {
         throw new Error('Failed to submit feedback')
       }
@@ -92,10 +89,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
         description: "Feedback submitted successfully",
       })
 
-      onSubmit()
-      onClose()
-
-      // Reset form
+      // Reset form first
       setFeedback({
         communication: 0,
         problemSolving: 0,
@@ -105,6 +99,10 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
         status: "",
         feedback: "",
       })
+
+      // Then call callbacks
+      onSubmit()
+      onClose()
     } catch (error) {
       console.error('Error submitting feedback:', error)
       toast({
@@ -115,9 +113,9 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
     } finally {
       setIsSubmitting(false)
     }
-  }
+  }, [candidate, feedback, isSubmitting, onClose, onSubmit, toast])
 
-  const StarRating = ({ category, label }: { category: keyof FeedbackData; label: string }) => (
+  const StarRating = useCallback(({ category, label }: { category: keyof FeedbackData; label: string }) => (
     <div className="space-y-2">
       <label className="text-sm font-medium text-foreground">{label}</label>
       <div className="flex space-x-1">
@@ -126,20 +124,23 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
             key={star}
             type="button"
             onClick={() => handleStarClick(category, star)}
-            className="focus:outline-none"
+            className="focus:outline-none transition-colors hover:scale-110"
+            disabled={isSubmitting}
           >
             <Star
-              className={`h-6 w-6 ${
-                star <= (feedback[category] as number) ? "text-yellow-400 fill-current" : "text-muted-foreground"
+              className={`h-6 w-6 transition-colors ${
+                star <= (feedback[category] as number)
+                  ? "text-yellow-400 fill-current" 
+                  : "text-muted-foreground hover:text-yellow-200"
               }`}
             />
           </button>
         ))}
       </div>
     </div>
-  )
+  ), [feedback, handleStarClick, isSubmitting])
 
-  const isFormValid =
+  const isFormValid = 
     feedback.communication > 0 &&
     feedback.problemSolving > 0 &&
     feedback.logicalThinking > 0 &&
@@ -148,23 +149,13 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
     feedback.status &&
     feedback.feedback.trim()
 
-  // Debug logging
-  console.log('Feedback form validation:', {
-    communication: feedback.communication,
-    problemSolving: feedback.problemSolving,
-    logicalThinking: feedback.logicalThinking,
-    codeQuality: feedback.codeQuality,
-    technicalKnowledge: feedback.technicalKnowledge,
-    status: feedback.status,
-    feedback: feedback.feedback,
-    isFormValid
-  })
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-background border shadow-lg animate-scale-in">
         <DialogHeader>
-          <DialogTitle>Interview Feedback - {candidate.name}</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">
+            Interview Feedback - {candidate.name}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -181,11 +172,12 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
             <Select
               value={feedback.status}
               onValueChange={(value) => setFeedback((prev) => ({ ...prev, status: value }))}
+              disabled={isSubmitting}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-background border">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border shadow-lg z-50">
                 <SelectItem value="selected">Selected</SelectItem>
                 <SelectItem value="rejected">Rejected</SelectItem>
                 <SelectItem value="on-hold">On Hold</SelectItem>
@@ -200,19 +192,33 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
               onChange={(e) => setFeedback((prev) => ({ ...prev, feedback: e.target.value }))}
               placeholder="Provide detailed feedback about the candidate's performance..."
               rows={4}
+              className="bg-background border"
+              disabled={isSubmitting}
             />
           </div>
 
-          <div className="flex justify-end space-x-3">
-            <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+          <div className="flex justify-end space-x-3 pt-4 border-t">
+            <Button 
+              variant="outline" 
+              onClick={onClose} 
+              disabled={isSubmitting}
+              className="transition-all hover:bg-muted"
+            >
               Cancel
             </Button>
             <Button 
               onClick={handleSubmit} 
               disabled={!isFormValid || isSubmitting}
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground transition-all disabled:opacity-50"
             >
-              {isSubmitting ? "Submitting..." : "Submit Feedback"}
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit Feedback"
+              )}
             </Button>
           </div>
         </div>

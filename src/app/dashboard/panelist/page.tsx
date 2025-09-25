@@ -35,9 +35,9 @@ import {
   type InterviewSession,
 } from "@/lib/interview-data"
 import { getCurrentUser } from "@/lib/auth"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback, useMemo } from "react"
 import { FeedbackDialog } from "@/components/panelist/feedback-dialog"
-// Removed problematic import
+import { ScheduledFeedbackDialog } from "@/components/panelist/scheduled-feedback-dialog"
 import { formatDate } from "@/lib/utils"
 import { fetchPanelistAssignedCandidates, type PanelistCandidate } from "@/lib/candidates-api"
 import { useToast } from "@/hooks/use-toast"
@@ -76,7 +76,7 @@ export default function PanelistDashboard() {
     }
   }, [])
 
-  const loadCandidates = async () => {
+  const loadCandidates = useCallback(async () => {
     try {
       setIsCandidatesLoading(true)
       const data = await fetchPanelistAssignedCandidates()
@@ -91,7 +91,7 @@ export default function PanelistDashboard() {
     } finally {
       setIsCandidatesLoading(false)
     }
-  }
+  }, [toast])
 
   // Check if candidate has completed feedback for current round
   const hasFeedbackCompleted = (candidate: PanelistCandidate) => {
@@ -143,16 +143,20 @@ export default function PanelistDashboard() {
     setShowCandidateFeedback(true)
   }
 
-  const handleScheduledFeedback = (candidate: PanelistCandidate) => {
-    setSelectedScheduledCandidate(candidate)
-    setShowScheduledFeedback(true)
-  }
-
-  const handleScheduledFeedbackSubmit = () => {
-    loadCandidates() // Refresh the candidates list
+  const handleScheduledFeedbackClose = useCallback(() => {
     setShowScheduledFeedback(false)
     setSelectedScheduledCandidate(null)
-  }
+  }, [])
+
+  const handleScheduledFeedback = useCallback((candidate: PanelistCandidate) => {
+    setSelectedScheduledCandidate(candidate)
+    setShowScheduledFeedback(true)
+  }, [])
+
+  const handleScheduledFeedbackSubmit = useCallback(() => {
+    loadCandidates() // Refresh the candidates list
+    handleScheduledFeedbackClose()
+  }, [loadCandidates, handleScheduledFeedbackClose])
 
   useEffect(() => {
     if (currentUser?.name) {
@@ -416,191 +420,6 @@ export default function PanelistDashboard() {
           </div>
         </CardContent>
       </Card>
-    )
-  }
-
-  // Enhanced Scheduled Feedback Dialog Component
-  const ScheduledFeedbackDialog = ({ isOpen, onClose, candidate, onSubmit }: {
-    isOpen: boolean
-    onClose: () => void
-    candidate: PanelistCandidate
-    onSubmit: () => void
-  }) => {
-    const [feedback, setFeedback] = useState({
-      communication: 0,
-      problemSolving: 0,
-      logicalThinking: 0,
-      codeQuality: 0,
-      technicalKnowledge: 0,
-      status: "",
-      feedback: "",
-    })
-    const [isSubmitting, setIsSubmitting] = useState(false)
-
-    const handleStarClick = (category: string, rating: number) => {
-      setFeedback((prev) => ({ ...prev, [category]: rating }))
-    }
-
-    const handleSubmit = async () => {
-      const currentUser = getCurrentUser()
-      if (!currentUser) {
-        toast({
-          title: "Error",
-          description: "User not authenticated",
-          variant: "destructive",
-        })
-        return
-      }
-
-      try {
-        setIsSubmitting(true)
-        
-        const response = await fetch('http://127.0.0.1:8000/interviews/update-interview', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({
-            candidate_id: candidate._id,
-            panel_id: currentUser._id,
-            round: candidate.last_interview_round,
-            communication: feedback.communication,
-            problem_solving: feedback.problemSolving,
-            logical_thinking: feedback.logicalThinking,
-            code_quality: feedback.codeQuality,
-            technical_knowledge: feedback.technicalKnowledge,
-            status: feedback.status,
-            feedback: feedback.feedback
-          })
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to submit feedback')
-        }
-
-        toast({
-          title: "Success",
-          description: "Feedback submitted successfully",
-        })
-
-        onSubmit()
-        onClose()
-
-        // Reset form
-        setFeedback({
-          communication: 0,
-          problemSolving: 0,
-          logicalThinking: 0,
-          codeQuality: 0,
-          technicalKnowledge: 0,
-          status: "",
-          feedback: "",
-        })
-      } catch (error) {
-        console.error('Error submitting feedback:', error)
-        toast({
-          title: "Error",
-          description: "Failed to submit feedback. Please try again.",
-          variant: "destructive",
-        })
-      } finally {
-        setIsSubmitting(false)
-      }
-    }
-
-    const StarRating = ({ category, label }: { category: string; label: string }) => (
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground">{label}</label>
-        <div className="flex space-x-1">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <button
-              key={star}
-              type="button"
-              onClick={() => handleStarClick(category, star)}
-              className="focus:outline-none transition-colors"
-            >
-              <Star
-                className={`h-6 w-6 ${
-                  star <= (feedback[category as keyof typeof feedback] as number)
-                    ? "text-yellow-400 fill-current" 
-                    : "text-muted-foreground"
-                }`}
-              />
-            </button>
-          ))}
-        </div>
-      </div>
-    )
-
-    const isFormValid =
-      feedback.communication > 0 &&
-      feedback.problemSolving > 0 &&
-      feedback.logicalThinking > 0 &&
-      feedback.codeQuality > 0 &&
-      feedback.technicalKnowledge > 0 &&
-      feedback.status &&
-      feedback.feedback.trim()
-
-    return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-background border shadow-lg">
-          <DialogHeader>
-            <DialogTitle>Interview Feedback - {candidate.name}</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <StarRating category="communication" label="Communication" />
-              <StarRating category="problemSolving" label="Problem Solving" />
-              <StarRating category="logicalThinking" label="Logical Thinking" />
-              <StarRating category="codeQuality" label="Code Quality" />
-              <StarRating category="technicalKnowledge" label="Technical Knowledge" />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Status</label>
-              <Select
-                value={feedback.status}
-                onValueChange={(value) => setFeedback((prev) => ({ ...prev, status: value }))}
-              >
-                <SelectTrigger className="bg-background border">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent className="bg-background border shadow-lg z-50">
-                  <SelectItem value="selected">Selected</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="on-hold">On Hold</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Feedback</label>
-              <Textarea
-                value={feedback.feedback}
-                onChange={(e) => setFeedback((prev) => ({ ...prev, feedback: e.target.value }))}
-                placeholder="Provide detailed feedback about the candidate's performance..."
-                rows={4}
-                className="bg-background border"
-              />
-            </div>
-
-            <div className="flex justify-end space-x-3">
-              <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleSubmit} 
-                disabled={!isFormValid || isSubmitting}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
-              >
-                {isSubmitting ? "Submitting..." : "Submit Feedback"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     )
   }
 
@@ -990,11 +809,11 @@ export default function PanelistDashboard() {
           />
         )}
 
-        {/* Scheduled Feedback Dialog - Enhanced Component */}
+        {/* Enhanced Scheduled Feedback Dialog */}
         {selectedScheduledCandidate && (
           <ScheduledFeedbackDialog 
             isOpen={showScheduledFeedback}
-            onClose={() => setShowScheduledFeedback(false)}
+            onClose={handleScheduledFeedbackClose}
             candidate={selectedScheduledCandidate}
             onSubmit={handleScheduledFeedbackSubmit}
           />
