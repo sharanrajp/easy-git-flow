@@ -210,13 +210,57 @@ export default function CandidatesPage() {
     }
   }, [candidates])
 
+  // Filter function for backend candidates
+  const filterBackendCandidates = (candidatesList: BackendCandidate[]) => {
+    return candidatesList.filter((candidate) => {
+      const matchesSearch =
+        (candidate.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (candidate.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (candidate.applied_position || "").toLowerCase().includes(searchTerm.toLowerCase())
+
+      const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
+      const matchesStatus = statusFilter === "all" || candidate.status === statusFilter
+      const matchesExperience = experienceFilter === "all" || (candidate.total_experience || "").includes(experienceFilter)
+      const matchesRecruiter =
+        recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
+      
+      const matchesDate = (() => {
+        if (dateFilter === "all") return true
+        if (!candidate.appliedDate) return false
+        const appliedDate = new Date(candidate.appliedDate)
+        const now = new Date()
+        const daysDiff = Math.floor((now.getTime() - appliedDate.getTime()) / (1000 * 60 * 60 * 24))
+
+        switch (dateFilter) {
+          case "today":
+            return daysDiff === 0
+          case "week":
+            return daysDiff <= 7
+          case "month":
+            return daysDiff <= 30
+          default:
+            return true
+        }
+      })()
+
+      return (
+        matchesSearch &&
+        matchesJob &&
+        matchesStatus &&
+        matchesExperience &&
+        matchesRecruiter &&
+        matchesDate
+      )
+    })
+  }
+
   const filteredCandidates = candidates.filter((candidate) => {
     const matchesSearch =
       (candidate.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (candidate.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (candidate.applied_position || "").toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesJob = jobFilter === "all" || (candidate.applied_position || "").toLowerCase().includes(jobFilter.toLowerCase())
+    const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
     const matchesStatus = statusFilter === "all" || candidate.status === statusFilter
     const matchesExperience = experienceFilter === "all" || (candidate.total_experience || "").includes(experienceFilter)
     const matchesRecruiter =
@@ -251,6 +295,10 @@ export default function CandidatesPage() {
       matchesDate
     )
   })
+
+  // Apply filters to backend candidates
+  const filteredUnassignedCandidates = filterBackendCandidates(unassignedCandidates)
+  const filteredAssignedCandidates = filterBackendCandidates(assignedCandidates)
 
   const statusOptions: Record<string, { value: string; label: string }[]> = {
   unassigned: [],
@@ -1205,10 +1253,11 @@ export default function CandidatesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Jobs</SelectItem>
-                <SelectItem value="frontend">Frontend Developer</SelectItem>
-                <SelectItem value="backend">Backend Developer</SelectItem>
-                <SelectItem value="product">Product Manager</SelectItem>
-                <SelectItem value="designer">UX Designer</SelectItem>
+                {vacancies.map((vacancy) => (
+                  <SelectItem key={vacancy.id} value={vacancy.position_title}>
+                    {vacancy.position_title}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select value={experienceFilter} onValueChange={setExperienceFilter}>
@@ -1268,11 +1317,11 @@ export default function CandidatesPage() {
                         <TableHead className="w-12">
                           <Checkbox
                             checked={
-                              unassignedCandidates.length > 0 &&
-                              unassignedCandidates.every((c) => selectedCandidates.includes(c._id))
+                              filteredUnassignedCandidates.length > 0 &&
+                              filteredUnassignedCandidates.every((c) => selectedCandidates.includes(c._id))
                             }
                             onCheckedChange={(checked) => {
-                              const candidateIds = unassignedCandidates.map((c) => c._id)
+                              const candidateIds = filteredUnassignedCandidates.map((c) => c._id)
                               if (checked) {
                                 setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
                               } else {
@@ -1294,7 +1343,7 @@ export default function CandidatesPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {unassignedCandidates.map((candidate) => (
+                      {filteredUnassignedCandidates.map((candidate) => (
                         <TableRow key={candidate._id}>
                           <TableCell>
                             <Checkbox
@@ -1419,11 +1468,11 @@ export default function CandidatesPage() {
                         <TableHead className="w-12">
                           <Checkbox
                             checked={
-                              assignedCandidates.length > 0 &&
-                              assignedCandidates.every((c) => selectedCandidates.includes(c._id))
+                              filteredAssignedCandidates.length > 0 &&
+                              filteredAssignedCandidates.every((c) => selectedCandidates.includes(c._id))
                             }
                             onCheckedChange={(checked) => {
-                              const candidateIds = assignedCandidates.map((c) => c._id)
+                              const candidateIds = filteredAssignedCandidates.map((c) => c._id)
                               if (checked) {
                                 setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
                               } else {
@@ -1441,7 +1490,7 @@ export default function CandidatesPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {assignedCandidates.map((candidate) => {
+                      {filteredAssignedCandidates.map((candidate) => {
                         const getStatusColor = (status: string) => {
                           switch (status) {
                             case "selected":
