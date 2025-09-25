@@ -31,6 +31,13 @@ export interface PanelistCandidate {
   skill_set: string[];
   last_interview_round?: string;
   resume_link?: string;
+  interview_type?:string;
+  total_experience?:any;
+  notice_period?:string;
+  expected_ctc?:string;
+  current_ctc?:any;
+  willing_to_relocate?:boolean;
+  created_at?:string;
   previous_rounds: Array<{
     round: string;
     status: string;
