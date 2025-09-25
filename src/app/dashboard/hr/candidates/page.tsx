@@ -545,11 +545,13 @@ export default function CandidatesPage() {
 
   // Handle assign panel button click
   const handleAssignPanel = async (candidate: BackendCandidate) => {
+    console.log('handleAssignPanel called for candidate:', candidate) // Debug log
     setSelectedCandidateForPanel(candidate)
     setLoadingPanels(true)
     
     try {
       const panels = await fetchAvailablePanels()
+      console.log('Fetched panels in handleAssignPanel:', panels) // Debug log
       setAvailablePanels(panels)
       setIsPanelDialogOpen(true)
     } catch (error) {
@@ -566,6 +568,10 @@ export default function CandidatesPage() {
 
   // Handle panel assignment
   const handlePanelAssignment = async (panelId: string) => {
+    console.log('handlePanelAssignment called with panelId:', panelId) // Debug log
+    console.log('selectedCandidateForPanel:', selectedCandidateForPanel) // Debug log
+    console.log('currentUser:', currentUser) // Debug log
+    
     if (!selectedCandidateForPanel) return
     
     if (!currentUser?._id) {
@@ -579,6 +585,13 @@ export default function CandidatesPage() {
     
     setAssigningCandidate(selectedCandidateForPanel._id)
     try {
+      console.log('About to call assignCandidateToPanel with:', {
+        candidateId: selectedCandidateForPanel._id,
+        panelId,
+        round: 'r1',
+        assignedBy: currentUser._id
+      }) // Debug log
+      
       await assignCandidateToPanel(selectedCandidateForPanel._id, panelId, 'r1', currentUser._id)
       
       // Refresh panels to show updated status
@@ -1922,11 +1935,11 @@ export default function CandidatesPage() {
                         <div className="flex-1">
                           <h3 className="font-medium text-gray-900">Panel ID: {panel.panel_id}</h3>
                           <div className="mt-2 space-y-1">
-                            {panel.members?.map((member: any, index: number) => (
-                              <div key={index} className="text-sm text-gray-600">
-                                <span className="font-medium">{member.name}</span> - {member.email}
-                              </div>
-                            ))}
+                             {panel.members?.map((member: any, index: number) => (
+                               <div key={index} className="text-sm text-gray-600">
+                                 <span className="font-medium">{member.name || 'N/A'}</span> - {member.email || 'N/A'}
+                               </div>
+                             )) || <div className="text-sm text-gray-500">No members found</div>}
                           </div>
                         </div>
                         <div className="ml-4">

@@ -202,6 +202,8 @@ export async function fetchAvailablePanels(round: string = 'r1'): Promise<any[]>
 
 // Assign candidate to panel
 export async function assignCandidateToPanel(candidateId: string, panelId: string, round: string = 'r1', assignedBy: string): Promise<void> {
+  console.log('assignCandidateToPanel called with:', { candidateId, panelId, round, assignedBy }) // Debug log
+  
   const token = getToken();
   
   if (!token) {
@@ -209,21 +211,29 @@ export async function assignCandidateToPanel(candidateId: string, panelId: strin
   }
 
   try {
+    const requestBody = {
+      candidate_id: candidateId,
+      panel_id: panelId,
+      round: round,
+      assigned_by: assignedBy
+    }
+    
+    console.log('Request body for assignment:', requestBody) // Debug log
+    
     const response = await fetch(`${API_BASE_URL}/mapping/assign`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        candidate_id: candidateId,
-        panel_id: panelId,
-        round: round,
-        assigned_by: assignedBy
-      }),
+      body: JSON.stringify(requestBody),
     });
 
+    console.log('Assignment response status:', response.status) // Debug log
+    
     if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Assignment error response:', errorText) // Debug log
       throw new Error(`Failed to assign candidate to panel: ${response.status} ${response.statusText}`);
     }
   } catch (error) {
