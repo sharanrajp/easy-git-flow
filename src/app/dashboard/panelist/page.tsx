@@ -495,36 +495,16 @@ export default function PanelistDashboard() {
             </Card>
           </div>
         </div>
-
-        {/* Interview Management Section */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{scheduledInterviews.length}</div>
-                <div className="text-sm text-muted-foreground">Scheduled</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{completedCandidateInterviews.length}</div>
-                <div className="text-sm text-muted-foreground">Completed</div>
-              </div>
-            </div>
-          </div>
-
           {/* Search */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="relative max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search candidates..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </CardContent>
-          </Card>
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search candidates..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
 
           {/* Interview Tabs */}
           <Tabs defaultValue="scheduled" className="w-full">

@@ -88,38 +88,16 @@ export default function PanelistCandidatesPage() {
   return (
     <DashboardLayout requiredRole="panelist">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">My Interview Schedule</h1>
-            <p className="text-gray-600">Manage your scheduled and completed interviews</p>
-          </div>
-          <div className="flex gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{scheduledInterviews.length}</div>
-              <div className="text-sm text-muted-foreground">Scheduled</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{completedInterviews.length}</div>
-              <div className="text-sm text-muted-foreground">Completed</div>
-            </div>
-          </div>
-        </div>
-
         {/* Search */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search candidates..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search candidates..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
 
         {/* Interview Tabs */}
         <Tabs defaultValue="scheduled" className="w-full">
