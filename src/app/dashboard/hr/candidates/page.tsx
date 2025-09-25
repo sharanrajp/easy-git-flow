@@ -219,11 +219,11 @@ export default function CandidatesPage() {
         (candidate.applied_position || "").toLowerCase().includes(searchTerm.toLowerCase())
 
       const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
-      const matchesStatus = statusFilter === "all" || (candidate.status || "").toLowerCase() === statusFilter.toLowerCase()
+      const matchesStatus = statusFilter === "all" || (candidate.final_status || "").toLowerCase() === statusFilter.toLowerCase()
       const matchesExperience = experienceFilter === "all" || String(candidate.total_experience || "").includes(experienceFilter)
       const matchesRecruiter =
         recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
-      const matchesRound = roundFilter === "all" || (candidate.currentRound || "").toLowerCase() === roundFilter.toLowerCase()
+      const matchesRound = roundFilter === "all" || (candidate.last_interview_round || "").toLowerCase() === roundFilter.toLowerCase()
       
       const matchesDate = (() => {
         if (dateFilter === "all") return true
@@ -263,11 +263,13 @@ export default function CandidatesPage() {
       (candidate.applied_position || "").toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
-    const matchesStatus = statusFilter === "all" || (candidate.status || "").toLowerCase() === statusFilter.toLowerCase()
+    const matchesStatus = statusFilter === "all" || 
+      (candidate.final_status || candidate.status || "").toLowerCase() === statusFilter.toLowerCase()
     const matchesExperience = experienceFilter === "all" || String(candidate.total_experience || "").includes(experienceFilter)
     const matchesRecruiter =
       recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
-    const matchesRound = roundFilter === "all" || (candidate.currentRound || "").toLowerCase() === roundFilter.toLowerCase()
+    const matchesRound = roundFilter === "all" || 
+      (candidate.last_interview_round || candidate.currentRound || "").toLowerCase() === roundFilter.toLowerCase()
     const matchesInterviewType = interviewTypeFilter === "all" || candidate.interview_type === interviewTypeFilter
 
     const matchesDate = (() => {
@@ -315,9 +317,6 @@ export default function CandidatesPage() {
     { value: "on-hold", label: "On Hold" },
     { value: "assigned", label: "Assigned" },
     { value: "unassigned", label: "Unassigned" },
-    { value: "pending", label: "Pending" },
-    { value: "completed", label: "Completed" },
-    { value: "hired", label: "Hired" },
   ]
 
   const roundOptions = [
