@@ -289,24 +289,6 @@ export default function CandidatesPage() {
     (c) => c.status === "completed" || c.status === "hired" || c.status === "rejected" || c.status === "selected" || c.status === "offerReleased" || c.status === "candidateDeclined" || c.status === "joined" || c.status === "onHold" ,
   )
 
-  const handleViewInterviews = async () => {
-    try {
-      setLoadingInterviews(true)
-      const interviews = await fetchOngoingInterviews()
-      setOngoingInterviews(interviews)
-      setIsInterviewsDialogOpen(true)
-    } catch (error) {
-      console.error('Failed to fetch ongoing interviews:', error)
-      toast({
-        title: "Error",
-        description: "Failed to fetch ongoing interviews",
-        variant: "destructive",
-      })
-    } finally {
-      setLoadingInterviews(false)
-    }
-  }
-
   const handleExportCandidates = async () => {
     try {
       setIsExporting(true)
