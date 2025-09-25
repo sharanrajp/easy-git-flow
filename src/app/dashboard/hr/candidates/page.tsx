@@ -1,11 +1,10 @@
 // @ts-nocheck
 
+import { useState, useEffect, useMemo } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DialogDescription } from "@/components/ui/dialog"
 import { AssignedCandidateDetails } from "@/components/candidates/assigned-candidate-details"
 import { UnassignedCandidateDetails } from "@/components/candidates/unassigned-candidate-details"
-
-import { useState, useEffect, useMemo } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
