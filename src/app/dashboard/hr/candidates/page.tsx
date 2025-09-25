@@ -51,7 +51,7 @@ import { getAllUsers } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, checkInCandidate, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, type BackendCandidate } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, type BackendCandidate } from "@/lib/candidates-api"
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 
@@ -508,32 +508,30 @@ export default function CandidatesPage() {
     return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
   }
 
-  // Handle backend candidate check-in
+  // Handle backend candidate check-in/check-out
   const handleBackendCheckIn = async (candidate: BackendCandidate, checked: boolean) => {
-    if (!checked) return // Only handle check-in, not check-out
-    
     setCheckingInCandidate(candidate._id)
     try {
-      await checkInCandidate(candidate._id)
+      await updateCandidateCheckIn(candidate._id, checked)
       
       // Update local state
       setUnassignedCandidates(prev => 
         prev.map(c => 
           c._id === candidate._id 
-            ? { ...c, checked_in: true }
+            ? { ...c, checked_in: checked }
             : c
         )
       )
       
       toast({
         title: "Success",
-        description: `${candidate.name} has been checked in successfully.`,
+        description: `${candidate.name} has been ${checked ? 'checked in' : 'checked out'} successfully.`,
       })
     } catch (error) {
-      console.error('Error checking in candidate:', error)
+      console.error('Error updating candidate check-in status:', error)
       toast({
         title: "Error",
-        description: "Failed to check in candidate. Please try again.",
+        description: `Failed to ${checked ? 'check in' : 'check out'} candidate. Please try again.`,
         variant: "destructive",
       })
     } finally {

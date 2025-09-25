@@ -144,8 +144,8 @@ export async function fetchAssignedCandidates(): Promise<BackendCandidate[]> {
   }
 }
 
-// Check-in a candidate
-export async function checkInCandidate(candidateId: string): Promise<void> {
+// Update candidate check-in status
+export async function updateCandidateCheckIn(candidateId: string, checked: boolean): Promise<void> {
   const token = getToken();
   
   if (!token) {
@@ -159,20 +159,20 @@ export async function checkInCandidate(candidateId: string): Promise<void> {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ checked_in: true }),
+      body: JSON.stringify({ checked_in: checked }),
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to check-in candidate: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to update candidate check-in status: ${response.status} ${response.statusText}`);
     }
   } catch (error) {
-    console.error('Error checking in candidate:', error);
+    console.error('Error updating candidate check-in status:', error);
     throw error;
   }
 }
 
 // Fetch available panels
-export async function fetchAvailablePanels(round: string = 'R1'): Promise<any[]> {
+export async function fetchAvailablePanels(round: string = 'r1'): Promise<any[]> {
   const token = getToken();
   
   if (!token) {
