@@ -111,11 +111,22 @@ export default function CandidatesPage() {
   const [checkingInCandidate, setCheckingInCandidate] = useState<string | null>(null)
   const [assigningCandidate, setAssigningCandidate] = useState<string | null>(null)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [assignmentRound, setAssignmentRound] = useState<string>("")
   
   // Ongoing interviews states
   const [ongoingInterviews, setOngoingInterviews] = useState<OngoingInterview[]>([])
   const [isInterviewsDialogOpen, setIsInterviewsDialogOpen] = useState(false)
   const [loadingInterviews, setLoadingInterviews] = useState(false)
+
+  // Helper function to get next round
+  const getNextRound = (currentRound: string): string => {
+    switch (currentRound?.toLowerCase()) {
+      case 'r1': return 'r2';
+      case 'r2': return 'r3';  
+      case 'r3': return 'final';
+      default: return 'r1';
+    }
+  }
 
   useEffect(() => {
     // Get current user on component mount
@@ -622,6 +633,79 @@ export default function CandidatesPage() {
         title: "Error",
         description: "Failed to assign candidate to panel. Please try again.",
         variant: "destructive",
+      })
+    } finally {
+      setAssigningCandidate(null)
+    }
+  }
+
+  // Handler for Map Assign button
+  const handleMapAssign = async (candidate: BackendCandidate) => {
+    const nextRound = getNextRound(candidate.last_interview_round || "")
+    setAssignmentRound(nextRound)
+    
+    try {
+      setLoadingPanels(true)
+      const panels = await fetchAvailablePanels(nextRound)
+      setAvailablePanels(panels)
+      setSelectedCandidateForPanel(candidate)
+      setIsPanelDialogOpen(true)
+    } catch (error) {
+      console.error('Error fetching panels for next round:', error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `Failed to fetch available panels for ${nextRound}. Please try again.`,
+      })
+    } finally {
+      setLoadingPanels(false)
+    }
+  }
+
+  // Updated panel assignment handler to support both initial and next-round assignments
+  const handlePanelAssignmentUpdated = async (panelId: string) => {
+    if (!selectedCandidateForPanel || !currentUser || assigningCandidate) return
+
+    setAssigningCandidate(panelId)
+    
+    try {
+      const round = assignmentRound || "r1"
+      await assignCandidateToPanel(
+        selectedCandidateForPanel._id, 
+        panelId, 
+        round, 
+        currentUser.name
+      )
+      
+      // Refresh both candidate lists and ongoing interviews
+      const [unassignedData, assignedData, interviewsData] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates(),
+        fetchOngoingInterviews()
+      ])
+      
+      setUnassignedCandidates(unassignedData)
+      setAssignedCandidates(assignedData)
+      setOngoingInterviews(interviewsData)
+      
+      // Close the dialog and reset states
+      setIsPanelDialogOpen(false)
+      setSelectedCandidateForPanel(null)
+      setAvailablePanels([])
+      setAssignmentRound("")
+      
+      const roundText = assignmentRound ? ` for ${round}` : ""
+      toast({
+        title: "Candidate Mapped Successfully",
+        description: `${selectedCandidateForPanel.name} has been mapped${roundText}.`,
+      })
+      
+    } catch (error) {
+      console.error('Error assigning candidate to panel:', error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to map candidate to panel. Please try again.",
       })
     } finally {
       setAssigningCandidate(null)
@@ -1320,6 +1404,16 @@ export default function CandidatesPage() {
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
+                                {candidate.final_status === "selected" && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="cursor-pointer bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                                    onClick={() => handleMapAssign(candidate)}
+                                  >
+                                    Map Assign
+                                  </Button>
+                                )}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -2023,9 +2117,16 @@ export default function CandidatesPage() {
         <Dialog open={isPanelDialogOpen} onOpenChange={setIsPanelDialogOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Assign Panel - {selectedCandidateForPanel?.name}</DialogTitle>
+              <DialogTitle>
+                {assignmentRound ? `Assign Panel for ${assignmentRound.toUpperCase()} - ${selectedCandidateForPanel?.name}` : `Assign Panel - ${selectedCandidateForPanel?.name}`}
+              </DialogTitle>
               <DialogDescription>
                 Select an available panel to assign this candidate for interview.
+                {assignmentRound && (
+                  <span className="block mt-1 font-medium text-blue-600">
+                    Next Round: {assignmentRound.toUpperCase()}
+                  </span>
+                )}
               </DialogDescription>
             </DialogHeader>
             {loadingPanels ? (
@@ -2064,7 +2165,7 @@ export default function CandidatesPage() {
                             </div>
                           ) : (
                             <Button
-                              onClick={() => handlePanelAssignment(panel.id)}
+                              onClick={() => handlePanelAssignmentUpdated(panel.id)}
                               disabled={assigningCandidate === selectedCandidateForPanel?._id}
                             >
                               {assigningCandidate === selectedCandidateForPanel?._id ? "Assigning..." : "Map Candidate"}

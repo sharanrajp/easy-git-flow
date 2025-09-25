@@ -20,6 +20,9 @@ export interface BackendCandidate {
   waitTime?: string | null;
   waitTimeStarted?: string | null;
   isCheckedIn?: boolean;
+  final_status?: string;
+  last_interview_round?: string;
+  panel_name?: string;
 }
 
 export interface PanelistCandidate {
