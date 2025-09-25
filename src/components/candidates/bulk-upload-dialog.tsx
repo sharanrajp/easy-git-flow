@@ -20,7 +20,7 @@ interface BulkUploadDialogProps {
 
 interface UploadResponse {
   message: string
-  uploaded_count: number
+  candidates_count: number
   applied_position: string
   source: string
   recruiter_name: string
@@ -195,11 +195,11 @@ Jane Smith,jane.smith@email.com,+1234567891,2-4 years,"Node.js,Python,MongoDB",C
       // Show success message
       toast({
         title: "Upload successful",
-        description: `${successData.uploaded_count} candidates uploaded successfully for ${successData.applied_position} via ${successData.source}. Recruiter: ${successData.recruiter_name}`,
+        description: `${successData.candidates_count} candidates uploaded successfully for ${successData.applied_position} via ${successData.source}. Recruiter: ${successData.recruiter_name}`,
       })
 
       setResults({ 
-        success: successData.uploaded_count, 
+        success: successData.candidates_count, 
         errors: [] 
       })
 
