@@ -1,52 +1,118 @@
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { Download, FileText, CheckCircle, AlertCircle } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { makeAuthenticatedRequest } from "@/lib/auth"
+import { useToast } from "@/hooks/use-toast"
+import { getMockVacancies, type Vacancy } from "@/lib/mock-data"
 
 interface BulkUploadDialogProps {
   onSubmit: (candidates: any[]) => void
   onCancel: () => void
 }
 
+interface UploadResponse {
+  message: string
+  uploaded_count: number
+  applied_position: string
+  source: string
+  recruiter_name: string
+}
+
+interface UploadError {
+  error: string
+  details?: string[]
+}
+
 export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) {
+  const { toast } = useToast()
   const [file, setFile] = useState<File | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
   const [results, setResults] = useState<{ success: number; errors: string[] } | null>(null)
+  const [appliedPosition, setAppliedPosition] = useState("")
+  const [source, setSource] = useState("")
+  const [otherSource, setOtherSource] = useState("")
+  const [vacancies, setVacancies] = useState<Vacancy[]>([])
+  const [loadingVacancies, setLoadingVacancies] = useState(true)
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Load active vacancies on component mount
+  useEffect(() => {
+    const loadVacancies = async () => {
+      try {
+        setLoadingVacancies(true)
+        // For now, use mock data - can be replaced with API call later
+        const allVacancies = getMockVacancies()
+        const activeVacancies = allVacancies.filter((v: Vacancy) => v.status === "active")
+        setVacancies(activeVacancies)
+      } catch (error) {
+        console.error('Failed to load vacancies:', error)
+        toast({
+          variant: "destructive",
+          title: "Error loading vacancies",
+          description: "Failed to load active positions. Please refresh and try again.",
+        })
+      } finally {
+        setLoadingVacancies(false)
+      }
+    }
+
+    loadVacancies()
+  }, [])
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0]
     if (selectedFile) {
-      const validTypes = [
-        "text/csv",
-        "application/vnd.ms-excel",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      ]
-
-      if (
-        validTypes.includes(selectedFile.type) ||
-        selectedFile.name.endsWith(".csv") ||
-        selectedFile.name.endsWith(".xlsx") ||
-        selectedFile.name.endsWith(".xls")
-      ) {
+      // Only allow CSV files
+      if (selectedFile.type === "text/csv" || selectedFile.name.endsWith(".csv")) {
         setFile(selectedFile)
         setResults(null)
+        setValidationErrors([])
       } else {
-        alert("Please select a CSV or Excel file")
+        toast({
+          variant: "destructive",
+          title: "Invalid file type",
+          description: "Please select a CSV file only.",
+        })
       }
     }
   }
 
+  const validateForm = (): boolean => {
+    const errors: string[] = []
+    
+    if (!file) {
+      errors.push("Please select a CSV file")
+    }
+    
+    if (!appliedPosition) {
+      errors.push("Applied Position is required")
+    }
+    
+    if (!source) {
+      errors.push("Source is required")
+    }
+    
+    if (source === "other" && !otherSource.trim()) {
+      errors.push("Other Source is required when 'other' is selected")
+    }
+    
+    setValidationErrors(errors)
+    return errors.length === 0
+  }
+
   const downloadTemplate = () => {
-    const csvContent = `Name,Email,Phone,Applied Position,Experience,Skills,Source,Job Type,Location,Notice Period,Current CTC,Expected CTC,Negotiable,Relocation
-John Doe,john.doe@email.com,+1234567890,Senior Frontend Developer,3-5 years,"React,JavaScript,TypeScript",LinkedIn,Full Time,San Francisco CA,2 weeks,$95000,$110000,Yes,No
-Jane Smith,jane.smith@email.com,+1234567891,Backend Developer,2-4 years,"Node.js,Python,MongoDB",Website,Contract,New York NY,1 month,$85000,$100000,No,Yes`
+    const csvContent = `Name,Email,Phone,Experience,Skills,Job Type,Location,Notice Period,Current CTC,Expected CTC,Negotiable,Relocation
+John Doe,john.doe@email.com,+1234567890,3-5 years,"React,JavaScript,TypeScript",Full Time,San Francisco CA,2 weeks,$95000,$110000,Yes,No
+Jane Smith,jane.smith@email.com,+1234567891,2-4 years,"Node.js,Python,MongoDB",Contract,New York NY,1 month,$85000,$100000,No,Yes`
 
     const blob = new Blob([csvContent], { type: "text/csv" })
     const url = window.URL.createObjectURL(blob)
@@ -60,133 +126,95 @@ Jane Smith,jane.smith@email.com,+1234567891,Backend Developer,2-4 years,"Node.js
   }
 
   const processFile = async () => {
-    if (!file) return
+    if (!validateForm()) return
 
     setIsProcessing(true)
     setProgress(0)
+    setResults(null)
 
     try {
-      const text = await file.text()
-      const lines = text.split("\n").filter((line) => line.trim())
-      const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""))
+      // Prepare FormData for API call
+      const formData = new FormData()
+      formData.append('file', file!)
+      formData.append('applied_position', appliedPosition)
+      formData.append('source', source === 'other' ? otherSource : source)
+      if (source === 'other') {
+        formData.append('other_source', otherSource)
+      }
 
-      const candidates = []
-      const errors = []
+      setProgress(50)
 
-      for (let i = 1; i < lines.length; i++) {
-        setProgress((i / (lines.length - 1)) * 100)
+      // Call backend API
+      const response = await makeAuthenticatedRequest('/candidates/upload-candidates-csv', {
+        method: 'POST',
+        body: formData,
+      })
 
-        const values: string[] = []
-        let current = ""
-        let inQuotes = false
+      setProgress(100)
 
-        for (let j = 0; j < lines[i].length; j++) {
-          const char = lines[i][j]
-          if (char === '"') {
-            inQuotes = !inQuotes
-          } else if (char === "," && !inQuotes) {
-            values.push(current.trim())
-            current = ""
+      if (!response.ok) {
+        const errorData: UploadError = await response.json()
+        throw new Error(errorData.error || 'Upload failed')
+      }
+
+      const successData: UploadResponse = await response.json()
+      
+      // Show success message
+      toast({
+        title: "Upload successful",
+        description: `${successData.uploaded_count} candidates uploaded successfully for ${successData.applied_position} via ${successData.source}. Recruiter: ${successData.recruiter_name}`,
+      })
+
+      setResults({ 
+        success: successData.uploaded_count, 
+        errors: [] 
+      })
+
+      // Call parent onSubmit to refresh data
+      onSubmit([])
+
+      // Reset form after successful upload
+      setTimeout(() => {
+        setFile(null)
+        setAppliedPosition("")
+        setSource("")
+        setOtherSource("")
+        setResults(null)
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""
+        }
+      }, 2000)
+
+    } catch (error: any) {
+      console.error('Upload error:', error)
+      
+      let errorMessages: string[] = []
+      
+      try {
+        // Try to parse error response if it's JSON
+        if (error.message.includes('{')) {
+          const errorData = JSON.parse(error.message)
+          if (errorData.details && Array.isArray(errorData.details)) {
+            errorMessages = errorData.details
           } else {
-            current += char
+            errorMessages = [errorData.error || error.message]
           }
+        } else {
+          errorMessages = [error.message]
         }
-        values.push(current.trim())
-
-        if (values.length !== headers.length) {
-          errors.push(`Row ${i + 1}: Column count mismatch`)
-          continue
-        }
-
-        const candidate: any = {}
-        headers.forEach((header, index) => {
-          const value = values[index]?.replace(/"/g, "") || ""
-
-          switch (header.toLowerCase()) {
-            case "name":
-              candidate.name = value
-              break
-            case "email":
-              candidate.email = value
-              break
-            case "phone":
-              candidate.phone_number = value
-              break
-            case "applied position":
-            case "position":
-              candidate.applied_position = value
-              break
-            case "total_experience":
-              candidate.total_experience = value
-              break
-            case "skills":
-              candidate.skill_set = value
-                .split(",")
-                .map((s: string) => s.trim())
-                .filter((s: string) => s)
-              break
-            case "source":
-              candidate.source = value
-              break
-            case "job type":
-            case "jobtype":
-              candidate.job_type = value.toLowerCase().replace(" ", "-")
-              break
-            case "location":
-              candidate.location = value
-              break
-            case "notice period":
-              candidate.notice_period = value
-              break
-            case "current ctc":
-              candidate.current_ctc = value
-              break
-            case "expected ctc":
-              candidate.expected_ctc = value
-              break
-            case "negotiable":
-              candidate.negotiable = value.toLowerCase() === "yes" || value.toLowerCase() === "true"
-              break
-            case "relocation":
-              candidate.willing_to_relocate = value.toLowerCase() === "yes" || value.toLowerCase() === "true"
-              break
-          }
-        })
-
-        // Validate required fields
-        if (!candidate.name || !candidate.email) {
-          errors.push(`Row ${i + 1}: Missing required fields (Name, Email)`)
-          continue
-        }
-
-        // Set defaults
-        candidate.id = `bulk_${Date.now()}_${i}`
-        candidate.interview_type = "Walk-In"
-        candidate.skill_set = candidate.skill_set || []
-        candidate.source = candidate.source || "Bulk Upload"
-        candidate.job_type = candidate.job_type || "full_time"
-        candidate.location = candidate.location || "Not specified"
-        candidate.notice_period = candidate.notice_period || "Not specified"
-        candidate.current_ctc = candidate.current_ctc || "Not specified"
-        candidate.expected_ctc = candidate.expected_ctc || "Not specified"
-        candidate.negotiable = candidate.negotiable || false
-        candidate.willing_to_relocate = candidate.willing_to_relocate || false
-        candidate.appliedDate = new Date().toISOString().split("T")[0]
-        candidate.status = "unassigned"
-
-        candidates.push(candidate)
+      } catch {
+        errorMessages = [error.message || 'Upload failed. Please try again.']
       }
 
-      setResults({ success: candidates.length, errors })
-
-      if (candidates.length > 0) {
-        onSubmit(candidates)
-      }
-    } catch (error) {
-      setResults({ success: 0, errors: ["Failed to process file. Please check the format."] })
+      setResults({ success: 0, errors: errorMessages })
+      
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: errorMessages[0],
+      })
     } finally {
       setIsProcessing(false)
-      setProgress(100)
     }
   }
 
@@ -206,17 +234,86 @@ Jane Smith,jane.smith@email.com,+1234567891,Backend Developer,2-4 years,"Node.js
           Download Template
         </Button>
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="csvFile" className="text-xs font-medium">Upload Candidates</Label>
-        <Input
-          id="csvFile"
-          ref={fileInputRef}
-          type="file"
-          accept=".csv,.xls,.xlsx"
-          onChange={handleFileSelect}
-          className="text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 smooth-transition"
-        />
+
+      {/* Form Fields */}
+      <div className="space-y-3">
+        {/* Applied Position Dropdown */}
+        <div className="space-y-1.5">
+          <Label htmlFor="appliedPosition" className="text-xs font-medium">Applied Position *</Label>
+          <Select value={appliedPosition} onValueChange={setAppliedPosition} disabled={loadingVacancies}>
+            <SelectTrigger className="text-sm">
+              <SelectValue placeholder={loadingVacancies ? "Loading positions..." : "Select applied position"} />
+            </SelectTrigger>
+            <SelectContent>
+              {vacancies.map((vacancy) => (
+                <SelectItem key={vacancy.id} value={vacancy.position_title}>
+                  {vacancy.position_title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Source Dropdown */}
+        <div className="space-y-1.5">
+          <Label htmlFor="source" className="text-xs font-medium">Source *</Label>
+          <Select value={source} onValueChange={setSource}>
+            <SelectTrigger className="text-sm">
+              <SelectValue placeholder="Select source" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="naukri">Naukri</SelectItem>
+              <SelectItem value="linkedin">LinkedIn</SelectItem>
+              <SelectItem value="referral">Referral</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Other Source Input (conditional) */}
+        {source === "other" && (
+          <div className="space-y-1.5">
+            <Label htmlFor="otherSource" className="text-xs font-medium">Other Source *</Label>
+            <Input
+              id="otherSource"
+              value={otherSource}
+              onChange={(e) => setOtherSource(e.target.value)}
+              placeholder="Enter other source"
+              className="text-sm"
+            />
+          </div>
+        )}
+
+        {/* File Upload */}
+        <div className="space-y-1.5">
+          <Label htmlFor="csvFile" className="text-xs font-medium">Upload CSV File *</Label>
+          <Input
+            id="csvFile"
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            onChange={handleFileSelect}
+            className="text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 smooth-transition"
+          />
+        </div>
       </div>
+
+      {/* Validation Errors */}
+      {validationErrors.length > 0 && (
+        <Alert variant="destructive" className="py-2">
+          <AlertCircle className="h-3.5 w-3.5" />
+          <AlertDescription>
+            <div className="space-y-1">
+              <p className="text-xs font-medium">Please fix the following errors:</p>
+              <div className="text-xs space-y-0.5">
+                {validationErrors.map((error, index) => (
+                  <p key={index}>• {error}</p>
+                ))}
+              </div>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {file && (
         <div className="p-2.5 bg-success/10 border border-success/20 rounded-md animate-fade-in">
@@ -274,11 +371,11 @@ Jane Smith,jane.smith@email.com,+1234567891,Backend Developer,2-4 years,"Node.js
         </Button>
         <Button 
           onClick={processFile} 
-          disabled={!file || isProcessing} 
+          disabled={!file || isProcessing || !appliedPosition || !source || (source === 'other' && !otherSource.trim())} 
           size="sm"
           className="gradient-primary text-white hover:scale-105 smooth-transition shadow-elegant hover:shadow-glow text-xs"
         >
-          {isProcessing ? "Processing..." : "Upload"}
+          {isProcessing ? "Uploading..." : "Upload Candidates"}
         </Button>
       </div>
     </div>
