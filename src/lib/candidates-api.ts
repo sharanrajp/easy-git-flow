@@ -349,3 +349,33 @@ export async function fetchPanelistAssignedCandidates(): Promise<PanelistCandida
     throw error;
   }
 }
+
+// Delete candidates by IDs (supports single or multiple deletions)
+export async function deleteCandidates(candidateIds: string[]): Promise<{ deleted_count: number; message: string }> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/candidates/candidates`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ candidate_ids: candidateIds }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete candidates: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error deleting candidates:', error);
+    throw error;
+  }
+}

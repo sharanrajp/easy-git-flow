@@ -53,7 +53,7 @@ import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 
@@ -1000,7 +1000,34 @@ export default function CandidatesPage() {
         )
         break
       case "delete":
-        setCandidates(candidates.filter((c) => !selectedCandidates.includes(c.id)))
+        try {
+          // Call backend API to delete candidates
+          const deleteResult = await deleteCandidates(selectedCandidates);
+          
+          // Update local state to remove deleted candidates
+          setCandidates(candidates.filter((c) => !selectedCandidates.includes(c.id)));
+          
+          // Refresh backend data
+          const [unassignedData, assignedData] = await Promise.all([
+            fetchUnassignedCandidates(),
+            fetchAssignedCandidates()
+          ]);
+          setUnassignedCandidates(unassignedData);
+          setAssignedCandidates(assignedData);
+          
+          // Show success message
+          toast({
+            title: "Success",
+            description: `${deleteResult.deleted_count} candidate(s) deleted successfully`,
+          });
+        } catch (error) {
+          console.error('Failed to delete candidates:', error);
+          toast({
+            title: "Error",
+            description: "Failed to delete candidates",
+            variant: "destructive",
+          });
+        }
         break
       case "sendEmail":
         // In a real app, you'd open an email composer or send bulk emails
