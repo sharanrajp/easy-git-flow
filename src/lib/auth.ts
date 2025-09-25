@@ -193,7 +193,7 @@ export async function updateUserStatus(userId: string, current_status: User["cur
   
   const response = await makeAuthenticatedRequest("/privileges/my-status", {
     method: "PUT",
-    body: JSON.stringify({ current_status: apiStatus })
+    body: JSON.stringify({ status: apiStatus })
   })
 
   if (!response.ok) {
