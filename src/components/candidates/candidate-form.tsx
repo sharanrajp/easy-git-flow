@@ -225,9 +225,9 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
             </SelectTrigger>
             <SelectContent>
               {loadingVacancies ? (
-                <SelectItem value="" disabled>Loading vacancies...</SelectItem>
+                <SelectItem value="loading" disabled>Loading vacancies...</SelectItem>
               ) : vacancies.length === 0 ? (
-                <SelectItem value="" disabled>No active vacancies available</SelectItem>
+                <SelectItem value="no-vacancies" disabled>No active vacancies available</SelectItem>
               ) : (
                 vacancies.map((vacancy: any) => (
                   <SelectItem key={vacancy.id} value={vacancy.position_title}>
