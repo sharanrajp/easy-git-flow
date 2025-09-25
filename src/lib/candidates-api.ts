@@ -124,7 +124,7 @@ export async function fetchAssignedCandidates(): Promise<BackendCandidate[]> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/mapping/assigned-candidates`, {
+    const response = await fetch(`${API_BASE_URL}/candidates/get-assigned-candidates`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
