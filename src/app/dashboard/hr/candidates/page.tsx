@@ -268,6 +268,7 @@ export default function CandidatesPage() {
         applied_position: candidateData.applied_position,
         total_experience: candidateData.total_experience,
         notice_period: candidateData.notice_period,
+        interview_type: candidateData.interview_type,
         skill_set: candidateData.skill_set,
         source: candidateData.source,
         appliedDate: new Date().toISOString().split("T")[0],
