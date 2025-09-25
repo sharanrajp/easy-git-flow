@@ -770,7 +770,7 @@ export default function CandidatesPage() {
         </div>
 
         <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="unassigned">
               Unassigned ({loadingUnassigned ? "..." : unassignedCandidates.length})
             </TabsTrigger>
@@ -1061,7 +1061,7 @@ export default function CandidatesPage() {
           </TabsContent>
 
           {/* <TabsContent value="completed"> */}
-            {completedCandidates.length > 0 ? (
+            {/* {completedCandidates.length > 0 ? (
               <Card>
                 <CardContent className="p-0">
                   <Table>
@@ -1207,7 +1207,7 @@ export default function CandidatesPage() {
                   </p>
                 </CardContent>
               </Card>
-            )}
+            )} */}
           {/* </TabsContent> */}
         </Tabs>
 
