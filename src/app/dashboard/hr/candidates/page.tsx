@@ -2133,7 +2133,7 @@ export default function CandidatesPage() {
                         <TableCell className="font-medium">
                           {interview.candidate_name}
                         </TableCell>
-                        <TableCell>{interview.panel_member_name}</TableCell>
+                        <TableCell>{interview.panel_name}</TableCell>
                         <TableCell>
                           <Button
                             variant="outline"
