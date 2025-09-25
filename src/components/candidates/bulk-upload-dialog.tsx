@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { makeAuthenticatedRequest } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
-import { fetchVacancies } from "@/lib/vacancy-api"
-import type { Vacancy } from "@/lib/mock-data"
+import { fetchVacancies } from "../../lib/vacancy-api"
+import type { Vacancy } from "../../lib/mock-data"
 
 interface BulkUploadDialogProps {
   onSubmit: (candidates: any[]) => void
