@@ -90,7 +90,7 @@ export default function PanelistCandidatesPage() {
   const convertToBackendCandidate = (candidate: PanelistCandidate): any => {
     return {
       ...candidate,
-      applied_position: candidate.last_interview_round || "N/A",
+      applied_position: candidate.applied_position || "N/A",
       final_status: "assigned",
       total_experience: candidate.total_experience,
       appliedDate: undefined,

@@ -36,6 +36,7 @@ export interface PanelistCandidate {
   current_ctc?:any;
   interview_type?:string;
   willing_to_relocate?:boolean;
+  applied_position?:string;
   created_at?:string;
   expected_ctc?:string;
   previous_rounds: Array<{
