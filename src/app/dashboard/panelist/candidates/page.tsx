@@ -118,11 +118,11 @@ export default function PanelistCandidatesPage() {
         feedback: round.feedback,
         panel_name: "Unknown Panel", // Default since not in PanelistCandidate
         panel_email: undefined,
-        communication: round.scores?.communication,
-        problem_solving: round.scores?.problem_solving,
-        logical_thinking: round.scores?.logical_thinking,
-        code_quality: round.scores?.code_quality,
-        technical_knowledge: round.scores?.technical_knowledge,
+        communication: round?.communication,
+        problem_solving: round?.problem_solving,
+        logical_thinking: round?.logical_thinking,
+        code_quality: round?.code_quality,
+        technical_knowledge: round?.technical_knowledge,
       })) || []
     }
   }
@@ -446,33 +446,33 @@ export default function PanelistCandidatesPage() {
                                 </div>
                               )}
 
-                              {round.scores && (
+                              {round && (
                                 <div>
                                   <label className="text-sm font-medium text-muted-foreground">Scores</label>
                                   <div className="grid grid-cols-3 gap-2 mt-2">
-                                    {round.scores.communication && (
+                                    {round.communication && (
                                       <div className="text-xs">
-                                        <span className="font-medium">Communication:</span> {round.scores.communication}/5
+                                        <span className="font-medium">Communication:</span> {round.communication}/5
                                       </div>
                                     )}
-                                    {round.scores.problem_solving && (
+                                    {round.problem_solving && (
                                       <div className="text-xs">
-                                        <span className="font-medium">Problem Solving:</span> {round.scores.problem_solving}/5
+                                        <span className="font-medium">Problem Solving:</span> {round.problem_solving}/5
                                       </div>
                                     )}
-                                    {round.scores.logical_thinking && (
+                                    {round.logical_thinking && (
                                       <div className="text-xs">
-                                        <span className="font-medium">Logical Thinking:</span> {round.scores.logical_thinking}/5
+                                        <span className="font-medium">Logical Thinking:</span> {round.logical_thinking}/5
                                       </div>
                                     )}
-                                    {round.scores.code_quality && (
+                                    {round.code_quality && (
                                       <div className="text-xs">
-                                        <span className="font-medium">Code Quality:</span> {round.scores.code_quality}/5
+                                        <span className="font-medium">Code Quality:</span> {round.code_quality}/5
                                       </div>
                                     )}
-                                    {round.scores.technical_knowledge && (
+                                    {round.technical_knowledge && (
                                       <div className="text-xs">
-                                        <span className="font-medium">Technical Knowledge:</span> {round.scores.technical_knowledge}/5
+                                        <span className="font-medium">Technical Knowledge:</span> {round.technical_knowledge}/5
                                       </div>
                                     )}
                                   </div>

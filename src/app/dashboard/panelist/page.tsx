@@ -176,11 +176,11 @@ export default function PanelistDashboard() {
         feedback: round.feedback,
         panel_name: "Unknown Panel", // Default since not in PanelistCandidate
         panel_email: undefined,
-        communication: round.scores?.communication,
-        problem_solving: round.scores?.problem_solving,
-        logical_thinking: round.scores?.logical_thinking,
-        code_quality: round.scores?.code_quality,
-        technical_knowledge: round.scores?.technical_knowledge,
+        communication: round?.communication,
+        problem_solving: round?.problem_solving,
+        logical_thinking: round?.logical_thinking,
+        code_quality: round?.code_quality,
+        technical_knowledge: round?.technical_knowledge,
       })) || []
     }
   }

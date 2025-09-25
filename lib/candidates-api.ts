@@ -37,13 +37,11 @@ export interface PanelistCandidate {
     feedback_submitted: boolean;
     rating?: number;
     feedback?: string;
-    scores?: {
-      communication?: number;
-      problem_solving?: number;
-      logical_thinking?: number;
-      code_quality?: number;
-      technical_knowledge?: number;
-    };
+    communication?: number;
+    problem_solving?: number;
+    logical_thinking?: number;
+    code_quality?: number;
+    technical_knowledge?: number;
   }>;
 }
 
