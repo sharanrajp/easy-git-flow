@@ -42,6 +42,7 @@ export interface PanelistCandidate {
     logical_thinking?: number;
     code_quality?: number;
     technical_knowledge?: number;
+    panel_name?: string
   }>;
 }
 

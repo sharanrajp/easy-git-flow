@@ -116,7 +116,7 @@ export default function PanelistCandidatesPage() {
         feedback_submitted: round.feedback_submitted,
         rating: round.rating?.toString(),
         feedback: round.feedback,
-        panel_name: "Unknown Panel", // Default since not in PanelistCandidate
+        panel_name: round.panel_name, // Default since not in PanelistCandidate
         panel_email: undefined,
         communication: round?.communication,
         problem_solving: round?.problem_solving,
