@@ -947,18 +947,33 @@ export default function CandidatesPage() {
     }
   }
 
-  const handleSelectAll = (candidateList: Candidate[], checked: boolean) => {
+  const handleSelectAll = (candidateList: any[], checked: boolean) => {
     if (checked) {
-      const newSelected = candidateList.map((c) => c.id)
+      const newSelected = candidateList.map((c) => c._id || c.id)
       setSelectedCandidates([...new Set([...selectedCandidates, ...newSelected])])
     } else {
-      const candidateIds = candidateList.map((c) => c.id)
+      const candidateIds = candidateList.map((c) => c._id || c.id)
       setSelectedCandidates(selectedCandidates.filter((id) => !candidateIds.includes(id)))
     }
   }
 
   const handleBulkAction = async (action: string, data?: any) => {
-    const selectedCandidateObjects = candidates.filter((c) => selectedCandidates.includes(c.id))
+    // Get the correct candidate objects based on current tab
+    let selectedCandidateObjects: any[] = []
+    
+    switch (activeTab) {
+      case "unassigned":
+        selectedCandidateObjects = unassignedCandidates.filter((c) => selectedCandidates.includes(c._id))
+        break
+      case "assigned":
+        selectedCandidateObjects = assignedCandidates.filter((c) => selectedCandidates.includes(c._id))
+        break
+      case "completed":
+        selectedCandidateObjects = completedCandidates.filter((c) => selectedCandidates.includes(c.id))
+        break
+      default:
+        selectedCandidateObjects = candidates.filter((c) => selectedCandidates.includes(c.id))
+    }
 
     switch (action) {
       case "assign":
@@ -1001,8 +1016,9 @@ export default function CandidatesPage() {
         break
       case "delete":
         try {
-          // Call backend API to delete candidates
-          const deleteResult = await deleteCandidates(selectedCandidates);
+          // Call backend API to delete candidates using the correct ID field
+          const candidateIdsToDelete = selectedCandidateObjects.map((c) => c._id || c.id)
+          const deleteResult = await deleteCandidates(candidateIdsToDelete);
           
           // Update local state to remove deleted candidates
           setCandidates(candidates.filter((c) => !selectedCandidates.includes(c.id)));
@@ -1014,6 +1030,9 @@ export default function CandidatesPage() {
           ]);
           setUnassignedCandidates(unassignedData);
           setAssignedCandidates(assignedData);
+          
+          // Clear selection
+          setSelectedCandidates([]);
           
           // Show success message
           toast({
@@ -1046,7 +1065,23 @@ export default function CandidatesPage() {
   }
 
   const getSelectedCandidateObjects = () => {
-    return candidates.filter((c) => selectedCandidates.includes(c.id))
+    let currentCandidates: any[] = []
+    
+    switch (activeTab) {
+      case "unassigned":
+        currentCandidates = unassignedCandidates
+        break
+      case "assigned":
+        currentCandidates = assignedCandidates
+        break
+      case "completed":
+        currentCandidates = completedCandidates
+        break
+      default:
+        currentCandidates = candidates
+    }
+    
+    return currentCandidates.filter((c) => selectedCandidates.includes(c._id || c.id))
   }
 
   const handleChangeStatus = (candidateId: string, newStatus: string) => {
