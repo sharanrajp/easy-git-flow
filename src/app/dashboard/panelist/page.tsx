@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent } from "@/components/ui/popover"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Calendar,
   Clock,
@@ -35,7 +37,7 @@ import {
 import { getCurrentUser } from "@/lib/auth"
 import { useEffect, useState } from "react"
 import { FeedbackDialog } from "@/components/panelist/feedback-dialog"
-import { ScheduledFeedbackDialog } from "@/components/panelist/scheduled-feedback-dialog"
+// Removed problematic import
 import { formatDate } from "@/lib/utils"
 import { fetchPanelistAssignedCandidates, type PanelistCandidate } from "@/lib/candidates-api"
 import { useToast } from "@/hooks/use-toast"
@@ -803,14 +805,29 @@ export default function PanelistDashboard() {
           />
         )}
 
-        {/* Scheduled Feedback Dialog */}
+        {/* Scheduled Feedback Dialog - Inline Component */}
         {selectedScheduledCandidate && (
-          <ScheduledFeedbackDialog
-            isOpen={showScheduledFeedback}
-            onClose={() => setShowScheduledFeedback(false)}
-            candidate={selectedScheduledCandidate}
-            onSubmit={handleScheduledFeedbackSubmit}
-          />
+          <Dialog open={showScheduledFeedback} onOpenChange={() => setShowScheduledFeedback(false)}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Interview Feedback - {selectedScheduledCandidate.name}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Feedback</label>
+                  <Textarea placeholder="Provide detailed feedback..." rows={4} />
+                </div>
+                <div className="flex justify-end space-x-3">
+                  <Button variant="outline" onClick={() => setShowScheduledFeedback(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleScheduledFeedbackSubmit} className="bg-primary hover:bg-primary/90">
+                    Submit Feedback
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         )}
 
         {/* View Feedback Modal */}

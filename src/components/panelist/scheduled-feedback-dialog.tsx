@@ -39,12 +39,14 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleStarClick = (category: keyof FeedbackData, rating: number) => {
+    console.log('Star clicked:', category, rating)
     if (typeof feedback[category] === "number") {
       setFeedback((prev) => ({ ...prev, [category]: rating }))
     }
   }
 
   const handleSubmit = async () => {
+    console.log('Submit button clicked')
     const currentUser = getCurrentUser()
     if (!currentUser) {
       toast({
@@ -57,6 +59,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
 
     try {
       setIsSubmitting(true)
+      console.log('Making API request to update interview')
       
       const response = await fetch('http://127.0.0.1:8000/interviews/update-interview', {
         method: 'PUT',
@@ -77,6 +80,8 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
           feedback: feedback.feedback
         })
       })
+
+      console.log('API response status:', response.status)
 
       if (!response.ok) {
         throw new Error('Failed to submit feedback')
@@ -142,6 +147,18 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
     feedback.technicalKnowledge > 0 &&
     feedback.status &&
     feedback.feedback.trim()
+
+  // Debug logging
+  console.log('Feedback form validation:', {
+    communication: feedback.communication,
+    problemSolving: feedback.problemSolving,
+    logicalThinking: feedback.logicalThinking,
+    codeQuality: feedback.codeQuality,
+    technicalKnowledge: feedback.technicalKnowledge,
+    status: feedback.status,
+    feedback: feedback.feedback,
+    isFormValid
+  })
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
