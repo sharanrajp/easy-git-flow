@@ -1404,7 +1404,7 @@ export default function CandidatesPage() {
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                {candidate.final_status === "selected" && (
+                                {candidate.final_status === "selected" && (candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && (
                                   <Button
                                     variant="outline"
                                     size="sm"
