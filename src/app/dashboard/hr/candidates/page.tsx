@@ -1362,11 +1362,10 @@ export default function CandidatesPage() {
                     <TableBody>
                       {filteredUnassignedCandidates.map((candidate) => (
                         <TableRow key={candidate._id}>
-                          <TableCell>
-                            <Checkbox
-                              checked={candidate.checked_in || false}
-                              disabled={checkingInCandidate === candidate._id}
-                              onCheckedChange={(checked) => handleBackendCheckIn(candidate, checked as boolean)}
+                          <TableCell> 
+                            <Checkbox 
+                              checked={selectedCandidates.includes(candidate._id)}
+                              onCheckedChange={(checked) => { if (checked) { setSelectedCandidates([...selectedCandidates, candidate._id]) } else { setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id)) } }} 
                             />
                           </TableCell>
                           <TableCell>
@@ -1413,11 +1412,9 @@ export default function CandidatesPage() {
                           </TableCell>
                           <TableCell>
                             <Switch
-                              checked={selectedCandidates.includes(candidate._id)}
-                              onCheckedChange={(checked) => {
-                                if (checked) setSelectedCandidates([...selectedCandidates, candidate._id])
-                                else setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id))
-                              }}
+                              checked={candidate.checked_in || false}
+                              disabled={checkingInCandidate === candidate._id}
+                              onCheckedChange={(checked) => handleBackendCheckIn(candidate, checked as boolean)}
                             />
                           </TableCell>
                           <TableCell>
