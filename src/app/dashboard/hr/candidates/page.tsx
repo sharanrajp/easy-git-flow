@@ -1427,7 +1427,15 @@ export default function CandidatesPage() {
                               {candidate.checked_in && (
                                 <Button
                                   size="sm"
-                                  className="bg-blue-600 hover:bg-blue-700"
+                                  className="
+                                    bg-blue-600
+                                    hover:bg-blue-600
+                                    active:bg-blue-600
+                                    focus:bg-blue-600
+                                    focus:ring-0
+                                    disabled:bg-blue-600
+                                    disabled:opacity-100
+                                    text-white"
                                   onClick={() => handleAssignPanel(candidate)}
                                   disabled={loadingPanels}
                                 >
