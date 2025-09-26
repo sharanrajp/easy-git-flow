@@ -55,6 +55,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
+import { Switch } from "@/components/ui/switch"
 
 export default function CandidatesPage() {
   const { toast } = useToast()
@@ -1346,7 +1347,6 @@ export default function CandidatesPage() {
                             }}
                           />
                         </TableHead>
-                        <TableHead>Check-In</TableHead>
                         <TableHead>Candidate</TableHead>
                         <TableHead>Position</TableHead>
                         <TableHead>Experience</TableHead>
@@ -1355,24 +1355,13 @@ export default function CandidatesPage() {
                         <TableHead>Applied Date</TableHead>
                         <TableHead>Wait Time</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>Check-In</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredUnassignedCandidates.map((candidate) => (
                         <TableRow key={candidate._id}>
-                          <TableCell>
-                            <Checkbox
-                              checked={selectedCandidates.includes(candidate._id)}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setSelectedCandidates([...selectedCandidates, candidate._id])
-                                } else {
-                                  setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id))
-                                }
-                              }}
-                            />
-                          </TableCell>
                           <TableCell>
                             <Checkbox
                               checked={candidate.checked_in || false}
@@ -1421,6 +1410,15 @@ export default function CandidatesPage() {
                                 {candidate.status || "Unassigned"}
                               </div>
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Switch
+                              checked={selectedCandidates.includes(candidate._id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) setSelectedCandidates([...selectedCandidates, candidate._id])
+                                else setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id))
+                              }}
+                            />
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center space-x-2">
