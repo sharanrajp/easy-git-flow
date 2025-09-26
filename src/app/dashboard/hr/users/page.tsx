@@ -359,7 +359,7 @@ export default function UsersPage() {
                       </TableCell>
                       <TableCell>
                         {user.role === "panelist" && user.current_status ? (
-                          <Badge className={getStatusColor(user.current_status)}>{user.current_status}</Badge>
+                          <Badge className={getStatusColor(user.current_status)}>{user.current_status === "free" ? "available" : user.current_status === "in_interview" ? "In Interview" : user.current_status}</Badge>
                         ) : (
                           <span className="text-gray-400">-</span>
                         )}
