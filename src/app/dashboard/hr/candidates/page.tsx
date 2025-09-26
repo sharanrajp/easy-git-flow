@@ -1431,7 +1431,7 @@ export default function CandidatesPage() {
                                   onClick={() => handleAssignPanel(candidate)}
                                   disabled={loadingPanels}
                                 >
-                                  {loadingPanels ? "Loading..." : "Assign Panel"}
+                                Assign Panel
                                 </Button>
                               )}
                               <Button
