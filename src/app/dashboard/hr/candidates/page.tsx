@@ -1419,6 +1419,16 @@ export default function CandidatesPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setSelectedUnassignedCandidate(candidate)
+                                  setIsUnassignedDetailsOpen(true)
+                                }}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>                              
                               {candidate.checked_in && (
                                 <Button
                                   size="sm"
@@ -1437,16 +1447,6 @@ export default function CandidatesPage() {
                                 Assign Panel
                                 </Button>
                               )}
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setSelectedUnassignedCandidate(candidate)
-                                  setIsUnassignedDetailsOpen(true)
-                                }}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
