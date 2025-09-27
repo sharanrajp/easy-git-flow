@@ -162,7 +162,7 @@ Jane Smith,jane.smith@email.com,+1234567891,2-4 years,"Node.js,Python,MongoDB",C
       setProgress(50)
 
       // Call backend API
-      const response = await makeAuthenticatedRequest('/candidates/upload-candidates-csv', {
+      const response = await makeAuthenticatedRequest('/mapping/upload-candidates-csv', {
         method: 'POST',
         body: formData,
       })

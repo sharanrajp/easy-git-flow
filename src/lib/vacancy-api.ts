@@ -13,7 +13,7 @@ interface BackendVacancy {
   priority: string;
   number_of_vacancies: number;
   status: string;
-  experience_range: string;
+  experienceRange: string;
   skills_required: string[];
   interview_type: string;
   drive_date: string;
@@ -25,6 +25,9 @@ interface BackendVacancy {
   location?: string;
   deadline?: string;
   assignedPanelists?: string[];
+  walkInDetails?: {
+    date?: string
+  }
 }
 
 // Frontend vacancy interface for posting (what we send to API)
@@ -36,13 +39,16 @@ interface VacancyCreateRequest {
   priority: string;
   number_of_vacancies: number;
   status: string;
-  experience_range: string;
+  experienceRange: string;
   skills_required: string[];
   interview_type: string;
   drive_date: string;
   drive_location: string;
   job_desc?: string;
   request_type?:string;
+  walkInDetails?: {
+    date?: string
+  }
 }
 
 // Transform backend vacancy to frontend format
@@ -56,7 +62,7 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
     priority: backendVacancy.priority as "P3" | "P2" | "P1" | "P0",
     number_of_vacancies: backendVacancy.number_of_vacancies,
     status: backendVacancy.status as "active" | "paused" | "closed",
-    experienceRange: backendVacancy.experience_range,
+    experienceRange: backendVacancy.experienceRange,
     skills: backendVacancy.skills_required,
     interview_type: backendVacancy.interview_type as "Walk-In",
     walkInDetails: {
@@ -89,7 +95,7 @@ function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyC
     priority: frontendVacancy.priority || "P3",
     number_of_vacancies: frontendVacancy.number_of_vacancies || 1,
     status: frontendVacancy.status || "active",
-    experience_range: frontendVacancy.experienceRange || "",
+    experienceRange: frontendVacancy.experienceRange || "",
     skills_required: frontendVacancy.skills || [],
     interview_type: frontendVacancy.interview_type || "Walk-In",
     drive_date: new Date(frontendVacancy.walkInDetails?.date || "").toISOString() || "",
@@ -120,7 +126,8 @@ export async function fetchVacancies(): Promise<Vacancy[]> {
       throw new Error(`Failed to fetch vacancies: ${response.status} ${response.statusText}`);
     }
 
-    const backendVacancies: BackendVacancy[] = await response.json();
+    const data = await response.json();
+    const backendVacancies: BackendVacancy[] = data.vacancies || [];
     return backendVacancies.map(transformBackendToFrontend);
   } catch (error) {
     console.error('Error fetching vacancies:', error);

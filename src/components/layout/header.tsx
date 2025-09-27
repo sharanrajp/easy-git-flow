@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Bell, LogOut, User as UserIcon, Settings, LayoutDashboard, Users, UserCheck, Briefcase, Menu, ChevronDown } from "lucide-react"
-import { type User, logout, updateUserStatus } from "@/lib/auth"
+import { type User, logout, makeAuthenticatedRequest } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 
 interface HeaderProps {
@@ -46,6 +46,7 @@ const navigationItems = {
 export function Header({ user }: HeaderProps) {
   const navigate = useNavigate()
   const pathname = useLocation().pathname
+  const [currentStatus, setCurrentStatus] = useState("free")
 
   const items = navigationItems[user.role] || []
 
@@ -53,12 +54,24 @@ export function Header({ user }: HeaderProps) {
     logout()
     navigate("/login")
   }
+  const handleStatusChange = async (userId: string, current_status: User["current_status"]) => {
+    try {
+      const response = await makeAuthenticatedRequest(
+        `http://127.0.0.1:8000/admin/update-status/${userId}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ current_status }),
+        }
+      )
 
-  const handleStatusChange = (current_status: User["current_status"]) => {
-    if (user.role === "panelist" && current_status) {
-      updateUserStatus(user._id, current_status)
-      // Force a page refresh to update the UI
-      window.location.reload()
+      if (response.ok) {
+        console.log("Status updated successfully")
+        setCurrentStatus(current_status || "")
+      } else {
+        console.error("Failed to update status:", await response.text())
+      }
+    } catch (error) {
+      console.error("Error updating status:", error)
     }
   }
 
@@ -166,7 +179,7 @@ export function Header({ user }: HeaderProps) {
                   <div className="text-xs text-muted-foreground capitalize">{user.role}</div>
                 </div>
                 {user.role === "panelist" && user.current_status && (
-                  <Badge className={cn("status-badge", getStatusColor(user.current_status))}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
+                  <Badge className={cn("status-badge", getStatusColor(currentStatus))}>{currentStatus === "free" ? "available" : currentStatus}</Badge>
                 )}
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
@@ -187,19 +200,19 @@ export function Header({ user }: HeaderProps) {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="font-semibold">Change Status</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => handleStatusChange("free")} className="smooth-transition">
+                  <DropdownMenuItem onClick={() => handleStatusChange(user._id, "free")} className="smooth-transition">
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-emerald-500 rounded-full mr-3 shadow-sm"></div>
                       Available
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleStatusChange("break")} className="smooth-transition">
+                  <DropdownMenuItem onClick={() => handleStatusChange(user._id, "break")} className="smooth-transition">
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-slate-500 rounded-full mr-3 shadow-sm"></div>
                       Break
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleStatusChange("unavailable")} className="smooth-transition">
+                  <DropdownMenuItem onClick={() => handleStatusChange(user._id, "unavailable")} className="smooth-transition">
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-rose-500 rounded-full mr-3 shadow-sm"></div>
                       Unavailable

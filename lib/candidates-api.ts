@@ -20,6 +20,9 @@ export interface BackendCandidate {
   waitTime?: string | null;
   waitTimeStarted?: string | null;
   isCheckedIn?: boolean;
+  location?: string;
+  notice_period?: string;
+  job_type?: string;
 }
 
 export interface PanelistCandidate {
@@ -51,7 +54,9 @@ export interface PanelistCandidate {
     code_quality?: number;
     technical_knowledge?: number;
     panel_name?: string
-  }>;
+  }>;  
+  location?: string;
+  job_type?: string;
 }
 
 // Fetch unassigned candidates from backend
@@ -94,7 +99,7 @@ export async function addCandidate(candidateData: Partial<BackendCandidate>): Pr
   try {
     const formData = new FormData()
     formData.append("candidate_data", JSON.stringify(candidateData))
-    const response = await fetch(`${API_BASE_URL}/candidates/add`, {
+    const response = await fetch(`${API_BASE_URL}/mapping/add-candidate`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -139,6 +144,35 @@ export async function fetchAssignedCandidates(): Promise<BackendCandidate[]> {
     return candidates;
   } catch (error) {
     console.error('Error fetching assigned candidates:', error);
+    throw error;
+  }
+}
+
+// Fetch completed candidates from backend
+export async function fetchCompletedCandidates(): Promise<BackendCandidate[]> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/mapping/completed-candidates`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch completed candidates: ${response.status} ${response.statusText}`);
+    }
+
+    const candidates: BackendCandidate[] = await response.json();
+    return candidates;
+  } catch (error) {
+    console.error('Error fetching completed candidates:', error);
     throw error;
   }
 }

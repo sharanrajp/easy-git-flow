@@ -22,7 +22,9 @@ export interface BackendCandidate {
   name: string
   email: string
   phone_number?: string
-  applied_position?: string
+  applied_position?: string  
+  location?: string;
+  job_type?: string;
   status?: string
   final_status?: string
   total_experience?: number
