@@ -37,7 +37,6 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     number_of_vacancies: vacancy?.number_of_vacancies || 1,
     experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
-    experienceRange: vacancy?.experienceRange || "",
     skill_set: vacancy?.skill_set || [],
     jobDescription: vacancy?.jobDescription || "",
     about_position: vacancy?.about_position || "",
@@ -118,7 +117,6 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       driveDate: vacancy?.walkInDetails?.date || "",
       driveLocation: vacancy?.walkInDetails?.location || "",
       assignedPanelists: vacancy?.assignedPanelists || [],
-      experienceRange: vacancy?.experienceRange  || "",
     })
     setCurrentStep(1)
     setNewSkill("")

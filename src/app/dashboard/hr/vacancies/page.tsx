@@ -410,7 +410,7 @@ export default function VacanciesPage() {
                       <TableHead>No. of Vacancies</TableHead>
                       <TableHead>Recruiter</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Assigned Panelists</TableHead>
+                      <TableHead>No. of Panelists Assigned</TableHead>
                       <TableHead>Applications</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>

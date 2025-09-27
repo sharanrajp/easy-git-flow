@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Bell, LogOut, User as UserIcon, Settings, LayoutDashboard, Users, UserCheck, Briefcase, Menu, ChevronDown } from "lucide-react"
-import { type User, logout, makeAuthenticatedRequest } from "@/lib/auth"
+import { type User, logout, updateUserStatus } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 
 interface HeaderProps {
@@ -48,7 +48,6 @@ const navigationItems = {
 export function Header({ user, onUserUpdate }: HeaderProps) {
   const navigate = useNavigate()
   const pathname = useLocation().pathname
-  const [currentStatus, setCurrentStatus] = useState("free")
   const { toast } = useToast()
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
@@ -58,24 +57,31 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
     logout()
     navigate("/login")
   }
-  const handleStatusChange = async (userId: string, current_status: User["current_status"]) => {
-    try {
-      const response = await makeAuthenticatedRequest(
-        `http://127.0.0.1:8000/admin/update-status/${userId}`,
-        {
-          method: "PATCH",
-          body: JSON.stringify({ current_status }),
-        }
-      )
 
-      if (response.ok) {
-        console.log("Status updated successfully")
-        setCurrentStatus(current_status || "")
-      } else {
-        console.error("Failed to update status:", await response.text())
+  const handleStatusChange = async (current_status: User["current_status"]) => {
+    if (user.role === "panelist" && current_status && !isUpdatingStatus) {
+      try {
+        setIsUpdatingStatus(true)
+        await updateUserStatus(user._id, current_status)
+        
+        // Update the user object and notify parent component
+        const updatedUser = { ...user, current_status }
+        onUserUpdate?.(updatedUser)
+        
+        toast({
+          title: "Status Updated",
+          description: `Your status has been changed to ${current_status === "free" ? "available" : current_status}`,
+        })
+      } catch (error) {
+        console.error('Failed to update status:', error)
+        toast({
+          title: "Error",
+          description: "Failed to update status. Please try again.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsUpdatingStatus(false)
       }
-    } catch (error) {
-      console.error("Error updating status:", error)
     }
   }
 
@@ -183,7 +189,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
                   <div className="text-xs text-muted-foreground capitalize">{user.role}</div>
                 </div>
                 {user.role === "panelist" && user.current_status && (
-                  <Badge className={cn("status-badge", getStatusColor(currentStatus))}>{currentStatus === "free" ? "available" : currentStatus}</Badge>
+                  <Badge className={cn("status-badge", getStatusColor(user.current_status))}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
                 )}
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
@@ -204,19 +210,31 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="font-semibold">Change Status</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => handleStatusChange(user._id, "free")} className="smooth-transition">
+                  <DropdownMenuItem 
+                    onClick={() => handleStatusChange("free")} 
+                    className="smooth-transition"
+                    disabled={isUpdatingStatus}
+                  >
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-emerald-500 rounded-full mr-3 shadow-sm"></div>
                       Available {isUpdatingStatus && user.current_status !== "free" ? "(updating...)" : ""}
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleStatusChange(user._id, "break")} className="smooth-transition">
+                  <DropdownMenuItem 
+                    onClick={() => handleStatusChange("break")} 
+                    className="smooth-transition"
+                    disabled={isUpdatingStatus}
+                  >
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-slate-500 rounded-full mr-3 shadow-sm"></div>
                       Break {isUpdatingStatus && user.current_status !== "break" ? "(updating...)" : ""}
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleStatusChange(user._id, "unavailable")} className="smooth-transition">
+                  <DropdownMenuItem 
+                    onClick={() => handleStatusChange("unavailable")} 
+                    className="smooth-transition"
+                    disabled={isUpdatingStatus}
+                  >
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-rose-500 rounded-full mr-3 shadow-sm"></div>
                       Unavailable {isUpdatingStatus && user.current_status !== "unavailable" ? "(updating...)" : ""}

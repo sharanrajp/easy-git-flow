@@ -48,11 +48,6 @@ import { CandidateDetails } from "@/components/candidates/candidate-details"
 import { BulkActionsToolbar } from "@/components/candidates/bulk-actions-toolbar"
 import { BulkUploadDialog } from "@/components/candidates/bulk-upload-dialog"
 import { Checkbox } from "@/components/ui/checkbox"
-import { getAllUsers, getToken } from "@/lib/auth"
-import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
-import { getInterviewSessions } from "@/lib/interview-data"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, type BackendCandidate, fetchCompletedCandidates } from "@/lib/candidates-api"
 import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
@@ -64,16 +59,18 @@ import { Switch } from "@/components/ui/switch"
 
 export default function CandidatesPage() {
   const { toast } = useToast()
-  const [candidates, setCandidates] = useState<Candidate[]>([])
+  const [candidates, setCandidates] = useState<Candidate[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("candidates")
+      return stored ? JSON.parse(stored) : getMockCandidates()
+    }
+    return getMockCandidates()
+  })
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [dateFilter, setDateFilter] = useState("all")
   const [jobFilter, setJobFilter] = useState("all")
-  const [statusFilters, setStatusFilters] = useState({
-    unassigned: "all",
-    assigned: "all",
-    completed: "all",
-  });
+  const [statusFilter, setStatusFilter] = useState("all")
   const [experienceFilter, setExperienceFilter] = useState("all")
   const [recruiterFilter, setRecruiterFilter] = useState("all")
   const [roundFilter, setRoundFilter] = useState("all")
@@ -104,7 +101,6 @@ export default function CandidatesPage() {
   const [isAssignedDetailsOpen, setIsAssignedDetailsOpen] = useState(false)
   const [selectedUnassignedCandidate, setSelectedUnassignedCandidate] = useState<BackendCandidate | null>(null)
   const [isUnassignedDetailsOpen, setIsUnassignedDetailsOpen] = useState(false)
-  const [completedCandidates, setCompletedCandidates] = useState<BackendCandidate[]>([])
   const [vacancies, setVacancies] = useState<Vacancy[]>([])
   const [loadingVacancies, setLoadingVacancies] = useState(false)
   const [vacancyError, setVacancyError] = useState<string | null>(null)
@@ -187,20 +183,17 @@ export default function CandidatesPage() {
       
       try {
         // Load both datasets in parallel
-        const [unassignedData, assignedData, completedData] = await Promise.all([
+        const [unassignedData, assignedData] = await Promise.all([
           fetchUnassignedCandidates(),
-          fetchAssignedCandidates(),
-          fetchCompletedCandidates()
+          fetchAssignedCandidates()
         ])
         
         setUnassignedCandidates(unassignedData)
         setAssignedCandidates(assignedData)
-        setCompletedCandidates(completedData)
       } catch (error) {
         console.error('Failed to load candidates:', error)
         setUnassignedCandidates([])
         setAssignedCandidates([])
-        setCompletedCandidates([])
       } finally {
         setLoadingUnassigned(false)
         setLoadingAssigned(false)
@@ -218,27 +211,6 @@ export default function CandidatesPage() {
     }
   }, [candidates])
 
-  const statusOptions: Record<string, { value: string; label: string }[]> = {
-  unassigned: [],
-  assigned: [
-    { value: "r1-scheduled", label: "R1 Scheduled" },
-    { value: "r1-in-progress", label: "R1 In Progress" },
-    { value: "r2-scheduled", label: "Schedule R2" },
-    { value: "r2-in-progress", label: "R2 In Progress" },
-    { value: "r3-scheduled", label: "Schedule R3" },
-    { value: "r3-in-progress", label: "R3 In Progress" },
-  ],
-  completed: [
-    { value: "selected", label: "selected" },
-    { value: "hired", label: "hired" },
-    { value: "rejected", label: "rejected" },
-    { value: "offerReleased", label: "offerReleased" },
-    { value: "candidateDeclined", label: "candidateDeclined" },
-    { value: "onHold", label: "onHold" },
-    { value: "joined", label: "joined" },
-    { value: "completed", label: "completed" }
-  ],
-}
   // Filter function for backend candidates
   const filterBackendCandidates = (candidatesList: BackendCandidate[]) => {
     return candidatesList.filter((candidate) => {
@@ -354,9 +326,20 @@ export default function CandidatesPage() {
     { value: "r3", label: "R3" },
   ]
 
-const handleStatusChange = (tab: string, value: string) => {
-  setStatusFilters((prev) => ({ ...prev, [tab]: value }));
-}
+  const localUnassignedCandidates = filteredCandidates.filter((c) => c.status === "unassigned")
+  const localAssignedCandidates = filteredCandidates.filter(
+    (c) =>
+      c.status === "assigned" ||
+      c.status === "r1-scheduled" ||
+      c.status === "r1-in-progress" ||
+      c.status === "r2-scheduled" ||
+      c.status === "r2-in-progress" ||
+      c.status === "r3-scheduled" ||
+      c.status === "r3-in-progress",
+  )
+  const completedCandidates = filteredCandidates.filter(
+    (c) => c.status === "completed" || c.status === "hired" || c.status === "rejected" || c.status === "selected" || c.status === "offerReleased" || c.status === "candidateDeclined" || c.status === "joined" || c.status === "onHold" ,
+  )
 
   const handleExportCandidates = async () => {
     try {
@@ -402,9 +385,6 @@ const handleStatusChange = (tab: string, value: string) => {
         appliedDate: new Date().toISOString().split("T")[0],
         status: "unassigned",
         recruiter: currentUser?.name || "Unknown",
-        location: candidateData?.location,
-        notice_period: candidateData?.notice_period,
-        job_type: candidateData?.job_type
       };
 
       // Call the API to add candidate
@@ -432,7 +412,7 @@ const handleStatusChange = (tab: string, value: string) => {
       };
 
       // Update local state with new candidate
-      setUnassignedCandidates([newCandidate, ...unassignedCandidates]);
+      setCandidates([newCandidate, ...candidates]);
       setIsCreateOpen(false);
       setFormHasChanges(false);
       
@@ -470,17 +450,17 @@ const handleStatusChange = (tab: string, value: string) => {
   }
 
   const handleBulkUpload = (uploadedCandidates: Partial<Candidate>[]) => {
-  const newCandidates = uploadedCandidates.map((candidateData, index) => ({
-    id: (Date.now() + index).toString(),
-    ...candidateData,
-    appliedDate: new Date().toISOString().split("T")[0],
-    status: "unassigned" as const,
-    waitTime: null,
-    waitTimeStarted: null,
-    isCheckedIn: false,
+    const newCandidates = uploadedCandidates.map((candidateData, index) => ({
+      id: (Date.now() + index).toString(),
+      ...candidateData,
+      appliedDate: new Date().toISOString().split("T")[0],
+      status: "unassigned" as const,
+      waitTime: null,
+      waitTimeStarted: null,
+      isCheckedIn: false,
     })) as Candidate[]
 
-    setUnassignedCandidates([...newCandidates, ...candidates])
+    setCandidates([...newCandidates, ...candidates])
     setIsBulkUploadOpen(false)
   }
 
@@ -998,6 +978,14 @@ const handleStatusChange = (tab: string, value: string) => {
         return "Schedule R3"
       case "r3-in-progress":
         return "R3 In Progress"
+      case "completed":
+        return "Completed"
+      case "hired":
+        return "Hired"
+      case "rejected":
+        return "Rejected"
+      case "selected":
+        return "Selected"
       default:
         return status
     }
@@ -1148,39 +1136,11 @@ const handleStatusChange = (tab: string, value: string) => {
     return currentCandidates.filter((c) => selectedCandidates.includes(c._id || c.id))
   }
 
-  const handleChangeStatus = async (candidateId: string, newStatus: string) => {
-    try {
-      const token = getToken();
-      if (!token) {
-        console.error("No auth token found");
-        return;
-      }
-
-      const response = await fetch(`http://127.0.0.1:8000/mapping/update-status/${candidateId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error updating status:", errorData.message);
-        return;
-      }
-
-      const data = await response.json();
-
-      setCompletedCandidates((prev) =>
-        prev.map((c) =>
-          (c.id || c._id) === candidateId ? { ...c, status: data.candidate.status } : c
-        )
-      );
-    } catch (err) {
-      console.error("Failed to update candidate status:", err);
-    }
+  const handleChangeStatus = (candidateId: string, newStatus: string) => {
+    setCandidates((prev) =>
+      prev.map((c) =>
+        c.id === candidateId ? { ...c, status: newStatus } : c
+    ))
   }
 
   return (
@@ -1256,7 +1216,7 @@ const handleStatusChange = (tab: string, value: string) => {
                   className="max-w-sm"
                 />
               </div>
-              <Select value={statusFilters[activeTab]} onValueChange={(val) => handleStatusChange(activeTab, val)}>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
@@ -1343,21 +1303,15 @@ const handleStatusChange = (tab: string, value: string) => {
           </div>
         </div>
 
-        <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="unassigned">
-              Unassigned ({loadingUnassigned ? "..." : unassignedCandidates.filter(
-  (c) => statusFilters.unassigned === "all" || c.status === statusFilters.unassigned
-).length})
+              Unassigned ({loadingUnassigned ? "..." : unassignedCandidates.length})
             </TabsTrigger>
             <TabsTrigger value="assigned">
-              Assigned ({loadingAssigned ? "..." : assignedCandidates.filter(
-  (c) => statusFilters.assigned === "all" || c.status === statusFilters.assigned
-).length})
+              Assigned ({loadingAssigned ? "..." : assignedCandidates.length})
             </TabsTrigger>
-            <TabsTrigger value="completed">Completed ({completedCandidates.filter(
-  (c) => statusFilters.completed === "all" || c.status === statusFilters.completed
-).length})</TabsTrigger>
+            {/* <TabsTrigger value="completed">Completed ({completedCandidates.length})</TabsTrigger> */}
           </TabsList>
 
           <TabsContent value="unassigned">
@@ -1406,7 +1360,7 @@ const handleStatusChange = (tab: string, value: string) => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {unassignedCandidates.filter((c) => statusFilters.unassigned === "all" || c.status === statusFilters.unassigned).map((candidate) => (
+                      {filteredUnassignedCandidates.map((candidate) => (
                         <TableRow key={candidate._id}>
                           <TableCell> 
                             <Checkbox 
@@ -1474,26 +1428,25 @@ const handleStatusChange = (tab: string, value: string) => {
                                 }}
                               >
                                 <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="cursor-pointer"
-                                onClick={() => {
-                                  setSelectedCandidate(candidate)
-                                  setIsEditOpen(true)
-                                }}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="cursor-pointer"
-                                onClick={() => setDeleteCandidate(candidate)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              </Button>                              
+                              {candidate.checked_in && (
+                                <Button
+                                  size="sm"
+                                  className="
+                                    bg-blue-600
+                                    hover:bg-blue-600
+                                    active:bg-blue-600
+                                    focus:bg-blue-600
+                                    focus:ring-0
+                                    disabled:bg-blue-600
+                                    disabled:opacity-100
+                                    text-white"
+                                  onClick={() => handleAssignPanel(candidate)}
+                                  disabled={loadingPanels}
+                                >
+                                Assign Panel
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -1556,7 +1509,7 @@ const handleStatusChange = (tab: string, value: string) => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {assignedCandidates.filter((c) => statusFilters.assigned === "all" || c.status === statusFilters.assigned).map((candidate) => {
+                      {filteredAssignedCandidates.map((candidate) => {
                         const getStatusColor = (status: string) => {
                           switch (status) {
                             case "selected":
@@ -1619,25 +1572,16 @@ const handleStatusChange = (tab: string, value: string) => {
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                <Button
-                                variant="ghost"
-                                size="sm"
-                                className="cursor-pointer"
-                                onClick={() => {
-                                  setSelectedCandidate(candidate)
-                                  setIsEditOpen(true)
-                                }}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="cursor-pointer"
-                                onClick={() => setDeleteCandidate(candidate)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                                {candidate.final_status === "selected" && (candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="cursor-pointer bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                                    onClick={() => handleMapAssign(candidate)}
+                                  >
+                                    Map Assign
+                                  </Button>
+                                )}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -1662,8 +1606,8 @@ const handleStatusChange = (tab: string, value: string) => {
             )}
           </TabsContent>
 
-          <TabsContent value="completed">
-            {completedCandidates.length > 0 ? (
+          {/* <TabsContent value="completed"> */}
+            {/* {completedCandidates.length > 0 ? (
               <Card>
                 <CardContent className="p-0">
                   <Table>
@@ -1687,7 +1631,7 @@ const handleStatusChange = (tab: string, value: string) => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {completedCandidates.filter((c) => statusFilters.completed === "all" || c.status === statusFilters.completed).map((candidate) => (
+                      {completedCandidates.map((candidate) => (
                         <TableRow key={candidate.id}>
                           <TableCell>
                             <Checkbox
@@ -1718,14 +1662,14 @@ const handleStatusChange = (tab: string, value: string) => {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "selected")}>selected</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "rejected")}>rejected</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>hired</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "completed")}>completed</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>offerReleased</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>candidateDeclined</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "onHold")}>onHold</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>joined</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "selected")}>Selected</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "rejected")}>Rejected</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "hired")}>Hired</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "completed")}>Completed</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "offerReleased")}>Offer Released</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "onHold")}>On Hold</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "joined")}>Joined</DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             ) : (
@@ -1760,6 +1704,7 @@ const handleStatusChange = (tab: string, value: string) => {
                                 }}
                               >
                                 <Eye className="h-4 w-4 mr-2" />
+                                View Details
                               </Button>
                               <Button
                                 variant="ghost"
@@ -1798,7 +1743,7 @@ const handleStatusChange = (tab: string, value: string) => {
                   <p className="text-gray-500 mb-6 max-w-md">
                     {searchTerm ||
                     jobFilter !== "all" ||
-                    statusFilters.completed !== "all" ||
+                    statusFilter !== "all" ||
                     experienceFilter !== "all" ||
                     recruiterFilter !== "all" ||
                     roundFilter !== "all" ||
@@ -1809,8 +1754,8 @@ const handleStatusChange = (tab: string, value: string) => {
                   </p>
                 </CardContent>
               </Card>
-            )}
-          </TabsContent>
+            )} */}
+          {/* </TabsContent> */}
         </Tabs>
 
         <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>

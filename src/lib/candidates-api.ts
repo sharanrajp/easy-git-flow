@@ -19,10 +19,8 @@ export interface BackendCandidate {
   interviewDateTime?: string;
   waitTime?: string | null;
   waitTimeStarted?: string | null;
-  isCheckedIn?: boolean;  
-  location?: string;
-  notice_period?: string;
-  job_type?: string;
+  checked_in?: boolean;
+  wait_duration_minutes?: number;
 }
 
 export interface PanelistCandidate {
@@ -54,9 +52,7 @@ export interface PanelistCandidate {
     code_quality?: number;
     technical_knowledge?: number;
     panel_name?: string
-  }>;  
-  location?: string;
-  job_type?: string;
+  }>;
 }
 
 export interface OngoingInterview {
@@ -106,7 +102,7 @@ export async function addCandidate(candidateData: Partial<BackendCandidate>): Pr
   try {
     const formData = new FormData()
     formData.append("candidate_data", JSON.stringify(candidateData))
-    const response = await fetch(`${API_BASE_URL}/mapping/add-candidate`, {
+    const response = await fetch(`${API_BASE_URL}/candidates/add`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -155,8 +151,8 @@ export async function fetchAssignedCandidates(): Promise<BackendCandidate[]> {
   }
 }
 
-// Fetch completed candidates from backend
-export async function fetchCompletedCandidates(): Promise<BackendCandidate[]> {
+// Update candidate check-in status
+export async function updateCandidateCheckIn(candidateId: string, checked: boolean): Promise<void> {
   const token = getToken();
   
   if (!token) {
@@ -164,7 +160,34 @@ export async function fetchCompletedCandidates(): Promise<BackendCandidate[]> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/mapping/completed-candidates`, {
+    const response = await fetch(`${API_BASE_URL}/candidates/${candidateId}/checked-in`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ checked_in: checked }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update candidate check-in status: ${response.status} ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error('Error updating candidate check-in status:', error);
+    throw error;
+  }
+}
+
+// Fetch available panels
+export async function fetchAvailablePanels(round: string = 'r1'): Promise<any[]> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/mapping/available-panels?round=${round}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -173,13 +196,110 @@ export async function fetchCompletedCandidates(): Promise<BackendCandidate[]> {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch completed candidates: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to fetch available panels: ${response.status} ${response.statusText}`);
     }
 
-    const candidates: BackendCandidate[] = await response.json();
-    return candidates;
+    const panels = await response.json();
+    return panels;
   } catch (error) {
-    console.error('Error fetching completed candidates:', error);
+    console.error('Error fetching available panels:', error);
+    throw error;
+  }
+}
+
+// Assign candidate to panel
+export async function assignCandidateToPanel(candidateId: string, panelId: string, round: string = 'r1', assignedBy: string): Promise<void> {
+  console.log('assignCandidateToPanel called with:', { candidateId, panelId, round, assignedBy }) // Debug log
+  
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const requestBody = {
+      candidate_id: candidateId,
+      panel_id: panelId,
+      round: round,
+      assigned_by: assignedBy
+    }
+    
+    console.log('Request body for assignment:', requestBody) // Debug log
+    
+    const response = await fetch(`${API_BASE_URL}/mapping/assign`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    console.log('Assignment response status:', response.status) // Debug log
+    
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Assignment error response:', errorText) // Debug log
+      throw new Error(`Failed to assign candidate to panel: ${response.status} ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error('Error assigning candidate to panel:', error);
+    throw error;
+  }
+}
+
+// Undo assignment
+export async function undoAssignment(candidateId: string, panelId: string): Promise<void> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/mapping/undo-assignment/${candidateId}/${panelId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to undo assignment: ${response.status} ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error('Error undoing assignment:', error);
+    throw error;
+  }
+}
+
+// Fetch ongoing interviews from backend
+export async function fetchOngoingInterviews(): Promise<OngoingInterview[]> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/interviews/ongoing`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ongoing interviews: ${response.status} ${response.statusText}`);
+    }
+
+    const interviews: OngoingInterview[] = await response.json();
+    return interviews;
+  } catch (error) {
+    console.error('Error fetching ongoing interviews:', error);
     throw error;
   }
 }

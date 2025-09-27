@@ -233,6 +233,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
                 <SelectContent>
                   <SelectItem value="free">Available</SelectItem>
                   <SelectItem value="break">Break</SelectItem>
+                  <SelectItem value="unavailable">Unavailable</SelectItem>
                 </SelectContent>
               </Select>
             </div>
