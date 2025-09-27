@@ -1,11 +1,10 @@
 // @ts-nocheck
 
+import { useState, useEffect, useMemo } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DialogDescription } from "@/components/ui/dialog"
 import { AssignedCandidateDetails } from "@/components/candidates/assigned-candidate-details"
 import { UnassignedCandidateDetails } from "@/components/candidates/unassigned-candidate-details"
-
-import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -39,8 +38,11 @@ import {
   UserCheck,
   Award,
   ChevronDown,
+  List,
+  Download,
 } from "lucide-react"
-import { getMockCandidates, getMockVacancies, type Candidate } from "@/lib/mock-data"
+import { getMockCandidates, type Candidate, type Vacancy } from "@/lib/mock-data"
+import { fetchVacancies } from "@/lib/vacancy-api"
 import { CandidateForm } from "@/components/candidates/candidate-form"
 import { CandidateDetails } from "@/components/candidates/candidate-details"
 import { BulkActionsToolbar } from "@/components/candidates/bulk-actions-toolbar"
@@ -51,8 +53,14 @@ import { saveInterviewSession, type InterviewSession } from "@/lib/interview-dat
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, type BackendCandidate, fetchCompletedCandidates } from "@/lib/candidates-api"
+import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
+import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
+import { getInterviewSessions } from "@/lib/interview-data"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
+import { Switch } from "@/components/ui/switch"
 
 export default function CandidatesPage() {
   const { toast } = useToast()
@@ -68,6 +76,7 @@ export default function CandidatesPage() {
   });
   const [experienceFilter, setExperienceFilter] = useState("all")
   const [recruiterFilter, setRecruiterFilter] = useState("all")
+  const [roundFilter, setRoundFilter] = useState("all")
   const [interviewTypeFilter, setInterviewTypeFilter] = useState("all")
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
@@ -96,10 +105,41 @@ export default function CandidatesPage() {
   const [selectedUnassignedCandidate, setSelectedUnassignedCandidate] = useState<BackendCandidate | null>(null)
   const [isUnassignedDetailsOpen, setIsUnassignedDetailsOpen] = useState(false)
   const [completedCandidates, setCompletedCandidates] = useState<BackendCandidate[]>([])
+  const [vacancies, setVacancies] = useState<Vacancy[]>([])
+  const [loadingVacancies, setLoadingVacancies] = useState(false)
+  const [vacancyError, setVacancyError] = useState<string | null>(null)
+  
+  // Panel assignment states
+  const [availablePanels, setAvailablePanels] = useState<any[]>([])
+  const [loadingPanels, setLoadingPanels] = useState(false)
+  const [selectedCandidateForPanel, setSelectedCandidateForPanel] = useState<BackendCandidate | null>(null)
+  const [isPanelDialogOpen, setIsPanelDialogOpen] = useState(false)
+  const [checkingInCandidate, setCheckingInCandidate] = useState<string | null>(null)
+  const [assigningCandidate, setAssigningCandidate] = useState<string | null>(null)
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [assignmentRound, setAssignmentRound] = useState<string>("")
+  
+  // Ongoing interviews states
+  const [ongoingInterviews, setOngoingInterviews] = useState<OngoingInterview[]>([])
+  const [isInterviewsDialogOpen, setIsInterviewsDialogOpen] = useState(false)
+  const [loadingInterviews, setLoadingInterviews] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
-  // No stored user available since we removed localStorage
-  const currentUser = null
-  const vacancies = getMockVacancies()
+  // Helper function to get next round
+  const getNextRound = (currentRound: string): string => {
+    switch (currentRound?.toLowerCase()) {
+      case 'r1': return 'r2';
+      case 'r2': return 'r3';  
+      case 'r3': return 'final';
+      default: return 'r1';
+    }
+  }
+
+  useEffect(() => {
+    // Get current user on component mount
+    const user = getCurrentUser()
+    setCurrentUser(user)
+  }, [])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -114,6 +154,29 @@ export default function CandidatesPage() {
     }, 1000) // Update every second for dynamic timer
 
     return () => clearInterval(interval)
+  }, [])
+
+  // Load vacancies when page loads
+  useEffect(() => {
+    const loadVacancies = async () => {
+      setLoadingVacancies(true)
+      setVacancyError(null)
+      
+      try {
+        const vacancyData = await fetchVacancies()
+        // Filter only active vacancies
+        const activeVacancies = vacancyData.filter(vacancy => vacancy.status === "active")
+        setVacancies(activeVacancies)
+      } catch (error) {
+        console.error('Failed to load vacancies:', error)
+        setVacancyError('Failed to load vacancies')
+        setVacancies([])
+      } finally {
+        setLoadingVacancies(false)
+      }
+    }
+
+    loadVacancies()
   }, [])
 
   // Load both assigned and unassigned candidates in parallel when page loads
@@ -176,10 +239,152 @@ export default function CandidatesPage() {
     { value: "completed", label: "completed" }
   ],
 }
+  // Filter function for backend candidates
+  const filterBackendCandidates = (candidatesList: BackendCandidate[]) => {
+    return candidatesList.filter((candidate) => {
+      const matchesSearch =
+        (candidate.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (candidate.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (candidate.applied_position || "").toLowerCase().includes(searchTerm.toLowerCase())
+
+      const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
+      const matchesStatus = statusFilter === "all" || (candidate.final_status || "").toLowerCase() === statusFilter.toLowerCase()
+      const matchesExperience = experienceFilter === "all" || String(candidate.total_experience || "").includes(experienceFilter)
+      const matchesRecruiter =
+        recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
+      const matchesRound = roundFilter === "all" || (candidate.last_interview_round || "").toLowerCase() === roundFilter.toLowerCase()
+      
+      const matchesDate = (() => {
+        if (dateFilter === "all") return true
+        if (!candidate.appliedDate) return false
+        const appliedDate = new Date(candidate.appliedDate)
+        const now = new Date()
+        const daysDiff = Math.floor((now.getTime() - appliedDate.getTime()) / (1000 * 60 * 60 * 24))
+
+        switch (dateFilter) {
+          case "today":
+            return daysDiff === 0
+          case "week":
+            return daysDiff <= 7
+          case "month":
+            return daysDiff <= 30
+          default:
+            return true
+        }
+      })()
+
+      return (
+        matchesSearch &&
+        matchesJob &&
+        matchesStatus &&
+        matchesExperience &&
+        matchesRecruiter &&
+        matchesRound &&
+        matchesDate
+      )
+    })
+  }
+
+  const filteredCandidates = candidates.filter((candidate) => {
+    const matchesSearch =
+      (candidate.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (candidate.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (candidate.applied_position || "").toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
+    const matchesStatus = statusFilter === "all" || 
+      (candidate.final_status || candidate.status || "").toLowerCase() === statusFilter.toLowerCase()
+    const matchesExperience = experienceFilter === "all" || String(candidate.total_experience || "").includes(experienceFilter)
+    const matchesRecruiter =
+      recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
+    const matchesRound = roundFilter === "all" || 
+      (candidate.last_interview_round || candidate.currentRound || "").toLowerCase() === roundFilter.toLowerCase()
+    const matchesInterviewType = interviewTypeFilter === "all" || candidate.interview_type === interviewTypeFilter
+
+    const matchesDate = (() => {
+      if (dateFilter === "all") return true
+      const appliedDate = new Date(candidate.appliedDate)
+      const now = new Date()
+      const daysDiff = Math.floor((now.getTime() - appliedDate.getTime()) / (1000 * 60 * 60 * 24))
+
+      switch (dateFilter) {
+        case "today":
+          return daysDiff === 0
+        case "week":
+          return daysDiff <= 7
+        case "month":
+          return daysDiff <= 30
+        default:
+          return true
+      }
+    })()
+
+    return (
+      matchesSearch &&
+      matchesJob &&
+      matchesStatus &&
+      matchesExperience &&
+      matchesRecruiter &&
+      matchesRound &&
+      matchesInterviewType &&
+      matchesDate
+    )
+  })
+
+  // Apply filters to backend candidates with memoization
+  const filteredUnassignedCandidates = useMemo(() => {
+    return filterBackendCandidates(unassignedCandidates)
+  }, [unassignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
+  
+  const filteredAssignedCandidates = useMemo(() => {
+    return filterBackendCandidates(assignedCandidates)
+  }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
+
+  const statusOptions = [
+    { value: "selected", label: "Selected" },
+    { value: "rejected", label: "Rejected" },
+    { value: "on-hold", label: "On Hold" },
+    { value: "assigned", label: "Assigned" },
+    { value: "unassigned", label: "Unassigned" },
+  ]
+
+  const roundOptions = [
+    { value: "r1", label: "R1" },
+    { value: "r2", label: "R2" },
+    { value: "r3", label: "R3" },
+  ]
 
 const handleStatusChange = (tab: string, value: string) => {
   setStatusFilters((prev) => ({ ...prev, [tab]: value }));
 }
+
+  const handleExportCandidates = async () => {
+    try {
+      setIsExporting(true)
+      const blob = await exportCandidatesExcel()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'candidates.csv'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+      toast({
+        title: "Success",
+        description: "Candidates exported successfully",
+      })
+    } catch (error) {
+      console.error('Failed to export candidates:', error)
+      toast({
+        title: "Error",
+        description: "Failed to export candidates",
+        variant: "destructive",
+      })
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   const handleCreateCandidate = async (candidateData: Partial<Candidate>) => {
     try {
@@ -190,6 +395,8 @@ const handleStatusChange = (tab: string, value: string) => {
         phone_number: candidateData.phone_number,
         applied_position: candidateData.applied_position,
         total_experience: candidateData.total_experience,
+        notice_period: candidateData.notice_period,
+        interview_type: candidateData.interview_type,
         skill_set: candidateData.skill_set,
         source: candidateData.source,
         appliedDate: new Date().toISOString().split("T")[0],
@@ -415,6 +622,309 @@ const handleStatusChange = (tab: string, value: string) => {
     return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
   }
 
+  // Format wait time for backend candidates
+  const formatBackendWaitTime = (waitMinutes?: number) => {
+    if (!waitMinutes || waitMinutes === 0) return "0m"
+    if (waitMinutes < 60) return `${waitMinutes}m`
+    const hours = Math.floor(waitMinutes / 60)
+    const minutes = waitMinutes % 60
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
+  }
+
+  // Handle backend candidate check-in/check-out
+  const handleBackendCheckIn = async (candidate: BackendCandidate, checked: boolean) => {
+    setCheckingInCandidate(candidate._id)
+    try {
+      await updateCandidateCheckIn(candidate._id, checked)
+      
+      // Update local state
+      setUnassignedCandidates(prev => 
+        prev.map(c => 
+          c._id === candidate._id 
+            ? { ...c, checked_in: checked }
+            : c
+        )
+      )
+      
+      toast({
+        title: "Success",
+        description: `${candidate.name} has been ${checked ? 'checked in' : 'checked out'} successfully.`,
+      })
+    } catch (error) {
+      console.error('Error updating candidate check-in status:', error)
+      toast({
+        title: "Error",
+        description: `Failed to ${checked ? 'check in' : 'check out'} candidate. Please try again.`,
+        variant: "destructive",
+      })
+    } finally {
+      setCheckingInCandidate(null)
+    }
+  }
+
+  // Handle assign panel button click
+  const handleAssignPanel = async (candidate: BackendCandidate) => {
+    console.log('handleAssignPanel called for candidate:', candidate) // Debug log
+    setSelectedCandidateForPanel(candidate)
+    setLoadingPanels(true)
+    
+    try {
+      const panels = await fetchAvailablePanels()
+      console.log('Fetched panels in handleAssignPanel:', panels) // Debug log
+      setAvailablePanels(panels)
+      setIsPanelDialogOpen(true)
+    } catch (error) {
+      console.error('Error fetching available panels:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load available panels. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingPanels(false)
+    }
+  }
+
+  // Handle panel assignment
+  const handlePanelAssignment = async (panelId: string) => {
+    console.log('handlePanelAssignment called with panelId:', panelId) // Debug log
+    console.log('selectedCandidateForPanel:', selectedCandidateForPanel) // Debug log
+    console.log('currentUser:', currentUser) // Debug log
+    
+    if (!selectedCandidateForPanel) return
+    
+    if (!currentUser?._id) {
+      toast({
+        title: "Error",
+        description: "Unable to identify current user. Please refresh and try again.",
+        variant: "destructive",
+      })
+      return
+    }
+    
+    setAssigningCandidate(selectedCandidateForPanel._id)
+    try {
+      console.log('About to call assignCandidateToPanel with:', {
+        candidateId: selectedCandidateForPanel._id,
+        panelId,
+        round: 'r1',
+        assignedBy: currentUser._id
+      }) // Debug log
+      
+      await assignCandidateToPanel(selectedCandidateForPanel._id, panelId, 'r1', currentUser._id)
+      
+      // Refresh panels to show updated status
+      const updatedPanels = await fetchAvailablePanels()
+      setAvailablePanels(updatedPanels)
+      
+      // Refresh candidate lists to move candidate from unassigned to assigned
+      const [updatedUnassigned, updatedAssigned] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates()
+      ])
+      setUnassignedCandidates(updatedUnassigned)
+      setAssignedCandidates(updatedAssigned)
+      
+      toast({
+        title: "Success",
+        description: `${selectedCandidateForPanel.name} has been assigned to the panel successfully.`,
+      })
+    } catch (error) {
+      console.error('Error assigning candidate to panel:', error)
+      toast({
+        title: "Error",
+        description: "Failed to assign candidate to panel. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setAssigningCandidate(null)
+    }
+  }
+
+  // Handler for Map Assign button
+  const handleMapAssign = async (candidate: BackendCandidate) => {
+    const nextRound = getNextRound(candidate.last_interview_round || "")
+    setAssignmentRound(nextRound)
+    
+    try {
+      setLoadingPanels(true)
+      const panels = await fetchAvailablePanels(nextRound)
+      setAvailablePanels(panels)
+      setSelectedCandidateForPanel(candidate)
+      setIsPanelDialogOpen(true)
+    } catch (error) {
+      console.error('Error fetching panels for next round:', error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `Failed to fetch available panels for ${nextRound}. Please try again.`,
+      })
+    } finally {
+      setLoadingPanels(false)
+    }
+  }
+
+  // Updated panel assignment handler to support both initial and next-round assignments
+  const handlePanelAssignmentUpdated = async (panelId: string) => {
+    if (!selectedCandidateForPanel || !currentUser || assigningCandidate) return
+
+    setAssigningCandidate(panelId)
+    
+    try {
+      const round = assignmentRound || "r1"
+      await assignCandidateToPanel(
+        selectedCandidateForPanel._id, 
+        panelId, 
+        round, 
+        currentUser.name
+      )
+      
+      // Refresh both candidate lists and ongoing interviews
+      const [unassignedData, assignedData, interviewsData] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates(),
+        fetchOngoingInterviews()
+      ])
+      
+      setUnassignedCandidates(unassignedData)
+      setAssignedCandidates(assignedData)
+      setOngoingInterviews(interviewsData)
+      
+      // Close the dialog and reset states
+      setIsPanelDialogOpen(false)
+      setSelectedCandidateForPanel(null)
+      setAvailablePanels([])
+      setAssignmentRound("")
+      
+      const roundText = assignmentRound ? ` for ${round}` : ""
+      toast({
+        title: "Candidate Mapped Successfully",
+        description: `${selectedCandidateForPanel.name} has been mapped${roundText}.`,
+      })
+      
+    } catch (error) {
+      console.error('Error assigning candidate to panel:', error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to map candidate to panel. Please try again.",
+      })
+    } finally {
+      setAssigningCandidate(null)
+    }
+  }
+
+  // Handle undo assignment
+  const handleUndoAssignment = async (candidateId: string, panelId: string) => {
+    setAssigningCandidate(candidateId)
+    
+    try {
+      await undoAssignment(candidateId, panelId)
+      
+      // Refresh both candidate lists and ongoing interviews
+      const [unassignedData, assignedData, interviewsData] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates(), 
+        loadingInterviews ? Promise.resolve(ongoingInterviews) : fetchOngoingInterviews()
+      ])
+      
+      setUnassignedCandidates(unassignedData)
+      setAssignedCandidates(assignedData)
+      if (!loadingInterviews) {
+        setOngoingInterviews(interviewsData)
+      }
+
+      toast({
+        title: "Success",
+        description: "Assignment has been undone successfully.",
+      })
+    } catch (error) {
+      console.error('Error undoing assignment:', error)
+      toast({
+        title: "Error",
+        description: "Failed to undo assignment. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setAssigningCandidate(null)
+    }
+  }
+  
+  const handleViewInterviews = async () => {
+    setIsInterviewsDialogOpen(true)
+    setLoadingInterviews(true)
+    
+    try {
+      const interviewsData = await fetchOngoingInterviews()
+      setOngoingInterviews(interviewsData)
+    } catch (error) {
+      console.error('Error fetching ongoing interviews:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load ongoing interviews. Please try again.",
+        variant: "destructive",
+      })
+      setOngoingInterviews([])
+    } finally {
+      setLoadingInterviews(false)
+    }
+  }
+  
+  const handleUnassignInterview = async (candidateId: string, panelId: string) => {
+    try {
+      await undoAssignment(candidateId, panelId)
+      
+      // Refresh ongoing interviews list
+      const interviewsData = await fetchOngoingInterviews()
+      setOngoingInterviews(interviewsData)
+      
+      toast({
+        title: "Success", 
+        description: "Interview assignment has been removed successfully.",
+      })
+    } catch (error) {
+      console.error('Error unassigning interview:', error)
+      toast({
+        title: "Error",
+        description: "Failed to unassign interview. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleUndoAssignmentOld = async (candidateId: string, panelId: string) => {
+    setAssigningCandidate(candidateId)
+    try {
+      await undoAssignment(candidateId, panelId)
+      
+      // Refresh panels to show updated status
+      const updatedPanels = await fetchAvailablePanels()
+      setAvailablePanels(updatedPanels)
+      
+      // Refresh candidate lists to move candidate from assigned back to unassigned
+      const [updatedUnassigned, updatedAssigned] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates()
+      ])
+      setUnassignedCandidates(updatedUnassigned)
+      setAssignedCandidates(updatedAssigned)
+      
+      toast({
+        title: "Success",
+        description: "Assignment has been undone successfully.",
+      })
+    } catch (error) {
+      console.error('Error undoing assignment:', error)
+      toast({
+        title: "Error",
+        description: "Failed to undo assignment. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setAssigningCandidate(null)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "unassigned":
@@ -501,18 +1011,33 @@ const handleStatusChange = (tab: string, value: string) => {
     }
   }
 
-  const handleSelectAll = (candidateList: Candidate[], checked: boolean) => {
+  const handleSelectAll = (candidateList: any[], checked: boolean) => {
     if (checked) {
-      const newSelected = candidateList.map((c) => c.id)
+      const newSelected = candidateList.map((c) => c._id || c.id)
       setSelectedCandidates([...new Set([...selectedCandidates, ...newSelected])])
     } else {
-      const candidateIds = candidateList.map((c) => c.id)
+      const candidateIds = candidateList.map((c) => c._id || c.id)
       setSelectedCandidates(selectedCandidates.filter((id) => !candidateIds.includes(id)))
     }
   }
 
-  const handleBulkAction = (action: string, data?: any) => {
-    const selectedCandidateObjects = candidates.filter((c) => selectedCandidates.includes(c.id))
+  const handleBulkAction = async (action: string, data?: any) => {
+    // Get the correct candidate objects based on current tab
+    let selectedCandidateObjects: any[] = []
+    
+    switch (activeTab) {
+      case "unassigned":
+        selectedCandidateObjects = unassignedCandidates.filter((c) => selectedCandidates.includes(c._id))
+        break
+      case "assigned":
+        selectedCandidateObjects = assignedCandidates.filter((c) => selectedCandidates.includes(c._id))
+        break
+      case "completed":
+        selectedCandidateObjects = completedCandidates.filter((c) => selectedCandidates.includes(c.id))
+        break
+      default:
+        selectedCandidateObjects = candidates.filter((c) => selectedCandidates.includes(c.id))
+    }
 
     switch (action) {
       case "assign":
@@ -554,7 +1079,38 @@ const handleStatusChange = (tab: string, value: string) => {
         )
         break
       case "delete":
-        setCandidates(candidates.filter((c) => !selectedCandidates.includes(c.id)))
+        try {
+          // Call backend API to delete candidates using the correct ID field
+          const candidateIdsToDelete = selectedCandidateObjects.map((c) => c._id || c.id)
+          const deleteResult = await deleteCandidates(candidateIdsToDelete);
+          
+          // Update local state to remove deleted candidates
+          setCandidates(candidates.filter((c) => !selectedCandidates.includes(c.id)));
+          
+          // Refresh backend data
+          const [unassignedData, assignedData] = await Promise.all([
+            fetchUnassignedCandidates(),
+            fetchAssignedCandidates()
+          ]);
+          setUnassignedCandidates(unassignedData);
+          setAssignedCandidates(assignedData);
+          
+          // Clear selection
+          setSelectedCandidates([]);
+          
+          // Show success message
+          toast({
+            title: "Success",
+            description: `${deleteResult.deleted_count} candidate(s) deleted successfully`,
+          });
+        } catch (error) {
+          console.error('Failed to delete candidates:', error);
+          toast({
+            title: "Error",
+            description: "Failed to delete candidates",
+            variant: "destructive",
+          });
+        }
         break
       case "sendEmail":
         // In a real app, you'd open an email composer or send bulk emails
@@ -573,7 +1129,23 @@ const handleStatusChange = (tab: string, value: string) => {
   }
 
   const getSelectedCandidateObjects = () => {
-    return candidates.filter((c) => selectedCandidates.includes(c.id))
+    let currentCandidates: any[] = []
+    
+    switch (activeTab) {
+      case "unassigned":
+        currentCandidates = unassignedCandidates
+        break
+      case "assigned":
+        currentCandidates = assignedCandidates
+        break
+      case "completed":
+        currentCandidates = completedCandidates
+        break
+      default:
+        currentCandidates = candidates
+    }
+    
+    return currentCandidates.filter((c) => selectedCandidates.includes(c._id || c.id))
   }
 
   const handleChangeStatus = async (candidateId: string, newStatus: string) => {
@@ -623,10 +1195,27 @@ const handleStatusChange = (tab: string, value: string) => {
             <Button 
               variant="outline" 
               className="cursor-pointer bg-transparent"
+              onClick={handleViewInterviews}
+            >
+              <List className="h-4 w-4 mr-2" />
+              View List of Interviews
+            </Button>
+            <Button 
+              variant="outline" 
+              className="cursor-pointer bg-transparent"
               onClick={() => setIsBulkUploadOpen(true)}
             >
               <Upload className="h-4 w-4 mr-2" />
               Bulk Upload
+            </Button>
+            <Button 
+              variant="outline" 
+              className="cursor-pointer bg-transparent"
+              onClick={handleExportCandidates}
+              disabled={isExporting}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              {isExporting ? "Exporting..." : "Export"}
             </Button>
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <Button 
@@ -673,7 +1262,20 @@ const handleStatusChange = (tab: string, value: string) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  {statusOptions[activeTab].map((opt) => (
+                  {statusOptions?.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={roundFilter} onValueChange={setRoundFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by round" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Rounds</SelectItem>
+                  {roundOptions?.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {opt.label}
                     </SelectItem>
@@ -684,7 +1286,6 @@ const handleStatusChange = (tab: string, value: string) => {
                 <div className="ml-auto">
                   <BulkActionsToolbar
                     selectedCandidates={getSelectedCandidateObjects()}
-                    onClearSelection={clearSelection}
                     onBulkAction={handleBulkAction}
                   />
                 </div>
@@ -709,10 +1310,11 @@ const handleStatusChange = (tab: string, value: string) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Jobs</SelectItem>
-                <SelectItem value="frontend">Frontend Developer</SelectItem>
-                <SelectItem value="backend">Backend Developer</SelectItem>
-                <SelectItem value="product">Product Manager</SelectItem>
-                <SelectItem value="designer">UX Designer</SelectItem>
+                {vacancies.map((vacancy) => (
+                  <SelectItem key={vacancy.id} value={vacancy.position_title}>
+                    {vacancy.position_title}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select value={experienceFilter} onValueChange={setExperienceFilter}>
@@ -778,11 +1380,11 @@ const handleStatusChange = (tab: string, value: string) => {
                         <TableHead className="w-12">
                           <Checkbox
                             checked={
-                              unassignedCandidates.length > 0 &&
-                              unassignedCandidates.every((c) => selectedCandidates.includes(c._id))
+                              filteredUnassignedCandidates.length > 0 &&
+                              filteredUnassignedCandidates.every((c) => selectedCandidates.includes(c._id))
                             }
                             onCheckedChange={(checked) => {
-                              const candidateIds = unassignedCandidates.map((c) => c._id)
+                              const candidateIds = filteredUnassignedCandidates.map((c) => c._id)
                               if (checked) {
                                 setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
                               } else {
@@ -797,23 +1399,19 @@ const handleStatusChange = (tab: string, value: string) => {
                         <TableHead>Skills</TableHead>
                         <TableHead>Source</TableHead>
                         <TableHead>Applied Date</TableHead>
+                        <TableHead>Wait Time</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>Check-In</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {unassignedCandidates.filter((c) => statusFilters.unassigned === "all" || c.status === statusFilters.unassigned).map((candidate) => (
                         <TableRow key={candidate._id}>
-                          <TableCell>
-                            <Checkbox
+                          <TableCell> 
+                            <Checkbox 
                               checked={selectedCandidates.includes(candidate._id)}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setSelectedCandidates([...selectedCandidates, candidate._id])
-                                } else {
-                                  setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id))
-                                }
-                              }}
+                              onCheckedChange={(checked) => { if (checked) { setSelectedCandidates([...selectedCandidates, candidate._id]) } else { setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id)) } }} 
                             />
                           </TableCell>
                           <TableCell>
@@ -846,6 +1444,11 @@ const handleStatusChange = (tab: string, value: string) => {
                           <TableCell>{candidate.source || "Not specified"}</TableCell>
                           <TableCell>{new Date(candidate.appliedDate).toLocaleDateString()}</TableCell>
                           <TableCell>
+                            <span className={candidate.checked_in ? "font-medium text-orange-600" : "text-gray-500"}>
+                              {formatBackendWaitTime(candidate.wait_duration_minutes)}
+                            </span>
+                          </TableCell>
+                          <TableCell>
                             <Badge className="bg-gray-100 text-gray-800">
                               <div className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
@@ -854,34 +1457,17 @@ const handleStatusChange = (tab: string, value: string) => {
                             </Badge>
                           </TableCell>
                           <TableCell>
+                            <Switch
+                              checked={candidate.checked_in || false}
+                              disabled={checkingInCandidate === candidate._id}
+                              onCheckedChange={(checked) => handleBackendCheckIn(candidate, checked as boolean)}
+                            />
+                          </TableCell>
+                          <TableCell>
                             <div className="flex items-center space-x-2">
-                              <Button
-                                size="sm"
-                                className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
-                                onClick={() => {
-                                  // Convert backend candidate to frontend format for assignment
-                                  const frontendCandidate = {
-                                    id: candidate._id,
-                                    name: candidate.name,
-                                    email: candidate.email,
-                                    phone_number: candidate.phone_number,
-                                    applied_position: candidate.applied_position,
-                                    status: candidate.status,
-                                    total_experience: candidate.total_experience,
-                                    skill_set: candidate.skill_set,
-                                    source: candidate.source,
-                                    appliedDate: candidate.appliedDate,
-                                    recruiter: candidate.recruiter
-                                  }
-                                  handleScheduleInterview(frontendCandidate)
-                                }}
-                              >
-                                Assign Panel
-                              </Button>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="cursor-pointer"
                                 onClick={() => {
                                   setSelectedUnassignedCandidate(candidate)
                                   setIsUnassignedDetailsOpen(true)
@@ -948,11 +1534,11 @@ const handleStatusChange = (tab: string, value: string) => {
                         <TableHead className="w-12">
                           <Checkbox
                             checked={
-                              assignedCandidates.length > 0 &&
-                              assignedCandidates.every((c) => selectedCandidates.includes(c._id))
+                              filteredAssignedCandidates.length > 0 &&
+                              filteredAssignedCandidates.every((c) => selectedCandidates.includes(c._id))
                             }
                             onCheckedChange={(checked) => {
-                              const candidateIds = assignedCandidates.map((c) => c._id)
+                              const candidateIds = filteredAssignedCandidates.map((c) => c._id)
                               if (checked) {
                                 setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
                               } else {
@@ -1215,6 +1801,7 @@ const handleStatusChange = (tab: string, value: string) => {
                     statusFilters.completed !== "all" ||
                     experienceFilter !== "all" ||
                     recruiterFilter !== "all" ||
+                    roundFilter !== "all" ||
                     interviewTypeFilter !== "all" ||
                     dateFilter !== "all"
                       ? "No completed candidates match your current filters. Try adjusting your search criteria."
@@ -1250,8 +1837,8 @@ const handleStatusChange = (tab: string, value: string) => {
 
                   const filteredPanelists = jobPanelists.filter(
                     (panelist) =>
-                      panelist.name.toLowerCase().includes(panelistSearch.toLowerCase()) ||
-                      panelist.skill_set?.some((skill) => skill.toLowerCase().includes(panelistSearch.toLowerCase())),
+                      (panelist.name || "").toLowerCase().includes(panelistSearch.toLowerCase()) ||
+                      panelist.skill_set?.some((skill) => (skill || "").toLowerCase().includes(panelistSearch.toLowerCase())),
                   )
 
                   const availablePanelists = filteredPanelists.filter((p) => p.current_status === "free")
@@ -1475,8 +2062,8 @@ const handleStatusChange = (tab: string, value: string) => {
 
                   const filteredPanelists = availablePanelistsExcludingCurrent.filter(
                     (panelist) =>
-                      panelist.name.toLowerCase().includes(panelistSearch.toLowerCase()) ||
-                      panelist.skill_set?.some((skill) => skill.toLowerCase().includes(panelistSearch.toLowerCase())),
+                      (panelist.name || "").toLowerCase().includes(panelistSearch.toLowerCase()) ||
+                      panelist.skill_set?.some((skill) => (skill || "").toLowerCase().includes(panelistSearch.toLowerCase())),
                   )
 
                   const availablePanelists = filteredPanelists.filter((p) => p.current_status === "free")
@@ -1750,6 +2337,78 @@ const handleStatusChange = (tab: string, value: string) => {
           }}
         />
         
+        {/* Panel Assignment Dialog */}
+        <Dialog open={isPanelDialogOpen} onOpenChange={setIsPanelDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {assignmentRound ? `Assign Panel for ${assignmentRound.toUpperCase()} - ${selectedCandidateForPanel?.name}` : `Assign Panel - ${selectedCandidateForPanel?.name}`}
+              </DialogTitle>
+              <DialogDescription>
+                Select an available panel to assign this candidate for interview.
+                {assignmentRound && (
+                  <span className="block mt-1 font-medium text-blue-600">
+                    Next Round: {assignmentRound.toUpperCase()}
+                  </span>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            {loadingPanels ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-2 text-gray-600">Loading available panels...</span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {availablePanels.length > 0 ? (
+                  availablePanels.map((panel) => (
+                    <Card key={panel.id} className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900">Panel ID: {panel.id}</h3>
+                          <div className="mt-2 space-y-1">
+                            <div className="text-sm text-gray-600">
+                              <span className="font-medium">{panel.name || 'N/A'}</span> - {panel.email || 'N/A'}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          {panel.assigned_candidate ? (
+                            <div className="space-y-2">
+                              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                Assigned
+                              </Badge>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleUndoAssignment(panel.assigned_candidate.candidate_id, panel.id)}
+                                disabled={assigningCandidate === panel.assigned_candidate.candidate_id}
+                              >
+                                {assigningCandidate === panel.assigned_candidate.candidate_id ? "Processing..." : "Undo Assignment"}
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              onClick={() => handlePanelAssignmentUpdated(panel.id)}
+                              disabled={assigningCandidate === selectedCandidateForPanel?._id}
+                            >
+                              {assigningCandidate === selectedCandidateForPanel?._id ? "Assigning..." : "Map Candidate"}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No available panels found.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Unassigned Candidate Details Modal */}
         <Dialog open={isUnassignedDetailsOpen} onOpenChange={setIsUnassignedDetailsOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -1764,6 +2423,61 @@ const handleStatusChange = (tab: string, value: string) => {
                   setSelectedUnassignedCandidate(null)
                 }}
               />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Ongoing Interviews Dialog */}
+        <Dialog open={isInterviewsDialogOpen} onOpenChange={setIsInterviewsDialogOpen}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Ongoing Interviews</DialogTitle>
+              <DialogDescription>
+                View and manage all ongoing interviews
+              </DialogDescription>
+            </DialogHeader>
+            
+            {loadingInterviews ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-2 text-gray-600">Loading interviews...</span>
+              </div>
+            ) : ongoingInterviews.length > 0 ? (
+              <div className="max-h-96 overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Candidate Name</TableHead>
+                      <TableHead>Panel Member Name</TableHead>
+                      <TableHead>Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {ongoingInterviews.map((interview) => (
+                      <TableRow key={`${interview.candidate_id}-${interview.panel_id}`}>
+                        <TableCell className="font-medium">
+                          {interview.candidate_name}
+                        </TableCell>
+                        <TableCell>{interview.panel_name}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleUnassignInterview(interview.candidate_id, interview.panel_id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            Unassign
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                No ongoing interviews found
+              </div>
             )}
           </DialogContent>
         </Dialog>

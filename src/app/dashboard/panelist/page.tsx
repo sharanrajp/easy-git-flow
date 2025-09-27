@@ -311,92 +311,63 @@ export default function PanelistDashboard() {
 
   const getMetricsForPanelistType = () => {
     const now = new Date()
-    let filteredInterviews = completedInterviews
+    let filteredCandidates = candidates
 
     switch (performanceFilter) {
       case "today":
-        filteredInterviews = completedInterviews.filter((session) => {
-          const sessionDate = new Date(session.scheduledTime)
-          return sessionDate.toDateString() === now.toDateString()
+        filteredCandidates = candidates.filter((candidate) => {
+          if (!candidate.created_at) return false
+          const candidateDate = new Date(candidate.created_at)
+          return candidateDate.toDateString() === now.toDateString()
         })
         break
       case "yesterday":
         const yesterday = new Date(now)
         yesterday.setDate(yesterday.getDate() - 1)
-        filteredInterviews = completedInterviews.filter((session) => {
-          const sessionDate = new Date(session.scheduledTime)
-          return sessionDate.toDateString() === yesterday.toDateString()
+        filteredCandidates = candidates.filter((candidate) => {
+          if (!candidate.created_at) return false
+          const candidateDate = new Date(candidate.created_at)
+          return candidateDate.toDateString() === yesterday.toDateString()
         })
         break
       case "this-week":
         const weekStart = new Date(now)
         weekStart.setDate(now.getDate() - now.getDay())
-        filteredInterviews = completedInterviews.filter((session) => {
-          const sessionDate = new Date(session.scheduledTime)
-          return sessionDate >= weekStart
+        filteredCandidates = candidates.filter((candidate) => {
+          if (!candidate.created_at) return false
+          const candidateDate = new Date(candidate.created_at)
+          return candidateDate >= weekStart
         })
         break
       case "this-month":
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-        filteredInterviews = completedInterviews.filter((session) => {
-          const sessionDate = new Date(session.scheduledTime)
-          return sessionDate >= monthStart
+        filteredCandidates = candidates.filter((candidate) => {
+          if (!candidate.created_at) return false
+          const candidateDate = new Date(candidate.created_at)
+          return candidateDate >= monthStart
         })
         break
       default:
-        filteredInterviews = completedInterviews
+        filteredCandidates = candidates
     }
 
-    const avgDuration =
-      filteredInterviews.length > 0
-        ? Math.round(
-            filteredInterviews.reduce((sum, session) => sum + (session.elapsedTime || 60), 0) /
-              filteredInterviews.length,
-          )
-        : 0
+    // Calculate metrics from real candidate data
+    const completedInterviewsCount = filteredCandidates.filter(candidate => 
+      candidate.previous_rounds && candidate.previous_rounds.some((round: any) => round.feedback_submitted === true)
+    ).length
 
-    const isDummyData = filteredInterviews.length === 0 && currentUser?.name === "Mike Chen"
+    const selectedCount = filteredCandidates.filter(candidate =>
+      candidate.previous_rounds && candidate.previous_rounds.some((round: any) => round.status === "selected")
+    ).length
 
-    if (isDummyData) {
-      // Return dummy metrics based on filter period
-      switch (performanceFilter) {
-        case "today":
-          return {
-            completedInterviews: 2,
-            averageDuration: 45,
-            selectedCount: 1,
-          }
-        case "yesterday":
-          return {
-            completedInterviews: 3,
-            averageDuration: 52,
-            selectedCount: 2,
-          }
-        case "this-week":
-          return {
-            completedInterviews: 8,
-            averageDuration: 48,
-            selectedCount: 5,
-          }
-        case "this-month":
-          return {
-            completedInterviews: 15,
-            averageDuration: 50,
-            selectedCount: 9,
-          }
-        default:
-          return {
-            completedInterviews: 15,
-            averageDuration: 50,
-            selectedCount: 9,
-          }
-      }
-    }
+    const rejectedCount = filteredCandidates.filter(candidate =>
+      candidate.previous_rounds && candidate.previous_rounds.some((round: any) => round.status === "rejected")
+    ).length
 
     return {
-      completedInterviews: filteredInterviews.length,
-      averageDuration: avgDuration,
-      selectedCount: filteredInterviews.filter((session) => session.feedback?.decision === "selected").length,
+      completedInterviews: completedInterviewsCount,
+      selectedCount: selectedCount,
+      rejectedCount: rejectedCount,
     }
   }
 
@@ -499,7 +470,7 @@ export default function PanelistDashboard() {
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <MetricCard
               title="Completed Interviews"
               value={metrics.completedInterviews}
@@ -515,26 +486,12 @@ export default function PanelistDashboard() {
               color="green"
             />
             <MetricCard
-              title="Average Duration"
-              value={metrics.averageDuration > 0 ? `${metrics.averageDuration}m` : "0m"}
-              description="Per interview"
-              icon={Clock}
-              color="purple"
+              title="Rejected Candidates"
+              value={metrics.rejectedCount}
+              description="Candidates rejected"
+              icon={Timer}
+              color="red"
             />
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Current Status</p>
-                    <Badge className={`mt-2 ${panelistStatus.color}`}>{panelistStatus.status}</Badge>
-                    <p className="text-sm text-gray-500 mt-1">Real-time status</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-blue-50 text-blue-600">
-                    <Users className="h-6 w-6" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
         <div className="space-y-6">

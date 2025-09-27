@@ -59,6 +59,13 @@ export interface PanelistCandidate {
   job_type?: string;
 }
 
+export interface OngoingInterview {
+  candidate_id: string;
+  candidate_name: string;
+  panel_id: string;
+  panel_name: string;
+}
+
 // Fetch unassigned candidates from backend
 export async function fetchUnassignedCandidates(): Promise<BackendCandidate[]> {
   const token = getToken();
@@ -128,7 +135,7 @@ export async function fetchAssignedCandidates(): Promise<BackendCandidate[]> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/mapping/assigned-candidates`, {
+    const response = await fetch(`${API_BASE_URL}/candidates/get-assigned-candidates`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -178,6 +185,17 @@ export async function fetchCompletedCandidates(): Promise<BackendCandidate[]> {
 }
 
 // Fetch assigned candidates for panelist from backend
+// Export candidates to Excel/CSV
+export async function exportCandidatesExcel(): Promise<Blob> {
+  const response = await makeAuthenticatedRequest(`${API_BASE_URL}/export/candidates-excel`);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to export candidates: ${response.status} ${response.statusText}`);
+  }
+  
+  return response.blob();
+}
+
 export async function fetchPanelistAssignedCandidates(): Promise<PanelistCandidate[]> {
   const token = getToken();
   
@@ -208,6 +226,36 @@ export async function fetchPanelistAssignedCandidates(): Promise<PanelistCandida
     return candidates;
   } catch (error) {
     console.error('Error fetching panelist assigned candidates:', error);
+    throw error;
+  }
+}
+
+// Delete candidates by IDs (supports single or multiple deletions)
+export async function deleteCandidates(candidateIds: string[]): Promise<{ deleted_count: number; message: string }> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/candidates/candidates`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ candidate_ids: candidateIds }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete candidates: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error deleting candidates:', error);
     throw error;
   }
 }

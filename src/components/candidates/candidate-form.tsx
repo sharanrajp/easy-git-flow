@@ -9,7 +9,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { X, FileText } from "lucide-react"
 import type { Candidate } from "@/lib/mock-data"
-import { getMockVacancies } from "@/lib/mock-data"
 
 interface CandidateFormProps {
   candidate?: Candidate
@@ -26,52 +25,75 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
   const [formData, setFormData] = useState({
     name: candidate?.name || "",
     email: candidate?.email || "",
-    phone_number: candidate?.phone_number || "",
+    phone_number: candidate?.phone_number || "+91",
     location: candidate?.location || "",
     total_experience: candidate?.total_experience || "",
     notice_period: candidate?.notice_period || "",
     applied_position: candidate?.applied_position || "",
     interview_type: candidate?.interview_type || "Walk-In",
-    job_type: candidate?.job_type || "full_time",
     source: candidate?.source || "",
+    other_source: (candidate as any)?.other_source || "",
     current_ctc: candidate?.current_ctc || "",
     expected_ctc: candidate?.expected_ctc || "",
     negotiable: candidate?.negotiable || false,
     willing_to_relocate: candidate?.willing_to_relocate || false,
-    skill_set: candidate?.skill_set || [],
+    skill_set: (candidate as any)?.skill_set || (candidate as any)?.skills || [],
     resume: null as File | null,
     recruiter: candidate?.recruiter || "",
   })
 
   const [newSkill, setNewSkill] = useState("")
   const [initialFormData] = useState(formData)
-  const [vacancies, setVacancies] = useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("vacancies")
-      return stored ? JSON.parse(stored) : getMockVacancies()
-    }
-    return getMockVacancies()
-  })
+  const [vacancies, setVacancies] = useState<any[]>([])
+  const [loadingVacancies, setLoadingVacancies] = useState(false)
 
+  // Load vacancies from API
   useEffect(() => {
-    const updateVacancies = () => {
-      if (typeof window !== "undefined") {
-        const stored = localStorage.getItem("vacancies")
-        setVacancies(stored ? JSON.parse(stored) : getMockVacancies())
+    const loadVacancies = async () => {
+      setLoadingVacancies(true)
+      try {
+        const { fetchVacancies } = await import("../../lib/vacancy-api")
+        const vacancyData = await fetchVacancies()
+        // Filter only active vacancies
+        const activeVacancies = vacancyData.filter(vacancy => vacancy.status === "active")
+        setVacancies(activeVacancies)
+      } catch (error) {
+        console.error('Failed to load vacancies:', error)
+        setVacancies([])
+      } finally {
+        setLoadingVacancies(false)
       }
     }
 
-    window.addEventListener("storage", updateVacancies)
-    window.addEventListener("vacancyUpdated", updateVacancies)
+    loadVacancies()
+
+    const handleVacancyUpdate = () => {
+      loadVacancies()
+    }
+
+    window.addEventListener("vacancyUpdated", handleVacancyUpdate)
 
     return () => {
-      window.removeEventListener("storage", updateVacancies)
-      window.removeEventListener("vacancyUpdated", updateVacancies)
+      window.removeEventListener("vacancyUpdated", handleVacancyUpdate)
     }
   }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate phone number
+    const phoneRegex = /^\+91\d{10}$/
+    if (!phoneRegex.test(formData.phone_number)) {
+      alert("Phone number must start with +91 and have exactly 10 digits after it")
+      return
+    }
+    
+    // Validate required fields
+    if (!formData.name || !formData.email || !formData.applied_position) {
+      alert("Please fill in all required fields")
+      return
+    }
+    
     onSubmit(formData)
   }
 
@@ -88,7 +110,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
   const removeSkill = (skill: string) => {
     setFormData({
       ...formData,
-      skill_set: formData.skill_set.filter((s) => s !== skill),
+      skill_set: formData.skill_set.filter((s: string) => s !== skill),
     })
   }
 
@@ -136,14 +158,16 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
 
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="phone_number">Phone *</Label>
+          <Label htmlFor="phone_number">Phone Number *</Label>
           <Input
             id="phone_number"
             value={formData.phone_number}
             onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+            placeholder="+91XXXXXXXXXX"
             required
             className="w-full"
           />
+          <p className="text-xs text-muted-foreground">Must start with +91 and have exactly 10 digits after it</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="location">Location *</Label>
@@ -159,10 +183,10 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
 
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="total_experience">Experience *</Label>
+          <Label htmlFor="total_experience">Total Experience (years) *</Label>
           <Input
             id="total_experience"
-            placeholder="e.g., 3 years"
+            placeholder="e.g., 3.5"
             value={formData.total_experience}
             onChange={(e) => setFormData({ ...formData, total_experience: e.target.value })}
             required
@@ -173,7 +197,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           <Label htmlFor="notice_period">Notice Period *</Label>
           <Input
             id="notice_period"
-            placeholder="e.g., 2 weeks"
+            placeholder="e.g., 2 weeks, Immediate"
             value={formData.notice_period}
             onChange={(e) => setFormData({ ...formData, notice_period: e.target.value })}
             required
@@ -187,35 +211,63 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           <Label htmlFor="applied_position">Applied Position *</Label>
           <Select
             value={formData.applied_position}
-            onValueChange={(value) => setFormData({ ...formData, applied_position: value })}
+            onValueChange={(value) => {
+              const selectedVacancy = vacancies.find((v: any) => v.position_title === value)
+              setFormData({ 
+                ...formData, 
+                applied_position: value,
+                recruiter: selectedVacancy?.recruiter_name || "Auto-assigned"
+              })
+            }}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select position" />
+              <SelectValue placeholder={loadingVacancies ? "Loading positions..." : "Select position"} />
             </SelectTrigger>
             <SelectContent>
-              {vacancies.map((vacancy: any) => (
-                <SelectItem key={vacancy.id} value={vacancy.position_title}>
-                  {vacancy.position_title} (#{vacancy.id}) - {vacancy.location}
-                </SelectItem>
-              ))}
+              {loadingVacancies ? (
+                <SelectItem value="loading" disabled>Loading vacancies...</SelectItem>
+              ) : vacancies.length === 0 ? (
+                <SelectItem value="no-vacancies" disabled>No active vacancies available</SelectItem>
+              ) : (
+                vacancies.map((vacancy: any) => (
+                  <SelectItem key={vacancy.id} value={vacancy.position_title}>
+                    {vacancy.position_title} (#{vacancy.id}) - {vacancy.location || 'No location'}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="recruiter">Recruiter *</Label>
-          <Select value={formData.recruiter} onValueChange={(value) => setFormData({ ...formData, recruiter: value })}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select recruiter" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Current User">Current User</SelectItem>
-              {/* Add other recruiters if needed */}
-            </SelectContent>
-          </Select>
+          <Label htmlFor="recruiter">Recruiter Name</Label>
+          <Input
+            id="recruiter"
+            value={formData.recruiter}
+            readOnly
+            className="w-full bg-muted"
+            placeholder="Auto-filled based on position"
+          />
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <Label htmlFor="source">Source *</Label>
+          <Select 
+            value={formData.source} 
+            onValueChange={(value) => setFormData({ ...formData, source: value, other_source: value === 'other' ? formData.other_source : '' })}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select source" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="naukri">Naukri</SelectItem>
+              <SelectItem value="linkedin">LinkedIn</SelectItem>
+              <SelectItem value="referral">Referral</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="interview_type">Interview Type *</Label>
           <Select
@@ -226,40 +278,27 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Walk-In">Walk-in</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="job_type">Job Type *</Label>
-          <Select value={formData.job_type} onValueChange={(value: any) => setFormData({ ...formData, job_type: value })}>
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="full_time">Full Time</SelectItem>
-              <SelectItem value="contract">Contract</SelectItem>
-              <SelectItem value="internship">Internship</SelectItem>
-              <SelectItem value="contract_to_hire">Contract to Hire</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="source">Source *</Label>
-          <Select value={formData.source} onValueChange={(value) => setFormData({ ...formData, source: value })}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select source" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-              <SelectItem value="Company Website">Company Website</SelectItem>
-              <SelectItem value="Referral">Referral</SelectItem>
-              <SelectItem value="Job Board">Job Board</SelectItem>
-              <SelectItem value="Recruiter">Recruiter</SelectItem>
+              <SelectItem value="Walk-In">Walk-In</SelectItem>
+              <SelectItem value="Scheduled">Scheduled</SelectItem>
+              <SelectItem value="Virtual">Virtual</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
+
+      {formData.source === 'other' && (
+        <div className="space-y-2">
+          <Label htmlFor="other_source">Other Source *</Label>
+          <Input
+            id="other_source"
+            value={formData.other_source}
+            onChange={(e) => setFormData({ ...formData, other_source: e.target.value })}
+            placeholder="Please specify the source"
+            required
+            className="w-full"
+          />
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="resume">Upload Resume</Label>
@@ -285,20 +324,24 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
 
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="current_ctc">Current CTC</Label>
+          <Label htmlFor="current_ctc">Current CTC (₹)</Label>
           <Input
             id="current_ctc"
-            placeholder="e.g., $80,000"
+            type="number"
+            min="0"
+            placeholder="e.g., 800000"
             value={formData.current_ctc}
             onChange={(e) => setFormData({ ...formData, current_ctc: e.target.value })}
             className="w-full"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="expected_ctc">Expected CTC</Label>
+          <Label htmlFor="expected_ctc">Expected CTC (₹)</Label>
           <Input
             id="expected_ctc"
-            placeholder="e.g., $95,000"
+            type="number"
+            min="0"
+            placeholder="e.g., 950000"
             value={formData.expected_ctc}
             onChange={(e) => setFormData({ ...formData, expected_ctc: e.target.value })}
             className="w-full"
@@ -340,7 +383,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           </Button>
         </div>
         <div className="flex flex-wrap gap-2 mt-2">
-          {formData.skill_set.map((skill) => (
+          {formData.skill_set.map((skill: string) => (
             <Badge key={skill} variant="secondary" className="flex items-center gap-1">
               {skill}
               <X className="h-3 w-3 cursor-pointer" onClick={() => removeSkill(skill)} />

@@ -15,6 +15,11 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
   const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
 
+  const handleUserUpdate = (updatedUser: User) => {
+    setUser(updatedUser)
+    localStorage.setItem("ats_user", JSON.stringify(updatedUser))
+  }
+
   useEffect(() => {
     const token = getToken()
     const storedUser = getStoredUser()
@@ -62,7 +67,7 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
   if (user.role === "panelist") {
     return (
       <div className="flex flex-col min-h-screen bg-background">
-        <Header user={user} />
+        <Header user={user} onUserUpdate={handleUserUpdate} />
         <main className="flex-1 p-6">{children}</main>
       </div>
     )
@@ -71,7 +76,7 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
   return (
     <div className="flex h-screen bg-background">
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header user={user} />
+        <Header user={user} onUserUpdate={handleUserUpdate} />
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
     </div>

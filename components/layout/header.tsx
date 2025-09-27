@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -18,21 +19,43 @@ import { type User, logout, updateUserStatus } from "@/lib/auth"
 
 interface HeaderProps {
   user: User
+  onUserUpdate?: (user: User) => void
 }
 
-export function Header({ user }: HeaderProps) {
+export function Header({ user, onUserUpdate }: HeaderProps) {
   const navigate = useNavigate()
+  const { toast } = useToast()
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
   const handleLogout = () => {
     logout()
     navigate("/login")
   }
 
-  const handleStatusChange = (current_status: User["current_status"]) => {
-    if (user.role === "panelist" && current_status) {
-      updateUserStatus(user._id, current_status)
-      // Force a page refresh to update the UI
-      window.location.reload()
+  const handleStatusChange = async (current_status: User["current_status"]) => {
+    if (user.role === "panelist" && current_status && !isUpdatingStatus) {
+      try {
+        setIsUpdatingStatus(true)
+        await updateUserStatus(user._id, current_status)
+        
+        // Update the user object and notify parent component
+        const updatedUser = { ...user, current_status }
+        onUserUpdate?.(updatedUser)
+        
+        toast({
+          title: "Status Updated",
+          description: `Your status has been changed to ${current_status === "free" ? "available" : current_status}`,
+        })
+      } catch (error) {
+        console.error('Failed to update status:', error)
+        toast({
+          title: "Error",
+          description: "Failed to update status. Please try again.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsUpdatingStatus(false)
+      }
     }
   }
 
@@ -44,8 +67,6 @@ export function Header({ user }: HeaderProps) {
         return "bg-orange-100 text-orange-800"
       case "break":
         return "bg-gray-100 text-gray-800"
-      case "unavailable":
-        return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -92,22 +113,22 @@ export function Header({ user }: HeaderProps) {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => handleStatusChange("free")}>
+                  <DropdownMenuItem 
+                    onClick={() => handleStatusChange("free")}
+                    disabled={isUpdatingStatus}
+                  >
                     <div className="flex items-center">
                       <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                      Available
+                      Available {isUpdatingStatus && user.current_status !== "free" ? "(updating...)" : ""}
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleStatusChange("break")}>
+                  <DropdownMenuItem 
+                    onClick={() => handleStatusChange("break")}
+                    disabled={isUpdatingStatus}
+                  >
                     <div className="flex items-center">
                       <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
-                      Break
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleStatusChange("unavailable")}>
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                      Unavailable
+                      Break {isUpdatingStatus && user.current_status !== "break" ? "(updating...)" : ""}
                     </div>
                   </DropdownMenuItem>
                 </>

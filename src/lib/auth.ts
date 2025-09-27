@@ -6,7 +6,7 @@ export interface User {
   panelist_type?: "panel_member" | "manager"
   skill_set?: string[]
   available_rounds?: string[]
-  current_status?: "free" | "in_interview" | "break" | "unavailable"
+  current_status?: "free" | "in_interview" | "break"
 }
 
 // Token management functions
@@ -188,8 +188,34 @@ export async function deleteUser(userId: string): Promise<void> {
 }
 
 export async function updateUserStatus(userId: string, current_status: User["current_status"]): Promise<void> {
-  // TODO: Implement PATCH request to backend with authentication
-  throw new Error("Not implemented - should PATCH to backend with auth")
+  // Validate status before API call - only "free" or "break" allowed for API
+  const apiStatus = current_status === "free" ? "free" : "break"
+  
+  const response = await makeAuthenticatedRequest("/privileges/my-status", {
+    method: "PUT",
+    body: JSON.stringify({ status: apiStatus })
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to update status")
+  }
+
+  // Update local storage with the validated status
+  const currentUser = getStoredUser()
+  if (currentUser) {
+    currentUser.current_status = apiStatus
+    localStorage.setItem("ats_user", JSON.stringify(currentUser))
+  }
+}
+
+export async function fetchUserProfile(): Promise<User> {
+  const response = await makeAuthenticatedRequest("/user/me")
+  
+  if (!response.ok) {
+    throw new Error("Failed to fetch user profile")
+  }
+  
+  return response.json()
 }
 
 export function getCurrentUser(): User | null {

@@ -23,6 +23,9 @@ export interface BackendCandidate {
   location?: string;
   notice_period?: string;
   job_type?: string;
+  final_status?: string;
+  last_interview_round?: string;
+  panel_name?: string;
 }
 
 export interface PanelistCandidate {
@@ -128,7 +131,7 @@ export async function fetchAssignedCandidates(): Promise<BackendCandidate[]> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/mapping/assigned-candidates`, {
+    const response = await fetch(`${API_BASE_URL}/candidates/get-assigned-candidates`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

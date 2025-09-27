@@ -258,7 +258,6 @@ export default function UsersPage() {
                 <SelectItem value="free">Available</SelectItem>
                 <SelectItem value="in_interview">In Interview</SelectItem>
                 <SelectItem value="break">Break</SelectItem>
-                <SelectItem value="unavailable">Unavailable</SelectItem>
               </SelectContent>
             </Select>
             <div className="flex items-center space-x-2">
@@ -360,50 +359,7 @@ export default function UsersPage() {
                       </TableCell>
                       <TableCell>
                         {user.role === "panelist" && user.current_status ? (
-                          user.current_status === "in_interview" ? (
-                            <Badge className={getStatusColor(user.current_status)}>in_interview</Badge>
-                          ) : (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="cursor-pointer">
-                                  <Badge className={getStatusColor(user.current_status)}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                  onClick={() => handleStatusChange(user._id, "free")}
-                                  className="cursor-pointer"
-                                >
-                                  <div className="flex items-center">
-                                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                                    Available
-                                  </div>
-                                </DropdownMenuItem>
-                                {user.current_status === "free" && (
-                                  <>
-                                    <DropdownMenuItem
-                                      onClick={() => handleStatusChange(user._id, "break")}
-                                      className="cursor-pointer"
-                                    >
-                                      <div className="flex items-center">
-                                        <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
-                                        Break
-                                      </div>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => handleStatusChange(user._id, "unavailable")}
-                                      className="cursor-pointer"
-                                    >
-                                      <div className="flex items-center">
-                                        <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                                        Unavailable
-                                      </div>
-                                    </DropdownMenuItem>
-                                  </>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          )
+                          <Badge className={getStatusColor(user.current_status)}>{user.current_status === "free" ? "available" : user.current_status === "in_interview" ? "In Interview" : user.current_status}</Badge>
                         ) : (
                           <span className="text-gray-400">-</span>
                         )}
@@ -523,15 +479,6 @@ export default function UsersPage() {
                                       <div className="flex items-center">
                                         <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
                                         Break
-                                      </div>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => handleStatusChange(user._id, "unavailable")}
-                                      className="cursor-pointer"
-                                    >
-                                      <div className="flex items-center">
-                                        <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                                        Unavailable
                                       </div>
                                     </DropdownMenuItem>
                                   </>

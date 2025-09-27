@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useNavigate, Link, useLocation } from "react-router-dom"
+import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils"
 
 interface HeaderProps {
   user: User
+  onUserUpdate?: (user: User) => void
 }
 
 const navigationItems = {
@@ -43,10 +45,12 @@ const navigationItems = {
   ],
 }
 
-export function Header({ user }: HeaderProps) {
+export function Header({ user, onUserUpdate }: HeaderProps) {
   const navigate = useNavigate()
   const pathname = useLocation().pathname
   const [currentStatus, setCurrentStatus] = useState("free")
+  const { toast } = useToast()
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
   const items = navigationItems[user.role] || []
 
@@ -203,19 +207,19 @@ export function Header({ user }: HeaderProps) {
                   <DropdownMenuItem onClick={() => handleStatusChange(user._id, "free")} className="smooth-transition">
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-emerald-500 rounded-full mr-3 shadow-sm"></div>
-                      Available
+                      Available {isUpdatingStatus && user.current_status !== "free" ? "(updating...)" : ""}
                     </div>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleStatusChange(user._id, "break")} className="smooth-transition">
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-slate-500 rounded-full mr-3 shadow-sm"></div>
-                      Break
+                      Break {isUpdatingStatus && user.current_status !== "break" ? "(updating...)" : ""}
                     </div>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleStatusChange(user._id, "unavailable")} className="smooth-transition">
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-rose-500 rounded-full mr-3 shadow-sm"></div>
-                      Unavailable
+                      Unavailable {isUpdatingStatus && user.current_status !== "unavailable" ? "(updating...)" : ""}
                     </div>
                   </DropdownMenuItem>
                 </>
