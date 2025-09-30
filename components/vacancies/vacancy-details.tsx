@@ -159,7 +159,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {vacancy.skill_set.map((skill: string) => (
+                {vacancy.skills_required.map((skill: string) => (
                   <Badge key={skill} variant="secondary" className="bg-blue-50 text-blue-700">
                     {skill}
                   </Badge>

@@ -33,7 +33,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
     number_of_vacancies: vacancy?.number_of_vacancies || 1,
     experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
-    skill_set: vacancy?.skill_set || [],
+    skill_set: vacancy?.skills_required || [],
     jobDescription: vacancy?.jobDescription || "",
     about_position: vacancy?.about_position || "",
     driveDate: vacancy?.walkInDetails?.date || "",

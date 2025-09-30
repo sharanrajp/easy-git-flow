@@ -1348,10 +1348,10 @@ export default function CandidatesPage() {
         <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="space-y-4">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="unassigned">
-              Unassigned ({loadingUnassigned ? "..." : unassignedCandidates.length})
+              Unassigned ({loadingUnassigned ? "..." : filteredUnassignedCandidates.length})
             </TabsTrigger>
             <TabsTrigger value="assigned">
-              Assigned ({loadingAssigned ? "..." : assignedCandidates.length})
+              Assigned ({loadingAssigned ? "..." : filteredAssignedCandidates.length})
             </TabsTrigger>
             {/* <TabsTrigger value="completed">Completed ({completedCandidates.length})</TabsTrigger> */}
           </TabsList>
