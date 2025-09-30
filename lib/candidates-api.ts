@@ -23,6 +23,11 @@ export interface BackendCandidate {
   final_status?: string;
   last_interview_round?: string;
   panel_name?: string;
+  current_ctc?: string;
+  expected_ctc?: string;
+  notice_period?: string;
+  willing_to_relocate?: boolean;
+  negotiable_ctc?: boolean;
 }
 
 export interface PanelistCandidate {

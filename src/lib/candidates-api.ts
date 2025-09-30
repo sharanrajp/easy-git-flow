@@ -21,6 +21,11 @@ export interface BackendCandidate {
   waitTimeStarted?: string | null;
   checked_in?: boolean;
   wait_duration_minutes?: number;
+  current_ctc?: string;
+  expected_ctc?: string;
+  notice_period?: string;
+  willing_to_relocate?: boolean;
+  negotiable_ctc?: boolean;
 }
 
 export interface PanelistCandidate {
