@@ -28,7 +28,6 @@ export interface BackendCandidate {
   total_experience?: number
   skill_set?: string[]
   source?: string
-  appliedDate?: string
   created_at?: string
   recruiter?: string
   assignedPanelist?: string

@@ -147,7 +147,6 @@ export default function PanelistDashboard() {
       final_status: "assigned",
       total_experience: candidate.total_experience,
       source: undefined,
-      appliedDate: undefined,
       created_at: candidate.created_at,
       recruiter: undefined,
       assignedPanelist: undefined,

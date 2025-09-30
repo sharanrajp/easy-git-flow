@@ -259,7 +259,7 @@ export interface Candidate {
   willing_to_relocate?: boolean
   skill_set?: string[]
   resumeUrl?: string
-  appliedDate: string
+  created_at: string
   recruiter?: string
   status:
     | "unassigned"
@@ -317,7 +317,7 @@ export function getMockCandidates(): Candidate[] {
       negotiable: true,
       willing_to_relocate: false,
       skill_set: ["React", "TypeScript", "Next.js", "Node.js"],
-      appliedDate: "2024-01-10",
+      created_at: "2024-01-10",
       status: "unassigned",
       recruiter: "Sarah Johnson",
     waitTime: "2 days",
@@ -340,7 +340,7 @@ export function getMockCandidates(): Candidate[] {
       negotiable: false,
       willing_to_relocate: true,
       skill_set: ["Python", "Django", "PostgreSQL", "AWS"],
-      appliedDate: "2024-01-08",
+      created_at: "2024-01-08",
       status: "r1-scheduled",
       currentRound: "R1",
       assignedPanelist: "Mike Chen",
@@ -364,7 +364,7 @@ export function getMockCandidates(): Candidate[] {
       negotiable: true,
       willing_to_relocate: false,
       skill_set: ["Figma", "User Research", "Prototyping", "Design Systems"],
-      appliedDate: "2024-01-12",
+      created_at: "2024-01-12",
       status: "r2-completed",
       currentRound: "R2",
       assignedPanelist: "Lisa Wang",
@@ -388,7 +388,7 @@ export function getMockCandidates(): Candidate[] {
       negotiable: true,
       willing_to_relocate: false,
       skill_set: ["React", "JavaScript", "CSS", "HTML", "Git"],
-      appliedDate: "2024-01-07",
+      created_at: "2024-01-07",
       status: "rejected",
       currentRound: "R2",
       recruiter: "Sarah Johnson",
@@ -429,7 +429,7 @@ export function getMockCandidates(): Candidate[] {
       negotiable: false,
       willing_to_relocate: true,
       skill_set: ["Node.js", "Express", "MongoDB", "Redis", "GraphQL"],
-      appliedDate: "2024-01-06",
+      created_at: "2024-01-06",
       status: "selected",
       currentRound: "R3",
       recruiter: "Sarah Johnson",

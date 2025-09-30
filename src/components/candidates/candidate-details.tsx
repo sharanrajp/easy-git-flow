@@ -153,7 +153,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Applied Date</span>
-                  <p className="font-medium">{candidate.appliedDate}</p>
+                  <p className="font-medium">{candidate.created_at}</p>
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Recruiter</span>

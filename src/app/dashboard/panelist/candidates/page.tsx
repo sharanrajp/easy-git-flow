@@ -88,7 +88,6 @@ export default function PanelistCandidatesPage() {
       applied_position: candidate.applied_position || "N/A",
       final_status: "assigned",
       total_experience: candidate.total_experience,
-      appliedDate: undefined,
       created_at: candidate?.created_at,
       recruiter: undefined,
       assignedPanelist: undefined,

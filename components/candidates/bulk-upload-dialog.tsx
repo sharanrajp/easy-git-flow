@@ -173,7 +173,7 @@ Jane Smith,jane.smith@email.com,+1234567891,Backend Developer,2-4 years,"Node.js
         candidate.expected_ctc = candidate.expected_ctc || "Not specified"
         candidate.negotiable = candidate.negotiable || false
         candidate.willing_to_relocate = candidate.willing_to_relocate || false
-        candidate.appliedDate = new Date().toISOString().split("T")[0]
+        candidate.created_at = new Date().toISOString().split("T")[0]
         candidate.status = "unassigned"
 
         candidates.push(candidate)

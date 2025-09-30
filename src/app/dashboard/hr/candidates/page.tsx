@@ -228,10 +228,10 @@ export default function CandidatesPage() {
       
       const matchesDate = (() => {
         if (dateFilter === "all") return true
-        if (!candidate.appliedDate) return false
-        const appliedDate = new Date(candidate.appliedDate)
+        if (!candidate.created_at) return false
+        const created_at = new Date(candidate.created_at)
         const now = new Date()
-        const daysDiff = Math.floor((now.getTime() - appliedDate.getTime()) / (1000 * 60 * 60 * 24))
+        const daysDiff = Math.floor((now.getTime() - created_at.getTime()) / (1000 * 60 * 60 * 24))
 
         switch (dateFilter) {
           case "today":
@@ -275,9 +275,9 @@ export default function CandidatesPage() {
 
     const matchesDate = (() => {
       if (dateFilter === "all") return true
-      const appliedDate = new Date(candidate.appliedDate)
+      const created_at = new Date(candidate.created_at)
       const now = new Date()
-      const daysDiff = Math.floor((now.getTime() - appliedDate.getTime()) / (1000 * 60 * 60 * 24))
+      const daysDiff = Math.floor((now.getTime() - created_at.getTime()) / (1000 * 60 * 60 * 24))
 
       switch (dateFilter) {
         case "today":
@@ -382,7 +382,7 @@ export default function CandidatesPage() {
         interview_type: candidateData.interview_type,
         skill_set: candidateData.skill_set,
         source: candidateData.source,
-        appliedDate: new Date().toISOString().split("T")[0],
+        created_at: new Date().toISOString().split("T")[0],
         status: "unassigned",
         recruiter: currentUser?.name || "Unknown",
       };
@@ -401,7 +401,7 @@ export default function CandidatesPage() {
         total_experience: newBackendCandidate.total_experience || "",
         skill_set: newBackendCandidate.skill_set || [],
         source: newBackendCandidate.source || "",
-        appliedDate: newBackendCandidate.appliedDate,
+        created_at: newBackendCandidate.created_at,
         recruiter: newBackendCandidate.recruiter || "",
         assignedPanelist: newBackendCandidate.assignedPanelist,
         currentRound: newBackendCandidate.currentRound,
@@ -453,7 +453,7 @@ export default function CandidatesPage() {
     const newCandidates = uploadedCandidates.map((candidateData, index) => ({
       id: (Date.now() + index).toString(),
       ...candidateData,
-      appliedDate: new Date().toISOString().split("T")[0],
+      created_at: new Date().toISOString().split("T")[0],
       status: "unassigned" as const,
       waitTime: null,
       waitTimeStarted: null,
@@ -1396,7 +1396,7 @@ export default function CandidatesPage() {
                             </div>
                           </TableCell>
                           <TableCell>{candidate.source || "Not specified"}</TableCell>
-                          <TableCell>{new Date(candidate.appliedDate).toLocaleDateString()}</TableCell>
+                          <TableCell>{new Date(candidate.created_at).toLocaleDateString()}</TableCell>
                           <TableCell>
                             <span className={candidate.checked_in ? "font-medium text-orange-600" : "text-gray-500"}>
                               {formatBackendWaitTime(candidate.wait_duration_minutes)}
@@ -1691,7 +1691,7 @@ export default function CandidatesPage() {
                               <span className="text-gray-400 text-sm">N/A</span>
                             )}
                           </TableCell>
-                          <TableCell>{formatDate(candidate.appliedDate)}</TableCell>
+                          <TableCell>{formatDate(candidate.created_at)}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <Button
