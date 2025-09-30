@@ -57,6 +57,7 @@ import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
 import { SkillsDisplay } from "@/components/ui/skills-display"
+import { Pagination } from "@/components/ui/pagination"
 
 export default function CandidatesPage() {
   const { toast } = useToast()
@@ -121,6 +122,11 @@ export default function CandidatesPage() {
   const [isInterviewsDialogOpen, setIsInterviewsDialogOpen] = useState(false)
   const [loadingInterviews, setLoadingInterviews] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+
+  // Pagination states
+  const [unassignedCurrentPage, setUnassignedCurrentPage] = useState(1)
+  const [assignedCurrentPage, setAssignedCurrentPage] = useState(1)
+  const itemsPerPage = 20
 
   // Helper function to get next round
   const getNextRound = (currentRound: string): string => {
@@ -211,6 +217,12 @@ export default function CandidatesPage() {
       window.dispatchEvent(new CustomEvent("candidateUpdated"))
     }
   }, [candidates])
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setUnassignedCurrentPage(1)
+    setAssignedCurrentPage(1)
+  }, [searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter, interviewTypeFilter])
 
   // Filter function for backend candidates
   const filterBackendCandidates = (candidatesList: BackendCandidate[]) => {
@@ -312,6 +324,22 @@ export default function CandidatesPage() {
   const filteredAssignedCandidates = useMemo(() => {
     return filterBackendCandidates(assignedCandidates)
   }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
+
+  // Paginated data
+  const paginatedUnassignedCandidates = useMemo(() => {
+    const startIndex = (unassignedCurrentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredUnassignedCandidates.slice(startIndex, endIndex)
+  }, [filteredUnassignedCandidates, unassignedCurrentPage, itemsPerPage])
+
+  const paginatedAssignedCandidates = useMemo(() => {
+    const startIndex = (assignedCurrentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredAssignedCandidates.slice(startIndex, endIndex)
+  }, [filteredAssignedCandidates, assignedCurrentPage, itemsPerPage])
+
+  const unassignedTotalPages = Math.ceil(filteredUnassignedCandidates.length / itemsPerPage)
+  const assignedTotalPages = Math.ceil(filteredAssignedCandidates.length / itemsPerPage)
 
   const statusOptions = [
     { value: "selected", label: "Selected" },
@@ -1373,7 +1401,7 @@ export default function CandidatesPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredUnassignedCandidates.map((candidate) => (
+                      {paginatedUnassignedCandidates.map((candidate) => (
                         <TableRow key={candidate._id}>
                           <TableCell> 
                             <Checkbox 
@@ -1451,6 +1479,13 @@ export default function CandidatesPage() {
                       ))}
                     </TableBody>
                   </Table>
+                  <div className="p-4 border-t">
+                    <Pagination
+                      currentPage={unassignedCurrentPage}
+                      totalPages={unassignedTotalPages}
+                      onPageChange={setUnassignedCurrentPage}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             ) : (
@@ -1507,7 +1542,7 @@ export default function CandidatesPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredAssignedCandidates.map((candidate) => {
+                      {paginatedAssignedCandidates.map((candidate) => {
                         const getStatusColor = (status: string) => {
                           switch (status) {
                             case "selected":
@@ -1587,6 +1622,13 @@ export default function CandidatesPage() {
                       })}
                     </TableBody>
                   </Table>
+                  <div className="p-4 border-t">
+                    <Pagination
+                      currentPage={assignedCurrentPage}
+                      totalPages={assignedTotalPages}
+                      onPageChange={setAssignedCurrentPage}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             ) : (
