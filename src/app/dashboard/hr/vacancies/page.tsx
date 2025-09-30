@@ -10,7 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
@@ -643,20 +642,20 @@ export default function VacanciesPage() {
           </div>
         )}
 
-        <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-          <SheetContent className="w-full sm:max-w-4xl overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Vacancy Details</SheetTitle>
-            </SheetHeader>
+        <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+          <DialogContent className="w-[80%] max-w-none max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Vacancy Details</DialogTitle>
+            </DialogHeader>
             <div className="mt-6">{selectedVacancy && <VacancyDetails vacancy={selectedVacancy} />}</div>
-          </SheetContent>
-        </Sheet>
+          </DialogContent>
+        </Dialog>
 
-        <Sheet open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <SheetContent className="w-full sm:max-w-4xl overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Edit Vacancy</SheetTitle>
-            </SheetHeader>
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Vacancy</DialogTitle>
+            </DialogHeader>
             <div className="mt-6">
               {selectedVacancy && (
                 <Tabs defaultValue="details" className="w-full">
@@ -676,8 +675,8 @@ export default function VacanciesPage() {
                 </Tabs>
               )}
             </div>
-          </SheetContent>
-        </Sheet>
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={isPanelistEditOpen} onOpenChange={setIsPanelistEditOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
