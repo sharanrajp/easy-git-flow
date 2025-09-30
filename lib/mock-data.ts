@@ -98,7 +98,7 @@ export interface Vacancy {
   panelists?: string[]
   number_of_vacancies: number
   experienceRange: string
-  skill_set: string[]
+  skills_required: string[]
   jobDescription?: string
   interview_type: "Walk-In"
   walkInDetails?: {
@@ -132,7 +132,7 @@ export function getMockVacancies(): Vacancy[] {
       recruiter_name: "Sarah Johnson",
       number_of_vacancies: 2,
       experienceRange: "3-5 years",
-      skill_set: ["React", "TypeScript", "Next.js", "Tailwind CSS"],
+      skills_required: ["React", "TypeScript", "Next.js", "Tailwind CSS"],
       interview_type: "Walk-In",
       walkInDetails: {
         date: "2024-01-15",
@@ -158,7 +158,7 @@ export function getMockVacancies(): Vacancy[] {
       recruiter_name: "Sarah Johnson",
       number_of_vacancies: 1,
       experienceRange: "2-4 years",
-      skill_set: ["Node.js", "Python", "PostgreSQL", "AWS"],
+      skills_required: ["Node.js", "Python", "PostgreSQL", "AWS"],
       interview_type: "Walk-In",
       deadline: "2024-02-15",
       postedOn: "2024-01-05",
@@ -180,7 +180,7 @@ export function getMockVacancies(): Vacancy[] {
       recruiter_name: "Sarah Johnson",
       number_of_vacancies: 1,
       experienceRange: "5-7 years",
-      skill_set: ["Product Strategy", "Analytics", "User Research", "Agile"],
+      skills_required: ["Product Strategy", "Analytics", "User Research", "Agile"],
       interview_type: "Walk-In",
       deadline: "2024-01-20",
       postedOn: "2023-12-20",
@@ -202,7 +202,7 @@ export function getMockVacancies(): Vacancy[] {
       recruiter_name: "Sarah Johnson",
       number_of_vacancies: 1,
       experienceRange: "2-4 years",
-      skill_set: ["Figma", "User Research", "Prototyping", "Design Systems"],
+      skills_required: ["Figma", "User Research", "Prototyping", "Design Systems"],
       interview_type: "Walk-In",
       deadline: "2024-02-28",
       postedOn: "2024-01-10",
@@ -224,7 +224,7 @@ export function getMockVacancies(): Vacancy[] {
       recruiter_name: "Sarah Johnson",
       number_of_vacancies: 1,
       experienceRange: "4-6 years",
-      skill_set: ["Docker", "Kubernetes", "AWS", "CI/CD", "Terraform"],
+      skills_required: ["Docker", "Kubernetes", "AWS", "CI/CD", "Terraform"],
       interview_type: "Walk-In",
       walkInDetails: {
         date: "2024-01-25",

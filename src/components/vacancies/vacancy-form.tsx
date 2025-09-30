@@ -37,7 +37,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     number_of_vacancies: vacancy?.number_of_vacancies || 1,
     experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
-    skill_set: vacancy?.skill_set || [],
+    skills_required: vacancy?.skills_required || [],
     jobDescription: vacancy?.jobDescription || "",
     about_position: vacancy?.about_position || "",
     driveDate: vacancy?.walkInDetails?.date || "",
@@ -111,7 +111,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       number_of_vacancies: vacancy?.number_of_vacancies || 1,
       experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
       experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
-      skill_set: vacancy?.skill_set || [],
+      skills_required: vacancy?.skills_required || [],
       jobDescription: vacancy?.jobDescription || "",
       about_position: vacancy?.about_position || "",
       driveDate: vacancy?.walkInDetails?.date || "",
@@ -130,10 +130,10 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   }
 
   const addSkill = () => {
-    if (newSkill.trim() && !formData.skill_set.includes(newSkill.trim())) {
+    if (newSkill.trim() && !formData.skills_required.includes(newSkill.trim())) {
       setFormData({
         ...formData,
-        skill_set: [...formData.skill_set, newSkill.trim()],
+        skills_required: [...formData.skills_required, newSkill.trim()],
       })
       setNewSkill("")
     }
@@ -142,7 +142,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   const removeSkill = (skill: string) => {
     setFormData({
       ...formData,
-      skill_set: formData.skill_set.filter((s) => s !== skill),
+      skills_required: formData.skills_required.filter((s) => s !== skill),
     })
   }
 
@@ -393,7 +393,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   </Button>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.skill_set.map((skill) => (
+                  {formData.skills_required.map((skill) => (
                     <Badge key={skill} variant="secondary" className="flex items-center gap-1">
                       {skill}
                       <X className="h-3 w-3 cursor-pointer" onClick={() => removeSkill(skill)} />

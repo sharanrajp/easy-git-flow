@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, MapPin, Users, FileText, Download, Briefcase, Clock, Building2, Target, MapIcon } from "lucide-react"
 import type { Vacancy } from "@/lib/mock-data"
 import { getAllUsers } from "@/lib/auth"
+import { formatDate } from "@/src/lib/utils"
 
 interface VacancyDetailsProps {
   vacancy: Vacancy
@@ -96,8 +97,8 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
               <div>
                 <span className="text-sm text-gray-600 mb-2 block">Required Skills:</span>
                 <div className="flex flex-wrap gap-1">
-                  {Array.isArray(vacancy.skill_set) && vacancy.skill_set.length > 0 ? (
-                    vacancy.skill_set.slice(0, 6).map((skill) => (
+                  {Array.isArray(vacancy.skills_required) && vacancy.skills_required.length > 0 ? (
+                    vacancy.skills_required.slice(0, 6).map((skill) => (
                       <Badge key={skill} variant="secondary" className="px-2 py-1 text-xs">
                         {skill}
                       </Badge>
@@ -105,9 +106,9 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                   ) : (
                     <Badge variant="secondary" className="px-2 py-1 text-xs">No skills</Badge>
                   )}
-                  {Array.isArray(vacancy.skill_set) && vacancy.skill_set.length > 6 && (
+                  {Array.isArray(vacancy.skills_required) && vacancy.skills_required.length > 6 && (
                     <Badge variant="outline" className="px-2 py-1 text-xs">
-                      +{vacancy.skill_set.length - 6} more
+                      +{vacancy.skills_required.length - 6} more
                     </Badge>
                   )}
                 </div>
@@ -149,7 +150,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Posted On</label>
-                <p className="text-sm font-semibold text-gray-900 mt-1">{vacancy.postedOn}</p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">{formatDate(vacancy.postedOn)}</p>
               </div>
               <div>
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Job ID</label>
