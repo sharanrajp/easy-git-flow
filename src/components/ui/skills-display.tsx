@@ -32,7 +32,7 @@ export function SkillsDisplay({ skills, maxVisible = 2, className = "" }: Skills
           <TooltipTrigger asChild>
             <Badge 
               variant="outline" 
-              className="text-xs cursor-help hover:bg-accent transition-colors"
+              className="text-xs hover:bg-accent transition-colors"
             >
               +{hiddenSkills.length}
             </Badge>

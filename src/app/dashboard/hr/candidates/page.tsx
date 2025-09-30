@@ -385,7 +385,6 @@ export default function CandidatesPage() {
         skill_set: candidateData.skill_set,
         current_ctc: candidateData.current_ctc || "",
         expected_ctc: candidateData.expected_ctc || "",
-        notice_period: candidateData.notice_period || "",
         willing_to_relocate: candidateData.willing_to_relocate || false,
         negotiable_ctc: candidateData.negotiable_ctc || false,
         source: candidateData.source,
