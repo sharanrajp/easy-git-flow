@@ -56,6 +56,7 @@ import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updat
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
+import { SkillsDisplay } from "@/components/ui/skills-display"
 
 export default function CandidatesPage() {
   const { toast } = useToast()
@@ -1391,22 +1392,7 @@ export default function CandidatesPage() {
                           <TableCell>{candidate.applied_position}</TableCell>
                           <TableCell>{candidate.total_experience || "N/A"}</TableCell>
                           <TableCell>
-                            <div className="flex flex-wrap gap-1">
-                              {Array.isArray(candidate.skill_set) && candidate.skill_set.length > 0 ? (
-                                candidate.skill_set.slice(0, 2).map((skill: string, skillIndex: number) => (
-                                  <Badge key={skillIndex} variant="secondary" className="text-xs">
-                                    {skill}
-                                  </Badge>
-                                ))
-                              ) : (
-                                <Badge variant="secondary" className="text-xs">No skill</Badge>
-                              )}
-                              {candidate.skill_set && candidate.skill_set.length > 2 && (
-                                <Badge variant="outline" className="text-xs">
-                                  +{candidate.skill_set.length - 2}
-                                </Badge>
-                              )}
-                            </div>
+                            <SkillsDisplay skills={candidate.skill_set || []} />
                           </TableCell>
                           <TableCell>{candidate.source || "Not specified"}</TableCell>
                           <TableCell>{new Date(candidate.created_at).toLocaleDateString()}</TableCell>
