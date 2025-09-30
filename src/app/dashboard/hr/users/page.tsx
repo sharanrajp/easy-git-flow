@@ -258,7 +258,6 @@ export default function UsersPage() {
                 <SelectItem value="free">Available</SelectItem>
                 <SelectItem value="in_interview">In Interview</SelectItem>
                 <SelectItem value="break">Break</SelectItem>
-                <SelectItem value="unavailable">Unavailable</SelectItem>
               </SelectContent>
             </Select>
             <div className="flex items-center space-x-2">
@@ -390,15 +389,6 @@ export default function UsersPage() {
                                         Break
                                       </div>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => handleStatusChange(user._id, "unavailable")}
-                                      className="cursor-pointer"
-                                    >
-                                      <div className="flex items-center">
-                                        <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                                        Unavailable
-                                      </div>
-                                    </DropdownMenuItem>
                                   </>
                                 )}
                               </DropdownMenuContent>
@@ -523,15 +513,6 @@ export default function UsersPage() {
                                       <div className="flex items-center">
                                         <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
                                         Break
-                                      </div>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => handleStatusChange(user._id, "unavailable")}
-                                      className="cursor-pointer"
-                                    >
-                                      <div className="flex items-center">
-                                        <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                                        Unavailable
                                       </div>
                                     </DropdownMenuItem>
                                   </>
