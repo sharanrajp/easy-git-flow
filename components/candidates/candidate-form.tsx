@@ -254,6 +254,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+              <SelectItem value="Naukri">Naukri</SelectItem>
               <SelectItem value="Company Website">Company Website</SelectItem>
               <SelectItem value="Referral">Referral</SelectItem>
               <SelectItem value="Job Board">Job Board</SelectItem>

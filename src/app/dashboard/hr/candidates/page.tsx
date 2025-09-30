@@ -1336,6 +1336,7 @@ export default function CandidatesPage() {
               <SelectContent>
                 <SelectItem value="all">All Sources</SelectItem>
                 <SelectItem value="linkedin">LinkedIn</SelectItem>
+                <SelectItem value="naukri">Naukri</SelectItem>
                 <SelectItem value="website">Website</SelectItem>
                 <SelectItem value="referral">Referral</SelectItem>
                 <SelectItem value="recruiter">Recruiter</SelectItem>
