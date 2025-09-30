@@ -136,8 +136,8 @@ export default function VacanciesPage() {
 
   const filteredVacancies = vacancies.filter((vacancy) => {
     const matchesSearch =
-      vacancy.position_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vacancy.location.toLowerCase().includes(searchTerm.toLowerCase())
+      (vacancy.position_title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (vacancy.location?.toLowerCase() || "").includes(searchTerm.toLowerCase())
 
     const matchesStatus = statusFilter === "all" || vacancy.status === statusFilter
     const matchesPriority = priorityFilter === "all" || vacancy.priority === priorityFilter
