@@ -120,11 +120,6 @@ export default function PanelistDashboard() {
   const scheduledInterviews = filteredCandidates.filter(candidate => !hasFeedbackCompleted(candidate))
   const completedCandidateInterviews = filteredCandidates.filter(candidate => hasFeedbackCompleted(candidate))
 
-  const formatPhoneNumber = (phone_number: string | undefined) => {
-    if (!phone_number) return "N/A"
-    return String(phone_number) // Convert to string to avoid scientific notation
-  }
-
   const getPreviousRoundsText = (rounds: PanelistCandidate['previous_rounds']) => {
     if (!rounds || rounds.length === 0) return "No Previous Rounds"
     
@@ -539,7 +534,6 @@ export default function PanelistDashboard() {
                           <TableHead>Reg. No.</TableHead>
                           <TableHead>Name</TableHead>
                           <TableHead>Email</TableHead>
-                          <TableHead>Phone</TableHead>
                           <TableHead>Skill Set</TableHead>
                           <TableHead>Interview Round</TableHead>
                           <TableHead>Resume</TableHead>
@@ -561,7 +555,6 @@ export default function PanelistDashboard() {
                               </TableCell>
                               <TableCell>{candidate.name}</TableCell>
                               <TableCell>{candidate.email}</TableCell>
-                              <TableCell>{formatPhoneNumber(candidate.phone_number)}</TableCell>
                               <TableCell>
                                 <div className="max-w-xs truncate" title={Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}>
                                   {Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}
@@ -653,7 +646,6 @@ export default function PanelistDashboard() {
                               </TableCell>
                               <TableCell>{candidate.name}</TableCell>
                               <TableCell>{candidate.email}</TableCell>
-                              <TableCell>{formatPhoneNumber(candidate.phone_number)}</TableCell>
                               <TableCell>
                                 <div className="max-w-xs truncate" title={Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}>
                                   {Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}
@@ -717,7 +709,6 @@ export default function PanelistDashboard() {
                 
                 <div className="space-y-2">
                   <p><span className="font-medium">Email:</span> {selectedCandidate.email}</p>
-                  <p><span className="font-medium">Phone:</span> {formatPhoneNumber(selectedCandidate.phone_number)}</p>
                   <p><span className="font-medium">Skills:</span> {Array.isArray(selectedCandidate.skill_set) ? selectedCandidate.skill_set.join(", ") : selectedCandidate.skill_set}</p>
                   <p><span className="font-medium">Current Round:</span> {selectedCandidate.last_interview_round || "N/A"}</p>
                 </div>
