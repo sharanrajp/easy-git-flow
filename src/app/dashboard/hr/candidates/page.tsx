@@ -415,6 +415,13 @@ export default function CandidatesPage() {
         waitTime: newBackendCandidate.waitTime,
         waitTimeStarted: newBackendCandidate.waitTimeStarted,
         isCheckedIn: newBackendCandidate.isCheckedIn || false,
+        location: newBackendCandidate.location || "",
+        notice_period: newBackendCandidate.notice_period || "",
+        interview_type: newBackendCandidate.interview_type || "",
+        current_ctc: newBackendCandidate.current_ctc || "",
+        expected_ctc: newBackendCandidate.expected_ctc || "",
+        willing_to_relocate: newBackendCandidate.willing_to_relocate || false,
+        negotiable: newBackendCandidate.negotiable || false,
       };
 
       // Update local state with new candidate

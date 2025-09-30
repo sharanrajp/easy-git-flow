@@ -25,7 +25,7 @@ export interface BackendCandidate {
   expected_ctc?: string;
   notice_period?: string;
   willing_to_relocate?: boolean;
-  negotiable_ctc?: boolean;
+  negotiable?: boolean;
 }
 
 export interface PanelistCandidate {
