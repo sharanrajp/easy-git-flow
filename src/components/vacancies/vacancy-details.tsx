@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, MapPin, Users, FileText, Download, Briefcase, Clock, Building2, Target, MapIcon } from "lucide-react"
 import type { Vacancy } from "@/lib/mock-data"
 import { getAllUsers } from "@/lib/auth"
-import { formatDate } from "@/src/lib/utils"
+import { formatDate } from "@/lib/utils"
 
 interface VacancyDetailsProps {
   vacancy: Vacancy
