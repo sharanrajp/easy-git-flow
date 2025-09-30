@@ -322,9 +322,9 @@ export default function CandidatesPage() {
   ]
 
   const roundOptions = [
-    { value: "r1", label: "R1" },
-    { value: "r2", label: "R2" },
-    { value: "r3", label: "R3" },
+    { value: "r1", label: "r1" },
+    { value: "r2", label: "r2" },
+    { value: "r3", label: "r3" },
   ]
 
   const localUnassignedCandidates = filteredCandidates.filter((c) => c.status === "unassigned")
@@ -505,7 +505,7 @@ export default function CandidatesPage() {
       panelistId,
       panelistName,
       position: candidateToSchedule.applied_position,
-      round: candidateToSchedule.currentRound || "R1",
+      round: candidateToSchedule.currentRound || "r1",
       scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       status: "scheduled",
     }
@@ -519,7 +519,7 @@ export default function CandidatesPage() {
             ...c,
             status: "r1-scheduled" as const,
             assignedPanelist: panelistName,
-            currentRound: "R1" as const,
+            currentRound: "r1" as const,
             interviewDateTime: interviewSession.scheduledTime,
           }
         : c,
@@ -980,17 +980,17 @@ export default function CandidatesPage() {
       case "assigned":
         return "Assigned"
       case "r1-scheduled":
-        return "R1 Scheduled"
+        return "r1 Scheduled"
       case "r1-in-progress":
-        return "R1 In Progress"
+        return "r1 In Progress"
       case "r2-scheduled":
-        return "Schedule R2"
+        return "Schedule r2"
       case "r2-in-progress":
-        return "R2 In Progress"
+        return "r2 In Progress"
       case "r3-scheduled":
-        return "Schedule R3"
+        return "Schedule r3"
       case "r3-in-progress":
-        return "R3 In Progress"
+        return "r3 In Progress"
       case "completed":
         return "Completed"
       case "hired":

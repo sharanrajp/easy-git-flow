@@ -47,17 +47,17 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
       case "unassigned":
         return "Unassigned"
       case "r1-scheduled":
-        return "R1 Scheduled"
+        return "r1 Scheduled"
       case "r1-completed":
-        return "R1 Completed"
+        return "r1 Completed"
       case "r2-scheduled":
-        return "R2 Scheduled"
+        return "r2 Scheduled"
       case "r2-completed":
-        return "R2 Completed"
+        return "r2 Completed"
       case "r3-scheduled":
-        return "R3 Scheduled"
+        return "r3 Scheduled"
       case "r3-completed":
-        return "R3 Completed"
+        return "r3 Completed"
       case "selected":
         return "Selected"
       case "rejected":
@@ -315,7 +315,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
                 <div className="space-y-6">
                   {candidate.feedback
                     .sort((a, b) => {
-                      const roundOrder = { R3: 3, R2: 2, R1: 1 }
+                      const roundOrder = { r3: 3, r2: 2, r1: 1 }
                       return roundOrder[b.round] - roundOrder[a.round]
                     })
                     .map((feedback, index) => (
@@ -336,9 +336,9 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
                               </p>
                               <p className="text-sm text-blue-600 font-medium">
                                 Interview Duration:{" "}
-                                {feedback.round === "R3"
+                                {feedback.round === "r3"
                                   ? "45m 30s"
-                                  : feedback.round === "R2"
+                                  : feedback.round === "r2"
                                     ? "35m 15s"
                                     : interviewSession?.elapsedTime
                                       ? `${Math.floor(interviewSession.elapsedTime / 60)}m ${interviewSession.elapsedTime % 60}s`
@@ -379,7 +379,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
                         <div>
                           <span className="text-sm text-gray-500">Overall Decision</span>
                           <p className="font-medium mt-1">
-                            {feedback.round === "R3" && candidate.status === "selected"
+                            {feedback.round === "r3" && candidate.status === "selected"
                               ? "Selected"
                               : feedback.decision === "selected"
                                 ? "Move to Next Round"

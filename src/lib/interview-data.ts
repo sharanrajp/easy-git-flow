@@ -102,11 +102,11 @@ export function updateCandidateStatusToInProgress(candidateId: string, round: st
     const candidate = candidates[candidateIndex]
 
     // Update status to show interview in progress
-    if (round === "R1") {
+    if (round === "r1") {
       candidate.status = "r1-in-progress"
-    } else if (round === "R2") {
+    } else if (round === "r2") {
       candidate.status = "r2-in-progress"
-    } else if (round === "R3") {
+    } else if (round === "r3") {
       candidate.status = "r3-in-progress"
     }
 
@@ -155,13 +155,13 @@ export function updateCandidateStatusAfterInterview(
 
     if (feedback.decision === "selected") {
       // Move to next round or complete if final round
-      if (currentRound === "R1") {
+      if (currentRound === "r1") {
         candidate.status = "r2-scheduled"
-        candidate.currentRound = "R2"
-      } else if (currentRound === "R2") {
+        candidate.currentRound = "r2"
+      } else if (currentRound === "r2") {
         candidate.status = "r3-scheduled"
-        candidate.currentRound = "R3"
-      } else if (currentRound === "R3") {
+        candidate.currentRound = "r3"
+      } else if (currentRound === "r3") {
         candidate.status = "hired"
         candidate.currentRound = "Completed"
       }

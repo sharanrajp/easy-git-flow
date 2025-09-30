@@ -220,7 +220,7 @@ export function getManagerCandidates() {
       daysPending: 3,
       feedback: [
         {
-          round: "R1",
+          round: "r1",
           panelist: "Mike Chen",
           rating: 4,
           notes: "Strong technical background and good communication skills.",
@@ -228,7 +228,7 @@ export function getManagerCandidates() {
           submittedAt: "2024-01-12T14:30:00",
         },
         {
-          round: "R2",
+          round: "r2",
           panelist: "Alex Rodriguez",
           rating: 5,
           notes: "Excellent product thinking and leadership total_experience.",
@@ -261,7 +261,7 @@ export function getManagerCandidates() {
       daysPending: 5,
       feedback: [
         {
-          round: "R1",
+          round: "r1",
           panelist: "Lisa Wang",
           rating: 5,
           notes: "Outstanding technical skills and problem-solving ability.",
@@ -269,7 +269,7 @@ export function getManagerCandidates() {
           submittedAt: "2024-01-09T11:00:00",
         },
         {
-          round: "R2",
+          round: "r2",
           panelist: "Mike Chen",
           rating: 4,
           notes: "Great technical depth and team collaboration skills.",
@@ -302,7 +302,7 @@ export function getManagerCandidates() {
       daysPending: 0,
       feedback: [
         {
-          round: "R1",
+          round: "r1",
           panelist: "Alex Rodriguez",
           rating: 4,
           notes: "Solid DevOps total_experience with strong automation skills.",
@@ -310,7 +310,7 @@ export function getManagerCandidates() {
           submittedAt: "2024-01-13T10:00:00",
         },
         {
-          round: "R2",
+          round: "r2",
           panelist: "David Kim",
           rating: 5,
           notes: "Excellent infrastructure knowledge and scalability mindset.",
@@ -343,7 +343,7 @@ export function getManagerCandidates() {
       daysPending: 0,
       feedback: [
         {
-          round: "R1",
+          round: "r1",
           panelist: "Lisa Wang",
           rating: 4,
           notes: "Creative design approach with good user empathy.",
@@ -351,7 +351,7 @@ export function getManagerCandidates() {
           submittedAt: "2024-01-10T16:00:00",
         },
         {
-          round: "R2",
+          round: "r2",
           panelist: "Mike Chen",
           rating: 5,
           notes: "Exceptional design thinking and portfolio quality.",

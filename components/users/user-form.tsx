@@ -52,7 +52,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
       available_rounds:
         formData.role === "panelist"
           ? formData.panelist_type === "manager"
-            ? ["R1", "R2", "R3"]
+            ? ["r1", "r2", "r3"]
             : formData.available_rounds
           : undefined,
       // Only include current_status for panelists
@@ -149,7 +149,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
               setFormData({
                 ...formData,
                 panelist_type: value,
-                available_rounds: value === "manager" ? ["R1", "R2", "R3"] : formData.available_rounds,
+                available_rounds: value === "manager" ? ["r1", "r2", "r3"] : formData.available_rounds,
               })
             }
           >
@@ -173,16 +173,16 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="r1"
-                    checked={formData.available_rounds.includes("R1")}
-                    onCheckedChange={(checked) => handleRoundChange("R1", checked as boolean)}
+                    checked={formData.available_rounds.includes("r1")}
+                    onCheckedChange={(checked) => handleRoundChange("r1", checked as boolean)}
                   />
                   <Label htmlFor="r1">Round 1 (Technical)</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="r2"
-                    checked={formData.available_rounds.includes("R2")}
-                    onCheckedChange={(checked) => handleRoundChange("R2", checked as boolean)}
+                    checked={formData.available_rounds.includes("r2")}
+                    onCheckedChange={(checked) => handleRoundChange("r2", checked as boolean)}
                   />
                   <Label htmlFor="r2">Round 2 (Technical + Behavioral)</Label>
                 </div>
@@ -193,8 +193,8 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
           {formData.panelist_type === "manager" && (
             <div className="p-4 bg-purple-50 rounded-lg">
               <p className="text-sm text-purple-800">
-                <strong>Panelist Manager:</strong> Automatically assigned to handle all interview rounds (R1, R2, R3)
-                with focus on final round (R3) interviews and approvals.
+                <strong>Panelist Manager:</strong> Automatically assigned to handle all interview rounds (r1, r2, r3)
+                with focus on final round (r3) interviews and approvals.
               </p>
             </div>
           )}

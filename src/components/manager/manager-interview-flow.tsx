@@ -33,7 +33,7 @@ export function ManagerInterviewFlow({ candidate, onComplete }: ManagerInterview
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
     // Mock decision submission
-    console.log("R3 Decision submitted:", {
+    console.log("r3 Decision submitted:", {
       candidateId: candidate.id,
       rating: feedback.rating,
       notes: feedback.notes,
@@ -53,7 +53,7 @@ export function ManagerInterviewFlow({ candidate, onComplete }: ManagerInterview
       {/* Candidate Summary */}
       <Card>
         <CardHeader>
-          <CardTitle>R3 Interview - Final Decision</CardTitle>
+          <CardTitle>r3 Interview - Final Decision</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
@@ -110,7 +110,7 @@ export function ManagerInterviewFlow({ candidate, onComplete }: ManagerInterview
         </CardContent>
       </Card>
 
-      {/* R3 Decision Form */}
+      {/* r3 Decision Form */}
       <Card>
         <CardHeader>
           <CardTitle>Final Interview Assessment</CardTitle>

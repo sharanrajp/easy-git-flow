@@ -52,7 +52,7 @@ export function FeedbackDialog({ isOpen, onClose, session, onSubmit }: FeedbackD
           5,
       ),
       notes: feedback.comments,
-      decision: feedback.overallDecision === "Move to R2" ? "selected" : "rejected",
+      decision: feedback.overallDecision === "Move to r2" ? "selected" : "rejected",
       submittedAt: new Date().toISOString(),
       detailedRatings: {
         problem_solving: feedback.problem_solving,
@@ -135,8 +135,8 @@ export function FeedbackDialog({ isOpen, onClose, session, onSubmit }: FeedbackD
                 <SelectValue placeholder="Select decision" />
               </SelectTrigger>
               <SelectContent>
-                {session.round === "R1" && <SelectItem value="Move to R2">Move to R2</SelectItem>}
-                {session.round === "R2" && <SelectItem value="Move to R3">Move to R3</SelectItem>}
+                {session.round === "r1" && <SelectItem value="Move to r2">Move to r2</SelectItem>}
+                {session.round === "r2" && <SelectItem value="Move to r3">Move to r3</SelectItem>}
                 <SelectItem value="Rejected">Rejected</SelectItem>
               </SelectContent>
             </Select>

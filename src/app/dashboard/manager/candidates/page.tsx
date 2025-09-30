@@ -61,7 +61,7 @@ export default function ManagerCandidatesPage() {
   const formatStatus = (status: string) => {
     switch (status) {
       case "scheduled":
-        return "R3 Scheduled"
+        return "r3 Scheduled"
       case "pending-decision":
         return "Pending Decision"
       case "selected":
@@ -84,7 +84,7 @@ export default function ManagerCandidatesPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">R3 Candidates</h1>
+            <h1 className="text-2xl font-bold text-gray-900">r3 Candidates</h1>
             <p className="text-gray-600">Candidates assigned for final round interviews</p>
           </div>
         </div>
@@ -107,7 +107,7 @@ export default function ManagerCandidatesPage() {
         {/* Candidates Table */}
         <Card>
           <CardHeader>
-            <CardTitle>R3 Candidates ({filteredCandidates.length})</CardTitle>
+            <CardTitle>r3 Candidates ({filteredCandidates.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
@@ -172,7 +172,7 @@ export default function ManagerCandidatesPage() {
                             className="bg-blue-600 hover:bg-blue-700"
                             onClick={() => handleStartInterview(candidate)}
                           >
-                            Start R3 Interview
+                            Start r3 Interview
                           </Button>
                         )}
                         {candidate.r3Status === "pending-decision" && (
@@ -208,7 +208,7 @@ export default function ManagerCandidatesPage() {
         <Popover open={isInterviewOpen} onOpenChange={setIsInterviewOpen}>
           <PopoverContent className="w-[600px] max-h-[600px] overflow-y-auto">
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">R3 Interview & Decision</h3>
+              <h3 className="text-lg font-semibold">r3 Interview & Decision</h3>
               {selectedCandidate && (
                 <ManagerInterviewFlow
                   candidate={selectedCandidate}

@@ -65,7 +65,7 @@ export default function ManagerDashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Manager Dashboard</h1>
-            <p className="text-gray-600">Overview of R3 interviews, offers, and hiring performance.</p>
+            <p className="text-gray-600">Overview of r3 interviews, offers, and hiring performance.</p>
           </div>
         </div>
 
@@ -74,7 +74,7 @@ export default function ManagerDashboard() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Interview & Selection</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <MetricCard
-              title="Total R3 Interviews"
+              title="Total r3 Interviews"
               value={data.interviews.totalR3Interviews}
               icon={Users}
               trend={{ value: 12, label: "this month" }}
@@ -157,10 +157,10 @@ export default function ManagerDashboard() {
           </div>
         </div>
 
-        {/* R3 Candidates Awaiting Decision */}
+        {/* r3 Candidates Awaiting Decision */}
         <Card>
           <CardHeader>
-            <CardTitle>R3 Candidates Awaiting Your Decision</CardTitle>
+            <CardTitle>r3 Candidates Awaiting Your Decision</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -172,7 +172,7 @@ export default function ManagerDashboard() {
                         <h3 className="font-medium text-gray-900">{candidate.name}</h3>
                         <p className="text-sm text-gray-600">{candidate.position}</p>
                       </div>
-                      <Badge variant="outline">R3</Badge>
+                      <Badge variant="outline">r3</Badge>
                       <Badge className="bg-orange-100 text-orange-800">Pending Decision</Badge>
                     </div>
                     <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
@@ -193,10 +193,10 @@ export default function ManagerDashboard() {
           </CardContent>
         </Card>
 
-        {/* Recent R3 Interview History */}
+        {/* Recent r3 Interview History */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent R3 Interview History</CardTitle>
+            <CardTitle>Recent r3 Interview History</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -205,7 +205,7 @@ export default function ManagerDashboard() {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-2">
                       <span className="font-medium">{interview.candidateName}</span>
-                      <Badge variant="outline">R3</Badge>
+                      <Badge variant="outline">r3</Badge>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-500">Rating:</span>

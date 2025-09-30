@@ -234,7 +234,7 @@ export default function HRDashboard() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <MetricCard
-              title="Ongoing R1"
+              title="Ongoing r1"
               value={
                 pipelineFilter === "all" ? 18 : pipelineFilter === "frontend" ? 8 : pipelineFilter === "backend" ? 6 : 4
               }
@@ -243,7 +243,7 @@ export default function HRDashboard() {
               color="blue"
             />
             <MetricCard
-              title="Ongoing R2"
+              title="Ongoing r2"
               value={
                 pipelineFilter === "all" ? 12 : pipelineFilter === "frontend" ? 5 : pipelineFilter === "backend" ? 4 : 3
               }
@@ -252,7 +252,7 @@ export default function HRDashboard() {
               color="orange"
             />
             <MetricCard
-              title="Ongoing R3"
+              title="Ongoing r3"
               value={
                 pipelineFilter === "all" ? 7 : pipelineFilter === "frontend" ? 3 : pipelineFilter === "backend" ? 2 : 2
               }

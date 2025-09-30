@@ -225,7 +225,7 @@ export function InterviewFlow({ candidate, onComplete }: InterviewFlowProps) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="selected">
-                    Selected - Move to {candidate.round === "R1" ? "R2" : candidate.round === "R2" ? "R3" : "Final"}
+                    Selected - Move to {candidate.round === "r1" ? "r2" : candidate.round === "r2" ? "r3" : "Final"}
                   </SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
                 </SelectContent>

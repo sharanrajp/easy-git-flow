@@ -91,7 +91,7 @@ export function getMockDashboardData(): DashboardData {
         type: "Vacancy",
       },
       {
-        message: "Candidate Rachel Green started R2 interview",
+        message: "Candidate Rachel Green started r2 interview",
         time: "4 hours ago",
         type: "Interview",
       },
@@ -458,7 +458,7 @@ export interface Candidate {
     | "rejected"
     | "completed"
     | "hired"
-  currentRound?: "R1" | "R2" | "R3"
+  currentRound?: "r1" | "r2" | "r3"
   assignedPanelist?: string
   assignedPanelistId?: string
   interviewDateTime?: string
@@ -470,7 +470,7 @@ export interface Candidate {
   jobId?: string
   position?: string
   feedback?: Array<{
-    round: "R1" | "R2" | "R3"
+    round: "r1" | "r2" | "r3"
     panelist: string
     rating: number
     notes: string
@@ -523,7 +523,7 @@ export function getMockCandidates(): Candidate[] {
       skills: ["Python", "Django", "PostgreSQL", "AWS"],
       created_at: "2024-01-08",
       status: "r1-scheduled",
-      currentRound: "R1",
+      currentRound: "r1",
       assignedPanelist: "Mike Chen",
       interviewDateTime: "2024-01-15T10:00:00",
       recruiter: "Sarah Johnson",
@@ -547,7 +547,7 @@ export function getMockCandidates(): Candidate[] {
       skills: ["React", "Node.js", "MongoDB", "GraphQL"],
       created_at: "2024-01-09",
       status: "r1-in-progress",
-      currentRound: "R1",
+      currentRound: "r1",
       assignedPanelist: "Alex Rodriguez",
       interviewDateTime: "2024-01-15T14:00:00",
       recruiter: "Sarah Johnson",
@@ -571,7 +571,7 @@ export function getMockCandidates(): Candidate[] {
       skills: ["Figma", "User Research", "Prototyping", "Design Systems"],
       created_at: "2024-01-12",
       status: "r2-completed",
-      currentRound: "R2",
+      currentRound: "r2",
       assignedPanelist: "Lisa Wang",
       interviewDateTime: "2024-01-16T14:00:00",
       recruiter: "Sarah Johnson",
@@ -595,7 +595,7 @@ export function getMockCandidates(): Candidate[] {
       skills: ["Docker", "Kubernetes", "AWS", "Terraform", "Jenkins"],
       created_at: "2024-01-06",
       status: "r3-scheduled",
-      currentRound: "R3",
+      currentRound: "r3",
       assignedPanelist: "David Kim",
       interviewDateTime: "2024-01-17T10:00:00",
       recruiter: "Sarah Johnson",
@@ -619,12 +619,12 @@ export function getMockCandidates(): Candidate[] {
       skills: ["React", "JavaScript", "CSS", "HTML", "Git"],
       created_at: "2024-01-07",
       status: "rejected",
-      currentRound: "R2",
+      currentRound: "r2",
       recruiter: "Sarah Johnson",
       totalWaitTime: "10 days",
       feedback: [
         {
-          round: "R1",
+          round: "r1",
           panelist: "Mike Chen",
           rating: 3,
           notes: "Good technical skills but needs improvement in problem-solving approach.",
@@ -632,7 +632,7 @@ export function getMockCandidates(): Candidate[] {
           submittedAt: "2024-01-11T10:30:00",
         },
         {
-          round: "R2",
+          round: "r2",
           panelist: "Lisa Wang",
           rating: 2,
           notes: "Struggled with advanced React concepts and system design questions.",
@@ -660,12 +660,12 @@ export function getMockCandidates(): Candidate[] {
       skills: ["Node.js", "Express", "MongoDB", "Redis", "GraphQL"],
       created_at: "2024-01-06",
       status: "selected",
-      currentRound: "R3",
+      currentRound: "r3",
       recruiter: "Sarah Johnson",
       totalWaitTime: "14 days",
       feedback: [
         {
-          round: "R1",
+          round: "r1",
           panelist: "Alex Rodriguez",
           rating: 4,
           notes: "Strong backend development skills and good understanding of system architecture.",
@@ -673,7 +673,7 @@ export function getMockCandidates(): Candidate[] {
           submittedAt: "2024-01-10T14:00:00",
         },
         {
-          round: "R2",
+          round: "r2",
           panelist: "Mike Chen",
           rating: 4,
           notes: "Excellent coding skills and problem-solving abilities. Good cultural fit.",
@@ -681,7 +681,7 @@ export function getMockCandidates(): Candidate[] {
           submittedAt: "2024-01-13T16:30:00",
         },
         {
-          round: "R3",
+          round: "r3",
           panelist: "Emily Davis",
           rating: 5,
           notes: "Outstanding performance in final round. Strong leadership potential and technical expertise.",
@@ -709,12 +709,12 @@ export function getMockCandidates(): Candidate[] {
       skills: ["Java", "Spring Boot", "Microservices", "Kafka", "Redis"],
       created_at: "2024-01-05",
       status: "hired",
-      currentRound: "R3",
+      currentRound: "r3",
       recruiter: "Sarah Johnson",
       totalWaitTime: "16 days",
       feedback: [
         {
-          round: "R1",
+          round: "r1",
           panelist: "Lisa Wang",
           rating: 5,
           notes: "Exceptional technical knowledge and system design skills.",
@@ -722,7 +722,7 @@ export function getMockCandidates(): Candidate[] {
           submittedAt: "2024-01-09T09:00:00",
         },
         {
-          round: "R2",
+          round: "r2",
           panelist: "Alex Rodriguez",
           rating: 5,
           notes: "Outstanding problem-solving and architecture understanding.",
@@ -730,7 +730,7 @@ export function getMockCandidates(): Candidate[] {
           submittedAt: "2024-01-12T14:00:00",
         },
         {
-          round: "R3",
+          round: "r3",
           panelist: "David Kim",
           rating: 5,
           notes: "Perfect fit for senior role. Strong leadership and mentoring capabilities.",
@@ -781,7 +781,7 @@ export function getMockCandidates(): Candidate[] {
       skills: ["Product Strategy", "Analytics", "Agile", "Roadmapping", "Stakeholder Management"],
       created_at: "2024-01-04",
       status: "r2-in-progress",
-      currentRound: "R2",
+      currentRound: "r2",
       assignedPanelist: "Emily Davis",
       interviewDateTime: "2024-01-15T11:00:00",
       recruiter: "Sarah Johnson",
@@ -805,7 +805,7 @@ export function getMockCandidates(): Candidate[] {
       skills: ["Team Leadership", "System Architecture", "Node.js", "AWS", "DevOps"],
       created_at: "2024-01-03",
       status: "r3-completed",
-      currentRound: "R3",
+      currentRound: "r3",
       assignedPanelist: "David Kim",
       interviewDateTime: "2024-01-14T15:00:00",
       recruiter: "Sarah Johnson",
@@ -852,12 +852,12 @@ export function getMockCandidates(): Candidate[] {
       skills: ["Python", "Apache Spark", "Kafka", "Snowflake", "dbt"],
       created_at: "2024-01-02",
       status: "completed",
-      currentRound: "R2",
+      currentRound: "r2",
       recruiter: "Sarah Johnson",
       totalWaitTime: "12 days",
       feedback: [
         {
-          round: "R1",
+          round: "r1",
           panelist: "Alex Rodriguez",
           rating: 4,
           notes: "Strong data engineering background with good pipeline design skills.",
@@ -865,7 +865,7 @@ export function getMockCandidates(): Candidate[] {
           submittedAt: "2024-01-08T10:00:00",
         },
         {
-          round: "R2",
+          round: "r2",
           panelist: "Lisa Wang",
           rating: 3,
           notes: "Good technical skills but limited total_experience with our tech stack.",
@@ -893,7 +893,7 @@ export function getMockCandidates(): Candidate[] {
       skills: ["Selenium", "Cypress", "Jest", "API Testing", "Test Automation"],
       created_at: "2024-01-14",
       status: "r1-completed",
-      currentRound: "R1",
+      currentRound: "r1",
       assignedPanelist: "Mike Chen",
       interviewDateTime: "2024-01-15T09:00:00",
       recruiter: "Sarah Johnson",
@@ -917,12 +917,12 @@ export function getMockCandidates(): Candidate[] {
       skills: ["Product Strategy", "Data Analytics", "A/B Testing", "Growth Hacking", "Team Leadership"],
       created_at: "2024-01-01",
       status: "selected",
-      currentRound: "R3",
+      currentRound: "r3",
       recruiter: "Sarah Johnson",
       totalWaitTime: "18 days",
       feedback: [
         {
-          round: "R1",
+          round: "r1",
           panelist: "Mike Chen",
           rating: 5,
           notes: "Exceptional product vision and strategic thinking capabilities.",
@@ -930,7 +930,7 @@ export function getMockCandidates(): Candidate[] {
           submittedAt: "2024-01-07T11:00:00",
         },
         {
-          round: "R2",
+          round: "r2",
           panelist: "Emily Davis",
           rating: 5,
           notes: "Outstanding leadership skills and data-driven approach.",
@@ -938,7 +938,7 @@ export function getMockCandidates(): Candidate[] {
           submittedAt: "2024-01-10T15:00:00",
         },
         {
-          round: "R3",
+          round: "r3",
           panelist: "David Kim",
           rating: 5,
           notes: "Perfect fit for senior PM role. Excellent stakeholder management skills.",

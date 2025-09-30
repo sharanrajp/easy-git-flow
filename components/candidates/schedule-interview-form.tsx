@@ -33,15 +33,15 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
   }, [])
 
   const getNextRound = () => {
-    if (!candidate.currentRound) return "R1"
+    if (!candidate.currentRound) return "r1"
 
     switch (candidate.status) {
       case "r1-completed":
-        return "R2"
+        return "r2"
       case "r2-completed":
-        return "R3"
+        return "r3"
       default:
-        return candidate.currentRound || "R1"
+        return candidate.currentRound || "r1"
     }
   }
 
