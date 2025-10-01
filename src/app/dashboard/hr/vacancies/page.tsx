@@ -341,7 +341,7 @@ export default function VacanciesPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Search vacancies by position_title or location..."
+                placeholder="Search vacancies by title or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -423,7 +423,7 @@ export default function VacanciesPage() {
                       <TableHead>No. of Vacancies</TableHead>
                       <TableHead>Recruiter</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>No. of Panelists Assigned</TableHead>
+                      <TableHead>No. of Panelists</TableHead>
                       <TableHead>Applications</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>

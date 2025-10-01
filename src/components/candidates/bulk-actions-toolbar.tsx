@@ -19,7 +19,7 @@ export function BulkActionsToolbar({ selectedCount, onBulkAction }: BulkActionsT
 
   return (
     <>
-      <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div className="inline-flex items-center bg-blue-50 border border-blue-200 rounded-lg p-4 w-auto">
         <div className="flex items-center space-x-4">
           <Badge variant="secondary" className="bg-blue-100 text-blue-800">
             {selectedCount} candidate{selectedCount > 1 ? "s" : ""} selected
