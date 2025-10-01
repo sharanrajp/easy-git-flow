@@ -150,7 +150,7 @@ export default function VacanciesPage() {
     try {
       setError(null)
       const newVacancy = await addVacancy(vacancyData)
-      setVacancies([newVacancy, ...vacancies])
+      setVacancies([...vacancies, vacancyData])
       setIsCreateOpen(false)
     } catch (err) {
       console.error('Failed to create vacancy:', err)
