@@ -291,121 +291,126 @@ export default function VacanciesPage() {
 
   return (
     <DashboardLayout requiredRole="hr">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Vacancies</h1>
-            <p className="text-gray-600">Manage job openings and track applications</p>
+      <div className="flex flex-col h-full">
+        {/* Fixed header section */}
+        <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Vacancies</h1>
+              <p className="text-gray-600">Manage job openings and track applications</p>
+            </div>
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Vacancy
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Create New Vacancy</DialogTitle>
+                </DialogHeader>
+                <VacancyForm onSubmit={handleCreateVacancy} />
+              </DialogContent>
+            </Dialog>
           </div>
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Vacancy
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Create New Vacancy</DialogTitle>
-              </DialogHeader>
-              <VacancyForm onSubmit={handleCreateVacancy} />
-            </DialogContent>
-          </Dialog>
+
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-4">
+              <div className="flex">
+                <AlertTriangle className="h-5 w-5 text-red-400" />
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">Error</h3>
+                  <p className="mt-1 text-sm text-red-700">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Search and Filter Controls */}
+          {!loading && (
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search vacancies by title or location..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                    <SelectItem value="closed">Closed</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                  <SelectTrigger className="w-36">
+                    <SelectValue placeholder="Priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Priority</SelectItem>
+                    <SelectItem value="P0">P0</SelectItem>
+                    <SelectItem value="P1">P1</SelectItem>
+                    <SelectItem value="P2">P2</SelectItem>
+                    <SelectItem value="P3">P3</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Recruiter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Recruiters</SelectItem>
+                    {uniqueRecruiters.map((recruiter) => (
+                      <SelectItem key={recruiter} value={recruiter}>
+                        {recruiter}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant={viewMode === "list" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === "grid" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode("grid")}
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Error Display */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex">
-              <AlertTriangle className="h-5 w-5 text-red-400" />
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Error</h3>
-                <p className="mt-1 text-sm text-red-700">{error}</p>
-              </div>
+        {/* Scrollable content section */}
+        <div className="flex-1 overflow-auto pt-4">
+          {/* Loading State */}
+          {loading && (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-2 text-gray-600">Loading vacancies...</span>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-gray-600">Loading vacancies...</span>
-          </div>
-        )}
-
-        {/* Search and Filter Controls */}
-        {!loading && (
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search vacancies by title or location..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="paused">Paused</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                <SelectTrigger className="w-36">
-                  <SelectValue placeholder="Priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Priority</SelectItem>
-                  <SelectItem value="P0">P0</SelectItem>
-                  <SelectItem value="P1">P1</SelectItem>
-                  <SelectItem value="P2">P2</SelectItem>
-                  <SelectItem value="P3">P3</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Recruiter" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Recruiters</SelectItem>
-                  {uniqueRecruiters.map((recruiter) => (
-                    <SelectItem key={recruiter} value={recruiter}>
-                      {recruiter}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant={viewMode === "list" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("list")}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === "grid" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("grid")}
-                >
-                  <Grid className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Vacancies List/Grid */}
-        {!loading && !error && (
+          {/* Vacancies List/Grid */}
+          {!loading && !error && (
           <>
             {viewMode === "list" ? (
               <>
@@ -646,12 +651,12 @@ export default function VacanciesPage() {
                className="mt-4"
              />
            </>
-         )}
-       </>
-        )}
+          )}
+          </>
+          )}
 
-        {/* Empty State */}
-        {!loading && !error && filteredVacancies.length === 0 && (
+          {/* Empty State */}
+          {!loading && !error && filteredVacancies.length === 0 && (
           <div className="text-center py-12">
             <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
               <Plus className="h-8 w-8 text-gray-400" />
@@ -669,7 +674,8 @@ export default function VacanciesPage() {
               </Button>
             )}
           </div>
-        )}
+          )}
+        </div>
 
         <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
           <DialogContent className="w-[80%] max-w-none max-h-[90vh] overflow-y-auto">

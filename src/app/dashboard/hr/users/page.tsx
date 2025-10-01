@@ -205,99 +205,103 @@ export default function UsersPage() {
 
   return (
     <DashboardLayout requiredRole="hr">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-            <p className="text-gray-600">Manage system users and their roles</p>
+      <div className="flex flex-col h-full">
+        {/* Fixed header section */}
+        <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Users</h1>
+              <p className="text-gray-600">Manage system users and their roles</p>
+            </div>
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-blue-600 hover:bg-blue-700 cursor-pointer">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add User
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Add New User</DialogTitle>
+                </DialogHeader>
+                <UserForm onSubmit={handleCreateUser} onCancel={() => setIsCreateOpen(false)} />
+              </DialogContent>
+            </Dialog>
           </div>
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700 cursor-pointer">
-                <Plus className="h-4 w-4 mr-2" />
-                Add User
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Add New User</DialogTitle>
-              </DialogHeader>
-              <UserForm onSubmit={handleCreateUser} onCancel={() => setIsCreateOpen(false)} />
-            </DialogContent>
-          </Dialog>
-        </div>
 
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search users by name, email, or role..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          {showDeleteSelected && (
-            <Button
-              variant="destructive"
-              onClick={handleDeleteSelected}
-              className="bg-red-600 hover:bg-red-700 cursor-pointer"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete Selected ({selectedUsers.length})
-            </Button>
-          )}
-          <div className="flex flex-wrap gap-2">
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="hr">HR Admin</SelectItem>
-                <SelectItem value="panelist">Panelist</SelectItem>
-                <SelectItem value="manager">Manager</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="free">Available</SelectItem>
-                <SelectItem value="in_interview">In Interview</SelectItem>
-                <SelectItem value="break">Break</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="flex items-center space-x-2">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search users by name, email, or role..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            {showDeleteSelected && (
               <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-                className="cursor-pointer"
+                variant="destructive"
+                onClick={handleDeleteSelected}
+                className="bg-red-600 hover:bg-red-700 cursor-pointer"
               >
-                <List className="h-4 w-4" />
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Selected ({selectedUsers.length})
               </Button>
-              <Button
-                variant={viewMode === "grid" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("grid")}
-                className="cursor-pointer"
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="hr">HR Admin</SelectItem>
+                  <SelectItem value="panelist">Panelist</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="free">Available</SelectItem>
+                  <SelectItem value="in_interview">In Interview</SelectItem>
+                  <SelectItem value="break">Break</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="cursor-pointer"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "grid" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="cursor-pointer"
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Users List/Grid */}
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : (
+        {/* Scrollable content section */}
+        <div className="flex-1 overflow-auto pt-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
           <>
             {viewMode === "list" ? (
               <>
@@ -596,7 +600,8 @@ export default function UsersPage() {
               </>
             )}
           </>
-        )}
+          )}
+        </div>
 
         {/* Edit Dialog */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
