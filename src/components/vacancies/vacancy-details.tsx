@@ -152,10 +152,6 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Posted On</label>
                 <p className="text-sm font-semibold text-gray-900 mt-1">{formatDate(vacancy.postedOn)}</p>
               </div>
-              <div>
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Job ID</label>
-                <p className="text-sm font-semibold text-gray-900 mt-1 font-mono">#{vacancy.id}</p>
-              </div>
             </div>
           </div>
 

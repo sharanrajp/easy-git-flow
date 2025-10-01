@@ -26,6 +26,7 @@ interface BackendVacancy {
   location?: string;
   deadline?: string;
   assignedPanelists?: string[];
+  request_type?: string;
 }
 
 // Frontend vacancy interface for posting (what we send to API)
@@ -57,6 +58,7 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
     job_type: backendVacancy.job_type as "full_time" | "part-time" | "contract",
     priority: backendVacancy.priority as "P3" | "P2" | "P1" | "P0",
     number_of_vacancies: backendVacancy.number_of_vacancies,
+    request_type: backendVacancy.request_type || "new",
     status: backendVacancy.status as "active" | "paused" | "closed",
     experienceRange: backendVacancy.experience_range,
     skills_required: backendVacancy.skills_required,
