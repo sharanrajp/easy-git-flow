@@ -38,7 +38,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
     skills_required: vacancy?.skills_required || [],
-    jobDescription: vacancy?.jobDescription || "",
+    job_desc: vacancy?.job_desc || "",
     about_position: vacancy?.about_position || "",
     driveDate: vacancy?.walkInDetails?.date || "",
     driveLocation: vacancy?.walkInDetails?.location || "",
@@ -112,7 +112,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
       experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
       skills_required: vacancy?.skills_required || [],
-      jobDescription: vacancy?.jobDescription || "",
+      job_desc: vacancy?.job_desc || "",
       about_position: vacancy?.about_position || "",
       driveDate: vacancy?.walkInDetails?.date || "",
       driveLocation: vacancy?.walkInDetails?.location || "",
@@ -174,7 +174,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       formData.experienceTo &&
       formData.driveDate &&
       formData.driveLocation &&
-      formData.jobDescription.trim() &&
+      formData.job_desc.trim() &&
       formData.about_position.trim() // Make about position required
     )
   }
@@ -403,12 +403,12 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="jobDescription">Job Description *</Label>
+                <Label htmlFor="job_desc">Job Description *</Label>
                 <Textarea
-                  id="jobDescription"
+                  id="job_desc"
                   placeholder="Enter job description, responsibilities, and requirements..."
-                  value={formData.jobDescription || ""}
-                  onChange={(e) => setFormData({ ...formData, jobDescription: e.target.value })}
+                  value={formData.job_desc || ""}
+                  onChange={(e) => setFormData({ ...formData, job_desc: e.target.value })}
                   rows={4}
                   required
                 />

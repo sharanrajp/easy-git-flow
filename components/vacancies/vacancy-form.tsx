@@ -33,8 +33,8 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
     number_of_vacancies: vacancy?.number_of_vacancies || 1,
     experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
     experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
-    skill_set: vacancy?.skills_required || [],
-    jobDescription: vacancy?.jobDescription || "",
+    skills_required: vacancy?.skills_required || [],
+    job_desc: vacancy?.job_desc || "",
     about_position: vacancy?.about_position || "",
     driveDate: vacancy?.walkInDetails?.date || "",
     driveLocation: vacancy?.walkInDetails?.location || "",
@@ -83,14 +83,14 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
   }
 
   const addSkill = () => {
-    if (newSkill.trim() && !formData.skill_set.includes(newSkill.trim())) {
-      handleInputChange("skill_set", [...formData.skill_set, newSkill.trim()])
+    if (newSkill.trim() && !formData.skills_required.includes(newSkill.trim())) {
+      handleInputChange("skills_required", [...formData.skills_required, newSkill.trim()])
       setNewSkill("")
     }
   }
 
   const removeSkill = (skillToRemove: string) => {
-    handleInputChange("skill_set", formData.skill_set.filter((skill: string) => skill !== skillToRemove))
+    handleInputChange("skills_required", formData.skills_required.filter((skill: string) => skill !== skillToRemove))
   }
 
 
@@ -329,7 +329,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
               </div>
 
               <div>
-                <Label htmlFor="skill_set">Required Skills *</Label>
+                <Label htmlFor="skills_required">Required Skills *</Label>
                 <div className="flex space-x-2 mb-2">
                   <Input
                     value={newSkill}
@@ -342,7 +342,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
                   </Button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {formData.skill_set.map((skill: string) => (
+                  {formData.skills_required.map((skill: string) => (
                     <Badge key={skill} variant="secondary" className="flex items-center space-x-1">
                       <span>{skill}</span>
                       <button type="button" onClick={() => removeSkill(skill)}>
@@ -365,11 +365,11 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="jobDescription">Job Description *</Label>
+                <Label htmlFor="job_desc">Job Description *</Label>
                 <Textarea
-                  id="jobDescription"
-                  value={formData.jobDescription}
-                  onChange={(e) => handleInputChange("jobDescription", e.target.value)}
+                  id="job_desc"
+                  value={formData.job_desc}
+                  onChange={(e) => handleInputChange("job_desc", e.target.value)}
                   placeholder="Describe the role, responsibilities, and requirements..."
                   rows={8}
                   required

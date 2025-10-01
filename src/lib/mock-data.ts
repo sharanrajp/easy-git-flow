@@ -124,7 +124,7 @@ export interface Vacancy {
   number_of_vacancies: number
   experienceRange: string
   skills: string[]
-  jobDescription?: string
+  job_desc?: string
   interview_type: "Walk-In"
   walkInDetails?: {
     date: string

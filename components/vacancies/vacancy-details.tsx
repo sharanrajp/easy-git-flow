@@ -122,7 +122,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
           </Card>
 
           {/* Job Description */}
-          {vacancy.jobDescription && (
+          {vacancy.job_desc && (
             <Card>
               <CardHeader>
                 <CardTitle>Job Description</CardTitle>
@@ -130,7 +130,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
               <CardContent>
                 <div className="prose max-w-none">
                   <div className="whitespace-pre-wrap text-gray-700">
-                    {vacancy.jobDescription}
+                    {vacancy.job_desc}
                   </div>
                 </div>
               </CardContent>

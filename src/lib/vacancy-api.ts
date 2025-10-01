@@ -20,6 +20,7 @@ interface BackendVacancy {
   drive_location: string;
   created_at: string;
   job_desc?: string;
+  about_position?: string;
   // Optional fields that might not be in backend
   department?: string;
   location?: string;
@@ -43,6 +44,7 @@ interface VacancyCreateRequest {
   drive_location: string;
   job_desc?: string;
   request_type?:string;
+  about_position?: string;
 }
 
 // Transform backend vacancy to frontend format
@@ -69,7 +71,8 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
     // Default values for missing fields
     department: backendVacancy.department || "",
     location: backendVacancy.location || "",
-    jobDescription: backendVacancy.job_desc || "",
+    job_desc: backendVacancy.job_desc || "",
+    about_position: backendVacancy.about_position || "",
     deadline: backendVacancy.deadline || "",
     assignedPanelists: backendVacancy.assignedPanelists || [],
     applications: 0,
@@ -94,7 +97,8 @@ function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyC
     interview_type: frontendVacancy.interview_type || "Walk-In",
     drive_date: new Date(frontendVacancy.walkInDetails?.date || "").toISOString() || "",
     drive_location: frontendVacancy.walkInDetails?.location || "",
-    job_desc: frontendVacancy.jobDescription || "",
+    job_desc: frontendVacancy.job_desc || "",
+    about_position: frontendVacancy.about_position || "",
     request_type: frontendVacancy.request_type || "new",
   };
 }

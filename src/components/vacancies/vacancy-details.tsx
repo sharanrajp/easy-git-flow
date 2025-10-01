@@ -160,34 +160,24 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
           </div>
 
           {/* Job Description */}
-          {vacancy.jobDescription && (
+          {vacancy.job_desc && (
             <div className="mt-6 pt-6 border-t">
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3 block">
                 Job Description
               </label>
-              {vacancy.jobDescription.startsWith("File uploaded:") ? (
-                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <FileText className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {vacancy.jobDescription.replace("File uploaded: ", "")}
-                      </p>
-                      <p className="text-xs text-blue-600">Click to view document</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-2" />
-                    View
-                  </Button>
-                </div>
-              ) : (
                 <div className="bg-gray-50 p-4 rounded-lg max-h-40 overflow-y-auto">
-                  <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{vacancy.jobDescription}</p>
+                  <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{vacancy.job_desc}</p>
                 </div>
-              )}
+            </div>
+          )}
+          {vacancy.about_position && (
+            <div className="mt-6 pt-6 border-t">
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3 block">
+                About Position
+              </label>
+                <div className="bg-gray-50 p-4 rounded-lg max-h-40 overflow-y-auto">
+                  <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{vacancy.about_position}</p>
+                </div>
             </div>
           )}
         </CardContent>
