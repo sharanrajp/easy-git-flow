@@ -126,7 +126,7 @@ export default function CandidatesPage() {
   // Pagination states
   const [unassignedCurrentPage, setUnassignedCurrentPage] = useState(1)
   const [assignedCurrentPage, setAssignedCurrentPage] = useState(1)
-  const itemsPerPage = 20
+  const itemsPerPage = 15
 
   // Helper function to get next round
   const getNextRound = (currentRound: string): string => {
