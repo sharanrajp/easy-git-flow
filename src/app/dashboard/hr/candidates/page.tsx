@@ -51,7 +51,7 @@ import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
@@ -518,12 +518,12 @@ export default function CandidatesPage() {
     if (!selectedCandidate) return
 
     try {
-      // Update in backend
-      // Note: This would require an update candidate API endpoint
-      // For now, we'll just update locally and refresh from backend
+      // Get the candidate ID (_id for backend candidates)
+      const candidateId = (selectedCandidate as any)._id || selectedCandidate.id
       
-      const updatedCandidates = candidates.map((c) => (c.id === selectedCandidate.id ? { ...c, ...candidateData } : c))
-      setCandidates(updatedCandidates)
+      // Update in backend using PUT method
+      await updateCandidate(candidateId, candidateData as Partial<BackendCandidate>)
+      
       setIsEditOpen(false)
       setSelectedCandidate(null)
       setEditFormHasChanges(false)
