@@ -62,7 +62,14 @@ export default function UsersPage() {
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.role.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesRole = roleFilter === "all" || user.role === roleFilter
+    const matchesRole = (() => {
+      if (roleFilter === "all") return true
+      if (roleFilter === "manager") {
+        // Include both users with role "manager" and panelists with panelist_type "manager"
+        return user.role === "manager" || (user.role === "panelist" && user.panelist_type === "manager")
+      }
+      return user.role === roleFilter
+    })()
     const matchesStatus = statusFilter === "all" || user.current_status === statusFilter
 
     return matchesSearch && matchesRole && matchesStatus
