@@ -1376,9 +1376,10 @@ export default function CandidatesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Experience</SelectItem>
-                <SelectItem value="1">1-2 years</SelectItem>
-                <SelectItem value="3">3-5 years</SelectItem>
-                <SelectItem value="6">6+ years</SelectItem>
+                <SelectItem value="0-2">0-2 years</SelectItem>
+                <SelectItem value="3-5">3-5 years</SelectItem>
+                <SelectItem value="6-10">6-10 years</SelectItem>
+                <SelectItem value="10+">10+ years</SelectItem>
               </SelectContent>
             </Select>
             <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
