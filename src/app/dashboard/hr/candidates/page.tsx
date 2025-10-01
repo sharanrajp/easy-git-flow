@@ -1360,22 +1360,20 @@ export default function CandidatesPage() {
           </div>
         </div>
 
-        <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="flex-1 flex flex-col overflow-hidden">
-          <div className="pt-4">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="unassigned">
-                Unassigned ({loadingUnassigned ? "..." : filteredUnassignedCandidates.length})
-              </TabsTrigger>
-              <TabsTrigger value="assigned">
-                Assigned ({loadingAssigned ? "..." : filteredAssignedCandidates.length})
-              </TabsTrigger>
-              {/* <TabsTrigger value="completed">Completed ({completedCandidates.length})</TabsTrigger> */}
-            </TabsList>
-          </div>
+        <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="flex-1 flex flex-col overflow-hidden pt-4">
+          <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
+            <TabsTrigger value="unassigned">
+              Unassigned ({loadingUnassigned ? "..." : filteredUnassignedCandidates.length})
+            </TabsTrigger>
+            <TabsTrigger value="assigned">
+              Assigned ({loadingAssigned ? "..." : filteredAssignedCandidates.length})
+            </TabsTrigger>
+            {/* <TabsTrigger value="completed">Completed ({completedCandidates.length})</TabsTrigger> */}
+          </TabsList>
 
           {/* Scrollable table section */}
-          <div className="flex-1 overflow-auto pt-4">
-            <TabsContent value="unassigned" className="mt-0 h-full">
+          <div className="flex-1 overflow-hidden pt-4">
+            <TabsContent value="unassigned" className="mt-0 h-full overflow-auto">
             {loadingUnassigned ? (
               <Card>
                 <CardContent className="flex items-center justify-center py-16">
@@ -1384,13 +1382,13 @@ export default function CandidatesPage() {
                 </CardContent>
               </Card>
             ) : unassignedCandidates.length > 0 ? (
-              <Card>
-                <CardHeader>
+              <Card className="h-full flex flex-col">
+                <CardHeader className="flex-shrink-0">
                   <CardTitle>Unassigned Candidates</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1 overflow-auto p-0">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 bg-background z-10">
                       <TableRow>
                         <TableHead className="w-12">
                           <Checkbox
@@ -1499,14 +1497,14 @@ export default function CandidatesPage() {
                       ))}
                     </TableBody>
                   </Table>
-                  <div className="p-4 border-t">
-                    <Pagination
-                      currentPage={unassignedCurrentPage}
-                      totalPages={unassignedTotalPages}
-                      onPageChange={setUnassignedCurrentPage}
-                    />
-                  </div>
                 </CardContent>
+                <div className="p-4 border-t flex-shrink-0">
+                  <Pagination
+                    currentPage={unassignedCurrentPage}
+                    totalPages={unassignedTotalPages}
+                    onPageChange={setUnassignedCurrentPage}
+                  />
+                </div>
               </Card>
             ) : (
               <Card>
@@ -1523,7 +1521,7 @@ export default function CandidatesPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="assigned">
+          <TabsContent value="assigned" className="mt-0 h-full overflow-auto">
             {loadingAssigned ? (
               <Card>
                 <CardContent className="flex items-center justify-center py-16">
@@ -1532,13 +1530,13 @@ export default function CandidatesPage() {
                 </CardContent>
               </Card>
             ) : assignedCandidates.length > 0 ? (
-              <Card>
-                <CardHeader>
+              <Card className="h-full flex flex-col">
+                <CardHeader className="flex-shrink-0">
                   <CardTitle>Assigned Candidates</CardTitle>
                 </CardHeader>
-                <CardContent className="p-0">
+                <CardContent className="flex-1 overflow-auto p-0">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 bg-background z-10">
                       <TableRow>
                         <TableHead className="w-12">
                           <Checkbox
@@ -1643,16 +1641,16 @@ export default function CandidatesPage() {
                           </TableRow>
                         )
                       })}
-                    </TableBody>
+                     </TableBody>
                   </Table>
-                  <div className="p-4 border-t">
-                    <Pagination
-                      currentPage={assignedCurrentPage}
-                      totalPages={assignedTotalPages}
-                      onPageChange={setAssignedCurrentPage}
-                    />
-                  </div>
                 </CardContent>
+                <div className="p-4 border-t flex-shrink-0">
+                  <Pagination
+                    currentPage={assignedCurrentPage}
+                    totalPages={assignedTotalPages}
+                    onPageChange={setAssignedCurrentPage}
+                  />
+                </div>
               </Card>
             ) : (
               <Card>
