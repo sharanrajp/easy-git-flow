@@ -1533,6 +1533,9 @@ export default function CandidatesPage() {
               </Card>
             ) : assignedCandidates.length > 0 ? (
               <Card>
+                <CardHeader>
+                  <CardTitle>Assigned Candidates</CardTitle>
+                </CardHeader>
                 <CardContent className="p-0">
                   <Table>
                     <TableHeader>
