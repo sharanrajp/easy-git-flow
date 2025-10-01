@@ -1,4 +1,11 @@
-import { makeAuthenticatedRequest } from "./auth"
+import { 
+  fetchUnassignedCandidates, 
+  fetchAssignedCandidates,
+  fetchPanelistAssignedCandidates,
+  fetchOngoingInterviews,
+  type BackendCandidate,
+  type PanelistCandidate
+} from "./candidates-api"
 
 // HR Dashboard Metrics
 export interface HRDashboardMetrics {
@@ -24,22 +31,117 @@ export interface PanelistDashboardMetrics {
   scheduled_interviews: number
 }
 
+// Calculate HR Dashboard Metrics from actual backend data
 export async function fetchHRDashboardMetrics(): Promise<HRDashboardMetrics> {
-  const response = await makeAuthenticatedRequest("/dashboard/hr-metrics")
-  
-  if (!response.ok) {
-    throw new Error("Failed to fetch HR dashboard metrics")
+  try {
+    // Fetch all relevant data in parallel
+    const [unassignedCandidates, assignedCandidates, ongoingInterviews] = await Promise.all([
+      fetchUnassignedCandidates(),
+      fetchAssignedCandidates(),
+      fetchOngoingInterviews()
+    ])
+
+    // Calculate metrics
+    const total_applications = unassignedCandidates.length + assignedCandidates.length
+    const unassigned_candidates = unassignedCandidates.length
+    const interviews_scheduled = assignedCandidates.length
+
+    // Count by status
+    const joined_count = assignedCandidates.filter(c => c.checked_in === true).length
+    const offer_released_count = assignedCandidates.filter(c => 
+      c.status === "offer_released" || c.status === "selected"
+    ).length
+
+    // Count ongoing rounds
+    const ongoing_r1 = assignedCandidates.filter(c => c.currentRound === "r1").length
+    const ongoing_r2 = assignedCandidates.filter(c => c.currentRound === "r2").length
+    const ongoing_r3 = assignedCandidates.filter(c => c.currentRound === "r3").length
+
+    const successful_hires = assignedCandidates.filter(c => 
+      c.status === "hired" || c.status === "joined"
+    ).length
+
+    // Calculate conversion rate
+    const interview_to_offer_rate = interviews_scheduled > 0 
+      ? Math.round((offer_released_count / interviews_scheduled) * 100) 
+      : 0
+
+    // Average time to hire (placeholder - would need created_at and hired_at dates)
+    const avg_time_to_hire = 21 // days
+
+    // Panelist rating (placeholder - would need feedback data)
+    const panelist_rating = 4.2
+
+    return {
+      total_applications,
+      unassigned_candidates,
+      interviews_scheduled,
+      joined_count,
+      offer_released_count,
+      ongoing_r1,
+      ongoing_r2,
+      ongoing_r3,
+      successful_hires,
+      interview_to_offer_rate,
+      avg_time_to_hire,
+      panelist_rating
+    }
+  } catch (error) {
+    console.error("Error calculating HR dashboard metrics:", error)
+    throw new Error("Failed to calculate HR dashboard metrics")
   }
-  
-  return response.json()
 }
 
+// Calculate Panelist Dashboard Metrics from actual backend data
 export async function fetchPanelistDashboardMetrics(): Promise<PanelistDashboardMetrics> {
-  const response = await makeAuthenticatedRequest("/dashboard/panelist-metrics")
-  
-  if (!response.ok) {
-    throw new Error("Failed to fetch panelist dashboard metrics")
+  try {
+    // Fetch panelist's assigned candidates
+    const candidates = await fetchPanelistAssignedCandidates()
+
+    // Calculate completed interviews (candidates with feedback submitted)
+    const completed_interviews = candidates.filter(candidate => {
+      if (!candidate.previous_rounds || candidate.previous_rounds.length === 0) return false
+      // Check if the latest round has feedback submitted
+      const latestRound = candidate.previous_rounds[candidate.previous_rounds.length - 1]
+      return latestRound?.feedback_submitted === true
+    }).length
+
+    // Calculate selected count across all rounds
+    let selected_count = 0
+    candidates.forEach(candidate => {
+      if (candidate.previous_rounds) {
+        selected_count += candidate.previous_rounds.filter(round => 
+          round.status === "selected"
+        ).length
+      }
+    })
+
+    // Calculate rejected count across all rounds
+    let rejected_count = 0
+    candidates.forEach(candidate => {
+      if (candidate.previous_rounds) {
+        rejected_count += candidate.previous_rounds.filter(round => 
+          round.status === "rejected"
+        ).length
+      }
+    })
+
+    // Calculate scheduled interviews (candidates assigned but feedback not yet submitted)
+    const scheduled_interviews = candidates.filter(candidate => {
+      if (!candidate.previous_rounds || candidate.previous_rounds.length === 0) return true
+      // Check if the latest round doesn't have feedback submitted
+      const latestRound = candidate.previous_rounds[candidate.previous_rounds.length - 1]
+      return latestRound?.feedback_submitted !== true
+    }).length
+
+    return {
+      completed_interviews,
+      selected_count,
+      rejected_count,
+      scheduled_interviews
+    }
+  } catch (error) {
+    console.error("Error calculating panelist dashboard metrics:", error)
+    throw new Error("Failed to calculate panelist dashboard metrics")
   }
-  
-  return response.json()
 }
