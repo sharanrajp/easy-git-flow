@@ -80,9 +80,26 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
         throw new Error('Failed to submit feedback')
       }
 
+      // Update panelist status to available after successful feedback submission
+      try {
+        const statusResponse = await makeAuthenticatedRequest('http://127.0.0.1:8000/privileges/my-status', {
+          method: 'PUT',
+          body: JSON.stringify({
+            status: "free"
+          })
+        })
+
+        if (!statusResponse.ok) {
+          console.error('Failed to update panelist status')
+        }
+      } catch (statusError) {
+        console.error('Error updating panelist status:', statusError)
+        // Don't block the success flow if status update fails
+      }
+
       toast({
         title: "Success",
-        description: "Feedback submitted successfully",
+        description: "Feedback submitted successfully. Your status has been updated to available.",
       })
 
       // Reset form first
