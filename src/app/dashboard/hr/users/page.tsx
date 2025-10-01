@@ -16,8 +16,10 @@ import { getAllUsers, type User, makeAuthenticatedRequest } from "@/lib/auth"
 import { UserForm } from "@/components/users/user-form"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
+import { useToast } from "@/hooks/use-toast"
 
 export default function UsersPage() {
+  const { toast } = useToast()
   const [users, setUsers] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
@@ -30,6 +32,7 @@ export default function UsersPage() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [showDeleteSelected, setShowDeleteSelected] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 15
 
@@ -90,9 +93,50 @@ export default function UsersPage() {
   }
 
   const handleDeleteSelected = async () => {
-    // TODO: Implement API call to delete multiple users
-    console.log("Delete selected users:", selectedUsers)
-    setSelectedUsers([])
+    if (selectedUsers.length === 0 || deleting) return
+
+    try {
+      setDeleting(true)
+      
+      // Delete each selected user
+      const deletePromises = selectedUsers.map(userId =>
+        makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/delete-user/${userId}`, {
+          method: "DELETE"
+        })
+      )
+      
+      const results = await Promise.all(deletePromises)
+      const successCount = results.filter(r => r.ok).length
+      const failCount = results.length - successCount
+      
+      // Remove successfully deleted users from local state
+      setUsers(users.filter(user => !selectedUsers.includes(user._id)))
+      setSelectedUsers([])
+      
+      if (successCount > 0) {
+        toast({
+          title: "Success",
+          description: `${successCount} user(s) deleted successfully.${failCount > 0 ? ` ${failCount} failed.` : ''}`,
+        })
+      }
+      
+      if (failCount > 0 && successCount === 0) {
+        toast({
+          title: "Error",
+          description: "Failed to delete selected users.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error deleting users:", error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while deleting users.",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const handleCreateUser = async (userData: Partial<User>) => {
@@ -137,9 +181,10 @@ export default function UsersPage() {
   }
 
   const handleDeleteUser = async () => {
-    if (!deleteUser) return
+    if (!deleteUser || deleting) return
 
     try {
+      setDeleting(true)
       const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/delete-user/${deleteUser._id}`, {
         method: "DELETE"
       })
@@ -147,12 +192,34 @@ export default function UsersPage() {
       if (response.ok) {
         // Remove the user from the local state without page refresh
         setUsers(users.filter(user => user._id !== deleteUser._id))
+        
+        // Also remove from selected users if it was selected
+        setSelectedUsers(selectedUsers.filter(id => id !== deleteUser._id))
+        
+        toast({
+          title: "Success",
+          description: `User "${deleteUser.name}" has been deleted successfully.`,
+        })
+        
         setDeleteUser(null)
       } else {
-        console.error("Failed to delete user:", await response.text())
+        const errorText = await response.text()
+        console.error("Failed to delete user:", errorText)
+        toast({
+          title: "Error",
+          description: "Failed to delete user. Please try again.",
+          variant: "destructive",
+        })
       }
     } catch (error) {
       console.error("Error deleting user:", error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while deleting the user.",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -244,10 +311,11 @@ export default function UsersPage() {
               <Button
                 variant="destructive"
                 onClick={handleDeleteSelected}
+                disabled={deleting}
                 className="bg-red-600 hover:bg-red-700 cursor-pointer"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete Selected ({selectedUsers.length})
+                {deleting ? "Deleting..." : `Delete Selected (${selectedUsers.length})`}
               </Button>
             )}
             <div className="flex flex-wrap gap-2">
@@ -619,8 +687,12 @@ export default function UsersPage() {
 
         {/* Delete Confirmation */}
         <DeleteConfirmDialog
-          open={!!deleteUser}
-          onOpenChange={() => setDeleteUser(null)}
+          open={!!deleteUser && !deleting}
+          onOpenChange={(open) => {
+            if (!deleting) {
+              setDeleteUser(null)
+            }
+          }}
           onConfirm={handleDeleteUser}
           title="Delete User"
           description={`Are you sure you want to delete the user "${deleteUser?.name}"? This action cannot be undone.`}
