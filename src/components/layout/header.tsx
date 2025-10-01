@@ -221,16 +221,6 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
                       Break {isUpdatingStatus && user.current_status !== "break" ? "(updating...)" : ""}
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleStatusChange("unavailable")} 
-                    className="smooth-transition"
-                    disabled={isUpdatingStatus}
-                  >
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-rose-500 rounded-full mr-3 shadow-sm"></div>
-                      Unavailable {isUpdatingStatus && user.current_status !== "unavailable" ? "(updating...)" : ""}
-                    </div>
-                  </DropdownMenuItem>
                 </>
               )}
 
