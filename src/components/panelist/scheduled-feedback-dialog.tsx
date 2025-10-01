@@ -81,15 +81,37 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
       }
 
       // Update panelist status to available after successful feedback submission
+      let statusUpdated = false
       try {
         const statusResponse = await makeAuthenticatedRequest('http://127.0.0.1:8000/privileges/my-status', {
           method: 'PUT',
           body: JSON.stringify({
-            status: "free"
+            status: "available"
           })
         })
 
-        if (!statusResponse.ok) {
+        if (statusResponse.ok) {
+          statusUpdated = true
+          
+          // Fetch updated user profile from /user/me
+          try {
+            const userProfileResponse = await makeAuthenticatedRequest('http://127.0.0.1:8000/user/me', {
+              method: 'GET'
+            })
+            
+            if (userProfileResponse.ok) {
+              const updatedUser = await userProfileResponse.json()
+              
+              // Update localStorage with fresh user data
+              localStorage.setItem("ats_user", JSON.stringify(updatedUser))
+              
+              // Dispatch custom event to notify header/layout of user update
+              window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }))
+            }
+          } catch (profileError) {
+            console.error('Error fetching updated user profile:', profileError)
+          }
+        } else {
           console.error('Failed to update panelist status')
         }
       } catch (statusError) {
@@ -99,7 +121,9 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
 
       toast({
         title: "Success",
-        description: "Feedback submitted successfully. Your status has been updated to available.",
+        description: statusUpdated 
+          ? "Feedback submitted successfully. Your status has been updated to available."
+          : "Feedback submitted successfully. However, status update failed.",
       })
 
       // Reset form first

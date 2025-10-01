@@ -52,6 +52,19 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
     setIsLoading(false)
   }, [navigate, requiredRole])
 
+  // Listen for user updates from feedback submissions or other actions
+  useEffect(() => {
+    const handleUserUpdatedEvent = (event: CustomEvent<User>) => {
+      setUser(event.detail)
+    }
+
+    window.addEventListener('userUpdated', handleUserUpdatedEvent as EventListener)
+    
+    return () => {
+      window.removeEventListener('userUpdated', handleUserUpdatedEvent as EventListener)
+    }
+  }, [])
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
