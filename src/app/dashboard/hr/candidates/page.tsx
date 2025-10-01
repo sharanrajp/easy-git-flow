@@ -460,7 +460,7 @@ export default function CandidatesPage() {
       // Show success message
       toast({
         title: "Candidate added successfully",
-        description: `${newCandidate.name} has been added to the candidates list.`,
+        description: `${candidateData.name} has been added to the candidates list.`,
       });
 
       // Refresh unassigned candidates list immediately
