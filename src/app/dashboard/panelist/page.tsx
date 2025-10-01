@@ -148,7 +148,7 @@ export default function PanelistDashboard() {
       total_experience: candidate.total_experience,
       source: undefined,
       created_at: candidate.created_at,
-      recruiter: undefined,
+      recruiter_name: candidate.recruiter_name || "Unknown",
       assignedPanelist: undefined,
       panel_name: undefined,
       currentRound: candidate.last_interview_round,

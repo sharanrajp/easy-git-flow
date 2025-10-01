@@ -13,7 +13,7 @@ export interface BackendCandidate {
   skill_set?: string[];
   source?: string;
   created_at: string;
-  recruiter?: string;
+  recruiter_name?: string;
   assignedPanelist?: string;
   currentRound?: string;
   interviewDateTime?: string;
@@ -45,6 +45,7 @@ export interface PanelistCandidate {
   interview_type?:string;
   willing_to_relocate?:boolean;
   applied_position?:string;
+  recruiter_name?:string;
   created_at?:string;
   expected_ctc?:string;
   previous_rounds: Array<{

@@ -41,7 +41,6 @@ import {
   List,
   Download,
 } from "lucide-react"
-import { getMockCandidates, type Candidate, type Vacancy } from "@/lib/mock-data"
 import { fetchVacancies } from "@/lib/vacancy-api"
 import { CandidateForm } from "@/components/candidates/candidate-form"
 import { CandidateDetails } from "@/components/candidates/candidate-details"
@@ -62,13 +61,7 @@ import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 
 export default function CandidatesPage() {
   const { toast } = useToast()
-  const [candidates, setCandidates] = useState<Candidate[]>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("candidates")
-      return stored ? JSON.parse(stored) : getMockCandidates()
-    }
-    return getMockCandidates()
-  })
+  const [candidates, setCandidates] = useState<Candidate[]>([])
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [dateFilter, setDateFilter] = useState("all")
@@ -456,7 +449,7 @@ export default function CandidatesPage() {
         source: candidateData.source,
         created_at: new Date().toISOString().split("T")[0],
         status: "unassigned",
-        recruiter: currentUser?.name || "Unknown",
+        recruiter_name: candidateData?.recruiter_name || "Unknown",
       };
 
       // Call the API to add candidate
@@ -474,7 +467,7 @@ export default function CandidatesPage() {
         skill_set: newBackendCandidate.skill_set || [],
         source: newBackendCandidate.source || "",
         created_at: newBackendCandidate.created_at,
-        recruiter: newBackendCandidate.recruiter || "",
+        recruiter_name: newBackendCandidate.recruiter_name || "",
         assignedPanelist: newBackendCandidate.assignedPanelist,
         currentRound: newBackendCandidate.currentRound,
         interviewDateTime: newBackendCandidate.interviewDateTime,

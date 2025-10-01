@@ -41,7 +41,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     willing_to_relocate: candidate?.willing_to_relocate || false,
     skill_set: candidate?.skill_set || [],
     resume: null as File | null,
-    recruiter: candidate?.recruiter || currentUser?.name || "",
+    recruiter_name: candidate?.recruiter_name || currentUser?.name || "",
   })
 
   const [newSkill, setNewSkill] = useState("")
@@ -182,7 +182,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
         </div>
         <div className="space-y-2">
           <Label htmlFor="recruiter">Recruiter *</Label>
-          <Select value={formData.recruiter} onValueChange={(value) => setFormData({ ...formData, recruiter: value })}>
+          <Select value={formData.recruiter_name} onValueChange={(value) => setFormData({ ...formData, recruiter_name: value })}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select recruiter" />
             </SelectTrigger>

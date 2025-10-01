@@ -39,7 +39,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     willing_to_relocate: candidate?.willing_to_relocate || false,
     skill_set: (candidate as any)?.skill_set || (candidate as any)?.skills || [],
     resume: null as File | null,
-    recruiter: candidate?.recruiter || "",
+    recruiter_name: candidate?.recruiter_name || "",
   })
 
   const [newSkill, setNewSkill] = useState("")
@@ -216,7 +216,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
               setFormData({ 
                 ...formData, 
                 applied_position: value,
-                recruiter: selectedVacancy?.recruiter_name || "Auto-assigned"
+                recruiter_name: selectedVacancy?.recruiter_name || "Auto-assigned"
               })
             }}
           >
@@ -242,7 +242,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           <Label htmlFor="recruiter">Recruiter Name</Label>
           <Input
             id="recruiter"
-            value={formData.recruiter}
+            value={formData.recruiter_name}
             readOnly
             className="w-full bg-muted"
             placeholder="Auto-filled based on position"

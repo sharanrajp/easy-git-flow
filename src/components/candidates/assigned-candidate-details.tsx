@@ -29,7 +29,7 @@ export interface BackendCandidate {
   skill_set?: string[]
   source?: string
   created_at?: string
-  recruiter?: string
+  recruiter_name?: string
   assignedPanelist?: string
   panel_name?: string
   currentRound?: string
