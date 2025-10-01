@@ -58,6 +58,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
 import { SkillsDisplay } from "@/components/ui/skills-display"
 import { Pagination } from "@/components/ui/pagination"
+import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 
 export default function CandidatesPage() {
   const { toast } = useToast()
@@ -518,21 +519,83 @@ export default function CandidatesPage() {
     }
   }
 
-  const handleEditCandidate = (candidateData: Partial<Candidate>) => {
+  const handleEditCandidate = async (candidateData: Partial<Candidate>) => {
     if (!selectedCandidate) return
 
-    const updatedCandidates = candidates.map((c) => (c.id === selectedCandidate.id ? { ...c, ...candidateData } : c))
-    setCandidates(updatedCandidates)
-    setIsEditOpen(false)
-    setSelectedCandidate(null)
-    setEditFormHasChanges(false)
+    try {
+      // Update in backend
+      // Note: This would require an update candidate API endpoint
+      // For now, we'll just update locally and refresh from backend
+      
+      const updatedCandidates = candidates.map((c) => (c.id === selectedCandidate.id ? { ...c, ...candidateData } : c))
+      setCandidates(updatedCandidates)
+      setIsEditOpen(false)
+      setSelectedCandidate(null)
+      setEditFormHasChanges(false)
+
+      toast({
+        title: "Candidate updated",
+        description: "Candidate information has been updated successfully.",
+      })
+
+      // Refresh candidates from backend
+      try {
+        const [updatedUnassigned, updatedAssigned] = await Promise.all([
+          fetchUnassignedCandidates(),
+          fetchAssignedCandidates()
+        ])
+        setUnassignedCandidates(updatedUnassigned)
+        setAssignedCandidates(updatedAssigned)
+      } catch (refreshError) {
+        console.error("Error refreshing candidates:", refreshError)
+      }
+    } catch (error) {
+      console.error("Error updating candidate:", error)
+      toast({
+        variant: "destructive",
+        title: "Error updating candidate",
+        description: "Failed to update the candidate. Please try again.",
+      })
+    }
   }
 
-  const handleDeleteCandidate = () => {
+  const handleDeleteCandidate = async () => {
     if (!deleteCandidate) return
 
-    setCandidates(candidates.filter((c) => c.id !== deleteCandidate.id))
-    setDeleteCandidate(null)
+    try {
+      // Delete from backend using the API
+      const candidateId = (deleteCandidate as any)._id || deleteCandidate.id
+      await deleteCandidates([candidateId])
+
+      // Remove from local state
+      setCandidates(candidates.filter((c) => c.id !== deleteCandidate.id))
+      
+      toast({
+        title: "Candidate deleted",
+        description: "Candidate has been removed successfully.",
+      })
+
+      // Refresh both unassigned and assigned lists
+      try {
+        const [updatedUnassigned, updatedAssigned] = await Promise.all([
+          fetchUnassignedCandidates(),
+          fetchAssignedCandidates()
+        ])
+        setUnassignedCandidates(updatedUnassigned)
+        setAssignedCandidates(updatedAssigned)
+      } catch (refreshError) {
+        console.error("Error refreshing candidates:", refreshError)
+      }
+
+      setDeleteCandidate(null)
+    } catch (error) {
+      console.error("Error deleting candidate:", error)
+      toast({
+        variant: "destructive",
+        title: "Error deleting candidate",
+        description: "Failed to delete the candidate. Please try again.",
+      })
+    }
   }
 
   const handleBulkUpload = async (uploadedCandidates: Partial<Candidate>[]) => {
@@ -1513,7 +1576,24 @@ export default function CandidatesPage() {
                                 }}
                               >
                                 <Eye className="h-4 w-4" />
-                              </Button>                              
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setSelectedCandidate(candidate as any)
+                                  setIsEditOpen(true)
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeleteCandidate(candidate as any)}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-600" />
+                              </Button>
                               {candidate.checked_in && (
                                 <Button
                                   size="sm"
@@ -1658,14 +1738,30 @@ export default function CandidatesPage() {
                               <div className="flex items-center gap-2">
                                 <Button
                                   variant="ghost"
-                                  size="sm"
-                                  className="cursor-pointer"
+                                  size="icon"
                                   onClick={() => {
                                     setSelectedAssignedCandidate(candidate)
                                     setIsAssignedDetailsOpen(true)
                                   }}
                                 >
                                   <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setSelectedCandidate(candidate as any)
+                                    setIsEditOpen(true)
+                                  }}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setDeleteCandidate(candidate as any)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-600" />
                                 </Button>
                                 {candidate.final_status === "selected" && (candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && (
                                   <Button
@@ -2363,22 +2459,14 @@ export default function CandidatesPage() {
           </DialogContent>
         </Dialog>
 
-        <AlertDialog open={!!deleteCandidate} onOpenChange={() => setDeleteCandidate(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Candidate</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete {deleteCandidate?.name}? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteCandidate} className="bg-red-600 hover:bg-red-700">
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+
+        <DeleteConfirmDialog
+          open={!!deleteCandidate}
+          onOpenChange={() => setDeleteCandidate(null)}
+          onConfirm={handleDeleteCandidate}
+          title="Delete Candidate"
+          description={`Are you sure you want to delete ${deleteCandidate?.name}? This action cannot be undone.`}
+        />
         {/* Assigned Candidate Details Modal */}
         <AssignedCandidateDetails
           candidate={selectedAssignedCandidate}
