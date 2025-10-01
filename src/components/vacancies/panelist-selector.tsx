@@ -29,8 +29,10 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
     fetchUsers()
   }, [])
 
-  // Filter users to get potential panelists (all users are valid panelists)
-  const availablePanelists = allUsers
+  // Filter users to get potential panelists (only role=panelist and panelist_type=panel_member)
+  const availablePanelists = allUsers.filter(
+    (user) => user.role === "panelist" && user.panelist_type === "panel_member"
+  )
 
   // Filter based on search term
   const filteredPanelists = availablePanelists.filter(
