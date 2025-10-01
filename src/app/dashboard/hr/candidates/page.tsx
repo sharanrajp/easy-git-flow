@@ -346,16 +346,14 @@ export default function CandidatesPage() {
     )
   })
 
-  // Apply filters to backend candidates with memoization - only to active tab
+  // Apply filters to backend candidates with memoization
   const filteredUnassignedCandidates = useMemo(() => {
-    if (activeTab !== "unassigned") return unassignedCandidates
     return filterBackendCandidates(unassignedCandidates)
-  }, [unassignedCandidates, activeTab, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
+  }, [unassignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
   
   const filteredAssignedCandidates = useMemo(() => {
-    if (activeTab !== "assigned") return assignedCandidates
     return filterBackendCandidates(assignedCandidates)
-  }, [assignedCandidates, activeTab, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
+  }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
 
   // Paginated data
   const paginatedUnassignedCandidates = useMemo(() => {
