@@ -196,15 +196,6 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 bg-card/95 backdrop-blur-xl border-border/50 shadow-elegant">
               <DropdownMenuLabel className="font-semibold">My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="smooth-transition">
-                <UserIcon className="mr-3 h-4 w-4" />
-                Profile Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem className="smooth-transition">
-                <Settings className="mr-3 h-4 w-4" />
-                Settings
-              </DropdownMenuItem>
 
               {user.role === "panelist" && (
                 <>

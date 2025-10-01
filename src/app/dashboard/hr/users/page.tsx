@@ -65,8 +65,10 @@ export default function UsersPage() {
     const matchesRole = (() => {
       if (roleFilter === "all") return true
       if (roleFilter === "manager") {
-        // Include both users with role "manager" and panelists with panelist_type "manager"
-        return user.role === "manager" || (user.role === "panelist" && user.panelist_type === "manager")
+        return (user.role === "panelist" && user.panelist_type === "manager")
+      }
+      if (roleFilter === "panelist") {
+        return (user.role === "panelist" && user.panelist_type === "panel_member")
       }
       return user.role === roleFilter
     })()
