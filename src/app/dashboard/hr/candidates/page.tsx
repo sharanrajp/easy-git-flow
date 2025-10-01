@@ -341,13 +341,14 @@ export default function CandidatesPage() {
   const unassignedTotalPages = Math.ceil(filteredUnassignedCandidates.length / itemsPerPage)
   const assignedTotalPages = Math.ceil(filteredAssignedCandidates.length / itemsPerPage)
 
-  const statusOptions = [
-    { value: "selected", label: "Selected" },
-    { value: "rejected", label: "Rejected" },
-    { value: "on-hold", label: "On Hold" },
-    { value: "assigned", label: "Assigned" },
-    { value: "unassigned", label: "Unassigned" },
-  ]
+  const statusOptions = {
+    "assigned": [
+      { value: "selected", label: "Selected" },
+      { value: "rejected", label: "Rejected" },
+      { value: "on-hold", label: "On Hold" },
+      { value: "assigned", label: "Assigned" },
+    ],
+  }
 
   const roundOptions = [
     { value: "r1", label: "r1" },
@@ -1286,7 +1287,7 @@ export default function CandidatesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  {statusOptions?.map((opt) => (
+                  {statusOptions?.[activeTab]?.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {opt.label}
                     </SelectItem>
