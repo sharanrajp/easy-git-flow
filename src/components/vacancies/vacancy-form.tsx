@@ -168,6 +168,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       formData.priority &&
       formData.city &&
       formData.hiring_manager_name &&
+      formData.assignedPanelists &&
       formData.recruiter_name &&
       formData.number_of_vacancies &&
       formData.experienceFrom &&

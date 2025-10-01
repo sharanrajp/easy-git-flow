@@ -46,6 +46,7 @@ interface VacancyCreateRequest {
   job_desc?: string;
   request_type?:string;
   about_position?: string;
+  assignedPanelists?: string[];
 }
 
 // Transform backend vacancy to frontend format
@@ -89,6 +90,7 @@ function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyC
   return {
     position_title: frontendVacancy.position_title || "",
     hiring_manager_name: frontendVacancy.hiring_manager_name || "",
+    assignedPanelists: frontendVacancy.assignedPanelists || [],
     recruiter_name: frontendVacancy.recruiter_name || "",
     job_type: frontendVacancy.job_type || "full_time",
     priority: frontendVacancy.priority || "P3",
