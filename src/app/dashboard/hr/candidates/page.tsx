@@ -1206,8 +1206,13 @@ export default function CandidatesPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Candidates</h1>
-            <p className="text-gray-600">Manage and track candidate applications</p>
-          </div>
+          </div>          
+          {selectedCandidates.length > 0 && (
+            <BulkActionsToolbar
+              selectedCount={selectedCandidates.length}
+              onBulkAction={handleBulkAction}
+            />
+          )}
           <div className="flex gap-3">
             <Button 
               variant="outline" 
@@ -1365,14 +1370,6 @@ export default function CandidatesPage() {
           </TabsList>
 
           <TabsContent value="unassigned">
-            {selectedCandidates.length > 0 && activeTab === "unassigned" && (
-              <div className="mb-4">
-                <BulkActionsToolbar
-                  selectedCount={selectedCandidates.length}
-                  onBulkAction={handleBulkAction}
-                />
-              </div>
-            )}
             {loadingUnassigned ? (
               <Card>
                 <CardContent className="flex items-center justify-center py-16">
@@ -1521,14 +1518,6 @@ export default function CandidatesPage() {
           </TabsContent>
 
           <TabsContent value="assigned">
-            {selectedCandidates.length > 0 && activeTab === "assigned" && (
-              <div className="mb-4">
-                <BulkActionsToolbar
-                  selectedCount={selectedCandidates.length}
-                  onBulkAction={handleBulkAction}
-                />
-              </div>
-            )}
             {loadingAssigned ? (
               <Card>
                 <CardContent className="flex items-center justify-center py-16">

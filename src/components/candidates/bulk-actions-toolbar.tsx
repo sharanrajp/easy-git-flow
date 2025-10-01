@@ -19,19 +19,18 @@ export function BulkActionsToolbar({ selectedCount, onBulkAction }: BulkActionsT
 
   return (
     <>
-      <div className="inline-flex items-center bg-blue-50 border border-blue-200 rounded-lg p-4 w-auto">
-        <div className="flex items-center space-x-4">
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+      <div className="inline-flex items-center bg-blue-50 border border-blue-200 rounded-md px-2 py-1 w-auto">
+        <div className="flex items-center space-x-2">
+          <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 h-5">
             {selectedCount} candidate{selectedCount > 1 ? "s" : ""} selected
           </Badge>
-          
+
           <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-red-700 border-red-300 hover:bg-red-50"
+            variant="outline"
+            className="h-5 px-1.5 text-[11px] text-red-700 border-red-300 hover:bg-red-50 leading-none"
             onClick={() => setIsDeleteDialogOpen(true)}
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 className="h-3 w-3 mr-0.5" />
             Delete
           </Button>
         </div>
