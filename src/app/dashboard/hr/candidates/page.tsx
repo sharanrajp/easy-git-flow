@@ -234,7 +234,23 @@ export default function CandidatesPage() {
 
       const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
       const matchesStatus = statusFilter === "all" || (candidate.final_status || "").toLowerCase() === statusFilter.toLowerCase()
-      const matchesExperience = experienceFilter === "all" || String(candidate.total_experience || "").includes(experienceFilter)
+      const matchesExperience = (() => {
+        if (experienceFilter === "all") return true
+        const experience = Number(candidate.total_experience) || 0
+        
+        switch (experienceFilter) {
+          case "0-2":
+            return experience >= 0 && experience <= 2
+          case "3-5":
+            return experience >= 3 && experience <= 5
+          case "6-10":
+            return experience >= 6 && experience <= 10
+          case "10+":
+            return experience > 10
+          default:
+            return true
+        }
+      })()
       const matchesRecruiter =
         recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
       const matchesRound = roundFilter === "all" || (candidate.last_interview_round || "").toLowerCase() === roundFilter.toLowerCase()
@@ -244,15 +260,17 @@ export default function CandidatesPage() {
         if (!candidate.created_at) return false
         const created_at = new Date(candidate.created_at)
         const now = new Date()
-        const daysDiff = Math.floor((now.getTime() - created_at.getTime()) / (1000 * 60 * 60 * 24))
 
         switch (dateFilter) {
           case "today":
-            return daysDiff === 0
+            // Compare calendar dates only (ignore time)
+            return created_at.toDateString() === now.toDateString()
           case "week":
+            const daysDiff = Math.floor((now.getTime() - created_at.getTime()) / (1000 * 60 * 60 * 24))
             return daysDiff <= 7
           case "month":
-            return daysDiff <= 30
+            const monthsDiff = Math.floor((now.getTime() - created_at.getTime()) / (1000 * 60 * 60 * 24))
+            return monthsDiff <= 30
           default:
             return true
         }
@@ -279,7 +297,23 @@ export default function CandidatesPage() {
     const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
     const matchesStatus = statusFilter === "all" || 
       (candidate.final_status || candidate.status || "").toLowerCase() === statusFilter.toLowerCase()
-    const matchesExperience = experienceFilter === "all" || String(candidate.total_experience || "").includes(experienceFilter)
+    const matchesExperience = (() => {
+      if (experienceFilter === "all") return true
+      const experience = Number(candidate.total_experience) || 0
+      
+      switch (experienceFilter) {
+        case "0-2":
+          return experience >= 0 && experience <= 2
+        case "3-5":
+          return experience >= 3 && experience <= 5
+        case "6-10":
+          return experience >= 6 && experience <= 10
+        case "10+":
+          return experience > 10
+        default:
+          return true
+      }
+    })()
     const matchesRecruiter =
       recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
     const matchesRound = roundFilter === "all" || 
@@ -290,15 +324,17 @@ export default function CandidatesPage() {
       if (dateFilter === "all") return true
       const created_at = new Date(candidate.created_at)
       const now = new Date()
-      const daysDiff = Math.floor((now.getTime() - created_at.getTime()) / (1000 * 60 * 60 * 24))
 
       switch (dateFilter) {
         case "today":
-          return daysDiff === 0
+          // Compare calendar dates only (ignore time)
+          return created_at.toDateString() === now.toDateString()
         case "week":
+          const daysDiff = Math.floor((now.getTime() - created_at.getTime()) / (1000 * 60 * 60 * 24))
           return daysDiff <= 7
         case "month":
-          return daysDiff <= 30
+          const monthsDiff = Math.floor((now.getTime() - created_at.getTime()) / (1000 * 60 * 60 * 24))
+          return monthsDiff <= 30
         default:
           return true
       }
