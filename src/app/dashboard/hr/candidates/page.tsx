@@ -1299,14 +1299,6 @@ export default function CandidatesPage() {
                   ))}
                 </SelectContent>
               </Select>
-              {selectedCandidates.length > 0 && (
-                <div className="ml-auto">
-                  <BulkActionsToolbar
-                    selectedCandidates={getSelectedCandidateObjects()}
-                    onBulkAction={handleBulkAction}
-                  />
-                </div>
-              )}
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -1373,6 +1365,14 @@ export default function CandidatesPage() {
           </TabsList>
 
           <TabsContent value="unassigned">
+            {selectedCandidates.length > 0 && activeTab === "unassigned" && (
+              <div className="mb-4">
+                <BulkActionsToolbar
+                  selectedCount={selectedCandidates.length}
+                  onBulkAction={handleBulkAction}
+                />
+              </div>
+            )}
             {loadingUnassigned ? (
               <Card>
                 <CardContent className="flex items-center justify-center py-16">
@@ -1521,6 +1521,14 @@ export default function CandidatesPage() {
           </TabsContent>
 
           <TabsContent value="assigned">
+            {selectedCandidates.length > 0 && activeTab === "assigned" && (
+              <div className="mb-4">
+                <BulkActionsToolbar
+                  selectedCount={selectedCandidates.length}
+                  onBulkAction={handleBulkAction}
+                />
+              </div>
+            )}
             {loadingAssigned ? (
               <Card>
                 <CardContent className="flex items-center justify-center py-16">
