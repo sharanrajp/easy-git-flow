@@ -463,6 +463,14 @@ export default function CandidatesPage() {
         description: `${newCandidate.name} has been added to the candidates list.`,
       });
 
+      // Refresh unassigned candidates list immediately
+      try {
+        const updatedUnassigned = await fetchUnassignedCandidates();
+        setUnassignedCandidates(updatedUnassigned);
+      } catch (refreshError) {
+        console.error("Error refreshing candidates list:", refreshError);
+      }
+
     } catch (error) {
       console.error("Error creating candidate:", error);
       toast({
@@ -490,7 +498,7 @@ export default function CandidatesPage() {
     setDeleteCandidate(null)
   }
 
-  const handleBulkUpload = (uploadedCandidates: Partial<Candidate>[]) => {
+  const handleBulkUpload = async (uploadedCandidates: Partial<Candidate>[]) => {
     const newCandidates = uploadedCandidates.map((candidateData, index) => ({
       id: (Date.now() + index).toString(),
       ...candidateData,
@@ -503,6 +511,14 @@ export default function CandidatesPage() {
 
     setCandidates([...newCandidates, ...candidates])
     setIsBulkUploadOpen(false)
+    
+    // Refresh unassigned candidates list immediately after bulk upload
+    try {
+      const updatedUnassigned = await fetchUnassignedCandidates();
+      setUnassignedCandidates(updatedUnassigned);
+    } catch (error) {
+      console.error("Error refreshing candidates list after bulk upload:", error);
+    }
   }
 
   const handleCheckIn = (candidateId: string) => {
