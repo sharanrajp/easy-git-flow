@@ -1204,7 +1204,7 @@ export default function CandidatesPage() {
     <DashboardLayout requiredRole="hr">
       <div className="flex flex-col h-full">
         {/* Fixed header section */}
-        <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background">
+        <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background z-20">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Candidates</h1>
@@ -1359,8 +1359,12 @@ export default function CandidatesPage() {
             </Select>
           </div>
         </div>
+        </div>
 
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto">
         <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="flex-1 flex flex-col overflow-hidden pt-4">
+          <div className="pt-4">
           <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
             <TabsTrigger value="unassigned">
               Unassigned ({loadingUnassigned ? "..." : filteredUnassignedCandidates.length})
@@ -1370,8 +1374,7 @@ export default function CandidatesPage() {
             </TabsTrigger>
             {/* <TabsTrigger value="completed">Completed ({completedCandidates.length})</TabsTrigger> */}
           </TabsList>
-
-          {/* Scrollable table section */}
+          </div>
           <div className="flex-1 overflow-hidden pt-4">
             <TabsContent value="unassigned" className="mt-0 h-full overflow-auto">
             {loadingUnassigned ? (
@@ -1666,6 +1669,9 @@ export default function CandidatesPage() {
               </Card>
             )}
           </TabsContent>
+
+          {/* Scrollable table section */}
+          
 
           {/* <TabsContent value="completed"> */}
             {/* {completedCandidates.length > 0 ? (
