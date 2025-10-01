@@ -15,6 +15,7 @@ import { Plus, Search, Edit, Trash2, Grid, List } from "lucide-react"
 import { getAllUsers, type User, makeAuthenticatedRequest } from "@/lib/auth"
 import { UserForm } from "@/components/users/user-form"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
+import { Pagination } from "@/components/ui/pagination"
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([])
@@ -29,6 +30,8 @@ export default function UsersPage() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [showDeleteSelected, setShowDeleteSelected] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 15
 
   const fetchUsers = async () => {
     try {
@@ -61,6 +64,14 @@ export default function UsersPage() {
 
     return matchesSearch && matchesRole && matchesStatus
   })
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, roleFilter, statusFilter])
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -286,10 +297,13 @@ export default function UsersPage() {
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
-        ) : viewMode === "list" ? (
-          <Card>
-            <CardContent className="p-0">
-              <Table>
+        ) : (
+          <>
+            {viewMode === "list" ? (
+              <>
+                <Card>
+                  <CardContent className="p-0">
+                    <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12">
@@ -308,7 +322,7 @@ export default function UsersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.map((user) => (
+                  {paginatedUsers.map((user) => (
                     <TableRow key={user._id}>
                       <TableCell>
                         <Checkbox
@@ -424,147 +438,164 @@ export default function UsersPage() {
                     </TableRow>
                   ))}
                 </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
-                <Card key={user._id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={selectedUsers.includes(user._id)}
-                          onCheckedChange={(checked) => handleSelectUser(user._id, checked as boolean)}
-                          className="cursor-pointer"
-                        />
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                          <span className="text-white font-bold text-sm">
-                            {user.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </span>
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900 text-sm">{user.name}</h3>
-                          <p className="text-xs text-gray-600">{user.email}</p>
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="cursor-pointer">
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedUser(user)
-                              setIsEditOpen(true)
-                            }}
-                            className="cursor-pointer"
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit User
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setDeleteUser(user)} className="text-red-600 cursor-pointer">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete User
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Badge className={`${getRoleColor(user.role)} text-xs`}>
-                          {formatRole(user.role, user.panelist_type)}
-                        </Badge>
-                        {user.role === "panelist" &&
-                          user.current_status &&
-                          (user.current_status === "in_interview" ? (
-                            <Badge className={`${getStatusColor(user.current_status)} text-xs`}>in_interview</Badge>
-                          ) : (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="p-0 h-auto cursor-pointer">
-                                  <Badge className={`${getStatusColor(user.current_status)} text-xs`}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="start">
-                                <DropdownMenuItem
-                                  onClick={() => handleStatusChange(user._id, "free")}
-                                  className="cursor-pointer"
-                                >
-                                  <div className="flex items-center">
-                                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                                    Available
-                                  </div>
-                                </DropdownMenuItem>
-                                {user.current_status === "free" && (
-                                  <>
-                                    <DropdownMenuItem
-                                      onClick={() => handleStatusChange(user._id, "break")}
-                                      className="cursor-pointer"
-                                    >
-                                      <div className="flex items-center">
-                                        <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
-                                        Break
-                                      </div>
-                                    </DropdownMenuItem>
-                                  </>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          ))}
-                      </div>
-
-                      {Array.isArray(user.skill_set) && user.skill_set.length > 0 && (
-                        <div>
-                          <div className="flex flex-wrap gap-1">
-                            {user.skill_set.slice(0, 2).map((skill) => (
-                              <Badge key={skill} variant="outline" className="text-xs">
-                                {skill}
-                              </Badge>
-                            ))}
-                            {user.skill_set.length > 2 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{user.skill_set.length - 2}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    </Table>
                   </CardContent>
                 </Card>
-              ))
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                  className="mt-4"
+                />
+              </>
             ) : (
-              <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <Search className="h-8 w-8 text-gray-400" />
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {paginatedUsers.length > 0 ? (
+                paginatedUsers.map((user) => (
+                  <Card key={user._id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={selectedUsers.includes(user._id)}
+                            onCheckedChange={(checked) => handleSelectUser(user._id, checked as boolean)}
+                            className="cursor-pointer"
+                          />
+                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                            <span className="text-white font-bold text-sm">
+                              {user.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                            </span>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900 text-sm">{user.name}</h3>
+                            <p className="text-xs text-gray-600">{user.email}</p>
+                          </div>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="cursor-pointer">
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedUser(user)
+                                setIsEditOpen(true)
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit User
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setDeleteUser(user)} className="text-red-600 cursor-pointer">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete User
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Badge className={`${getRoleColor(user.role)} text-xs`}>
+                            {formatRole(user.role, user.panelist_type)}
+                          </Badge>
+                          {user.role === "panelist" &&
+                            user.current_status &&
+                            (user.current_status === "in_interview" ? (
+                              <Badge className={`${getStatusColor(user.current_status)} text-xs`}>in_interview</Badge>
+                            ) : (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="p-0 h-auto cursor-pointer">
+                                    <Badge className={`${getStatusColor(user.current_status)} text-xs`}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start">
+                                  <DropdownMenuItem
+                                    onClick={() => handleStatusChange(user._id, "free")}
+                                    className="cursor-pointer"
+                                  >
+                                    <div className="flex items-center">
+                                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                      Available
+                                    </div>
+                                  </DropdownMenuItem>
+                                  {user.current_status === "free" && (
+                                    <>
+                                      <DropdownMenuItem
+                                        onClick={() => handleStatusChange(user._id, "break")}
+                                        className="cursor-pointer"
+                                      >
+                                        <div className="flex items-center">
+                                          <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
+                                          Break
+                                        </div>
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            ))}
+                        </div>
+
+                        {Array.isArray(user.skill_set) && user.skill_set.length > 0 && (
+                          <div>
+                            <div className="flex flex-wrap gap-1">
+                              {user.skill_set.slice(0, 2).map((skill) => (
+                                <Badge key={skill} variant="outline" className="text-xs">
+                                  {skill}
+                                </Badge>
+                              ))}
+                              {user.skill_set.length > 2 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{user.skill_set.length - 2}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <Search className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No users found</h3>
+                  <p className="text-gray-500 mb-4">
+                    {searchTerm || roleFilter !== "all" || statusFilter !== "all"
+                      ? "Try adjusting your search or filters"
+                      : "Get started by adding your first user"}
+                  </p>
+                  {!searchTerm && roleFilter === "all" && statusFilter === "all" && (
+                    <Button
+                      onClick={() => setIsCreateOpen(true)}
+                      className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add User
+                    </Button>
+                  )}
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No users found</h3>
-                <p className="text-gray-500 mb-4">
-                  {searchTerm || roleFilter !== "all" || statusFilter !== "all"
-                    ? "Try adjusting your search or filters"
-                    : "Get started by adding your first user"}
-                </p>
-                {!searchTerm && roleFilter === "all" && statusFilter === "all" && (
-                  <Button
-                    onClick={() => setIsCreateOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add User
-                  </Button>
-                )}
-              </div>
+              )}
+                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                  className="mt-4"
+                />
+              </>
             )}
-          </div>
+          </>
         )}
 
         {/* Edit Dialog */}

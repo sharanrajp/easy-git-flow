@@ -33,6 +33,7 @@ import { VacancyForm } from "@/components/vacancies/vacancy-form"
 import { VacancyDetails } from "@/components/vacancies/vacancy-details"
 import { PanelistSelector } from "@/components/vacancies/panelist-selector"
 import { formatDate } from "@/lib/utils"
+import { Pagination } from "@/components/ui/pagination"
 
 export default function VacanciesPage() {
   const [vacancies, setVacancies] = useState<Vacancy[]>([])
@@ -52,6 +53,8 @@ export default function VacanciesPage() {
   const [candidateCounts, setCandidateCounts] = useState<
     Record<string, { applications: number; shortlisted: number; interviewed: number; joined: number }>
   >({})
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 15
 
   const getCandidateCountsForVacancy = useCallback((vacancyTitle: string) => {
     if (typeof window === "undefined") return { applications: 0, shortlisted: 0, interviewed: 0, joined: 0 }
@@ -145,6 +148,14 @@ export default function VacanciesPage() {
 
     return matchesSearch && matchesStatus && matchesPriority && matchesRecruiter
   })
+
+  const totalPages = Math.ceil(filteredVacancies.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedVacancies = filteredVacancies.slice(startIndex, startIndex + itemsPerPage)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, statusFilter, priorityFilter, recruiterFilter])
 
   const handleCreateVacancy = async (vacancyData: Partial<Vacancy>) => {
     try {
@@ -395,11 +406,13 @@ export default function VacanciesPage() {
 
         {/* Vacancies List/Grid */}
         {!loading && !error && (
-          viewMode === "list" ? (
-          <Card>
-            <CardContent className="p-0">
-              <TooltipProvider>
-                <Table>
+          <>
+            {viewMode === "list" ? (
+              <>
+                <Card>
+                  <CardContent className="p-0">
+                    <TooltipProvider>
+                      <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>S.No</TableHead>
@@ -416,7 +429,7 @@ export default function VacanciesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                     {filteredVacancies.map((vacancy) => {
+                     {paginatedVacancies.map((vacancy) => {
                        const counts = candidateCounts[vacancy.position_title] || {
                          applications: 0,
                          shortlisted: 0,
@@ -539,15 +552,23 @@ export default function VacanciesPage() {
                           </TableCell>
                         </TableRow>
                       )
-                    })}
-                  </TableBody>
-                </Table>
-              </TooltipProvider>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredVacancies.map((vacancy) => {
+                     })}
+                   </TableBody>
+                 </Table>
+                 </TooltipProvider>
+               </CardContent>
+             </Card>
+             <Pagination
+               currentPage={currentPage}
+               totalPages={totalPages}
+               onPageChange={setCurrentPage}
+               className="mt-4"
+             />
+           </>
+         ) : (
+           <>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+               {paginatedVacancies.map((vacancy) => {
               const counts = candidateCounts[vacancy.position_title] || {
                 applications: 0,
                 shortlisted: 0,
@@ -616,9 +637,17 @@ export default function VacanciesPage() {
                   </CardContent>
                 </Card>
               )
-            })}
-          </div>
-          )
+               })}
+             </div>
+             <Pagination
+               currentPage={currentPage}
+               totalPages={totalPages}
+               onPageChange={setCurrentPage}
+               className="mt-4"
+             />
+           </>
+         )}
+       </>
         )}
 
         {/* Empty State */}
