@@ -192,6 +192,9 @@ export default function PanelistDashboard() {
   const handleScheduledFeedbackSubmit = useCallback(() => {
     loadCandidates() // Refresh the candidates list
     handleScheduledFeedbackClose()
+    
+    // Notify other components to refresh
+    window.dispatchEvent(new Event('dashboardUpdate'))
   }, [loadCandidates, handleScheduledFeedbackClose])
 
   useEffect(() => {

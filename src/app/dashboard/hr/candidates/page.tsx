@@ -501,6 +501,9 @@ export default function CandidatesPage() {
       } catch (refreshError) {
         console.error("Error refreshing candidates list:", refreshError);
       }
+      
+      // Notify dashboards to refresh
+      window.dispatchEvent(new Event('dashboardUpdate'))
 
     } catch (error) {
       console.error("Error creating candidate:", error);
@@ -542,6 +545,9 @@ export default function CandidatesPage() {
       } catch (refreshError) {
         console.error("Error refreshing candidates:", refreshError)
       }
+      
+      // Notify dashboards to refresh
+      window.dispatchEvent(new Event('dashboardUpdate'))
     } catch (error) {
       console.error("Error updating candidate:", error)
       toast({
@@ -579,6 +585,9 @@ export default function CandidatesPage() {
       } catch (refreshError) {
         console.error("Error refreshing candidates:", refreshError)
       }
+      
+      // Notify dashboards to refresh
+      window.dispatchEvent(new Event('dashboardUpdate'))
 
       setDeleteCandidate(null)
     } catch (error) {
@@ -776,6 +785,9 @@ export default function CandidatesPage() {
         )
       )
       
+      // Notify dashboards to refresh
+      window.dispatchEvent(new Event('dashboardUpdate'))
+      
       toast({
         title: "Success",
         description: `${candidate.name} has been ${checked ? 'checked in' : 'checked out'} successfully.`,
@@ -855,6 +867,9 @@ export default function CandidatesPage() {
       setUnassignedCandidates(updatedUnassigned)
       setAssignedCandidates(updatedAssigned)
       
+      // Notify dashboards to refresh
+      window.dispatchEvent(new Event('dashboardUpdate'))
+      
       toast({
         title: "Success",
         description: `${selectedCandidateForPanel.name} has been assigned to the panel successfully.`,
@@ -919,6 +934,9 @@ export default function CandidatesPage() {
       setUnassignedCandidates(unassignedData)
       setAssignedCandidates(assignedData)
       setOngoingInterviews(interviewsData)
+      
+      // Notify dashboards to refresh
+      window.dispatchEvent(new Event('dashboardUpdate'))
       
       // Close the dialog and reset states
       setIsPanelDialogOpen(false)
@@ -1235,6 +1253,9 @@ export default function CandidatesPage() {
           
           // Clear selection
           setSelectedCandidates([]);
+          
+          // Notify dashboards to refresh
+          window.dispatchEvent(new Event('dashboardUpdate'))
           
           // Show success message
           toast({

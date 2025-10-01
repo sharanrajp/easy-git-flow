@@ -4,16 +4,50 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Users, UserCheck, Clock, CheckCircle, TrendingUp, Calendar, MessageSquare, Filter } from "lucide-react"
-import { getMockDashboardData } from "@/lib/mock-data"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { fetchHRDashboardMetrics, type HRDashboardMetrics } from "@/lib/dashboard-api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function HRDashboard() {
-  const data = getMockDashboardData()
+  const [metrics, setMetrics] = useState<HRDashboardMetrics | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const { toast } = useToast()
 
   const [candidateFilter, setCandidateFilter] = useState("day")
   const [pipelineFilter, setPipelineFilter] = useState("all")
   const [performanceFilter, setPerformanceFilter] = useState("all")
   const [roleFilter, setRoleFilter] = useState("all")
+
+  useEffect(() => {
+    loadMetrics()
+  }, [])
+
+  useEffect(() => {
+    // Listen for updates from other components
+    const handleDataUpdate = () => {
+      loadMetrics()
+    }
+
+    window.addEventListener('dashboardUpdate', handleDataUpdate)
+    return () => window.removeEventListener('dashboardUpdate', handleDataUpdate)
+  }, [])
+
+  const loadMetrics = async () => {
+    try {
+      setIsLoading(true)
+      const data = await fetchHRDashboardMetrics()
+      setMetrics(data)
+    } catch (error) {
+      console.error('Error loading HR dashboard metrics:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load dashboard metrics",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const getFilteredValue = (baseValue: number, role: string) => {
     if (role === "all") return baseValue
@@ -80,6 +114,16 @@ export default function HRDashboard() {
     )
   }
 
+  if (isLoading || !metrics) {
+    return (
+      <DashboardLayout requiredRole="hr">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
   return (
     <DashboardLayout requiredRole="hr">
       <div className="space-y-6">
@@ -127,16 +171,7 @@ export default function HRDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <MetricCard
               title="Total Applications"
-              value={getFilteredValue(
-                candidateFilter === "day"
-                  ? 8
-                  : candidateFilter === "week"
-                    ? 34
-                    : candidateFilter === "month"
-                      ? 156
-                      : 420,
-                roleFilter,
-              )}
+              value={getFilteredValue(metrics.total_applications, roleFilter)}
               icon={Users}
               trend={{ value: 12, label: candidateFilter === "day" ? "vs yesterday" : `vs last ${candidateFilter}` }}
               color="blue"
@@ -152,10 +187,7 @@ export default function HRDashboard() {
             />
             <MetricCard
               title="Unassigned Candidates"
-              value={getFilteredValue(
-                candidateFilter === "day" ? 3 : candidateFilter === "week" ? 12 : candidateFilter === "month" ? 23 : 67,
-                roleFilter,
-              )}
+              value={getFilteredValue(metrics.unassigned_candidates, roleFilter)}
               description="Awaiting recruiter assignment"
               icon={UserCheck}
               color="orange"
@@ -171,16 +203,7 @@ export default function HRDashboard() {
             />
             <MetricCard
               title="Interviews Scheduled"
-              value={getFilteredValue(
-                candidateFilter === "day"
-                  ? 6
-                  : candidateFilter === "week"
-                    ? 18
-                    : candidateFilter === "month"
-                      ? 45
-                      : 128,
-                roleFilter,
-              )}
+              value={getFilteredValue(metrics.interviews_scheduled, roleFilter)}
               description="Across all rounds"
               icon={Clock}
               color="green"
@@ -196,7 +219,7 @@ export default function HRDashboard() {
             />
             <MetricCard
               title="Joined/Offer Released"
-              value={`2/4`}
+              value={`${metrics.joined_count}/${metrics.offer_released_count}`}
               icon={CheckCircle}
               trend={{ value: 25, label: `vs last ${candidateFilter}` }}
               color="green"
@@ -235,27 +258,21 @@ export default function HRDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <MetricCard
               title="Ongoing r1"
-              value={
-                pipelineFilter === "all" ? 18 : pipelineFilter === "frontend" ? 8 : pipelineFilter === "backend" ? 6 : 4
-              }
+              value={metrics.ongoing_r1}
               description="Technical Screen in progress"
               icon={Users}
               color="blue"
             />
             <MetricCard
               title="Ongoing r2"
-              value={
-                pipelineFilter === "all" ? 12 : pipelineFilter === "frontend" ? 5 : pipelineFilter === "backend" ? 4 : 3
-              }
+              value={metrics.ongoing_r2}
               description="Technical + Behavioral in progress"
               icon={Users}
               color="orange"
             />
             <MetricCard
               title="Ongoing r3"
-              value={
-                pipelineFilter === "all" ? 7 : pipelineFilter === "frontend" ? 3 : pipelineFilter === "backend" ? 2 : 2
-              }
+              value={metrics.ongoing_r3}
               description="Manager Interview in progress"
               icon={Users}
               color="green"
@@ -285,15 +302,7 @@ export default function HRDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <MetricCard
               title="Successful Hires"
-              value={
-                performanceFilter === "all"
-                  ? 15
-                  : performanceFilter === "sarah"
-                    ? 8
-                    : performanceFilter === "mike"
-                      ? 4
-                      : 3
-              }
+              value={metrics.successful_hires}
               description="This month"
               icon={CheckCircle}
               trend={{ value: 25, label: "vs last month" }}
@@ -301,45 +310,21 @@ export default function HRDashboard() {
             />
             <MetricCard
               title="Interview-to-Offer Rate"
-              value={
-                performanceFilter === "all"
-                  ? "68%"
-                  : performanceFilter === "sarah"
-                    ? "72%"
-                    : performanceFilter === "mike"
-                      ? "65%"
-                      : "61%"
-              }
+              value={`${metrics.interview_to_offer_rate}%`}
               description="Conversion efficiency"
               icon={TrendingUp}
               color="blue"
             />
             <MetricCard
               title="Avg. Time to Hire"
-              value={
-                performanceFilter === "all"
-                  ? "18 days"
-                  : performanceFilter === "sarah"
-                    ? "16 days"
-                    : performanceFilter === "mike"
-                      ? "19 days"
-                      : "21 days"
-              }
+              value={`${metrics.avg_time_to_hire} days`}
               description="From application to offer"
               icon={Calendar}
               color="gray"
             />
             <MetricCard
               title="Panelist Rating"
-              value={
-                performanceFilter === "all"
-                  ? "4.2/5"
-                  : performanceFilter === "sarah"
-                    ? "4.4/5"
-                    : performanceFilter === "mike"
-                      ? "4.1/5"
-                      : "4.0/5"
-              }
+              value={`${metrics.panelist_rating}/5`}
               description="Average panelist feedback score"
               icon={MessageSquare}
               trend={{ value: 8, label: "improvement" }}
