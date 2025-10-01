@@ -160,7 +160,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Recruiter</span>
-                  <p className="font-medium">{candidate.recruiter || "Not assigned"}</p>
+                  <p className="font-medium">{candidate.source || "Not assigned"}</p>
                 </div>
               </div>
             </CardContent>

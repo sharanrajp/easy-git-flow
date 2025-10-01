@@ -96,7 +96,7 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
               </div>
               <div>
                 <span className="text-sm text-gray-500">Recruiter</span>
-                <p className="font-medium">{candidate.recruiter || "N/A"}</p>
+                <p className="font-medium">{candidate.source || "N/A"}</p>
               </div>
             </div>
           </CardContent>
