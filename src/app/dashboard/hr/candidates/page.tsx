@@ -1202,18 +1202,20 @@ export default function CandidatesPage() {
 
   return (
     <DashboardLayout requiredRole="hr">
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Candidates</h1>
-          </div>          
-          {selectedCandidates.length > 0 && (
-            <BulkActionsToolbar
-              selectedCount={selectedCandidates.length}
-              onBulkAction={handleBulkAction}
-            />
-          )}
-          <div className="flex gap-3">
+      <div className="flex flex-col h-full">
+        {/* Fixed header section */}
+        <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Candidates</h1>
+            </div>          
+            {selectedCandidates.length > 0 && (
+              <BulkActionsToolbar
+                selectedCount={selectedCandidates.length}
+                onBulkAction={handleBulkAction}
+              />
+            )}
+            <div className="flex gap-3">
             <Button 
               variant="outline" 
               className="cursor-pointer bg-transparent"
@@ -1267,9 +1269,9 @@ export default function CandidatesPage() {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex flex-col lg:flex-row gap-4 pt-4">
           <div className="relative flex-1">
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-4">
               <div className="flex-1">
                 <Input
                   placeholder="Search candidates..."
@@ -1358,18 +1360,22 @@ export default function CandidatesPage() {
           </div>
         </div>
 
-        <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="unassigned">
-              Unassigned ({loadingUnassigned ? "..." : filteredUnassignedCandidates.length})
-            </TabsTrigger>
-            <TabsTrigger value="assigned">
-              Assigned ({loadingAssigned ? "..." : filteredAssignedCandidates.length})
-            </TabsTrigger>
-            {/* <TabsTrigger value="completed">Completed ({completedCandidates.length})</TabsTrigger> */}
-          </TabsList>
+        <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="flex-1 flex flex-col overflow-hidden">
+          <div className="pt-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="unassigned">
+                Unassigned ({loadingUnassigned ? "..." : filteredUnassignedCandidates.length})
+              </TabsTrigger>
+              <TabsTrigger value="assigned">
+                Assigned ({loadingAssigned ? "..." : filteredAssignedCandidates.length})
+              </TabsTrigger>
+              {/* <TabsTrigger value="completed">Completed ({completedCandidates.length})</TabsTrigger> */}
+            </TabsList>
+          </div>
 
-          <TabsContent value="unassigned">
+          {/* Scrollable table section */}
+          <div className="flex-1 overflow-auto pt-4">
+            <TabsContent value="unassigned" className="mt-0 h-full">
             {loadingUnassigned ? (
               <Card>
                 <CardContent className="flex items-center justify-center py-16">
@@ -1810,9 +1816,11 @@ export default function CandidatesPage() {
               </Card>
             )} */}
           {/* </TabsContent> */}
+          </div>
         </Tabs>
+      </div>
 
-        <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
+      <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Assign Panel</DialogTitle>
