@@ -86,7 +86,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
         const statusResponse = await makeAuthenticatedRequest('http://127.0.0.1:8000/privileges/my-status', {
           method: 'PUT',
           body: JSON.stringify({
-            status: "available"
+            status: "free"
           })
         })
 
