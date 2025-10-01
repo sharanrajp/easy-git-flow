@@ -33,7 +33,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
   }
 
   const handleStatusChange = async (current_status: User["current_status"]) => {
-    if (user.role === "panelist" && current_status && !isUpdatingStatus) {
+    if (user.role !== "hr" && current_status && !isUpdatingStatus) {
       try {
         setIsUpdatingStatus(true)
         await updateUserStatus(user._id, current_status)
@@ -94,17 +94,17 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
                 </Avatar>
                 <div className="text-left">
                   <div className="text-sm font-medium">{user.name}</div>
-                  <div className="text-xs text-gray-500 capitalize">{user.role}</div>
+                  <div className="text-xs text-gray-500 capitalize">{user.role || "Panelist"}</div>
                 </div>
-                {user.role === "panelist" && user.current_status && (
-                  <Badge className={getStatusColor(user.current_status)}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
+                {user.role !== "hr" && (
+                  <Badge className={getStatusColor(user.current_status || "free")}>{user.current_status === "free" ? "available" : user.current_status || "available"}</Badge>
                 )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
 
-              {user.role === "panelist" && (
+              {user.role !== "hr" && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>Change Status</DropdownMenuLabel>
