@@ -29,61 +29,6 @@ export interface DashboardData {
   }>
 }
 
-export function getMockDashboardData(): DashboardData {
-  return {
-    candidates: {
-      total: 156,
-      unassigned: 23,
-      activeInterviews: 12,
-      completed: 89,
-    },
-    pipeline: {
-      r1: 18,
-      r2: 12,
-      r3: 7,
-    },
-    performance: {
-      hired: 15,
-      offers: 8,
-      rejectionRate: 35,
-      avgTimeToHire: 18,
-    },
-    operations: {
-      todayInterviews: 6,
-      pendingFeedback: 4,
-      activePanelists: 8,
-      urgentVacancies: 3,
-    },
-    recentActivity: [
-      {
-        message: "New candidate John Smith applied for Senior Developer position",
-        time: "2 minutes ago",
-        type: "Application",
-      },
-      {
-        message: "Interview scheduled for Sarah Johnson - Frontend Developer",
-        time: "15 minutes ago",
-        type: "Interview",
-      },
-      {
-        message: "Feedback received from Mike Chen for candidate Alex Rodriguez",
-        time: "1 hour ago",
-        type: "Feedback",
-      },
-      {
-        message: "Offer sent to Emily Davis for Product Manager role",
-        time: "2 hours ago",
-        type: "Offer",
-      },
-      {
-        message: "New vacancy created: Backend Developer - Remote",
-        time: "3 hours ago",
-        type: "Vacancy",
-      },
-    ],
-  }
-}
-
 export interface Vacancy {
   id: string
   position_title: string
