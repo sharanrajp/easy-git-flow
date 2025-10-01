@@ -40,6 +40,7 @@ import {
   ChevronDown,
   List,
   Download,
+  Search,
 } from "lucide-react"
 import { fetchVacancies } from "@/lib/vacancy-api"
 import { CandidateForm } from "@/components/candidates/candidate-form"
@@ -116,6 +117,10 @@ export default function CandidatesPage() {
   const [isInterviewsDialogOpen, setIsInterviewsDialogOpen] = useState(false)
   const [loadingInterviews, setLoadingInterviews] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+  
+  // Search states for dialogs
+  const [panelSearchTerm, setPanelSearchTerm] = useState("")
+  const [interviewSearchTerm, setInterviewSearchTerm] = useState("")
 
   // Pagination states
   const [unassignedCurrentPage, setUnassignedCurrentPage] = useState(1)
@@ -2514,8 +2519,35 @@ export default function CandidatesPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {availablePanels.length > 0 ? (
-                  availablePanels.map((panel) => (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search panel members by name or email..."
+                    value={panelSearchTerm}
+                    onChange={(e) => setPanelSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                {availablePanels
+                  .filter((panel) => {
+                    const searchLower = panelSearchTerm.toLowerCase()
+                    return (
+                      panelSearchTerm === "" ||
+                      (panel.name && panel.name.toLowerCase().includes(searchLower)) ||
+                      (panel.email && panel.email.toLowerCase().includes(searchLower))
+                    )
+                  })
+                  .length > 0 ? (
+                  availablePanels
+                    .filter((panel) => {
+                      const searchLower = panelSearchTerm.toLowerCase()
+                      return (
+                        panelSearchTerm === "" ||
+                        (panel.name && panel.name.toLowerCase().includes(searchLower)) ||
+                        (panel.email && panel.email.toLowerCase().includes(searchLower))
+                      )
+                    })
+                    .map((panel) => (
                     <Card key={panel.id} className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
@@ -2555,7 +2587,9 @@ export default function CandidatesPage() {
                   ))
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-gray-500">No available panels found.</p>
+                    <p className="text-gray-500">
+                      {panelSearchTerm ? "No panels match your search criteria." : "No available panels found."}
+                    </p>
                   </div>
                 )}
               </div>
@@ -2597,17 +2631,36 @@ export default function CandidatesPage() {
                 <span className="ml-2 text-gray-600">Loading interviews...</span>
               </div>
             ) : ongoingInterviews.length > 0 ? (
-              <div className="max-h-96 overflow-y-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Candidate Name</TableHead>
-                      <TableHead>Panel Member Name</TableHead>
-                      <TableHead>Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {ongoingInterviews.map((interview) => (
+              <div className="space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by candidate or panel member name..."
+                    value={interviewSearchTerm}
+                    onChange={(e) => setInterviewSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Candidate Name</TableHead>
+                        <TableHead>Panel Member Name</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {ongoingInterviews
+                        .filter((interview) => {
+                          const searchLower = interviewSearchTerm.toLowerCase()
+                          return (
+                            interviewSearchTerm === "" ||
+                            (interview.candidate_name && interview.candidate_name.toLowerCase().includes(searchLower)) ||
+                            (interview.panel_name && interview.panel_name.toLowerCase().includes(searchLower))
+                          )
+                        })
+                        .map((interview) => (
                       <TableRow key={`${interview.candidate_id}-${interview.panel_id}`}>
                         <TableCell className="font-medium">
                           {interview.candidate_name}
@@ -2624,9 +2677,22 @@ export default function CandidatesPage() {
                           </Button>
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                {ongoingInterviews.filter((interview) => {
+                  const searchLower = interviewSearchTerm.toLowerCase()
+                  return (
+                    interviewSearchTerm === "" ||
+                    (interview.candidate_name && interview.candidate_name.toLowerCase().includes(searchLower)) ||
+                    (interview.panel_name && interview.panel_name.toLowerCase().includes(searchLower))
+                  )
+                }).length === 0 && interviewSearchTerm && (
+                  <div className="text-center py-8 text-gray-500">
+                    No interviews match your search criteria.
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500">
