@@ -11,7 +11,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { X, FileText } from "lucide-react"
 import type { Candidate } from "@/lib/mock-data"
-import { getMockVacancies } from "@/lib/mock-data"
 import { getStoredUser } from "@/lib/auth"
 
 interface CandidateFormProps {
@@ -47,30 +46,8 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
 
   const [newSkill, setNewSkill] = useState("")
   const [initialFormData] = useState(formData)
-  const [vacancies, setVacancies] = useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("vacancies")
-      return stored ? JSON.parse(stored) : getMockVacancies()
-    }
-    return getMockVacancies()
-  })
+  const [vacancies, setVacancies] = useState([])
 
-  useEffect(() => {
-    const updateVacancies = () => {
-      if (typeof window !== "undefined") {
-        const stored = localStorage.getItem("vacancies")
-        setVacancies(stored ? JSON.parse(stored) : getMockVacancies())
-      }
-    }
-
-    window.addEventListener("storage", updateVacancies)
-    window.addEventListener("vacancyUpdated", updateVacancies)
-
-    return () => {
-      window.removeEventListener("storage", updateVacancies)
-      window.removeEventListener("vacancyUpdated", updateVacancies)
-    }
-  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
