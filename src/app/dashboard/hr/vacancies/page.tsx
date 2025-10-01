@@ -691,25 +691,9 @@ export default function VacanciesPage() {
             <DialogHeader>
               <DialogTitle>Edit Vacancy</DialogTitle>
             </DialogHeader>
-            <div className="mt-6">
-              {selectedVacancy && (
-                <Tabs defaultValue="details" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="details">Vacancy Details</TabsTrigger>
-                    <TabsTrigger value="panelists">Panelists</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="details" className="mt-6">
-                    <VacancyForm vacancy={selectedVacancy} onSubmit={handleEditVacancy} />
-                  </TabsContent>
-                  <TabsContent value="panelists" className="mt-6">
-                    <PanelistSelector
-                      selectedPanelists={selectedVacancy.assignedPanelists}
-                      onUpdate={handlePanelistUpdate}
-                    />
-                  </TabsContent>
-                </Tabs>
-              )}
-            </div>
+            {selectedVacancy && (
+              <VacancyForm vacancy={selectedVacancy} onSubmit={handleEditVacancy} />
+            )}
           </DialogContent>
         </Dialog>
 
