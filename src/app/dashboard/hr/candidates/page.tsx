@@ -2497,7 +2497,12 @@ export default function CandidatesPage() {
         />
         
         {/* Panel Assignment Dialog */}
-        <Dialog open={isPanelDialogOpen} onOpenChange={setIsPanelDialogOpen}>
+        <Dialog open={isPanelDialogOpen} onOpenChange={(open) => {
+          setIsPanelDialogOpen(open)
+          if (open) {
+            setPanelSearchTerm("")
+          }
+        }}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
@@ -2616,7 +2621,12 @@ export default function CandidatesPage() {
         </Dialog>
 
         {/* Ongoing Interviews Dialog */}
-        <Dialog open={isInterviewsDialogOpen} onOpenChange={setIsInterviewsDialogOpen}>
+        <Dialog open={isInterviewsDialogOpen} onOpenChange={(open) => {
+          setIsInterviewsDialogOpen(open)
+          if (open) {
+            setInterviewSearchTerm("")
+          }
+        }}>
           <DialogContent className="max-w-4xl">
             <DialogHeader>
               <DialogTitle>Ongoing Interviews</DialogTitle>
