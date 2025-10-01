@@ -11,26 +11,29 @@ import ManagerCandidatesPage from "./app/dashboard/manager/candidates/page"
 import ManagerOffersPage from "./app/dashboard/manager/offers/page"
 import { Toaster } from "./components/ui/toaster"
 import { ThemeProvider } from "./components/theme-provider"
+import { AuthProvider } from "./contexts/AuthContext"
 
 function App() {
   return (
     <ThemeProvider defaultTheme="light">
       <Router>
-        <div className="min-h-screen bg-background">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/dashboard/hr" element={<HRDashboard />} />
-            <Route path="/dashboard/hr/candidates" element={<HRCandidatesPage />} />
-            <Route path="/dashboard/hr/users" element={<HRUsersPage />} />
-            <Route path="/dashboard/hr/vacancies" element={<HRVacanciesPage />} />
-            <Route path="/dashboard/panelist" element={<PanelistDashboard />} />
-            <Route path="/dashboard/manager" element={<ManagerDashboard />} />
-            <Route path="/dashboard/manager/candidates" element={<ManagerCandidatesPage />} />
-            <Route path="/dashboard/manager/offers" element={<ManagerOffersPage />} />
-          </Routes>
-          <Toaster />
-        </div>
+        <AuthProvider>
+          <div className="min-h-screen bg-background">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/dashboard/hr" element={<HRDashboard />} />
+              <Route path="/dashboard/hr/candidates" element={<HRCandidatesPage />} />
+              <Route path="/dashboard/hr/users" element={<HRUsersPage />} />
+              <Route path="/dashboard/hr/vacancies" element={<HRVacanciesPage />} />
+              <Route path="/dashboard/panelist" element={<PanelistDashboard />} />
+              <Route path="/dashboard/manager" element={<ManagerDashboard />} />
+              <Route path="/dashboard/manager/candidates" element={<ManagerCandidatesPage />} />
+              <Route path="/dashboard/manager/offers" element={<ManagerOffersPage />} />
+            </Routes>
+            <Toaster />
+          </div>
+        </AuthProvider>
       </Router>
     </ThemeProvider>
   )
