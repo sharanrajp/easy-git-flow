@@ -27,13 +27,13 @@ import {
 } from "lucide-react"
 import { type Vacancy } from "@/lib/mock-data"
 import { getAllUsers } from "@/lib/auth"
-import { fetchVacancies, addVacancy } from "@/lib/vacancy-api"
+import { fetchVacancies, addVacancy } from "../../../../lib/vacancy-api"
 import { makeAuthenticatedRequest } from "@/lib/auth"
 import { VacancyForm } from "@/components/vacancies/vacancy-form"
 import { VacancyDetails } from "@/components/vacancies/vacancy-details"
 import { PanelistSelector } from "@/components/vacancies/panelist-selector"
 import { formatDate } from "@/lib/utils"
-import { Pagination } from "@/components/ui/pagination"
+import { Pagination } from "../../../../components/ui/pagination"
 
 export default function VacanciesPage() {
   const [vacancies, setVacancies] = useState<Vacancy[]>([])

@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Users, UserCheck, Clock, CheckCircle, TrendingUp, Calendar, MessageSquare, Filter } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
-import { fetchVacancies } from "@/lib/vacancy-api"
+import { fetchVacancies } from "../../../lib/vacancy-api"
 import { getAllUsers, type User } from "@/lib/auth"
 import { fetchHRDashboardMetrics } from "../../../lib/dashboard-api"
 

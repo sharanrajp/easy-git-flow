@@ -1,19 +1,19 @@
 // @ts-nocheck
 
 import { useState, useEffect, useMemo } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { DialogDescription } from "@/components/ui/dialog"
-import { AssignedCandidateDetails } from "@/components/candidates/assigned-candidate-details"
-import { UnassignedCandidateDetails } from "@/components/candidates/unassigned-candidate-details"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../../components/ui/dialog"
+import { DialogDescription } from "../../../../components/ui/dialog"
+import { AssignedCandidateDetails } from "../../../../components/candidates/assigned-candidate-details"
+import { UnassignedCandidateDetails } from "../../../../components/candidates/unassigned-candidate-details"
+import { DashboardLayout } from "../../../../components/layout/dashboard-layout"
+import { Button } from "../../../../components/ui/button"
+import { Input } from "../../../../components/ui/input"
+import { Badge } from "../../../../components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../../components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "../../../../components/ui/popover"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +23,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "../../../../components/ui/alert-dialog"
 import {
   Plus,
   Eye,
@@ -42,23 +42,23 @@ import {
   Download,
   Search,
 } from "lucide-react"
-import { fetchVacancies } from "@/lib/vacancy-api"
-import { CandidateForm } from "@/components/candidates/candidate-form"
-import { CandidateDetails } from "@/components/candidates/candidate-details"
-import { BulkActionsToolbar } from "@/components/candidates/bulk-actions-toolbar"
-import { BulkUploadDialog } from "@/components/candidates/bulk-upload-dialog"
-import { Checkbox } from "@/components/ui/checkbox"
-import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
-import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
-import { getInterviewSessions } from "@/lib/interview-data"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
-import { formatDate } from "@/lib/utils"
+import { fetchVacancies } from "../../../../lib/vacancy-api"
+import { CandidateForm } from "../../../../components/candidates/candidate-form"
+import { CandidateDetails } from "../../../../components/candidates/candidate-details"
+import { BulkActionsToolbar } from "../../../../components/candidates/bulk-actions-toolbar"
+import { BulkUploadDialog } from "../../../../components/candidates/bulk-upload-dialog"
+import { Checkbox } from "../../../../components/ui/checkbox"
+import { getAllUsers, getCurrentUser, type User } from "../../../../lib/auth"
+import { saveInterviewSession, type InterviewSession } from "../../../../lib/interview-data"
+import { getInterviewSessions } from "../../../../lib/interview-data"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../../components/ui/dropdown-menu"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "../../../../lib/candidates-api"
+import { formatDate } from "../../../../lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { Switch } from "@/components/ui/switch"
-import { SkillsDisplay } from "@/components/ui/skills-display"
-import { Pagination } from "@/components/ui/pagination"
-import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
+import { Switch } from "../../../../components/ui/switch"
+import { SkillsDisplay } from "../../../../components/ui/skills-display"
+import { Pagination } from "../../../../components/ui/pagination"
+import { DeleteConfirmDialog } from "../../../../components/ui/delete-confirm-dialog"
 
 export default function CandidatesPage() {
   const { toast } = useToast()
