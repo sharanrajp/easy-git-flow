@@ -1213,10 +1213,10 @@ export default function CandidatesPage() {
         selectedCandidateObjects = assignedCandidates.filter((c) => selectedCandidates.includes(c._id))
         break
       case "completed":
-        selectedCandidateObjects = completedCandidates.filter((c) => selectedCandidates.includes(c.id))
+        selectedCandidateObjects = completedCandidates.filter((c) => selectedCandidates.includes(c._id))
         break
       default:
-        selectedCandidateObjects = candidates.filter((c) => selectedCandidates.includes(c.id))
+        selectedCandidateObjects = candidates.filter((c) => selectedCandidates.includes(c._id))
     }
 
     switch (action) {
@@ -2091,157 +2091,6 @@ export default function CandidatesPage() {
               </Card>
             )}
           </TabsContent>
-
-          {/* <TabsContent value="completed"> */}
-            {/* {completedCandidates.length > 0 ? (
-              <Card>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12">
-                          <Checkbox
-                            checked={
-                              completedCandidates.length > 0 &&
-                              completedCandidates.every((c) => selectedCandidates.includes(c.id))
-                            }
-                            onCheckedChange={(checked) => handleSelectAll(completedCandidates, checked as boolean)}
-                          />
-                        </TableHead>
-                        <TableHead>Candidate</TableHead>
-                        <TableHead>Position</TableHead>
-                        <TableHead>Final Status</TableHead>
-                        <TableHead>Total Wait Time</TableHead>
-                        <TableHead>Last Interview</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {completedCandidates.map((candidate) => (
-                        <TableRow key={candidate.id}>
-                          <TableCell>
-                            <Checkbox
-                              checked={selectedCandidates.includes(candidate.id)}
-                              onCheckedChange={(checked) => handleSelectCandidate(candidate.id, checked as boolean)}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{candidate.name}</div>
-                              <div className="text-sm text-gray-500">{candidate.email}</div>
-                              <div className="text-sm text-gray-500">{candidate.phone_number}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>{candidate.applied_position}</TableCell>
-                          <TableCell>
-                            {candidate.status !== "completed" ? (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" className="p-0 h-auto">
-                                    <Badge className={getStatusColor(candidate.status)}>
-                                      <div className="flex items-center gap-1">
-                                        {getStatusIcon(candidate.status)}
-                                        {formatStatus(candidate.status)}
-                                        <ChevronDown className="h-3 w-3" />
-                                      </div>
-                                    </Badge>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "selected")}>Selected</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "rejected")}>Rejected</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "hired")}>Hired</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "completed")}>Completed</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "offerReleased")}>Offer Released</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "onHold")}>On Hold</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate.id, "joined")}>Joined</DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            ) : (
-                              <Badge className={getStatusColor(candidate.status)}>
-                                <div className="flex items-center gap-1">
-                                  {getStatusIcon(candidate.status)}
-                                  {formatStatus(candidate.status)}
-                                </div>
-                              </Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {candidate.totalWaitTime ? (
-                              <div className="flex items-center gap-1 text-sm">
-                                <Timer className="h-3 w-3 text-gray-500" />
-                                <span className="font-medium">{candidate.totalWaitTime}</span>
-                              </div>
-                            ) : (
-                              <span className="text-gray-400 text-sm">N/A</span>
-                            )}
-                          </TableCell>
-                          <TableCell>{formatDate(candidate.created_at)}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="cursor-pointer"
-                                onClick={() => {
-                                  setSelectedCandidate(candidate)
-                                  setIsDetailsOpen(true)
-                                }}
-                              >
-                                <Eye className="h-4 w-4 mr-2" />
-                                View Details
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="cursor-pointer"
-                                onClick={() => {
-                                  setSelectedCandidate(candidate)
-                                  setIsEditOpen(true)
-                                }}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="cursor-pointer"
-                                onClick={() => setDeleteCandidate(candidate)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                    <Award className="h-8 w-8 text-green-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No completed candidates</h3>
-                  <p className="text-gray-500 mb-6 max-w-md">
-                    {searchTerm ||
-                    jobFilter !== "all" ||
-                    statusFilter !== "all" ||
-                    experienceFilter !== "all" ||
-                    recruiterFilter !== "all" ||
-                    roundFilter !== "all" ||
-                    interviewTypeFilter !== "all" ||
-                    dateFilter !== "all"
-                      ? "No completed candidates match your current filters. Try adjusting your search criteria."
-                      : "No candidates have completed the interview process yet. Completed candidates (selected or rejected) will appear here."}
-                  </p>
-                </CardContent>
-              </Card>
-            )} */}
-          {/* </TabsContent> */}
           </div>
         </Tabs>
       </div>
