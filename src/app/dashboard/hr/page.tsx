@@ -7,6 +7,9 @@ import { Users, UserCheck, Clock, CheckCircle, TrendingUp, Calendar, MessageSqua
 import { useState, useEffect } from "react"
 import { fetchHRDashboardMetrics, type HRDashboardMetrics } from "@/lib/dashboard-api"
 import { useToast } from "@/hooks/use-toast"
+import { fetchVacancies } from "@/lib/vacancy-api"
+import { getAllUsers, type User } from "@/lib/auth"
+import type { Vacancy } from "@/lib/mock-data"
 
 export default function HRDashboard() {
   const [metrics, setMetrics] = useState<HRDashboardMetrics | null>(null)
@@ -14,12 +17,15 @@ export default function HRDashboard() {
   const { toast } = useToast()
 
   const [candidateFilter, setCandidateFilter] = useState("day")
-  const [pipelineFilter, setPipelineFilter] = useState("all")
-  const [performanceFilter, setPerformanceFilter] = useState("all")
-  const [roleFilter, setRoleFilter] = useState("all")
+  const [vacancyFilter, setVacancyFilter] = useState("all")
+  const [recruiterFilter, setRecruiterFilter] = useState("all")
+  
+  const [vacancies, setVacancies] = useState<Vacancy[]>([])
+  const [hrUsers, setHrUsers] = useState<User[]>([])
+  const [loadingData, setLoadingData] = useState(true)
 
   useEffect(() => {
-    loadMetrics()
+    loadInitialData()
   }, [])
 
   useEffect(() => {
@@ -32,10 +38,45 @@ export default function HRDashboard() {
     return () => window.removeEventListener('dashboardUpdate', handleDataUpdate)
   }, [])
 
+  useEffect(() => {
+    // Reload metrics when filters change
+    if (!loadingData) {
+      loadMetrics()
+    }
+  }, [vacancyFilter, recruiterFilter, loadingData])
+
+  const loadInitialData = async () => {
+    try {
+      setLoadingData(true)
+      const [fetchedVacancies, fetchedUsers] = await Promise.all([
+        fetchVacancies(),
+        getAllUsers()
+      ])
+      
+      setVacancies(fetchedVacancies)
+      setHrUsers(fetchedUsers.filter(user => user.role === 'hr'))
+      
+      await loadMetrics()
+    } catch (error) {
+      console.error('Error loading initial data:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load dashboard data",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
   const loadMetrics = async () => {
     try {
       setIsLoading(true)
-      const data = await fetchHRDashboardMetrics()
+      const filters = {
+        vacancy: vacancyFilter !== "all" ? vacancyFilter : undefined,
+        recruiter: recruiterFilter !== "all" ? recruiterFilter : undefined,
+      }
+      const data = await fetchHRDashboardMetrics(filters)
       setMetrics(data)
     } catch (error) {
       console.error('Error loading HR dashboard metrics:', error)
@@ -49,18 +90,6 @@ export default function HRDashboard() {
     }
   }
 
-  const getFilteredValue = (baseValue: number, role: string) => {
-    if (role === "all") return baseValue
-    // Apply role-specific multipliers for realistic filtering
-    const roleMultipliers: Record<string, number> = {
-      frontend: 0.3,
-      backend: 0.25,
-      fullstack: 0.2,
-      product: 0.15,
-      design: 0.1,
-    }
-    return Math.round(baseValue * (roleMultipliers[role] || 1))
-  }
 
   const MetricCard = ({
     title,
@@ -114,7 +143,7 @@ export default function HRDashboard() {
     )
   }
 
-  if (isLoading || !metrics) {
+  if (loadingData || isLoading || !metrics) {
     return (
       <DashboardLayout requiredRole="hr">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -153,17 +182,17 @@ export default function HRDashboard() {
                   <SelectItem value="quarter">This Quarter</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <Select value={vacancyFilter} onValueChange={setVacancyFilter}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="All Roles" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="frontend">Frontend Developer</SelectItem>
-                  <SelectItem value="backend">Backend Developer</SelectItem>
-                  <SelectItem value="fullstack">Full Stack Developer</SelectItem>
-                  <SelectItem value="product">Product Manager</SelectItem>
-                  <SelectItem value="design">UX Designer</SelectItem>
+                  {vacancies.map(vacancy => (
+                    <SelectItem key={vacancy.id} value={vacancy.id}>
+                      {vacancy.position_title}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -171,7 +200,7 @@ export default function HRDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <MetricCard
               title="Total Applications"
-              value={getFilteredValue(metrics.total_applications, roleFilter)}
+              value={metrics.total_applications}
               icon={Users}
               trend={{ value: 12, label: candidateFilter === "day" ? "vs yesterday" : `vs last ${candidateFilter}` }}
               color="blue"
@@ -187,7 +216,7 @@ export default function HRDashboard() {
             />
             <MetricCard
               title="Unassigned Candidates"
-              value={getFilteredValue(metrics.unassigned_candidates, roleFilter)}
+              value={metrics.unassigned_candidates}
               description="Awaiting recruiter assignment"
               icon={UserCheck}
               color="orange"
@@ -203,7 +232,7 @@ export default function HRDashboard() {
             />
             <MetricCard
               title="Interviews Scheduled"
-              value={getFilteredValue(metrics.interviews_scheduled, roleFilter)}
+              value={metrics.interviews_scheduled}
               description="Across all rounds"
               icon={Clock}
               color="green"
@@ -242,15 +271,17 @@ export default function HRDashboard() {
             <h2 className="text-lg font-semibold text-gray-900">Interview Pipeline</h2>
             <div className="flex items-center space-x-2">
               <Filter className="h-4 w-4 text-gray-500" />
-              <Select value={pipelineFilter} onValueChange={setPipelineFilter}>
-                <SelectTrigger className="w-32">
+              <Select value={vacancyFilter} onValueChange={setVacancyFilter}>
+                <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Jobs</SelectItem>
-                  <SelectItem value="frontend">Frontend</SelectItem>
-                  <SelectItem value="backend">Backend</SelectItem>
-                  <SelectItem value="product">Product</SelectItem>
+                  {vacancies.map(vacancy => (
+                    <SelectItem key={vacancy.id} value={vacancy.id}>
+                      {vacancy.position_title}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -286,15 +317,17 @@ export default function HRDashboard() {
             <h2 className="text-lg font-semibold text-gray-900">Performance & Hiring Metrics</h2>
             <div className="flex items-center space-x-2">
               <Filter className="h-4 w-4 text-gray-500" />
-              <Select value={performanceFilter} onValueChange={setPerformanceFilter}>
+              <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
                 <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Recruiters</SelectItem>
-                  <SelectItem value="sarah">Sarah Johnson</SelectItem>
-                  <SelectItem value="mike">Mike Chen</SelectItem>
-                  <SelectItem value="alex">Alex Rodriguez</SelectItem>
+                  {hrUsers.map(user => (
+                    <SelectItem key={user._id} value={user.name}>
+                      {user.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
