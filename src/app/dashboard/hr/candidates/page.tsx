@@ -52,7 +52,7 @@ import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, fetchPanelistsForCandidate, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
@@ -822,15 +822,40 @@ export default function CandidatesPage() {
     setLoadingPanels(true)
     
     try {
-      const panels = await fetchAvailablePanels()
-      console.log('Fetched panels in handleAssignPanel:', panels) // Debug log
-      setAvailablePanels(panels)
+      // Check if candidate has applied_position
+      if (!candidate.applied_position) {
+        toast({
+          title: "Error",
+          description: "Candidate has no applied position. Cannot fetch panelists.",
+          variant: "destructive",
+        })
+        setLoadingPanels(false)
+        return
+      }
+
+      // Find the vacancy ID by matching the applied_position with vacancy position_title
+      const matchingVacancy = vacancies.find(v => v.position_title === candidate.applied_position)
+      
+      if (!matchingVacancy) {
+        toast({
+          title: "Error",
+          description: "No matching active vacancy found for this candidate's position.",
+          variant: "destructive",
+        })
+        setLoadingPanels(false)
+        return
+      }
+
+      // Use the new API endpoint
+      const panelists = await fetchPanelistsForCandidate(candidate._id, matchingVacancy._id)
+      console.log('Fetched panelists in handleAssignPanel:', panelists) // Debug log
+      setAvailablePanels(panelists)
       setIsPanelDialogOpen(true)
     } catch (error) {
-      console.error('Error fetching available panels:', error)
+      console.error('Error fetching available panelists:', error)
       toast({
         title: "Error",
-        description: "Failed to load available panels. Please try again.",
+        description: "Failed to load available panelists. Please try again.",
         variant: "destructive",
       })
     } finally {

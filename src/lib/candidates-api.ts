@@ -186,7 +186,40 @@ export async function updateCandidateCheckIn(candidateId: string, checked: boole
   }
 }
 
-// Fetch available panels
+// Fetch panelists for a specific candidate and vacancy
+export async function fetchPanelistsForCandidate(candidateId: string, vacancyId: string): Promise<any[]> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/Vacancy/getpanelist`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        candidateId: candidateId,
+        vacancyId: vacancyId
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch panelists: ${response.status} ${response.statusText}`);
+    }
+
+    const panelists = await response.json();
+    return panelists;
+  } catch (error) {
+    console.error('Error fetching panelists for candidate:', error);
+    throw error;
+  }
+}
+
+// Fetch available panels (kept for backward compatibility)
 export async function fetchAvailablePanels(round: string = 'r1'): Promise<any[]> {
   const token = getToken();
   
