@@ -52,7 +52,7 @@ import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, fetchCompletedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
@@ -92,10 +92,8 @@ export default function CandidatesPage() {
   const [activeTab, setActiveTab] = useState("unassigned")
   const [unassignedCandidates, setUnassignedCandidates] = useState<BackendCandidate[]>([])
   const [assignedCandidates, setAssignedCandidates] = useState<BackendCandidate[]>([])
-  const [completedCandidates, setCompletedCandidates] = useState<BackendCandidate[]>([])
   const [loadingUnassigned, setLoadingUnassigned] = useState(false)
   const [loadingAssigned, setLoadingAssigned] = useState(false)
-  const [loadingCompleted, setLoadingCompleted] = useState(false)
   const [selectedAssignedCandidate, setSelectedAssignedCandidate] = useState<BackendCandidate | null>(null)
   const [isAssignedDetailsOpen, setIsAssignedDetailsOpen] = useState(false)
   const [selectedUnassignedCandidate, setSelectedUnassignedCandidate] = useState<BackendCandidate | null>(null)
@@ -188,28 +186,23 @@ export default function CandidatesPage() {
     const loadAllCandidates = async () => {
       setLoadingUnassigned(true)
       setLoadingAssigned(true)
-      setLoadingCompleted(true)
       
       try {
         // Load all datasets in parallel
-        const [unassignedData, assignedData, completedData] = await Promise.all([
+        const [unassignedData, assignedData] = await Promise.all([
           fetchUnassignedCandidates(),
-          fetchAssignedCandidates(),
-          fetchCompletedCandidates()
+          fetchAssignedCandidates()
         ])
         
         setUnassignedCandidates(unassignedData)
         setAssignedCandidates(assignedData)
-        setCompletedCandidates(completedData)
       } catch (error) {
         console.error('Failed to load candidates:', error)
         setUnassignedCandidates([])
         setAssignedCandidates([])
-        setCompletedCandidates([])
       } finally {
         setLoadingUnassigned(false)
         setLoadingAssigned(false)
-        setLoadingCompleted(false)
       }
     }
 
@@ -378,13 +371,21 @@ export default function CandidatesPage() {
     return filterBackendCandidates(unassignedCandidates)
   }, [unassignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
   
-  const filteredAssignedCandidates = useMemo(() => {
-    return filterBackendCandidates(assignedCandidates)
+  // Separate completed candidates from assigned candidates
+  const filteredCompletedCandidates = useMemo(() => {
+    const completedList = assignedCandidates.filter(
+      (c) => c.last_interview_round === "r3" && c.final_status === "selected"
+    )
+    return filterBackendCandidates(completedList)
   }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
 
-  const filteredCompletedCandidates = useMemo(() => {
-    return filterBackendCandidates(completedCandidates)
-  }, [completedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
+  // Filter assigned candidates to exclude completed ones
+  const filteredAssignedCandidates = useMemo(() => {
+    const nonCompletedAssigned = assignedCandidates.filter(
+      (c) => !(c.last_interview_round === "r3" && c.final_status === "selected")
+    )
+    return filterBackendCandidates(nonCompletedAssigned)
+  }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
 
   // Paginated data
   const paginatedUnassignedCandidates = useMemo(() => {
