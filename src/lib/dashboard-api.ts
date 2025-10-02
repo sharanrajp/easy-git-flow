@@ -67,9 +67,12 @@ export async function fetchHRDashboardMetrics(filters?: DashboardFilters): Promi
       filteredAssigned = filteredAssigned.filter(c => c.recruiter_name === filters.recruiter)
     }
 
+    // Combine all candidates for filtering
+    const allCandidates = [...filteredUnassigned, ...filteredAssigned]
+    
     // Calculate metrics
-    const total_applications = filteredUnassigned.length + filteredAssigned.length
-    const unassigned_candidates = filteredUnassigned.length
+    const total_applications = allCandidates.length
+    const unassigned_candidates = allCandidates.filter(c => c.status === "unassigned").length
     const interviews_scheduled = filteredAssigned.length
 
     // Count by status
@@ -78,10 +81,10 @@ export async function fetchHRDashboardMetrics(filters?: DashboardFilters): Promi
       c.status === "offer_released" || c.status === "selected"
     ).length
 
-    // Count ongoing rounds
-    const ongoing_r1 = filteredAssigned.filter(c => c.currentRound === "r1").length
-    const ongoing_r2 = filteredAssigned.filter(c => c.currentRound === "r2").length
-    const ongoing_r3 = filteredAssigned.filter(c => c.currentRound === "r3").length
+    // Count ongoing rounds (status = assigned AND last interview round = r1/r2/r3)
+    const ongoing_r1 = allCandidates.filter(c => c.status === "assigned" && c.currentRound === "r1").length
+    const ongoing_r2 = allCandidates.filter(c => c.status === "assigned" && c.currentRound === "r2").length
+    const ongoing_r3 = allCandidates.filter(c => c.status === "assigned" && c.currentRound === "r3").length
 
     const successful_hires = filteredAssigned.filter(c => 
       c.status === "hired" || c.status === "joined"
