@@ -28,6 +28,7 @@ export interface BackendCandidate {
   notice_period?: string;
   willing_to_relocate?: boolean;
   negotiable?: boolean;
+  vacancyId?: string;
 }
 
 export interface PanelistCandidate {

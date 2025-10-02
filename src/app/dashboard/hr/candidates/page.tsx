@@ -822,32 +822,19 @@ export default function CandidatesPage() {
     setLoadingPanels(true)
     
     try {
-      // Check if candidate has applied_position
-      if (!candidate.applied_position) {
+      // Check if candidate has vacancyId
+      if (!candidate.vacancyId) {
         toast({
           title: "Error",
-          description: "Candidate has no applied position. Cannot fetch panelists.",
+          description: "Candidate has no vacancy ID. Cannot fetch panelists.",
           variant: "destructive",
         })
         setLoadingPanels(false)
         return
       }
 
-      // Find the vacancy ID by matching the applied_position with vacancy position_title
-      const matchingVacancy = vacancies.find(v => v.position_title === candidate.applied_position)
-      
-      if (!matchingVacancy) {
-        toast({
-          title: "Error",
-          description: "No matching active vacancy found for this candidate's position.",
-          variant: "destructive",
-        })
-        setLoadingPanels(false)
-        return
-      }
-
-      // Use the new API endpoint
-      const panelists = await fetchPanelistsForCandidate(candidate._id, matchingVacancy._id)
+      // Use the new API endpoint with candidateId and vacancyId from the candidate object
+      const panelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
       console.log('Fetched panelists in handleAssignPanel:', panelists) // Debug log
       setAvailablePanels(panelists)
       setIsPanelDialogOpen(true)
