@@ -312,7 +312,35 @@ export async function fetchOngoingInterviews(): Promise<OngoingInterview[]> {
   }
 }
 
-// Fetch assigned candidates for panelist from backend
+// Fetch completed candidates from backend (R3 selected candidates)
+export async function fetchCompletedCandidates(): Promise<BackendCandidate[]> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/candidates/get-completed-candidates`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch completed candidates: ${response.status} ${response.statusText}`);
+    }
+
+    const candidates: BackendCandidate[] = await response.json();
+    return candidates;
+  } catch (error) {
+    console.error('Error fetching completed candidates:', error);
+    throw error;
+  }
+}
+
 // Export candidates to Excel/CSV
 export async function exportCandidatesExcel(): Promise<Blob> {
   const response = await makeAuthenticatedRequest(`${API_BASE_URL}/export/candidates-excel`);
