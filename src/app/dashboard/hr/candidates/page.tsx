@@ -52,7 +52,7 @@ import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, fetchCompletedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
@@ -92,8 +92,10 @@ export default function CandidatesPage() {
   const [activeTab, setActiveTab] = useState("unassigned")
   const [unassignedCandidates, setUnassignedCandidates] = useState<BackendCandidate[]>([])
   const [assignedCandidates, setAssignedCandidates] = useState<BackendCandidate[]>([])
+  const [completedCandidates, setCompletedCandidates] = useState<BackendCandidate[]>([])
   const [loadingUnassigned, setLoadingUnassigned] = useState(false)
   const [loadingAssigned, setLoadingAssigned] = useState(false)
+  const [loadingCompleted, setLoadingCompleted] = useState(false)
   const [selectedAssignedCandidate, setSelectedAssignedCandidate] = useState<BackendCandidate | null>(null)
   const [isAssignedDetailsOpen, setIsAssignedDetailsOpen] = useState(false)
   const [selectedUnassignedCandidate, setSelectedUnassignedCandidate] = useState<BackendCandidate | null>(null)
@@ -181,28 +183,33 @@ export default function CandidatesPage() {
     loadVacancies()
   }, [])
 
-  // Load both assigned and unassigned candidates in parallel when page loads
+  // Load all candidates in parallel when page loads
   useEffect(() => {
     const loadAllCandidates = async () => {
       setLoadingUnassigned(true)
       setLoadingAssigned(true)
+      setLoadingCompleted(true)
       
       try {
-        // Load both datasets in parallel
-        const [unassignedData, assignedData] = await Promise.all([
+        // Load all datasets in parallel
+        const [unassignedData, assignedData, completedData] = await Promise.all([
           fetchUnassignedCandidates(),
-          fetchAssignedCandidates()
+          fetchAssignedCandidates(),
+          fetchCompletedCandidates()
         ])
         
         setUnassignedCandidates(unassignedData)
         setAssignedCandidates(assignedData)
+        setCompletedCandidates(completedData)
       } catch (error) {
         console.error('Failed to load candidates:', error)
         setUnassignedCandidates([])
         setAssignedCandidates([])
+        setCompletedCandidates([])
       } finally {
         setLoadingUnassigned(false)
         setLoadingAssigned(false)
+        setLoadingCompleted(false)
       }
     }
 
@@ -221,7 +228,20 @@ export default function CandidatesPage() {
   useEffect(() => {
     setUnassignedCurrentPage(1)
     setAssignedCurrentPage(1)
+    setCompletedCurrentPage(1)
   }, [searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter, interviewTypeFilter])
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSearchTerm("")
+    setDateFilter("all")
+    setJobFilter("all")
+    setStatusFilter("all")
+    setExperienceFilter("all")
+    setRecruiterFilter("all")
+    setRoundFilter("all")
+    setInterviewTypeFilter("all")
+  }
 
   // Filter function for backend candidates
   const filterBackendCandidates = (candidatesList: BackendCandidate[]) => {
@@ -362,6 +382,10 @@ export default function CandidatesPage() {
     return filterBackendCandidates(assignedCandidates)
   }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
 
+  const filteredCompletedCandidates = useMemo(() => {
+    return filterBackendCandidates(completedCandidates)
+  }, [completedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
+
   // Paginated data
   const paginatedUnassignedCandidates = useMemo(() => {
     const startIndex = (unassignedCurrentPage - 1) * itemsPerPage
@@ -375,8 +399,16 @@ export default function CandidatesPage() {
     return filteredAssignedCandidates.slice(startIndex, endIndex)
   }, [filteredAssignedCandidates, assignedCurrentPage, itemsPerPage])
 
+  const [completedCurrentPage, setCompletedCurrentPage] = useState(1)
+  const paginatedCompletedCandidates = useMemo(() => {
+    const startIndex = (completedCurrentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredCompletedCandidates.slice(startIndex, endIndex)
+  }, [filteredCompletedCandidates, completedCurrentPage, itemsPerPage])
+
   const unassignedTotalPages = Math.ceil(filteredUnassignedCandidates.length / itemsPerPage)
   const assignedTotalPages = Math.ceil(filteredAssignedCandidates.length / itemsPerPage)
+  const completedTotalPages = Math.ceil(filteredCompletedCandidates.length / itemsPerPage)
 
   const statusOptions = {
     "assigned": [
@@ -1314,11 +1346,41 @@ export default function CandidatesPage() {
     return currentCandidates.filter((c) => selectedCandidates.includes(c._id || c.id))
   }
 
-  const handleChangeStatus = (candidateId: string, newStatus: string) => {
-    setCandidates((prev) =>
-      prev.map((c) =>
-        c.id === candidateId ? { ...c, status: newStatus } : c
-    ))
+  const handleChangeStatus = async (candidateId: string, newStatus: string) => {
+    try {
+      // Update the candidate status via API
+      await updateCandidate(candidateId, { final_status: newStatus })
+      
+      // Refresh all candidate data
+      const [unassignedData, assignedData, completedData] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates(),
+        fetchCompletedCandidates()
+      ])
+      
+      setUnassignedCandidates(unassignedData)
+      setAssignedCandidates(assignedData)
+      setCompletedCandidates(completedData)
+      
+      // Update local candidates state as well
+      setCandidates((prev) =>
+        prev.map((c) =>
+          c.id === candidateId || c._id === candidateId ? { ...c, final_status: newStatus, status: newStatus } : c
+        )
+      )
+      
+      toast({
+        title: "Success",
+        description: "Candidate status updated successfully",
+      })
+    } catch (error) {
+      console.error('Failed to update candidate status:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update candidate status",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -1479,6 +1541,13 @@ export default function CandidatesPage() {
                 <SelectItem value="others">Others</SelectItem>
               </SelectContent>
             </Select>
+            <Button 
+              variant="outline" 
+              onClick={handleClearFilters}
+              className="whitespace-nowrap"
+            >
+              Clear Filters
+            </Button>
           </div>
         </div>
         </div>
@@ -1487,14 +1556,16 @@ export default function CandidatesPage() {
         <div className="flex-1 overflow-y-auto">
         <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="flex-1 flex flex-col overflow-hidden pt-4">
           <div className="pt-4">
-          <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
+          <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
             <TabsTrigger value="unassigned">
               Unassigned ({loadingUnassigned ? "..." : filteredUnassignedCandidates.length})
             </TabsTrigger>
             <TabsTrigger value="assigned">
               Assigned ({loadingAssigned ? "..." : filteredAssignedCandidates.length})
             </TabsTrigger>
-            {/* <TabsTrigger value="completed">Completed ({completedCandidates.length})</TabsTrigger> */}
+            <TabsTrigger value="completed">
+              Completed ({loadingCompleted ? "..." : filteredCompletedCandidates.length})
+            </TabsTrigger>
           </TabsList>
           </div>
           <div className="flex-1 overflow-hidden pt-4">
@@ -1698,8 +1769,8 @@ export default function CandidatesPage() {
                         </TableHead>
                         <TableHead>Candidate</TableHead>
                         <TableHead>Position</TableHead>
-                        <TableHead>Current Round</TableHead>
-                        <TableHead>Panelist</TableHead>
+                        <TableHead>Skillset</TableHead>
+                        <TableHead>Total Experience</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
@@ -1748,12 +1819,32 @@ export default function CandidatesPage() {
                               </div>
                             </TableCell>
                             <TableCell>{(candidate as any).applied_position || candidate.applied_position || "N/A"}</TableCell>
-                            <TableCell>{candidate.last_interview_round || "N/A"}</TableCell>
-                            <TableCell>{candidate.panel_name || "Not assigned"}</TableCell>
                             <TableCell>
-                              <Badge className={getStatusColor(candidate.final_status || "assigned")}>
-                                {candidate.final_status || "assigned"}
-                              </Badge>
+                              <SkillsDisplay skills={candidate.skill_set || []} />
+                            </TableCell>
+                            <TableCell>{candidate.total_experience || "N/A"}</TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" className="p-0 h-auto">
+                                    <Badge className={getStatusColor(candidate.final_status || "assigned")}>
+                                      <div className="flex items-center gap-1">
+                                        {candidate.final_status || "assigned"}
+                                        <ChevronDown className="h-3 w-3" />
+                                      </div>
+                                    </Badge>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "selected")}>Selected</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "onHold")}>On Hold</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "rejected")}>Rejected</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
@@ -1825,8 +1916,196 @@ export default function CandidatesPage() {
             )}
           </TabsContent>
 
-          {/* Scrollable table section */}
-          
+          <TabsContent value="completed" className="mt-0 h-full overflow-auto">
+            {loadingCompleted ? (
+              <Card>
+                <CardContent className="flex items-center justify-center py-16">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-2 text-gray-600">Loading completed candidates...</span>
+                </CardContent>
+              </Card>
+            ) : completedCandidates.length > 0 ? (
+              <Card className="h-full flex flex-col">
+                <CardHeader className="flex-shrink-0">
+                  <CardTitle>Completed Candidates</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1 overflow-auto p-0">
+                  <Table>
+                    <TableHeader className="sticky top-0 bg-background z-10">
+                      <TableRow>
+                        <TableHead className="w-12">
+                          <Checkbox
+                            checked={
+                              filteredCompletedCandidates.length > 0 &&
+                              filteredCompletedCandidates.every((c) => selectedCandidates.includes(c._id))
+                            }
+                            onCheckedChange={(checked) => {
+                              const candidateIds = filteredCompletedCandidates.map((c) => c._id)
+                              if (checked) {
+                                setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
+                              } else {
+                                setSelectedCandidates(selectedCandidates.filter((id) => !candidateIds.includes(id)))
+                              }
+                            }}
+                          />
+                        </TableHead>
+                        <TableHead>Candidate</TableHead>
+                        <TableHead>Position</TableHead>
+                        <TableHead>Skillset</TableHead>
+                        <TableHead>Total Experience</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedCompletedCandidates.map((candidate) => {
+                        const getStatusColor = (status: string) => {
+                          switch (status) {
+                            case "selected":
+                              return "bg-green-100 text-green-800"
+                            case "rejected":
+                              return "bg-red-100 text-red-800"
+                            case "offerReleased":
+                              return "bg-blue-100 text-blue-800"
+                            case "candidateDeclined":
+                              return "bg-orange-100 text-orange-800"
+                            case "onHold":
+                              return "bg-yellow-100 text-yellow-800"
+                            case "hired":
+                              return "bg-purple-100 text-purple-800"
+                            case "joined":
+                              return "bg-teal-100 text-teal-800"
+                            default:
+                              return "bg-gray-100 text-gray-800"
+                          }
+                        }
+
+                        const formatPhoneNumber = (phone_number: any) => {
+                          if (!phone_number) return "No phone number"
+                          return String(phone_number).replace(/\+/g, "")
+                        }
+
+                        const formatStatusLabel = (status: string) => {
+                          switch (status) {
+                            case "offerReleased":
+                              return "Offer Released"
+                            case "candidateDeclined":
+                              return "Candidate Declined"
+                            case "onHold":
+                              return "On Hold"
+                            default:
+                              return status.charAt(0).toUpperCase() + status.slice(1)
+                          }
+                        }
+
+                        return (
+                          <TableRow key={candidate._id}>
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedCandidates.includes(candidate._id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedCandidates([...selectedCandidates, candidate._id])
+                                  } else {
+                                    setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id))
+                                  }
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <div className="font-medium">{candidate.name}</div>
+                                <div className="text-sm text-gray-500">{candidate.email}</div>
+                                <div className="text-sm text-gray-500">{formatPhoneNumber(candidate.phone_number)}</div>
+                              </div>
+                            </TableCell>
+                            <TableCell>{candidate.applied_position || "N/A"}</TableCell>
+                            <TableCell>
+                              <SkillsDisplay skills={candidate.skill_set || []} />
+                            </TableCell>
+                            <TableCell>{candidate.total_experience || "N/A"}</TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" className="p-0 h-auto">
+                                    <Badge className={getStatusColor(candidate.final_status || "selected")}>
+                                      <div className="flex items-center gap-1">
+                                        {formatStatusLabel(candidate.final_status || "selected")}
+                                        <ChevronDown className="h-3 w-3" />
+                                      </div>
+                                    </Badge>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "selected")}>Selected</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "onHold")}>On Hold</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "rejected")}>Rejected</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setSelectedAssignedCandidate(candidate)
+                                    setIsAssignedDetailsOpen(true)
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setSelectedCandidate(candidate as any)
+                                    setIsEditOpen(true)
+                                  }}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setDeleteCandidate(candidate as any)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-600" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+                <div className="p-4 border-t flex-shrink-0">
+                  <Pagination
+                    currentPage={completedCurrentPage}
+                    totalPages={completedTotalPages}
+                    onPageChange={setCompletedCurrentPage}
+                  />
+                </div>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <Award className="h-8 w-8 text-green-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No completed candidates</h3>
+                  <p className="text-gray-500 mb-6 max-w-md">
+                    No candidates have completed all interview rounds yet.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
 
           {/* <TabsContent value="completed"> */}
             {/* {completedCandidates.length > 0 ? (
