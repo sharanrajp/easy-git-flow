@@ -11,7 +11,7 @@ import ManagerCandidatesPage from "./app/dashboard/manager/candidates/page"
 import ManagerOffersPage from "./app/dashboard/manager/offers/page"
 import { Toaster } from "./components/ui/toaster"
 import { ThemeProvider } from "./components/theme-provider"
-import { AuthProvider } from "@/contexts/AuthContext"
+import { AuthProvider } from "../contexts/AuthContext"
 
 function App() {
   return (

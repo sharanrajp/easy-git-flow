@@ -5,10 +5,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Users, UserCheck, Clock, CheckCircle, TrendingUp, Calendar, MessageSquare, Filter } from "lucide-react"
 import { useState, useEffect } from "react"
-import { fetchHRDashboardMetrics, type HRDashboardMetrics } from "@/lib/dashboard-api"
 import { useToast } from "@/hooks/use-toast"
 import { fetchVacancies } from "@/lib/vacancy-api"
 import { getAllUsers, type User } from "@/lib/auth"
+import { fetchHRDashboardMetrics } from "../../../lib/dashboard-api"
 
 export default function HRDashboard() {
   const [metrics, setMetrics] = useState<HRDashboardMetrics | null>(null)

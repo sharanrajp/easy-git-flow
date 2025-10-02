@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Header } from "./header"
 import { type User } from "@/lib/auth"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "../../../contexts/AuthContext"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
