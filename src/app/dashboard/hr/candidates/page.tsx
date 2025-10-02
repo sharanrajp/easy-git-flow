@@ -1550,7 +1550,7 @@ export default function CandidatesPage() {
               Assigned ({loadingAssigned ? "..." : filteredAssignedCandidates.length})
             </TabsTrigger>
             <TabsTrigger value="completed">
-              Completed ({loadingCompleted ? "..." : filteredCompletedCandidates.length})
+              Completed ({loadingAssigned ? "..." : filteredCompletedCandidates.length})
             </TabsTrigger>
           </TabsList>
           </div>
@@ -1903,7 +1903,7 @@ export default function CandidatesPage() {
           </TabsContent>
 
           <TabsContent value="completed" className="mt-0 h-full overflow-auto">
-            {loadingCompleted ? (
+            {loadingAssigned ? (
               <Card>
                 <CardContent className="flex items-center justify-center py-16">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
