@@ -298,6 +298,7 @@ Jane Smith,jane.smith@email.com,+1234567891,2-4 years,"Node.js,Python,MongoDB",C
             <SelectContent>
               <SelectItem value="naukri">Naukri</SelectItem>
               <SelectItem value="linkedin">LinkedIn</SelectItem>
+              <SelectItem value="website">Website</SelectItem>
               <SelectItem value="referral">Referral</SelectItem>
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>

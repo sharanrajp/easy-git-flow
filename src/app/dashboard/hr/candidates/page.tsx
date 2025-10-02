@@ -250,8 +250,9 @@ export default function CandidatesPage() {
             return true
         }
       })()
-      const matchesRecruiter =
-        recruiterFilter === "all" || (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
+      const matchesRecruiter = recruiterFilter === "all" ? true
+          : recruiterFilter === "others" ? !["linkedin", "naukri", "website", "referral"].includes((candidate.source || "").toLowerCase())
+          : (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
       const matchesRound = roundFilter === "all" || (candidate.last_interview_round || "").toLowerCase() === roundFilter.toLowerCase()
       
       const matchesDate = (() => {
@@ -1474,7 +1475,7 @@ export default function CandidatesPage() {
                 <SelectItem value="naukri">Naukri</SelectItem>
                 <SelectItem value="website">Website</SelectItem>
                 <SelectItem value="referral">Referral</SelectItem>
-                <SelectItem value="recruiter">Recruiter</SelectItem>
+                <SelectItem value="others">Others</SelectItem>
               </SelectContent>
             </Select>
           </div>
