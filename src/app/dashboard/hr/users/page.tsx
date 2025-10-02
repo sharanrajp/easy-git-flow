@@ -15,7 +15,7 @@ import { Plus, Search, Edit, Trash2, Grid, List } from "lucide-react"
 import { getAllUsers, type User, makeAuthenticatedRequest } from "@/lib/auth"
 import { UserForm } from "@/components/users/user-form"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
-import { Pagination } from "../../../../components/ui/pagination"
+import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/hooks/use-toast"
 
 export default function UsersPage() {

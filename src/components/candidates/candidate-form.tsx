@@ -263,7 +263,6 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
             <SelectContent>
               <SelectItem value="naukri">Naukri</SelectItem>
               <SelectItem value="linkedin">LinkedIn</SelectItem>
-              <SelectItem value="website">Website</SelectItem>
               <SelectItem value="referral">Referral</SelectItem>
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>

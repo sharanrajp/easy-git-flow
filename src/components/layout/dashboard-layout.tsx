@@ -1,9 +1,9 @@
 import type React from "react"
-import { useEffect } from "react"
+
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Header } from "./header"
-import { type User } from "@/lib/auth"
-import { useAuth } from "../../../contexts/AuthContext"
+import { type User, getStoredUser, getToken } from "@/lib/auth"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -11,7 +11,8 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps) {
-  const { user, setUser, isLoading } = useAuth()
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
 
   const handleUserUpdate = (updatedUser: User) => {
@@ -20,14 +21,19 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
   }
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    const token = getToken()
+    const storedUser = getStoredUser()
+
+    // Check if user is authenticated
+    if (!token || !storedUser) {
       navigate("/login")
       return
     }
 
-    if (!isLoading && user && requiredRole && user.role !== requiredRole) {
+    // Check role authorization
+    if (requiredRole && storedUser.role !== requiredRole) {
       // Redirect to appropriate dashboard
-      switch (user.role) {
+      switch (storedUser.role) {
         case "hr":
         case "admin":
           navigate("/dashboard/hr")
@@ -39,8 +45,25 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
           navigate("/dashboard/manager")
           break
       }
+      return
     }
-  }, [user, isLoading, navigate, requiredRole])
+
+    setUser(storedUser)
+    setIsLoading(false)
+  }, [navigate, requiredRole])
+
+  // Listen for user updates from feedback submissions or other actions
+  useEffect(() => {
+    const handleUserUpdatedEvent = (event: CustomEvent<User>) => {
+      setUser(event.detail)
+    }
+
+    window.addEventListener('userUpdated', handleUserUpdatedEvent as EventListener)
+    
+    return () => {
+      window.removeEventListener('userUpdated', handleUserUpdatedEvent as EventListener)
+    }
+  }, [])
 
   if (isLoading) {
     return (

@@ -1,9 +1,11 @@
+ 
+
 import type React from "react"
-import { useEffect } from "react"
+
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Header } from "./header"
-import { type User } from "@/lib/auth"
-import { useAuth } from "../../contexts/AuthContext"
+import { type User, getStoredUser } from "@/lib/auth"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -11,25 +13,22 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps) {
-  const { user, setUser, isLoading } = useAuth()
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
 
-  const handleUserUpdate = (updatedUser: User) => {
-    setUser(updatedUser)
-    localStorage.setItem("ats_user", JSON.stringify(updatedUser))
-  }
-
   useEffect(() => {
-    if (!isLoading && !user) {
+    const storedUser = getStoredUser()
+
+    if (!storedUser) {
       navigate("/login")
       return
     }
 
-    if (!isLoading && user && requiredRole && user.role !== requiredRole) {
+    if (requiredRole && storedUser.role !== requiredRole) {
       // Redirect to appropriate dashboard
-      switch (user.role) {
+      switch (storedUser.role) {
         case "hr":
-        case "admin":
           navigate("/dashboard/hr")
           break
         case "panelist":
@@ -39,8 +38,12 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
           navigate("/dashboard/manager")
           break
       }
+      return
     }
-  }, [user, isLoading, navigate, requiredRole])
+
+    setUser(storedUser)
+    setIsLoading(false)
+  }, [navigate, requiredRole])
 
   if (isLoading) {
     return (
@@ -57,7 +60,7 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
   if (user.role === "panelist") {
     return (
       <div className="flex flex-col min-h-screen bg-background">
-        <Header user={user} onUserUpdate={handleUserUpdate} />
+        <Header user={user} />
         <main className="flex-1 p-6">{children}</main>
       </div>
     )
@@ -66,7 +69,7 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
   return (
     <div className="flex h-screen bg-background">
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header user={user} onUserUpdate={handleUserUpdate} />
+        <Header user={user} />
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
     </div>

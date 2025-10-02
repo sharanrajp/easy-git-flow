@@ -5,10 +5,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Users, UserCheck, Clock, CheckCircle, TrendingUp, Calendar, MessageSquare, Filter } from "lucide-react"
 import { useState, useEffect } from "react"
+import { fetchHRDashboardMetrics, type HRDashboardMetrics } from "@/lib/dashboard-api"
 import { useToast } from "@/hooks/use-toast"
-import { fetchVacancies } from "../../../lib/vacancy-api"
-import { getAllUsers, type User } from "@/lib/auth"
-import { fetchHRDashboardMetrics } from "../../../lib/dashboard-api"
 
 export default function HRDashboard() {
   const [metrics, setMetrics] = useState<HRDashboardMetrics | null>(null)
@@ -19,14 +17,9 @@ export default function HRDashboard() {
   const [pipelineFilter, setPipelineFilter] = useState("all")
   const [performanceFilter, setPerformanceFilter] = useState("all")
   const [roleFilter, setRoleFilter] = useState("all")
-  
-  const [vacancies, setVacancies] = useState<Array<{ position_title: string }>>([])
-  const [hrUsers, setHrUsers] = useState<User[]>([])
 
   useEffect(() => {
     loadMetrics()
-    loadVacancies()
-    loadHRUsers()
   }, [])
 
   useEffect(() => {
@@ -53,25 +46,6 @@ export default function HRDashboard() {
       })
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const loadVacancies = async () => {
-    try {
-      const data = await fetchVacancies()
-      setVacancies(data)
-    } catch (error) {
-      console.error('Error loading vacancies:', error)
-    }
-  }
-
-  const loadHRUsers = async () => {
-    try {
-      const users = await getAllUsers()
-      const hrOnlyUsers = users.filter(user => user.role === "hr")
-      setHrUsers(hrOnlyUsers)
-    } catch (error) {
-      console.error('Error loading HR users:', error)
     }
   }
 
@@ -185,11 +159,11 @@ export default function HRDashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Roles</SelectItem>
-                  {vacancies.map((vacancy) => (
-                    <SelectItem key={vacancy.position_title} value={vacancy.position_title}>
-                      {vacancy.position_title}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="frontend">Frontend Developer</SelectItem>
+                  <SelectItem value="backend">Backend Developer</SelectItem>
+                  <SelectItem value="fullstack">Full Stack Developer</SelectItem>
+                  <SelectItem value="product">Product Manager</SelectItem>
+                  <SelectItem value="design">UX Designer</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -274,11 +248,9 @@ export default function HRDashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Jobs</SelectItem>
-                  {vacancies.map((vacancy) => (
-                    <SelectItem key={vacancy.position_title} value={vacancy.position_title}>
-                      {vacancy.position_title}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="frontend">Frontend</SelectItem>
+                  <SelectItem value="backend">Backend</SelectItem>
+                  <SelectItem value="product">Product</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -320,11 +292,9 @@ export default function HRDashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Recruiters</SelectItem>
-                  {hrUsers.map((user) => (
-                    <SelectItem key={user._id} value={user._id}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="sarah">Sarah Johnson</SelectItem>
+                  <SelectItem value="mike">Mike Chen</SelectItem>
+                  <SelectItem value="alex">Alex Rodriguez</SelectItem>
                 </SelectContent>
               </Select>
             </div>

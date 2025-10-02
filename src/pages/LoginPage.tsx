@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Building2 } from "lucide-react"
 import { fetchUserProfile } from '../lib/auth'
-import { useAuth } from "@/contexts/AuthContext"
 
 function LoginPage() {
   const [email, setEmail] = useState("")
@@ -15,7 +14,6 @@ function LoginPage() {
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
-  const { setUser } = useAuth()
 
   // Clear any stale authentication data on mount
   useEffect(() => {
@@ -100,9 +98,6 @@ function LoginPage() {
           // Store enriched user info
           localStorage.setItem("ats_user", JSON.stringify(enrichedUser))
           
-          // Update AuthContext
-          setUser(enrichedUser)
-          
           // Redirect based on role
           if (enrichedUser.role === "admin") {
             navigate("/dashboard/hr")
@@ -117,9 +112,6 @@ function LoginPage() {
           console.warn("Failed to fetch user profile, using basic user data:", profileError)
           // Fallback to basic user data if profile fetch fails
           localStorage.setItem("ats_user", JSON.stringify(currentUser))
-          
-          // Update AuthContext
-          setUser(currentUser)
           
           // Redirect based on role
           if (currentUser.role === "admin") {
