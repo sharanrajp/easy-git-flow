@@ -914,9 +914,20 @@ export default function CandidatesPage() {
     const nextRound = getNextRound(candidate.last_interview_round || "")
     setAssignmentRound(nextRound)
     
+    // Check if candidate has vacancyId
+    if (!candidate.vacancyId) {
+      toast({
+        title: "Error",
+        description: "Candidate has no vacancy ID. Cannot fetch panelists.",
+        variant: "destructive",
+      })
+      return
+    }
+    
     try {
       setLoadingPanels(true)
-      const panels = await fetchAvailablePanels(nextRound)
+      // Use the new API endpoint with candidateId and vacancyId from the candidate object
+      const panels = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
       setAvailablePanels(panels)
       setSelectedCandidateForPanel(candidate)
       setIsPanelDialogOpen(true)
