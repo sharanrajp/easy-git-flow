@@ -559,17 +559,13 @@ export default function CandidatesPage() {
         description: "Candidate information has been updated successfully.",
       })
 
-      // Refresh candidates from backend
-      try {
-        const [updatedUnassigned, updatedAssigned] = await Promise.all([
-          fetchUnassignedCandidates(),
-          fetchAssignedCandidates()
-        ])
-        setUnassignedCandidates(updatedUnassigned)
-        setAssignedCandidates(updatedAssigned)
-      } catch (refreshError) {
-        console.error("Error refreshing candidates:", refreshError)
-      }
+      // Update local state optimistically
+      setUnassignedCandidates(prev => 
+        prev.map(c => c._id === candidateId ? { ...c, ...candidateData } as BackendCandidate : c)
+      )
+      setAssignedCandidates(prev => 
+        prev.map(c => c._id === candidateId ? { ...c, ...candidateData } as BackendCandidate : c)
+      )
       
       // Notify dashboards to refresh
       window.dispatchEvent(new Event('dashboardUpdate'))
@@ -591,25 +587,15 @@ export default function CandidatesPage() {
       const candidateId = (deleteCandidate as any)._id || deleteCandidate.id
       await deleteCandidates([candidateId])
 
-      // Remove from local state
+      // Remove from local state optimistically
+      setUnassignedCandidates(prev => prev.filter(c => c._id !== candidateId))
+      setAssignedCandidates(prev => prev.filter(c => c._id !== candidateId))
       setCandidates(candidates.filter((c) => c.id !== deleteCandidate.id))
       
       toast({
         title: "Candidate deleted",
         description: "Candidate has been removed successfully.",
       })
-
-      // Refresh both unassigned and assigned lists
-      try {
-        const [updatedUnassigned, updatedAssigned] = await Promise.all([
-          fetchUnassignedCandidates(),
-          fetchAssignedCandidates()
-        ])
-        setUnassignedCandidates(updatedUnassigned)
-        setAssignedCandidates(updatedAssigned)
-      } catch (refreshError) {
-        console.error("Error refreshing candidates:", refreshError)
-      }
       
       // Notify dashboards to refresh
       window.dispatchEvent(new Event('dashboardUpdate'))
