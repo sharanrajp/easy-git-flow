@@ -1214,7 +1214,11 @@ export default function CandidatesPage() {
         selectedCandidateObjects = assignedCandidates.filter((c) => selectedCandidates.includes(c._id))
         break
       case "completed":
-        selectedCandidateObjects = completedCandidates.filter((c) => selectedCandidates.includes(c._id))
+        selectedCandidateObjects = assignedCandidates.filter((c) => 
+          selectedCandidates.includes(c._id) && 
+          c.last_interview_round === "r3" && 
+          c.final_status === "selected"
+        )
         break
       default:
         selectedCandidateObjects = candidates.filter((c) => selectedCandidates.includes(c._id))
@@ -1323,7 +1327,9 @@ export default function CandidatesPage() {
         currentCandidates = assignedCandidates
         break
       case "completed":
-        currentCandidates = completedCandidates
+        currentCandidates = assignedCandidates.filter((c) => 
+          c.last_interview_round === "r3" && c.final_status === "selected"
+        )
         break
       default:
         currentCandidates = candidates
@@ -1338,15 +1344,13 @@ export default function CandidatesPage() {
       await updateCandidate(candidateId, { final_status: newStatus })
       
       // Refresh all candidate data
-      const [unassignedData, assignedData, completedData] = await Promise.all([
+      const [unassignedData, assignedData] = await Promise.all([
         fetchUnassignedCandidates(),
-        fetchAssignedCandidates(),
-        fetchCompletedCandidates()
+        fetchAssignedCandidates()
       ])
       
       setUnassignedCandidates(unassignedData)
       setAssignedCandidates(assignedData)
-      setCompletedCandidates(completedData)
       
       // Update local candidates state as well
       setCandidates((prev) =>
@@ -1910,7 +1914,7 @@ export default function CandidatesPage() {
                   <span className="ml-2 text-gray-600">Loading completed candidates...</span>
                 </CardContent>
               </Card>
-            ) : completedCandidates.length > 0 ? (
+            ) : filteredCompletedCandidates.length > 0 ? (
               <Card className="h-full flex flex-col">
                 <CardHeader className="flex-shrink-0">
                   <CardTitle>Completed Candidates</CardTitle>
