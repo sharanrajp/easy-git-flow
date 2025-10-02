@@ -235,7 +235,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
               <SelectItem value="Company Website">Company Website</SelectItem>
               <SelectItem value="Referral">Referral</SelectItem>
               <SelectItem value="Job Board">Job Board</SelectItem>
-              <SelectItem value="Recruiter">Recruiter</SelectItem>
+              <SelectItem value="others">Others</SelectItem>
             </SelectContent>
           </Select>
         </div>
