@@ -186,32 +186,3 @@ export async function fetchPanelistAssignedCandidates(): Promise<PanelistCandida
     throw error;
   }
 }
-
-// Fetch completed candidates from backend
-export async function fetchCompletedCandidates(): Promise<BackendCandidate[]> {
-  const token = getToken();
-  
-  if (!token) {
-    throw new Error('No authentication token found');
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/candidates/get-completed-candidates`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch completed candidates: ${response.status} ${response.statusText}`);
-    }
-
-    const candidates: BackendCandidate[] = await response.json();
-    return candidates;
-  } catch (error) {
-    console.error('Error fetching completed candidates:', error);
-    throw error;
-  }
-}

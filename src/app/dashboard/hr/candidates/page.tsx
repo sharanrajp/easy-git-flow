@@ -374,7 +374,7 @@ export default function CandidatesPage() {
   // Separate completed candidates from assigned candidates
   const filteredCompletedCandidates = useMemo(() => {
     const completedList = assignedCandidates.filter(
-      (c) => c.last_interview_round === "r3" && c.final_status === "selected"
+      (c) => c.last_interview_round === "r3" && ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "")
     )
     return filterBackendCandidates(completedList)
   }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
@@ -382,7 +382,7 @@ export default function CandidatesPage() {
   // Filter assigned candidates to exclude completed ones
   const filteredAssignedCandidates = useMemo(() => {
     const nonCompletedAssigned = assignedCandidates.filter(
-      (c) => !(c.last_interview_round === "r3" && c.final_status === "selected")
+      (c) => !(c.last_interview_round === "r3" && ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || ""))
     )
     return filterBackendCandidates(nonCompletedAssigned)
   }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
@@ -1217,7 +1217,7 @@ export default function CandidatesPage() {
         selectedCandidateObjects = assignedCandidates.filter((c) => 
           selectedCandidates.includes(c._id) && 
           c.last_interview_round === "r3" && 
-          c.final_status === "selected"
+          ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "")
         )
         break
       default:
@@ -1328,7 +1328,7 @@ export default function CandidatesPage() {
         break
       case "completed":
         currentCandidates = assignedCandidates.filter((c) => 
-          c.last_interview_round === "r3" && c.final_status === "selected"
+          c.last_interview_round === "r3" && ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "")
         )
         break
       default:
@@ -1773,12 +1773,39 @@ export default function CandidatesPage() {
                               return "bg-green-100 text-green-800"
                             case "rejected":
                               return "bg-red-100 text-red-800"
+                            case "offerReleased":
+                              return "bg-blue-100 text-blue-800"
+                            case "candidateDeclined":
+                              return "bg-orange-100 text-orange-800"
                             case "on-hold":
                               return "bg-yellow-100 text-yellow-800"
-                            case "assigned":
-                              return "bg-gray-100 text-gray-800"
+                            case "hired":
+                              return "bg-purple-100 text-purple-800"
+                            case "joined":
+                              return "bg-teal-100 text-teal-800"
                             default:
                               return "bg-gray-100 text-gray-800"
+                          }
+                        }
+
+                        const formatStatusLabel = (status: string) => {
+                          switch (status) {
+                            case "offerReleased":
+                              return "Offer Released"
+                            case "candidateDeclined":
+                              return "Candidate Declined"
+                            case "on-hold":
+                              return "On Hold"
+                            case "hired":
+                              return "Hired"
+                            case "joined":
+                              return "Joined"
+                            case "selected":
+                              return "Selected"
+                            case "rejected":
+                              return "Rejected"
+                            default:
+                              return status.charAt(0).toUpperCase() + status.slice(1)
                           }
                         }
 
@@ -1814,27 +1841,11 @@ export default function CandidatesPage() {
                             </TableCell>
                             <TableCell>{candidate.total_experience || "N/A"}</TableCell>
                             <TableCell>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" className="p-0 h-auto">
-                                    <Badge className={getStatusColor(candidate.final_status || "assigned")}>
-                                      <div className="flex items-center gap-1">
-                                        {candidate.final_status || "assigned"}
-                                        <ChevronDown className="h-3 w-3" />
-                                      </div>
-                                    </Badge>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "selected")}>Selected</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "onHold")}>On Hold</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "rejected")}>Rejected</DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              <Badge className={getStatusColor(candidate.final_status || "assigned")}>
+                                <div className="flex items-center gap-1">
+                                  {formatStatusLabel(candidate.final_status || "assigned")}
+                                </div>
+                              </Badge>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
@@ -1959,7 +1970,7 @@ export default function CandidatesPage() {
                               return "bg-blue-100 text-blue-800"
                             case "candidateDeclined":
                               return "bg-orange-100 text-orange-800"
-                            case "onHold":
+                            case "on-hold":
                               return "bg-yellow-100 text-yellow-800"
                             case "hired":
                               return "bg-purple-100 text-purple-800"
@@ -1981,8 +1992,16 @@ export default function CandidatesPage() {
                               return "Offer Released"
                             case "candidateDeclined":
                               return "Candidate Declined"
-                            case "onHold":
+                            case "on-hold":
                               return "On Hold"
+                            case "hired":
+                              return "Hired"
+                            case "joined":
+                              return "Joined"
+                            case "selected":
+                              return "Selected"
+                            case "rejected":
+                              return "Rejected"
                             default:
                               return status.charAt(0).toUpperCase() + status.slice(1)
                           }
@@ -2030,7 +2049,7 @@ export default function CandidatesPage() {
                                   <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "selected")}>Selected</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "onHold")}>On Hold</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "on-hold")}>On Hold</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "rejected")}>Rejected</DropdownMenuItem>
