@@ -269,22 +269,6 @@ export default function HRDashboard() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Interview Pipeline</h2>
-            <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-gray-500" />
-              <Select value={vacancyFilter} onValueChange={setVacancyFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Jobs</SelectItem>
-                  {vacancies.map(vacancy => (
-                    <SelectItem key={vacancy.id} value={vacancy.id}>
-                      {vacancy.position_title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <MetricCard

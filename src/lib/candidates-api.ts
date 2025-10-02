@@ -3,6 +3,8 @@ import { getToken, makeAuthenticatedRequest } from './auth';
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
 export interface BackendCandidate {
+  last_interview_round: string;
+  final_status: string;
   _id: string;
   name: string;
   email: string;
