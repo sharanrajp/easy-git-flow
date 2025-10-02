@@ -38,10 +38,75 @@ export interface DashboardFilters {
   recruiter?: string // recruiter name or "all"
 }
 
-// Calculate HR Dashboard Metrics from actual backend data
+// Calculate metrics from provided candidate data (no API calls)
+export function calculateHRMetrics(
+  unassignedCandidates: BackendCandidate[],
+  assignedCandidates: BackendCandidate[],
+  filters?: DashboardFilters,
+  vacancies?: any[]
+): HRDashboardMetrics {
+  // Apply filters
+  let filteredUnassigned = unassignedCandidates
+  let filteredAssigned = assignedCandidates
+
+  if (filters?.vacancy && filters.vacancy !== "all" && vacancies) {
+    const vacancy = vacancies.find(v => v.id === filters.vacancy)
+    if (vacancy) {
+      filteredUnassigned = filteredUnassigned.filter(c => c.applied_position === vacancy.position_title)
+      filteredAssigned = filteredAssigned.filter(c => c.applied_position === vacancy.position_title)
+    }
+  }
+
+  if (filters?.recruiter && filters.recruiter !== "all") {
+    filteredUnassigned = filteredUnassigned.filter(c => c.recruiter_name === filters.recruiter)
+    filteredAssigned = filteredAssigned.filter(c => c.recruiter_name === filters.recruiter)
+  }
+
+  const allCandidates = [...filteredUnassigned, ...filteredAssigned]
+  
+  const total_applications = allCandidates.length
+  const unassigned_candidates = allCandidates.filter(c => c.final_status === "Yet to Attend").length
+  const interviews_scheduled = filteredAssigned.length
+
+  const joined_count = filteredAssigned.filter(c => c.checked_in === true).length
+  const offer_released_count = filteredAssigned.filter(c => 
+    c.final_status === "offer_released" || c.final_status === "selected"
+  ).length
+
+  const ongoing_r1 = allCandidates.filter(c => c.final_status === "assigned" && c.last_interview_round === "r1").length
+  const ongoing_r2 = allCandidates.filter(c => c.final_status === "assigned" && c.last_interview_round === "r2").length
+  const ongoing_r3 = allCandidates.filter(c => c.final_status === "assigned" && c.last_interview_round === "r3").length
+
+  const successful_hires = filteredAssigned.filter(c => 
+    c.final_status === "hired" || c.final_status === "joined"
+  ).length
+
+  const interview_to_offer_rate = interviews_scheduled > 0 
+    ? Math.round((offer_released_count / interviews_scheduled) * 100) 
+    : 0
+
+  const avg_time_to_hire = 21
+  const panelist_rating = 4.2
+
+  return {
+    total_applications,
+    unassigned_candidates,
+    interviews_scheduled,
+    joined_count,
+    offer_released_count,
+    ongoing_r1,
+    ongoing_r2,
+    ongoing_r3,
+    successful_hires,
+    interview_to_offer_rate,
+    avg_time_to_hire,
+    panelist_rating
+  }
+}
+
+// Fetch all data and calculate HR Dashboard Metrics
 export async function fetchHRDashboardMetrics(filters?: DashboardFilters): Promise<HRDashboardMetrics> {
   try {
-    // Fetch all relevant data in parallel
     const [unassignedCandidates, assignedCandidates, ongoingInterviews, vacancies] = await Promise.all([
       fetchUnassignedCandidates(),
       fetchAssignedCandidates(),
@@ -49,72 +114,7 @@ export async function fetchHRDashboardMetrics(filters?: DashboardFilters): Promi
       fetchVacancies()
     ])
 
-    // Apply filters
-    let filteredUnassigned = unassignedCandidates
-    let filteredAssigned = assignedCandidates
-
-    if (filters?.vacancy && filters.vacancy !== "all") {
-      // Find the vacancy to get its position_title
-      const vacancy = vacancies.find(v => v.id === filters.vacancy)
-      if (vacancy) {
-        filteredUnassigned = filteredUnassigned.filter(c => c.applied_position === vacancy.position_title)
-        filteredAssigned = filteredAssigned.filter(c => c.applied_position === vacancy.position_title)
-      }
-    }
-
-    if (filters?.recruiter && filters.recruiter !== "all") {
-      filteredUnassigned = filteredUnassigned.filter(c => c.recruiter_name === filters.recruiter)
-      filteredAssigned = filteredAssigned.filter(c => c.recruiter_name === filters.recruiter)
-    }
-
-    // Combine all candidates for filtering
-    const allCandidates = [...filteredUnassigned, ...filteredAssigned]
-    
-    // Calculate metrics
-    const total_applications = allCandidates.length
-    const unassigned_candidates = allCandidates.filter(c => c.final_status === "Yet to Attend").length
-    const interviews_scheduled = filteredAssigned.length
-
-    // Count by final_status
-    const joined_count = filteredAssigned.filter(c => c.checked_in === true).length
-    const offer_released_count = filteredAssigned.filter(c => 
-      c.final_status === "offer_released" || c.final_status === "selected"
-    ).length
-
-    // Count ongoing rounds (final_status = assigned AND last interview round = r1/r2/r3)
-    const ongoing_r1 = allCandidates.filter(c => c.final_status === "assigned" && c.last_interview_round === "r1").length
-    const ongoing_r2 = allCandidates.filter(c => c.final_status === "assigned" && c.last_interview_round === "r2").length
-    const ongoing_r3 = allCandidates.filter(c => c.final_status === "assigned" && c.last_interview_round === "r3").length
-
-    const successful_hires = filteredAssigned.filter(c => 
-      c.final_status === "hired" || c.final_status === "joined"
-    ).length
-
-    // Calculate conversion rate
-    const interview_to_offer_rate = interviews_scheduled > 0 
-      ? Math.round((offer_released_count / interviews_scheduled) * 100) 
-      : 0
-
-    // Average time to hire (placeholder - would need created_at and hired_at dates)
-    const avg_time_to_hire = 21 // days
-
-    // Panelist rating (placeholder - would need feedback data)
-    const panelist_rating = 4.2
-
-    return {
-      total_applications,
-      unassigned_candidates,
-      interviews_scheduled,
-      joined_count,
-      offer_released_count,
-      ongoing_r1,
-      ongoing_r2,
-      ongoing_r3,
-      successful_hires,
-      interview_to_offer_rate,
-      avg_time_to_hire,
-      panelist_rating
-    }
+    return calculateHRMetrics(unassignedCandidates, assignedCandidates, filters, vacancies)
   } catch (error) {
     console.error("Error calculating HR dashboard metrics:", error)
     throw new Error("Failed to calculate HR dashboard metrics")

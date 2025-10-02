@@ -4,15 +4,15 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Users, UserCheck, Clock, CheckCircle, TrendingUp, Calendar, MessageSquare, Filter } from "lucide-react"
-import { useState, useEffect } from "react"
-import { fetchHRDashboardMetrics, type HRDashboardMetrics } from "@/lib/dashboard-api"
+import { useState, useEffect, useMemo } from "react"
+import { calculateHRMetrics, type HRDashboardMetrics } from "@/lib/dashboard-api"
 import { useToast } from "@/hooks/use-toast"
 import { fetchVacancies } from "@/lib/vacancy-api"
 import { getAllUsers, type User } from "@/lib/auth"
 import type { Vacancy } from "@/lib/mock-data"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, type BackendCandidate } from "@/lib/candidates-api"
 
 export default function HRDashboard() {
-  const [metrics, setMetrics] = useState<HRDashboardMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const { toast } = useToast()
 
@@ -22,7 +22,22 @@ export default function HRDashboard() {
   
   const [vacancies, setVacancies] = useState<Vacancy[]>([])
   const [hrUsers, setHrUsers] = useState<User[]>([])
-  const [loadingData, setLoadingData] = useState(true)
+  
+  // Store all fetched data
+  const [unassignedCandidates, setUnassignedCandidates] = useState<BackendCandidate[]>([])
+  const [assignedCandidates, setAssignedCandidates] = useState<BackendCandidate[]>([])
+  
+  // Calculate metrics from stored data when filters change
+  const metrics = useMemo(() => {
+    if (unassignedCandidates.length === 0 && assignedCandidates.length === 0) return null
+    
+    const filters = {
+      vacancy: vacancyFilter !== "all" ? vacancyFilter : undefined,
+      recruiter: recruiterFilter !== "all" ? recruiterFilter : undefined,
+    }
+    
+    return calculateHRMetrics(unassignedCandidates, assignedCandidates, filters, vacancies)
+  }, [unassignedCandidates, assignedCandidates, vacancyFilter, recruiterFilter, vacancies])
 
   useEffect(() => {
     loadInitialData()
@@ -31,58 +46,32 @@ export default function HRDashboard() {
   useEffect(() => {
     // Listen for updates from other components
     const handleDataUpdate = () => {
-      loadMetrics()
+      loadInitialData()
     }
 
     window.addEventListener('dashboardUpdate', handleDataUpdate)
     return () => window.removeEventListener('dashboardUpdate', handleDataUpdate)
   }, [])
 
-  useEffect(() => {
-    // Reload metrics when filters change
-    if (!loadingData) {
-      loadMetrics()
-    }
-  }, [vacancyFilter, recruiterFilter, loadingData])
-
   const loadInitialData = async () => {
     try {
-      setLoadingData(true)
-      const [fetchedVacancies, fetchedUsers] = await Promise.all([
+      setIsLoading(true)
+      const [fetchedVacancies, fetchedUsers, fetchedUnassigned, fetchedAssigned] = await Promise.all([
         fetchVacancies(),
-        getAllUsers()
+        getAllUsers(),
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates()
       ])
       
       setVacancies(fetchedVacancies)
       setHrUsers(fetchedUsers.filter(user => user.role === 'hr'))
-      
-      await loadMetrics()
+      setUnassignedCandidates(fetchedUnassigned)
+      setAssignedCandidates(fetchedAssigned)
     } catch (error) {
       console.error('Error loading initial data:', error)
       toast({
         title: "Error",
         description: "Failed to load dashboard data",
-        variant: "destructive",
-      })
-    } finally {
-      setLoadingData(false)
-    }
-  }
-
-  const loadMetrics = async () => {
-    try {
-      setIsLoading(true)
-      const filters = {
-        vacancy: vacancyFilter !== "all" ? vacancyFilter : undefined,
-        recruiter: recruiterFilter !== "all" ? recruiterFilter : undefined,
-      }
-      const data = await fetchHRDashboardMetrics(filters)
-      setMetrics(data)
-    } catch (error) {
-      console.error('Error loading HR dashboard metrics:', error)
-      toast({
-        title: "Error",
-        description: "Failed to load dashboard metrics",
         variant: "destructive",
       })
     } finally {
@@ -143,7 +132,7 @@ export default function HRDashboard() {
     )
   }
 
-  if (loadingData || isLoading || !metrics) {
+  if (isLoading || !metrics) {
     return (
       <DashboardLayout requiredRole="hr">
         <div className="flex items-center justify-center min-h-[400px]">
