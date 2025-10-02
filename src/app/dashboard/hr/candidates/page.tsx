@@ -425,21 +425,6 @@ export default function CandidatesPage() {
     { value: "r3", label: "r3" },
   ]
 
-  const localUnassignedCandidates = filteredCandidates.filter((c) => c.status === "unassigned")
-  const localAssignedCandidates = filteredCandidates.filter(
-    (c) =>
-      c.status === "assigned" ||
-      c.status === "r1-scheduled" ||
-      c.status === "r1-in-progress" ||
-      c.status === "r2-scheduled" ||
-      c.status === "r2-in-progress" ||
-      c.status === "r3-scheduled" ||
-      c.status === "r3-in-progress",
-  )
-  const completedCandidates = filteredCandidates.filter(
-    (c) => c.status === "completed" || c.status === "hired" || c.status === "rejected" || c.status === "selected" || c.status === "offerReleased" || c.status === "candidateDeclined" || c.status === "joined" || c.status === "onHold" ,
-  )
-
   const handleExportCandidates = async () => {
     try {
       setIsExporting(true)
