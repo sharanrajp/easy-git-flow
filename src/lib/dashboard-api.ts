@@ -6,6 +6,7 @@ import {
   type BackendCandidate,
   type PanelistCandidate
 } from "./candidates-api"
+import { fetchVacancies } from "./vacancy-api"
 
 // HR Dashboard Metrics
 export interface HRDashboardMetrics {
@@ -31,33 +32,58 @@ export interface PanelistDashboardMetrics {
   scheduled_interviews: number
 }
 
+// Filter options
+export interface DashboardFilters {
+  vacancy?: string // vacancy ID or "all"
+  recruiter?: string // recruiter name or "all"
+}
+
 // Calculate HR Dashboard Metrics from actual backend data
-export async function fetchHRDashboardMetrics(): Promise<HRDashboardMetrics> {
+export async function fetchHRDashboardMetrics(filters?: DashboardFilters): Promise<HRDashboardMetrics> {
   try {
     // Fetch all relevant data in parallel
-    const [unassignedCandidates, assignedCandidates, ongoingInterviews] = await Promise.all([
+    const [unassignedCandidates, assignedCandidates, ongoingInterviews, vacancies] = await Promise.all([
       fetchUnassignedCandidates(),
       fetchAssignedCandidates(),
-      fetchOngoingInterviews()
+      fetchOngoingInterviews(),
+      fetchVacancies()
     ])
 
+    // Apply filters
+    let filteredUnassigned = unassignedCandidates
+    let filteredAssigned = assignedCandidates
+
+    if (filters?.vacancy && filters.vacancy !== "all") {
+      // Find the vacancy to get its position_title
+      const vacancy = vacancies.find(v => v.id === filters.vacancy)
+      if (vacancy) {
+        filteredUnassigned = filteredUnassigned.filter(c => c.applied_position === vacancy.position_title)
+        filteredAssigned = filteredAssigned.filter(c => c.applied_position === vacancy.position_title)
+      }
+    }
+
+    if (filters?.recruiter && filters.recruiter !== "all") {
+      filteredUnassigned = filteredUnassigned.filter(c => c.recruiter_name === filters.recruiter)
+      filteredAssigned = filteredAssigned.filter(c => c.recruiter_name === filters.recruiter)
+    }
+
     // Calculate metrics
-    const total_applications = unassignedCandidates.length + assignedCandidates.length
-    const unassigned_candidates = unassignedCandidates.length
-    const interviews_scheduled = assignedCandidates.length
+    const total_applications = filteredUnassigned.length + filteredAssigned.length
+    const unassigned_candidates = filteredUnassigned.length
+    const interviews_scheduled = filteredAssigned.length
 
     // Count by status
-    const joined_count = assignedCandidates.filter(c => c.checked_in === true).length
-    const offer_released_count = assignedCandidates.filter(c => 
+    const joined_count = filteredAssigned.filter(c => c.checked_in === true).length
+    const offer_released_count = filteredAssigned.filter(c => 
       c.status === "offer_released" || c.status === "selected"
     ).length
 
     // Count ongoing rounds
-    const ongoing_r1 = assignedCandidates.filter(c => c.currentRound === "r1").length
-    const ongoing_r2 = assignedCandidates.filter(c => c.currentRound === "r2").length
-    const ongoing_r3 = assignedCandidates.filter(c => c.currentRound === "r3").length
+    const ongoing_r1 = filteredAssigned.filter(c => c.currentRound === "r1").length
+    const ongoing_r2 = filteredAssigned.filter(c => c.currentRound === "r2").length
+    const ongoing_r3 = filteredAssigned.filter(c => c.currentRound === "r3").length
 
-    const successful_hires = assignedCandidates.filter(c => 
+    const successful_hires = filteredAssigned.filter(c => 
       c.status === "hired" || c.status === "joined"
     ).length
 
