@@ -1747,6 +1747,8 @@ export default function CandidatesPage() {
                         <TableHead>Position</TableHead>
                         <TableHead>Skillset</TableHead>
                         <TableHead>Total Experience</TableHead>
+                        <TableHead>Interview Round</TableHead>
+                        <TableHead>Panelist</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
@@ -1826,6 +1828,8 @@ export default function CandidatesPage() {
                               <SkillsDisplay skills={candidate.skill_set || []} />
                             </TableCell>
                             <TableCell>{candidate.total_experience || "N/A"}</TableCell>
+                            <TableCell>{candidate.last_interview_round}</TableCell>
+                            <TableCell>{candidate.panel_name}</TableCell>
                             <TableCell>
                               <Badge className={getStatusColor(candidate.final_status || "assigned")}>
                                 <div className="flex items-center gap-1">
