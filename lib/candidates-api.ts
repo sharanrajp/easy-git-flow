@@ -31,6 +31,8 @@ export interface BackendCandidate {
 }
 
 export interface PanelistCandidate {
+  final_status: string;
+  feedback_submitted: boolean;
   _id: string;
   register_number: string;
   name: string;

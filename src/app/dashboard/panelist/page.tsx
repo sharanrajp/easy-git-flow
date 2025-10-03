@@ -26,6 +26,7 @@ import {
   Search,
   Eye,
   ExternalLink,
+  CircleMinus,
 } from "lucide-react"
 import { getPanelistDashboardData } from "@/lib/panelist-data"
 import {
@@ -42,6 +43,7 @@ import { formatDate } from "@/lib/utils"
 import { fetchPanelistAssignedCandidates, type PanelistCandidate } from "@/lib/candidates-api"
 import { useToast } from "@/hooks/use-toast"
 import { AssignedCandidateDetails } from "../../../components/candidates/assigned-candidate-details"
+import { Cancel } from "@radix-ui/react-alert-dialog"
 
 export default function PanelistDashboard() {
   const [interviewSessions, setInterviewSessions] = useState<InterviewSession[]>([])
@@ -349,22 +351,19 @@ export default function PanelistDashboard() {
     }
 
     // Calculate metrics from real candidate data
-    const completedInterviewsCount = filteredCandidates.filter(candidate => 
-      candidate.previous_rounds && candidate.previous_rounds.some((round: any) => round.feedback_submitted === true)
-    ).length
+    const scheduledCount = filteredCandidates.filter(candidate => candidate.final_status === "assigned").length
 
-    const selectedCount = filteredCandidates.filter(candidate =>
-      candidate.previous_rounds && candidate.previous_rounds.some((round: any) => round.status === "selected")
-    ).length
+    const completedInterviewsCount = filteredCandidates.filter(candidate => candidate.feedback_submitted === true).length
 
-    const rejectedCount = filteredCandidates.filter(candidate =>
-      candidate.previous_rounds && candidate.previous_rounds.some((round: any) => round.status === "rejected")
-    ).length
+    const selectedCount = filteredCandidates.filter(candidate => candidate.final_status === "selected").length
+
+    const rejectedCount = filteredCandidates.filter(candidate => candidate.final_status === "rejected").length
 
     return {
       completedInterviews: completedInterviewsCount,
       selectedCount: selectedCount,
       rejectedCount: rejectedCount,
+      scheduledCount
     }
   }
 
@@ -469,6 +468,13 @@ export default function PanelistDashboard() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <MetricCard
+              title="Scheduled Candidates"
+              value={metrics.scheduledCount}
+              description="Candidates scheduled"
+              icon={Timer}
+              color="orange"
+            />
+            <MetricCard
               title="Completed Interviews"
               value={metrics.completedInterviews}
               description="Total completed"
@@ -476,18 +482,11 @@ export default function PanelistDashboard() {
               color="blue"
             />
             <MetricCard
-              title="Selected Candidates"
-              value={metrics.selectedCount}
-              description="Successfully selected"
+              title="Selected / Rejected Candidates"
+              value={`${metrics.selectedCount}/${metrics.rejectedCount}`}
+              description="Candidates selected/rejected"
               icon={Users}
               color="green"
-            />
-            <MetricCard
-              title="Rejected Candidates"
-              value={metrics.rejectedCount}
-              description="Candidates rejected"
-              icon={Timer}
-              color="red"
             />
           </div>
         </div>
