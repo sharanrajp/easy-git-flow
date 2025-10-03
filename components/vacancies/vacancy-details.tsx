@@ -6,6 +6,7 @@ import { Calendar, MapPin, Users, FileText, Download, Briefcase, Clock, Building
 import type { Vacancy } from "@/lib/mock-data"
 import { getAllUsers, type User } from "@/lib/auth"
 import { formatDate } from "../../src/lib/utils"
+import { SkillsDisplay } from "../../src/components/ui/skills-display"
 
 interface VacancyDetailsProps {
   vacancy: Vacancy
@@ -311,17 +312,8 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                         <h4 className="font-medium text-gray-900">{panelist.name}</h4>
                         <p className="text-sm text-gray-600">{panelist.email}</p>
                         {panelist.skill_set && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {panelist.skill_set.slice(0, 2).map((skill: string) => (
-                              <Badge key={skill} variant="outline" className="text-xs">
-                                {skill}
-                              </Badge>
-                            ))}
-                            {panelist.skill_set.length > 2 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{panelist.skill_set.length - 2}
-                              </Badge>
-                            )}
+                          <div className="mt-1">
+                            <SkillsDisplay skills={panelist.skill_set} maxVisible={2} />
                           </div>
                         )}
                       </div>
