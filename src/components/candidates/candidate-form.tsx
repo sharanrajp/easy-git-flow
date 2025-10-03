@@ -231,7 +231,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
               ) : (
                 vacancies.map((vacancy: any) => (
                   <SelectItem key={vacancy.id} value={vacancy.position_title}>
-                    {vacancy.position_title} (#{vacancy.id}) - {vacancy.location || 'No location'}
+                    {vacancy.position_title}
                   </SelectItem>
                 ))
               )}

@@ -69,6 +69,8 @@ interface AssignedCandidateDetailsProps {
 
 export function AssignedCandidateDetails({ candidate, isOpen, onClose }: AssignedCandidateDetailsProps) {
   if (!candidate) return null
+  const currentUser = localStorage.getItem("ats_user")
+  const userRole = currentUser ? JSON.parse(currentUser).role : null
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -136,8 +138,8 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
 
         <div className="space-y-6">
           <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="details">Candidate Details</TabsTrigger>
+            <TabsList className={userRole === "hr" ? "grid w-full grid-cols-2" : "grid w-full grid-cols-1"}>
+              {userRole === "hr" && <TabsTrigger value="details">Candidate Details</TabsTrigger>}
               <TabsTrigger value="interviews">
                 Interview & Feedback
                 {candidate.previous_rounds && candidate.previous_rounds.length > 0 && (

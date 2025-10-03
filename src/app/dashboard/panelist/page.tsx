@@ -468,13 +468,6 @@ export default function PanelistDashboard() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <MetricCard
-              title="Scheduled Candidates"
-              value={metrics.scheduledCount}
-              description="Candidates scheduled"
-              icon={Timer}
-              color="orange"
-            />
-            <MetricCard
               title="Completed Interviews"
               value={metrics.completedInterviews}
               description="Total completed"
@@ -482,11 +475,18 @@ export default function PanelistDashboard() {
               color="blue"
             />
             <MetricCard
-              title="Selected / Rejected Candidates"
-              value={`${metrics.selectedCount}/${metrics.rejectedCount}`}
-              description="Candidates selected/rejected"
+              title="Selected Candidates"
+              value={metrics.selectedCount}
+              description="Candidates selected"
               icon={Users}
               color="green"
+            />
+            <MetricCard
+              title="Rejected Candidates"
+              value={metrics.rejectedCount}
+              description="Candidates rejected"
+              icon={CircleMinus}
+              color="red"
             />
           </div>
         </div>
@@ -536,6 +536,7 @@ export default function PanelistDashboard() {
                           <TableHead>Name</TableHead>
                           <TableHead>Email</TableHead>
                           <TableHead>Skill Set</TableHead>
+                          <TableHead>Experience</TableHead>
                           <TableHead>Interview Round</TableHead>
                           <TableHead>Resume</TableHead>
                           <TableHead>Action</TableHead>
@@ -560,6 +561,9 @@ export default function PanelistDashboard() {
                                 <div className="max-w-xs truncate" title={Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}>
                                   {Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}
                                 </div>
+                              </TableCell>
+                              <TableCell>
+                                {candidate.total_experience} years
                               </TableCell>
                               <TableCell>
                                 {candidate.last_interview_round ? (
@@ -625,8 +629,8 @@ export default function PanelistDashboard() {
                           <TableHead>Reg. No.</TableHead>
                           <TableHead>Name</TableHead>
                           <TableHead>Email</TableHead>
-                          <TableHead>Phone</TableHead>
                           <TableHead>Skill Set</TableHead>
+                          <TableHead>Experience</TableHead>
                           <TableHead>Interview Round</TableHead>
                           <TableHead>Resume</TableHead>
                           <TableHead>Action</TableHead>
@@ -651,6 +655,9 @@ export default function PanelistDashboard() {
                                 <div className="max-w-xs truncate" title={Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}>
                                   {Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}
                                 </div>
+                              </TableCell>
+                              <TableCell>
+                                {candidate.total_experience} years
                               </TableCell>
                               <TableCell>
                                 {candidate.last_interview_round ? (
