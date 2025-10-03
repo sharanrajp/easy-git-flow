@@ -69,6 +69,7 @@ export interface OngoingInterview {
   candidate_name: string;
   panel_id: string;
   panel_name: string;
+  round: string;
 }
 
 // Fetch unassigned candidates from backend

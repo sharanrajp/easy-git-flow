@@ -42,6 +42,7 @@ export interface DashboardFilters {
 export function calculateHRMetrics(
   unassignedCandidates: BackendCandidate[],
   assignedCandidates: BackendCandidate[],
+  ongoingInterviews: any[],
   filters?: DashboardFilters,
   vacancies?: any[]
 ): HRDashboardMetrics {
@@ -73,9 +74,10 @@ export function calculateHRMetrics(
     c.final_status === "offer_released" || c.final_status === "selected"
   ).length
 
-  const ongoing_r1 = allCandidates.filter(c => c.final_status === "assigned" && c.last_interview_round === "r1").length
-  const ongoing_r2 = allCandidates.filter(c => c.final_status === "assigned" && c.last_interview_round === "r2").length
-  const ongoing_r3 = allCandidates.filter(c => c.final_status === "assigned" && c.last_interview_round === "r3").length
+  // Calculate ongoing interviews by round from the /interviews/ongoing endpoint
+  const ongoing_r1 = ongoingInterviews.filter(i => i.round === "r1").length
+  const ongoing_r2 = ongoingInterviews.filter(i => i.round === "r2").length
+  const ongoing_r3 = ongoingInterviews.filter(i => i.round === "r3").length
 
   const successful_hires = filteredAssigned.filter(c => 
     c.final_status === "hired" || c.final_status === "joined"
@@ -114,7 +116,7 @@ export async function fetchHRDashboardMetrics(filters?: DashboardFilters): Promi
       fetchVacancies()
     ])
 
-    return calculateHRMetrics(unassignedCandidates, assignedCandidates, filters, vacancies)
+    return calculateHRMetrics(unassignedCandidates, assignedCandidates, ongoingInterviews, filters, vacancies)
   } catch (error) {
     console.error("Error calculating HR dashboard metrics:", error)
     throw new Error("Failed to calculate HR dashboard metrics")

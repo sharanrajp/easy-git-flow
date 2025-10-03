@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 import { fetchVacancies } from "@/lib/vacancy-api"
 import { getAllUsers, type User } from "@/lib/auth"
 import type { Vacancy } from "@/lib/mock-data"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, type BackendCandidate } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, fetchOngoingInterviews, type BackendCandidate } from "@/lib/candidates-api"
 
 export default function HRDashboard() {
   const [isLoading, setIsLoading] = useState(true)
@@ -26,6 +26,7 @@ export default function HRDashboard() {
   // Store all fetched data
   const [unassignedCandidates, setUnassignedCandidates] = useState<BackendCandidate[]>([])
   const [assignedCandidates, setAssignedCandidates] = useState<BackendCandidate[]>([])
+  const [ongoingInterviews, setOngoingInterviews] = useState<any[]>([])
   
   // Calculate metrics from stored data when filters change
   const metrics = useMemo(() => {
@@ -36,8 +37,8 @@ export default function HRDashboard() {
       recruiter: recruiterFilter !== "all" ? recruiterFilter : undefined,
     }
     
-    return calculateHRMetrics(unassignedCandidates, assignedCandidates, filters, vacancies)
-  }, [unassignedCandidates, assignedCandidates, vacancyFilter, recruiterFilter, vacancies])
+    return calculateHRMetrics(unassignedCandidates, assignedCandidates, ongoingInterviews, filters, vacancies)
+  }, [unassignedCandidates, assignedCandidates, ongoingInterviews, vacancyFilter, recruiterFilter, vacancies])
 
   useEffect(() => {
     loadInitialData()
@@ -56,17 +57,19 @@ export default function HRDashboard() {
   const loadInitialData = async () => {
     try {
       setIsLoading(true)
-      const [fetchedVacancies, fetchedUsers, fetchedUnassigned, fetchedAssigned] = await Promise.all([
+      const [fetchedVacancies, fetchedUsers, fetchedUnassigned, fetchedAssigned, fetchedOngoing] = await Promise.all([
         fetchVacancies(),
         getAllUsers(),
         fetchUnassignedCandidates(),
-        fetchAssignedCandidates()
+        fetchAssignedCandidates(),
+        fetchOngoingInterviews()
       ])
       
       setVacancies(fetchedVacancies)
       setHrUsers(fetchedUsers.filter(user => user.role === 'hr'))
       setUnassignedCandidates(fetchedUnassigned)
       setAssignedCandidates(fetchedAssigned)
+      setOngoingInterviews(fetchedOngoing)
     } catch (error) {
       console.error('Error loading initial data:', error)
       toast({
