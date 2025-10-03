@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, Plus, X, Users, CheckCircle } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Search, Plus, X, Users, CheckCircle, Loader2 } from "lucide-react"
 import { getAllUsers } from "@/lib/auth"
 
 interface PanelistSelectorProps {
@@ -15,15 +16,19 @@ interface PanelistSelectorProps {
 export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelectorProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [allUsers, setAllUsers] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchUsers = async () => {
+      setIsLoading(true)
       try {
         const users = await getAllUsers()
         setAllUsers(users)
       } catch (error) {
         console.error("Failed to fetch users:", error)
         setAllUsers([])
+      } finally {
+        setIsLoading(false)
       }
     }
     fetchUsers()
@@ -142,6 +147,39 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
       </div>
     </div>
   )
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+            <h3 className="text-lg font-semibold">Loading Panelists...</h3>
+          </div>
+        </div>
+        <Skeleton className="h-10 w-full" />
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="p-4 rounded-lg border">
+                <div className="flex items-start space-x-3">
+                  <Skeleton className="w-10 h-10 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
