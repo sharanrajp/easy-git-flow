@@ -50,7 +50,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
       available_rounds:
         formData.role === "panelist"
           ? formData.panelist_type === "manager"
-            ? ["r1", "r2", "r3"]
+            ? ["r3"]
             : formData.available_rounds
           : undefined,
       // Only include current_status for panelists
@@ -147,7 +147,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
               setFormData({
                 ...formData,
                 panelist_type: value,
-                available_rounds: value === "manager" ? ["r1", "r2", "r3"] : formData.available_rounds,
+                available_rounds: value === "manager" ? ["r3"] : formData.available_rounds,
               })
             }
           >
@@ -191,8 +191,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
           {formData.panelist_type === "manager" && (
             <div className="p-4 bg-purple-50 rounded-lg">
               <p className="text-sm text-purple-800">
-                <strong>Panelist Manager:</strong> Automatically assigned to handle all interview rounds (r1, r2, r3)
-                with focus on final round (r3) interviews and approvals.
+                <strong>Panelist Manager:</strong> Automatically assigned to final round (r3) interviews and approvals.
               </p>
             </div>
           )}
@@ -219,24 +218,6 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
               ))}
             </div>
           </div>
-
-          {user && (
-            <div className="space-y-2">
-              <Label htmlFor="current_status">Status</Label>
-              <Select
-                value={formData.current_status || "free"}
-                onValueChange={(value: string) => setFormData({ ...formData, current_status: value as User["current_status"] })}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="free">Available</SelectItem>
-                  <SelectItem value="break">Break</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
         </>
       )}
 

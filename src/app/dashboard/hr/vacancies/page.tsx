@@ -609,10 +609,6 @@ export default function VacanciesPage() {
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <span className="text-gray-500">Applications:</span>
-                          <div className="font-medium">{counts.applications}</div>
-                        </div>
-                        <div>
                           <span className="text-gray-500">Panelists:</span>
                           <div className="font-medium">{vacancy.assignedPanelists.length} assigned</div>
                         </div>

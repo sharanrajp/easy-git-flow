@@ -68,7 +68,7 @@ export default function UsersPage() {
         return (user.role === "panelist" && user.panelist_type === "manager")
       }
       if (roleFilter === "panelist") {
-        return (user.role === "panelist" && user.panelist_type === "panel_member")
+        return ((user.role === "panelist" && user.panelist_type !== "manager") && user.role !== "hr")
       }
       return user.role === roleFilter
     })()
@@ -457,37 +457,7 @@ export default function UsersPage() {
                           user.current_status === "in_interview" ? (
                             <Badge className={getStatusColor(user.current_status)}>in_interview</Badge>
                           ) : (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="cursor-pointer">
-                                  <Badge className={getStatusColor(user.current_status)}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                  onClick={() => handleStatusChange(user._id, "free")}
-                                  className="cursor-pointer"
-                                >
-                                  <div className="flex items-center">
-                                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                                    Available
-                                  </div>
-                                </DropdownMenuItem>
-                                {user.current_status === "free" && (
-                                  <>
-                                    <DropdownMenuItem
-                                      onClick={() => handleStatusChange(user._id, "break")}
-                                      className="cursor-pointer"
-                                    >
-                                      <div className="flex items-center">
-                                        <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
-                                        Break
-                                      </div>
-                                    </DropdownMenuItem>
-                                  </>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            <Badge className={getStatusColor(user.current_status)}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
                           )
                         ) : (
                           <span className="text-gray-400">-</span>
