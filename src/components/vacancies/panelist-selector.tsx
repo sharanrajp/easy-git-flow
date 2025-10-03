@@ -36,7 +36,7 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
 
   // Filter users to get potential panelists (only role=panelist and panelist_type !== panel_member)
   const availablePanelists = allUsers.filter(
-    (user) => user.role === "panelist" && user.panelist_type !== "manager" && user.role !== "hr"
+    (user) => user.current_status === "free" && user.role === "panelist" && user.panelist_type !== "manager" && user.role !== "hr"
   )
 
   // Filter based on search term
@@ -254,19 +254,6 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
           </ScrollArea>
         </CardContent>
       </Card>
-
-      {/* Summary */}
-      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-        <div className="text-sm text-gray-600">
-          <span className="font-medium">{selectedPanelists.length}</span> panelists selected
-          {selectedPanelists.length > 0 && <span className="ml-2">• Ready to proceed</span>}
-        </div>
-        {selectedPanelists.length > 0 && (
-          <Button variant="outline" size="sm" onClick={() => onUpdate([])} className="text-red-600">
-            Clear All
-          </Button>
-        )}
-      </div>
     </div>
   )
 }

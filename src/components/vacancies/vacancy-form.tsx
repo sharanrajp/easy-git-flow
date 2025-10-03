@@ -508,7 +508,6 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                             <p className="text-sm text-green-600">
                               {user.role} • {user.email || "No email"}
                             </p>
-                            {user.skill_set && <p className="text-sm text-green-600">Skills: {user.skill_set.join(", ")}</p>}
                           </div>
                         </div>
                         <Button
