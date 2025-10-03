@@ -2078,11 +2078,12 @@ export default function CandidatesPage() {
                                     <Badge className={getStatusColor(candidate.final_status || "selected")}>
                                       <div className="flex items-center gap-1">
                                         {formatStatusLabel(candidate.final_status || "selected")}
-                                        <ChevronDown className="h-3 w-3" />
+                                        {candidate.final_status !== "rejected" && <ChevronDown className="h-3 w-3" />}
                                       </div>
                                     </Badge>
                                   </Button>
                                 </DropdownMenuTrigger>
+                                {candidate.final_status !== "rejected" &&
                                 <DropdownMenuContent>
                                   <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "selected")}>Selected</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
@@ -2092,6 +2093,7 @@ export default function CandidatesPage() {
                                   <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "rejected")}>Rejected</DropdownMenuItem>
                                 </DropdownMenuContent>
+                                }
                               </DropdownMenu>
                             </TableCell>
                             <TableCell>
