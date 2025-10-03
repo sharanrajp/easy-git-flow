@@ -66,7 +66,7 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
     interview_type: backendVacancy.interview_type as "Walk-In",
     walkInDetails: {
       date: backendVacancy.drive_date
-        ? new Date(backendVacancy.drive_date).toISOString().split("T")[0] // ✅ "YYYY-MM-DD"
+        ? backendVacancy.drive_date.split("T")[0] // Pure date without timezone conversion
         : "",
       location: backendVacancy.drive_location,
     },
