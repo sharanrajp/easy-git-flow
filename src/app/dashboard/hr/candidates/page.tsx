@@ -802,14 +802,22 @@ export default function CandidatesPage() {
     try {
       await updateCandidateCheckIn(candidate._id, checked)
       
-      // Update local state
-      setUnassignedCandidates(prev => 
-        prev.map(c => 
-          c._id === candidate._id 
-            ? { ...c, checked_in: checked }
-            : c
-        )
-      )
+      // Update local state and reorder if checking in
+      setUnassignedCandidates(prev => {
+        if (checked) {
+          // Move checked-in candidate to the top
+          const updatedCandidate = { ...candidate, checked_in: true }
+          const otherCandidates = prev.filter(c => c._id !== candidate._id)
+          return [updatedCandidate, ...otherCandidates]
+        } else {
+          // Just update the checked_in status for check-out
+          return prev.map(c => 
+            c._id === candidate._id 
+              ? { ...c, checked_in: false }
+              : c
+          )
+        }
+      })
       
       // Notify dashboards to refresh
       window.dispatchEvent(new Event('dashboardUpdate'))
