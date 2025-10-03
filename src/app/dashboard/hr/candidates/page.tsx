@@ -645,6 +645,21 @@ export default function CandidatesPage() {
         : c,
     )
     setCandidates(updatedCandidates)
+    
+    // Move checked-in candidate to top of unassigned list
+    setUnassignedCandidates(prev => {
+      const checkedInCandidate = prev.find(c => c._id === candidateId)
+      if (!checkedInCandidate) return prev
+      
+      const updatedCandidate = {
+        ...checkedInCandidate,
+        waitTimeStarted: new Date().toISOString(),
+        isCheckedIn: true,
+      }
+      
+      const otherCandidates = prev.filter(c => c._id !== candidateId)
+      return [updatedCandidate, ...otherCandidates]
+    })
   }
 
   const handleScheduleInterview = (candidate: Candidate) => {
