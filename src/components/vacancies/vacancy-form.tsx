@@ -399,7 +399,14 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   {formData.skills_required.map((skill) => (
                     <Badge key={skill} variant="secondary" className="flex items-center gap-1">
                       {skill}
-                      <X className="h-3 w-3 cursor-pointer" onClick={() => removeSkill(skill)} />
+                      <X 
+                        className="h-3 w-3 cursor-pointer hover:text-destructive transition-colors" 
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          removeSkill(skill)
+                        }} 
+                      />
                     </Badge>
                   ))}
                 </div>
