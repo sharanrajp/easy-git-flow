@@ -31,13 +31,13 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
     hiring_manager_name: vacancy?.hiring_manager_name || "",
     recruiter_name: vacancy?.recruiter_name || currentUser?.name || "",
     number_of_vacancies: vacancy?.number_of_vacancies || 1,
-    experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
-    experienceTo: vacancy?.experienceRange?.split("-")[1]?.replace(/[^\d]/g, "") || "",
+    experienceFrom: vacancy?.experience_range?.split("-")[0]?.trim() || "",
+    experienceTo: vacancy?.experience_range?.split("-")[1]?.replace(/[^\d]/g, "") || "",
     skills_required: vacancy?.skills_required || [],
     job_desc: vacancy?.job_desc || "",
     about_position: vacancy?.about_position || "",
-    driveDate: vacancy?.walkInDetails?.date || "",
-    driveLocation: vacancy?.walkInDetails?.location || "",
+    drive_date: vacancy?.walkInDetails?.date || "",
+    drive_location: vacancy?.walkInDetails?.location || "",
     assignedPanelists: vacancy?.assignedPanelists || [],
     deadline: vacancy?.deadline || "",
     request_type: vacancy?.request_type || "",
@@ -100,10 +100,10 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
     
     const submissionData = {
       ...formData,
-      experienceRange: `${formData.experienceFrom}-${formData.experienceTo}`,
-      walkInDetails: formData.driveDate && formData.driveLocation ? {
-        date: formData.driveDate,
-        location: formData.driveLocation
+      experience_range: `${formData.experienceFrom}-${formData.experienceTo}`,
+      walkInDetails: formData.drive_date && formData.drive_location ? {
+        date: formData.drive_date,
+        location: formData.drive_location
       } : undefined,
       interview_type: "Walk-In" as const,
       id: vacancy?.id || `${Date.now()}`,
@@ -401,20 +401,20 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="driveDate">Drive Date</Label>
+                  <Label htmlFor="drive_date">Drive Date</Label>
                   <Input
-                    id="driveDate"
+                    id="drive_date"
                     type="date"
-                    value={formData.driveDate}
-                    onChange={(e) => handleInputChange("driveDate", e.target.value)}
+                    value={formData.drive_date}
+                    onChange={(e) => handleInputChange("drive_date", e.target.value)}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="driveLocation">Drive Location</Label>
+                  <Label htmlFor="drive_location">Drive Location</Label>
                   <Input
-                    id="driveLocation"
-                    value={formData.driveLocation}
-                    onChange={(e) => handleInputChange("driveLocation", e.target.value)}
+                    id="drive_location"
+                    value={formData.drive_location}
+                    onChange={(e) => handleInputChange("drive_location", e.target.value)}
                     placeholder="e.g., Main Office, Conference Room A"
                   />
                 </div>

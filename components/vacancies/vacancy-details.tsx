@@ -104,7 +104,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Experience Range</label>
-                  <p className="text-gray-900">{vacancy.experienceRange}</p>
+                  <p className="text-gray-900">{vacancy.experience_range}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Location</label>

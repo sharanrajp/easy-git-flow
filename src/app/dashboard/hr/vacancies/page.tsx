@@ -446,7 +446,7 @@ export default function VacanciesPage() {
                            key={vacancy.id}
                          >
                           <TableCell>
-                            <div className="font-mono text-sm text-gray-600">#{filteredVacancies.indexOf(vacancy) + 1}</div>
+                            <div className="font-mono text-sm text-gray-600">{filteredVacancies.indexOf(vacancy) + 1}</div>
                           </TableCell>
                           <TableCell>
                             <div>
@@ -458,7 +458,7 @@ export default function VacanciesPage() {
                             <Badge className={getPriorityColor(vacancy.priority)}>{vacancy.priority}</Badge>
                           </TableCell>
                           <TableCell>
-                            <div className="text-sm">{vacancy.experienceRange}</div>
+                            <div className="text-sm">{vacancy.experience_range}</div>
                           </TableCell>
                           <TableCell>
                             <div className="text-sm">

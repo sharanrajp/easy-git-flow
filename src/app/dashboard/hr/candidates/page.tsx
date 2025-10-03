@@ -374,7 +374,7 @@ export default function CandidatesPage() {
   // Separate completed candidates from assigned candidates
   const filteredCompletedCandidates = useMemo(() => {
     const completedList = assignedCandidates.filter(
-      (c) => c.last_interview_round === "r3" && ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "")
+      (c) => (c.last_interview_round === "r3" && ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "") || c.final_status === "rejected")
     )
     return filterBackendCandidates(completedList)
   }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
@@ -382,7 +382,7 @@ export default function CandidatesPage() {
   // Filter assigned candidates to exclude completed ones
   const filteredAssignedCandidates = useMemo(() => {
     const nonCompletedAssigned = assignedCandidates.filter(
-      (c) => !(c.last_interview_round === "r3" && ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || ""))
+      (c) => !(c.last_interview_round === "r3" && ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "") || c.final_status === "rejected")
     )
     return filterBackendCandidates(nonCompletedAssigned)
   }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
@@ -1248,8 +1248,8 @@ export default function CandidatesPage() {
       case "completed":
         selectedCandidateObjects = assignedCandidates.filter((c) => 
           selectedCandidates.includes(c._id) && 
-          c.last_interview_round === "r3" && 
-          ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "")
+          (c.last_interview_round === "r3" && 
+          ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "") || c.final_status === "rejected")
         )
         break
       default:
@@ -1360,7 +1360,7 @@ export default function CandidatesPage() {
         break
       case "completed":
         currentCandidates = assignedCandidates.filter((c) => 
-          c.last_interview_round === "r3" && ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "")
+          (c.last_interview_round === "r3" && ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "") || c.final_status === "rejected")
         )
         break
       default:
@@ -1990,6 +1990,7 @@ export default function CandidatesPage() {
                         <TableHead>Position</TableHead>
                         <TableHead>Skillset</TableHead>
                         <TableHead>Total Experience</TableHead>
+                        <TableHead>Interview Round</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
@@ -2069,6 +2070,7 @@ export default function CandidatesPage() {
                               <SkillsDisplay skills={candidate.skill_set || []} />
                             </TableCell>
                             <TableCell>{candidate.total_experience || "N/A"}</TableCell>
+                            <TableCell>{candidate.last_interview_round}</TableCell>
                             <TableCell>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>

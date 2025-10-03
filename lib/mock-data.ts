@@ -42,7 +42,7 @@ export interface Vacancy {
   recruiters?: string[]
   panelists?: string[]
   number_of_vacancies: number
-  experienceRange: string
+  experience_range: string
   skills_required: string[]
   job_desc?: string
   interview_type: "Walk-In"

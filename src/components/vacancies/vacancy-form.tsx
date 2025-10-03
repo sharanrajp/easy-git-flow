@@ -35,13 +35,13 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     hiring_manager_name: vacancy?.hiring_manager_name || "",
     recruiter_name: vacancy?.recruiter_name || "",
     number_of_vacancies: vacancy?.number_of_vacancies || 1,
-    experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
-    experienceTo: vacancy?.experienceRange?.split("-")[1]?.replace(/[^\d]/g, "") || "",
+    experienceFrom: vacancy?.experience_range?.split("-")[0]?.trim() || "",
+    experienceTo: vacancy?.experience_range?.split("-")[1]?.replace(/[^\d]/g, "") || "",
     skills_required: vacancy?.skills_required || [],
     job_desc: vacancy?.job_desc || "",
     about_position: vacancy?.about_position || "",
-    driveDate: vacancy?.walkInDetails?.date || "",
-    driveLocation: vacancy?.walkInDetails?.location || "",
+    drive_date: vacancy?.walkInDetails?.date || "",
+    drive_location: vacancy?.walkInDetails?.location || "",
     assignedPanelists: vacancy?.assignedPanelists || [],
   })
 
@@ -87,11 +87,11 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
 
     const submitData: Partial<Vacancy> = {
       ...formData,
-      experienceRange: `${formData.experienceFrom}-${formData.experienceTo} years`,
+      experience_range: `${formData.experienceFrom}-${formData.experienceTo} years`,
       interview_type: "Walk-In", // Only Walk-In interviews for this version
       walkInDetails: {
-        date: formData.driveDate,
-        location: formData.driveLocation,
+        date: formData.drive_date,
+        location: formData.drive_location,
       },
     }
 
@@ -111,13 +111,13 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       hiring_manager_name: vacancy?.hiring_manager_name || "",
       recruiter_name: vacancy?.recruiter_name || "",
       number_of_vacancies: vacancy?.number_of_vacancies || 1,
-      experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
-      experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
+      experienceFrom: vacancy?.experience_range?.split("-")[0]?.trim() || "",
+      experienceTo: vacancy?.experience_range?.split("-")[1]?.trim() || "",
       skills_required: vacancy?.skills_required || [],
       job_desc: vacancy?.job_desc || "",
       about_position: vacancy?.about_position || "",
-      driveDate: vacancy?.walkInDetails?.date || "",
-      driveLocation: vacancy?.walkInDetails?.location || "",
+      drive_date: vacancy?.walkInDetails?.date || "",
+      drive_location: vacancy?.walkInDetails?.location || "",
       assignedPanelists: vacancy?.assignedPanelists || [],
     })
     setCurrentStep(1)
@@ -175,8 +175,8 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       formData.number_of_vacancies &&
       formData.experienceFrom &&
       formData.experienceTo &&
-      formData.driveDate &&
-      formData.driveLocation &&
+      formData.drive_date &&
+      formData.drive_location &&
       formData.job_desc.trim() &&
       formData.about_position.trim() // Make about position required
     )
@@ -432,22 +432,22 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="driveDate">Drive Date *</Label>
+                    <Label htmlFor="drive_date">Drive Date *</Label>
                     <Input
-                      id="driveDate"
+                      id="drive_date"
                       type="date"
-                      value={formData.driveDate}
-                      onChange={(e) => setFormData({ ...formData, driveDate: e.target.value })}
+                      value={formData.drive_date}
+                      onChange={(e) => setFormData({ ...formData, drive_date: e.target.value })}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="driveLocation">Drive Location *</Label>
+                    <Label htmlFor="drive_location">Drive Location *</Label>
                     <Input
-                      id="driveLocation"
+                      id="drive_location"
                       placeholder="Enter interview location"
-                      value={formData.driveLocation}
-                      onChange={(e) => setFormData({ ...formData, driveLocation: e.target.value })}
+                      value={formData.drive_location}
+                      onChange={(e) => setFormData({ ...formData, drive_location: e.target.value })}
                       required
                     />
                   </div>

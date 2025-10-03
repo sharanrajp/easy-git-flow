@@ -61,7 +61,7 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
     number_of_vacancies: backendVacancy.number_of_vacancies,
     request_type: backendVacancy.request_type || "new",
     status: backendVacancy.status as "active" | "paused" | "closed",
-    experienceRange: backendVacancy.experience_range,
+    experience_range: backendVacancy.experience_range,
     skills_required: backendVacancy.skills_required,
     interview_type: backendVacancy.interview_type as "Walk-In",
     walkInDetails: {
@@ -96,7 +96,7 @@ function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyC
     priority: frontendVacancy.priority || "P3",
     number_of_vacancies: frontendVacancy.number_of_vacancies || 1,
     status: frontendVacancy.status || "active",
-    experience_range: frontendVacancy.experienceRange || "",
+    experience_range: frontendVacancy.experience_range || "",
     skills_required: frontendVacancy.skills_required || [],
     interview_type: frontendVacancy.interview_type || "Walk-In",
     drive_date: new Date(frontendVacancy.walkInDetails?.date || "").toISOString() || "",
