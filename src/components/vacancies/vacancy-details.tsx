@@ -182,35 +182,6 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Users className="h-5 w-5 text-green-600" />
-            Application Statistics
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{vacancy.applications}</div>
-              <div className="text-sm font-medium text-blue-700">Total Applications</div>
-            </div>
-            <div className="text-center p-4 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">{vacancy.shortlisted}</div>
-              <div className="text-sm font-medium text-orange-700">Selected</div>
-            </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">{vacancy.interviewed}</div>
-              <div className="text-sm font-medium text-purple-700">Interviewed</div>
-            </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{vacancy.selected}</div>
-              <div className="text-sm font-medium text-green-700">Selected</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
             <Calendar className="h-5 w-5 text-purple-600" />
             Interview Details
           </CardTitle>
