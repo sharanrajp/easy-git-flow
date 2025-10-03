@@ -36,7 +36,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     recruiter_name: vacancy?.recruiter_name || "",
     number_of_vacancies: vacancy?.number_of_vacancies || 1,
     experienceFrom: vacancy?.experienceRange?.split("-")[0]?.trim() || "",
-    experienceTo: vacancy?.experienceRange?.split("-")[1]?.trim() || "",
+    experienceTo: vacancy?.experienceRange?.split("-")[1]?.replace(/[^\d]/g, "") || "",
     skills_required: vacancy?.skills_required || [],
     job_desc: vacancy?.job_desc || "",
     about_position: vacancy?.about_position || "",
