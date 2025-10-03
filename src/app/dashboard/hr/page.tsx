@@ -16,9 +16,10 @@ export default function HRDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const { toast } = useToast()
 
+  // Independent filters for each section
   const [candidateFilter, setCandidateFilter] = useState("day")
-  const [vacancyFilter, setVacancyFilter] = useState("all")
-  const [recruiterFilter, setRecruiterFilter] = useState("all")
+  const [candidateVacancyFilter, setCandidateVacancyFilter] = useState("all")
+  const [performanceRecruiterFilter, setPerformanceRecruiterFilter] = useState("all")
   
   const [vacancies, setVacancies] = useState<Vacancy[]>([])
   const [hrUsers, setHrUsers] = useState<User[]>([])
@@ -28,17 +29,34 @@ export default function HRDashboard() {
   const [assignedCandidates, setAssignedCandidates] = useState<BackendCandidate[]>([])
   const [ongoingInterviews, setOngoingInterviews] = useState<any[]>([])
   
-  // Calculate metrics from stored data when filters change
-  const metrics = useMemo(() => {
+  // Calculate metrics for Candidate Overview section
+  const candidateMetrics = useMemo(() => {
     if (unassignedCandidates.length === 0 && assignedCandidates.length === 0) return null
     
     const filters = {
-      vacancy: vacancyFilter !== "all" ? vacancyFilter : undefined,
-      recruiter: recruiterFilter !== "all" ? recruiterFilter : undefined,
+      vacancy: candidateVacancyFilter !== "all" ? candidateVacancyFilter : undefined,
     }
     
     return calculateHRMetrics(unassignedCandidates, assignedCandidates, ongoingInterviews, filters, vacancies)
-  }, [unassignedCandidates, assignedCandidates, ongoingInterviews, vacancyFilter, recruiterFilter, vacancies])
+  }, [unassignedCandidates, assignedCandidates, ongoingInterviews, candidateVacancyFilter, vacancies])
+
+  // Calculate metrics for Interview Pipeline (no filters)
+  const pipelineMetrics = useMemo(() => {
+    if (unassignedCandidates.length === 0 && assignedCandidates.length === 0) return null
+    
+    return calculateHRMetrics(unassignedCandidates, assignedCandidates, ongoingInterviews, {}, vacancies)
+  }, [unassignedCandidates, assignedCandidates, ongoingInterviews, vacancies])
+
+  // Calculate metrics for Performance & Hiring section
+  const performanceMetrics = useMemo(() => {
+    if (unassignedCandidates.length === 0 && assignedCandidates.length === 0) return null
+    
+    const filters = {
+      recruiter: performanceRecruiterFilter !== "all" ? performanceRecruiterFilter : undefined,
+    }
+    
+    return calculateHRMetrics(unassignedCandidates, assignedCandidates, ongoingInterviews, filters, vacancies)
+  }, [unassignedCandidates, assignedCandidates, ongoingInterviews, performanceRecruiterFilter, vacancies])
 
   useEffect(() => {
     loadInitialData()
@@ -135,7 +153,7 @@ export default function HRDashboard() {
     )
   }
 
-  if (isLoading || !metrics) {
+  if (isLoading || !candidateMetrics || !pipelineMetrics || !performanceMetrics) {
     return (
       <DashboardLayout requiredRole="hr">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -174,7 +192,7 @@ export default function HRDashboard() {
                   <SelectItem value="quarter">This Quarter</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={vacancyFilter} onValueChange={setVacancyFilter}>
+              <Select value={candidateVacancyFilter} onValueChange={setCandidateVacancyFilter}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="All Roles" />
                 </SelectTrigger>
@@ -192,7 +210,7 @@ export default function HRDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <MetricCard
               title="Total Applications"
-              value={metrics.total_applications}
+              value={candidateMetrics.total_applications}
               icon={Users}
               trend={{ value: 12, label: candidateFilter === "day" ? "vs yesterday" : `vs last ${candidateFilter}` }}
               color="blue"
@@ -208,7 +226,7 @@ export default function HRDashboard() {
             />
             <MetricCard
               title="Unassigned Candidates"
-              value={metrics.unassigned_candidates}
+              value={candidateMetrics.unassigned_candidates}
               description="Awaiting recruiter assignment"
               icon={UserCheck}
               color="orange"
@@ -224,7 +242,7 @@ export default function HRDashboard() {
             />
             <MetricCard
               title="Interviews Scheduled"
-              value={metrics.interviews_scheduled}
+              value={candidateMetrics.interviews_scheduled}
               description="Across all rounds"
               icon={Clock}
               color="green"
@@ -240,7 +258,7 @@ export default function HRDashboard() {
             />
             <MetricCard
               title="Joined/Offer Released"
-              value={`${metrics.joined_count}/${metrics.offer_released_count}`}
+              value={`${candidateMetrics.joined_count}/${candidateMetrics.offer_released_count}`}
               icon={CheckCircle}
               trend={{ value: 25, label: `vs last ${candidateFilter}` }}
               color="green"
@@ -265,21 +283,21 @@ export default function HRDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <MetricCard
               title="Ongoing r1"
-              value={metrics.ongoing_r1}
+              value={pipelineMetrics.ongoing_r1}
               description="Technical Screen in progress"
               icon={Users}
               color="blue"
             />
             <MetricCard
               title="Ongoing r2"
-              value={metrics.ongoing_r2}
+              value={pipelineMetrics.ongoing_r2}
               description="Technical + Behavioral in progress"
               icon={Users}
               color="orange"
             />
             <MetricCard
               title="Ongoing r3"
-              value={metrics.ongoing_r3}
+              value={pipelineMetrics.ongoing_r3}
               description="Manager Interview in progress"
               icon={Users}
               color="green"
@@ -293,7 +311,7 @@ export default function HRDashboard() {
             <h2 className="text-lg font-semibold text-gray-900">Performance & Hiring Metrics</h2>
             <div className="flex items-center space-x-2">
               <Filter className="h-4 w-4 text-gray-500" />
-              <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
+              <Select value={performanceRecruiterFilter} onValueChange={setPerformanceRecruiterFilter}>
                 <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
@@ -311,7 +329,7 @@ export default function HRDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <MetricCard
               title="Successful Hires"
-              value={metrics.successful_hires}
+              value={performanceMetrics.successful_hires}
               description="This month"
               icon={CheckCircle}
               trend={{ value: 25, label: "vs last month" }}
@@ -319,21 +337,21 @@ export default function HRDashboard() {
             />
             <MetricCard
               title="Interview-to-Offer Rate"
-              value={`${metrics.interview_to_offer_rate}%`}
+              value={`${performanceMetrics.interview_to_offer_rate}%`}
               description="Conversion efficiency"
               icon={TrendingUp}
               color="blue"
             />
             <MetricCard
               title="Avg. Time to Hire"
-              value={`${metrics.avg_time_to_hire} days`}
+              value={`${performanceMetrics.avg_time_to_hire} days`}
               description="From application to offer"
               icon={Calendar}
               color="gray"
             />
             <MetricCard
               title="Panelist Rating"
-              value={`${metrics.panelist_rating}/5`}
+              value={`${performanceMetrics.panelist_rating}/5`}
               description="Average panelist feedback score"
               icon={MessageSquare}
               trend={{ value: 8, label: "improvement" }}
