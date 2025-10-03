@@ -429,7 +429,6 @@ export default function VacanciesPage() {
                       <TableHead>Recruiter</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>No. of Panelists</TableHead>
-                      <TableHead>Applications</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -509,26 +508,6 @@ export default function VacanciesPage() {
                               >
                                 <Edit className="h-3 w-3" />
                               </Button>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm space-y-1">
-                              <div className="flex items-center justify-between">
-                                <span className="text-gray-600">Applied:</span>
-                                <span className="font-medium text-blue-600">{counts.applications}</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-gray-600">Selected:</span>
-                                <span className="font-medium text-orange-600">{counts.shortlisted}</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-gray-600">Interviewed:</span>
-                                <span className="font-medium text-purple-600">{counts.interviewed}</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-gray-600">Joined:</span>
-                                <span className="font-medium text-green-600">{counts.joined}</span>
-                              </div>
                             </div>
                           </TableCell>
                           <TableCell>
