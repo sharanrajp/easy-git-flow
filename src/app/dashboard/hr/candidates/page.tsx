@@ -52,7 +52,7 @@ import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, fetchPanelistsForCandidate, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
@@ -822,15 +822,27 @@ export default function CandidatesPage() {
     setLoadingPanels(true)
     
     try {
-      const panels = await fetchAvailablePanels()
-      console.log('Fetched panels in handleAssignPanel:', panels) // Debug log
-      setAvailablePanels(panels)
+      // Check if candidate has vacancyId
+      if (!candidate.vacancyId) {
+        toast({
+          title: "Error",
+          description: "Candidate has no vacancy ID. Cannot fetch panelists.",
+          variant: "destructive",
+        })
+        setLoadingPanels(false)
+        return
+      }
+
+      // Use the new API endpoint with candidateId and vacancyId from the candidate object
+      const panelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
+      console.log('Fetched panelists in handleAssignPanel:', panelists) // Debug log
+      setAvailablePanels(panelists)
       setIsPanelDialogOpen(true)
     } catch (error) {
-      console.error('Error fetching available panels:', error)
+      console.error('Error fetching available panelists:', error)
       toast({
         title: "Error",
-        description: "Failed to load available panels. Please try again.",
+        description: "Failed to load available panelists. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -902,9 +914,20 @@ export default function CandidatesPage() {
     const nextRound = getNextRound(candidate.last_interview_round || "")
     setAssignmentRound(nextRound)
     
+    // Check if candidate has vacancyId
+    if (!candidate.vacancyId) {
+      toast({
+        title: "Error",
+        description: "Candidate has no vacancy ID. Cannot fetch panelists.",
+        variant: "destructive",
+      })
+      return
+    }
+    
     try {
       setLoadingPanels(true)
-      const panels = await fetchAvailablePanels(nextRound)
+      // Use the new API endpoint with candidateId and vacancyId from the candidate object
+      const panels = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
       setAvailablePanels(panels)
       setSelectedCandidateForPanel(candidate)
       setIsPanelDialogOpen(true)
