@@ -17,6 +17,7 @@ import { UserForm } from "@/components/users/user-form"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/hooks/use-toast"
+import { SkillsDisplay } from "@/components/ui/skills-display"
 
 export default function UsersPage() {
   const { toast } = useToast()
@@ -422,22 +423,7 @@ export default function UsersPage() {
                         <Badge className={getRoleColor(user.role)}>{formatRole(user.role, user.panelist_type)}</Badge>
                       </TableCell>
                       <TableCell>
-                        {Array.isArray(user.skill_set) && user.skill_set.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {user.skill_set.slice(0, 2).map((skill) => (
-                              <Badge key={skill} variant="outline" className="text-xs">
-                                {skill}
-                              </Badge>
-                            ))}
-                            {user.skill_set.length > 2 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{user.skill_set.length - 2}
-                              </Badge>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
+                        <SkillsDisplay skills={user.skill_set || []} />
                       </TableCell>
                       <TableCell>
                         {user.available_rounds ? (

@@ -69,9 +69,9 @@ export function calculateHRMetrics(
   const unassigned_candidates = allCandidates.filter(c => c.final_status === "Yet to Attend").length
   const interviews_scheduled = filteredAssigned.length
 
-  const joined_count = filteredAssigned.filter(c => c.checked_in === true).length
+  const joined_count = filteredAssigned.filter(c => c.final_status === "joined").length
   const offer_released_count = filteredAssigned.filter(c => 
-    c.final_status === "offer_released" || c.final_status === "selected"
+    c.final_status === "offerReleased"
   ).length
 
   // Calculate ongoing interviews by round from the /interviews/ongoing endpoint

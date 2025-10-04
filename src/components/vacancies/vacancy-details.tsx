@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar, MapPin, Users, FileText, Download, Briefcase, Clock, Building2, Target, MapIcon } from "lucide-react"
+import { Calendar, MapPin, Users, FileText, Download, Briefcase, Clock, Building2, Target, MapIcon, Loader2 } from "lucide-react"
 import type { Vacancy } from "@/lib/mock-data"
 import { getAllUsers } from "@/lib/auth"
 import { formatDate } from "@/lib/utils"
+import { SkillsDisplay } from "../ui/skills-display"
 
 interface VacancyDetailsProps {
   vacancy: Vacancy
@@ -14,9 +15,11 @@ interface VacancyDetailsProps {
 export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
   const [allUsers, setAllUsers] = useState<any[]>([])
   const [assignedPanelists, setAssignedPanelists] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchUsers = async () => {
+      setIsLoading(true)
       try {
         const users = await getAllUsers()
         setAllUsers(users)
@@ -25,6 +28,8 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
         console.error("Failed to fetch users:", error)
         setAllUsers([])
         setAssignedPanelists([])
+      } finally {
+        setIsLoading(false)
       }
     }
     fetchUsers()
@@ -97,20 +102,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
               <div>
                 <span className="text-sm text-gray-600 mb-2 block">Required Skills:</span>
                 <div className="flex flex-wrap gap-1">
-                  {Array.isArray(vacancy.skills_required) && vacancy.skills_required.length > 0 ? (
-                    vacancy.skills_required.slice(0, 6).map((skill) => (
-                      <Badge key={skill} variant="secondary" className="px-2 py-1 text-xs">
-                        {skill}
-                      </Badge>
-                    ))
-                  ) : (
-                    <Badge variant="secondary" className="px-2 py-1 text-xs">No skills</Badge>
-                  )}
-                  {Array.isArray(vacancy.skills_required) && vacancy.skills_required.length > 6 && (
-                    <Badge variant="outline" className="px-2 py-1 text-xs">
-                      +{vacancy.skills_required.length - 6} more
-                    </Badge>
-                  )}
+                  <SkillsDisplay skills={vacancy.skills_required || []} />
                 </div>
               </div>
             </div>
@@ -236,6 +228,10 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {isLoading && (<div className="flex items-center space-x-2">
+            <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+            <h3 className="text-lg font-semibold">Loading Panelists...</h3>
+          </div>)}
           {assignedPanelists.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {assignedPanelists.map((panelist) => (

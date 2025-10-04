@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { X, Upload, Search, UserPlus, UserMinus } from "lucide-react"
+import { X, Upload, Search, UserPlus, UserMinus, Loader2 } from "lucide-react"
 import type { Vacancy } from "@/lib/mock-data"
 import { getAllUsers } from "@/lib/auth"
 
@@ -49,9 +49,11 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   const [panelistSearch, setPanelistSearch] = useState("")
   const [allUsers, setAllUsers] = useState<any[]>([])
   const [hrUsers, setHrUsers] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchUsers = async () => {
+      setIsLoading(true)
       try {
         const users = await getAllUsers()
         setAllUsers(users)
@@ -60,6 +62,8 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
         console.error("Failed to fetch users:", error)
         setAllUsers([])
         setHrUsers([])
+      } finally {
+        setIsLoading(false)
       }
     }
     fetchUsers()
@@ -474,19 +478,26 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="panelistSearch">Search Users</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="panelistSearch"
-                    placeholder="Search by name or skill..."
-                    value={panelistSearch}
-                    onChange={(e) => setPanelistSearch(e.target.value)}
-                    className="pl-10"
-                  />
+              {isLoading ? (
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                  <h3 className="text-lg font-semibold">Loading Panelists...</h3>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="panelistSearch">Search Users</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="panelistSearch"
+                      placeholder="Search by name or skill..."
+                      value={panelistSearch}
+                      onChange={(e) => setPanelistSearch(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+              )}
 
               {selectedUsers.length > 0 && (
                 <div className="space-y-2">
