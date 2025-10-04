@@ -79,33 +79,46 @@ export function calculateHRMetrics(
   const ongoing_r2 = ongoingInterviews.filter(i => i.round === "r2").length
   const ongoing_r3 = ongoingInterviews.filter(i => i.round === "r3").length
 
+  // 1. Successful Hires: Count candidates with final_status = "selected", "offerReleased", or "joined"
   const successful_hires = filteredAssigned.filter(c => 
-    c.final_status === "hired" || c.final_status === "joined"
+    c.final_status === "selected" || c.final_status === "offerReleased" || c.final_status === "joined"
   ).length
 
-  const interview_to_offer_rate = interviews_scheduled > 0 
-    ? Math.round((offer_released_count / interviews_scheduled) * 100) 
+  // 2. Interview-to-Offer Rate: (Offers Made / Candidates Interviewed) × 100
+  // Candidates Interviewed: those with any previous_rounds with status "selected" or "rejected"
+  const candidates_interviewed = filteredAssigned.filter(c => 
+    c.previous_rounds && c.previous_rounds.length > 0 && 
+    c.previous_rounds.some(round => round.status === "selected" || round.status === "rejected")
+  ).length
+  
+  const interview_to_offer_rate = candidates_interviewed > 0 
+    ? Math.round((offer_released_count / candidates_interviewed) * 100) 
     : 0
 
-  // Calculate average time to hire (in days) from application to offer
-  const candidatesWithHireDate = filteredAssigned.filter(c => 
-    (c.final_status === "hired" || c.final_status === "joined") && c.created_at
+  // 3. Average Time to Hire: Average(updated_at - created_at) for candidates with offerReleased
+  const candidatesWithOffer = filteredAssigned.filter(c => 
+    c.final_status === "offerReleased" && c.created_at && c.updated_at
   )
   
   let avg_time_to_hire = 0
-  if (candidatesWithHireDate.length > 0) {
-    const totalDays = candidatesWithHireDate.reduce((sum, candidate) => {
+  if (candidatesWithOffer.length > 0) {
+    const totalDays = candidatesWithOffer.reduce((sum, candidate) => {
       const applicationDate = new Date(candidate.created_at)
-      const offerDate = new Date() // Using current date as offer date approximation
+      const offerDate = new Date(candidate.updated_at!)
       const diffTime = Math.abs(offerDate.getTime() - applicationDate.getTime())
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
       return sum + diffDays
     }, 0)
-    avg_time_to_hire = Math.round(totalDays / candidatesWithHireDate.length)
+    avg_time_to_hire = Math.round(totalDays / candidatesWithOffer.length)
   }
 
-  // Calculate offer acceptance rate: (Offers Accepted ÷ Offers Made) × 100
-  const offers_accepted = successful_hires // candidates who accepted (hired/joined)
+  // 4. Offer Acceptance Rate: (Offers Accepted / Offers Made) × 100
+  // Offers Made: final_status = "offerReleased"
+  // Offers Accepted: final_status = "offerAccepted" or "joined"
+  const offers_accepted = filteredAssigned.filter(c => 
+    c.final_status === "offerAccepted" || c.final_status === "joined"
+  ).length
+  
   const offer_acceptance_rate = offer_released_count > 0
     ? Math.round((offers_accepted / offer_released_count) * 100)
     : 0

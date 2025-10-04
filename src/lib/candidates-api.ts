@@ -15,6 +15,7 @@ export interface BackendCandidate {
   skill_set?: string[];
   source?: string;
   created_at: string;
+  updated_at?: string;
   recruiter_name?: string;
   assignedPanelist?: string;
   currentRound?: string;
@@ -29,6 +30,13 @@ export interface BackendCandidate {
   willing_to_relocate?: boolean;
   negotiable?: boolean;
   vacancyId?: string;
+  previous_rounds?: Array<{
+    round: string;
+    status: string;
+    feedback_submitted?: boolean;
+    rating?: number;
+    feedback?: string;
+  }>;
 }
 
 export interface PanelistCandidate {
