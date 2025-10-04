@@ -81,7 +81,7 @@ export function calculateHRMetrics(
 
   // 1. Successful Hires: Count candidates with final_status = "selected", "offerReleased", or "joined"
   const successful_hires = filteredAssigned.filter(c => 
-    c.final_status === "selected" || c.final_status === "offerReleased" || c.final_status === "joined"
+    c.final_status === "hired"
   ).length
 
   // 2. Interview-to-Offer Rate: (Offers Made / Candidates Interviewed) × 100
@@ -114,9 +114,9 @@ export function calculateHRMetrics(
 
   // 4. Offer Acceptance Rate: (Offers Accepted / Offers Made) × 100
   // Offers Made: final_status = "offerReleased"
-  // Offers Accepted: final_status = "offerAccepted" or "joined"
+  // Offers Accepted: final_status = "hired" or "joined"
   const offers_accepted = filteredAssigned.filter(c => 
-    c.final_status === "offerAccepted" || c.final_status === "joined"
+    c.final_status === "hired" || c.final_status === "joined"
   ).length
   
   const offer_acceptance_rate = offer_released_count > 0
