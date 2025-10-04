@@ -146,7 +146,7 @@ export default function PanelistDashboard() {
     return {
       ...candidate,
       applied_position: candidate.applied_position || "N/A",
-      final_status: "assigned",
+      final_status: candidate.final_status || "assigned",
       total_experience: candidate.total_experience,
       source: undefined,
       created_at: candidate.created_at,
@@ -355,9 +355,9 @@ export default function PanelistDashboard() {
 
     const completedInterviewsCount = filteredCandidates.filter(candidate => candidate.feedback_submitted === true).length
 
-    const selectedCount = filteredCandidates.filter(candidate => candidate.final_status === "selected").length
+    const selectedCount = filteredCandidates.filter(candidate => ["selected", "offerReleased", "hired", "joined"].includes(candidate.final_status)).length
 
-    const rejectedCount = filteredCandidates.filter(candidate => candidate.final_status === "rejected").length
+    const rejectedCount = filteredCandidates.filter(candidate => ["rejected", "candidateDeclined"].includes(candidate.final_status)).length
 
     return {
       completedInterviews: completedInterviewsCount,

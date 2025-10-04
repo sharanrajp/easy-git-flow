@@ -131,7 +131,7 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
           <DialogTitle className="flex items-center justify-between">
             <span>{candidate.name}</span>
             <Badge className={getStatusColor(candidate.final_status || "assigned")}>
-              {candidate.final_status || "assigned"}
+              {candidate.final_status ? candidate.final_status.charAt(0).toUpperCase() + candidate.final_status.slice(1) : "Assigned"}
             </Badge>
           </DialogTitle>
         </DialogHeader>

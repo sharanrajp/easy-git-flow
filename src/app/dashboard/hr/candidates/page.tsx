@@ -949,8 +949,13 @@ export default function CandidatesPage() {
     
     try {
       setLoadingPanels(true)
-      // Use the new API endpoint with candidateId and vacancyId from the candidate object
-      const panels = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
+      let panels = []
+      if(candidate.final_status === "selected" && candidate.last_interview_round === "r2"){
+        panels = (await getAllUsers() || []).filter((user) => user.role === "panelist" && user.panelist_type === "manager")
+      } else {
+        // Use the new API endpoint with candidateId and vacancyId from the candidate object
+        panels = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
+      }
       setAvailablePanels(panels)
       setSelectedCandidateForPanel(candidate)
       setIsPanelDialogOpen(true)
@@ -2759,7 +2764,7 @@ export default function CandidatesPage() {
                             </div>
                           ) : (
                             <Button
-                              onClick={() => handlePanelAssignmentUpdated(panel.id)}
+                              onClick={() => handlePanelAssignmentUpdated(panel._id)}
                               disabled={assigningCandidate === selectedCandidateForPanel?._id}
                             >
                               {assigningCandidate === selectedCandidateForPanel?._id ? "Assigning..." : "Map Candidate"}
