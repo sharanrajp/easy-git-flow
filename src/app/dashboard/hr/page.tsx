@@ -3,7 +3,7 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Users, UserCheck, Clock, CheckCircle, TrendingUp, Calendar, MessageSquare, Filter } from "lucide-react"
+import { Users, UserCheck, Clock, CheckCircle, TrendingUp, Calendar, ThumbsUp, Filter } from "lucide-react"
 import { useState, useEffect, useMemo } from "react"
 import { calculateHRMetrics, type HRDashboardMetrics } from "@/lib/dashboard-api"
 import { useToast } from "@/hooks/use-toast"
@@ -350,11 +350,11 @@ export default function HRDashboard() {
               color="gray"
             />
             <MetricCard
-              title="Panelist Rating"
-              value={`${performanceMetrics.panelist_rating}/5`}
-              description="Average panelist feedback score"
-              icon={MessageSquare}
-              trend={{ value: 8, label: "improvement" }}
+              title="Offer Acceptance Rate"
+              value={`${performanceMetrics.offer_acceptance_rate}%`}
+              description="Offers accepted vs. offered"
+              icon={ThumbsUp}
+              trend={{ value: 5, label: "vs last month" }}
               color="green"
             />
           </div>

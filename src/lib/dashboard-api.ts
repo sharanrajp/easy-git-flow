@@ -21,7 +21,7 @@ export interface HRDashboardMetrics {
   successful_hires: number
   interview_to_offer_rate: number
   avg_time_to_hire: number
-  panelist_rating: number
+  offer_acceptance_rate: number
 }
 
 // Panelist Dashboard Metrics
@@ -87,8 +87,28 @@ export function calculateHRMetrics(
     ? Math.round((offer_released_count / interviews_scheduled) * 100) 
     : 0
 
-  const avg_time_to_hire = 21
-  const panelist_rating = 4.2
+  // Calculate average time to hire (in days) from application to offer
+  const candidatesWithHireDate = filteredAssigned.filter(c => 
+    (c.final_status === "hired" || c.final_status === "joined") && c.created_at
+  )
+  
+  let avg_time_to_hire = 0
+  if (candidatesWithHireDate.length > 0) {
+    const totalDays = candidatesWithHireDate.reduce((sum, candidate) => {
+      const applicationDate = new Date(candidate.created_at)
+      const offerDate = new Date() // Using current date as offer date approximation
+      const diffTime = Math.abs(offerDate.getTime() - applicationDate.getTime())
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      return sum + diffDays
+    }, 0)
+    avg_time_to_hire = Math.round(totalDays / candidatesWithHireDate.length)
+  }
+
+  // Calculate offer acceptance rate: (Offers Accepted ÷ Offers Made) × 100
+  const offers_accepted = successful_hires // candidates who accepted (hired/joined)
+  const offer_acceptance_rate = offer_released_count > 0
+    ? Math.round((offers_accepted / offer_released_count) * 100)
+    : 0
 
   return {
     total_applications,
@@ -102,7 +122,7 @@ export function calculateHRMetrics(
     successful_hires,
     interview_to_offer_rate,
     avg_time_to_hire,
-    panelist_rating
+    offer_acceptance_rate
   }
 }
 
