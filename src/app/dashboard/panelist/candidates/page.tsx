@@ -41,13 +41,18 @@ export default function PanelistCandidatesPage() {
     }
   }
 
-  // Check if candidate has completed feedback for current round
+  // Check if the logged-in panelist has completed feedback for current round
   const hasFeedbackCompleted = (candidate: PanelistCandidate) => {
     if (!candidate.previous_rounds || candidate.previous_rounds.length === 0) return false
     
-    // Find the most recent round that matches the current interview round
+    // Get current user's name from localStorage
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}")
+    const currentPanelistName = currentUser.name
+    
+    // Find the round that matches the current interview round AND was assigned to this panelist
     const currentRound = candidate.previous_rounds.find((round: any) => 
-      round.round === candidate.last_interview_round
+      round.round === candidate.last_interview_round && 
+      round.panel_name === currentPanelistName
     )
     
     return currentRound?.feedback_submitted === true
