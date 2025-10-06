@@ -253,14 +253,12 @@ export default function UsersPage() {
     fetchUsers() // Refresh the list
   }
 
-  const getRoleColor = (role: string) => {
+  const getRoleColor = (role: string, panelist_type?: string) => {
     switch (role) {
       case "hr":
         return "bg-blue-100 text-blue-800"
       case "panelist":
-        return "bg-green-100 text-green-800"
-      case "manager":
-        return "bg-purple-100 text-purple-800"
+        return panelist_type === "manager" ? "bg-purple-100 text-purple-800" : "bg-green-100 text-green-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -434,7 +432,7 @@ export default function UsersPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getRoleColor(user.role)}>{formatRole(user.role, user.panelist_type)}</Badge>
+                        <Badge className={getRoleColor(user.role, user.panelist_type)}>{formatRole(user.role, user.panelist_type)}</Badge>
                       </TableCell>
                       <TableCell>
                         <SkillsDisplay skills={user.skill_set || []} />

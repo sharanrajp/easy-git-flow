@@ -13,7 +13,6 @@ export interface User {
 export function getToken(): string | null {
   if (typeof window === "undefined") return null
   const token = localStorage.getItem("ats_token")
-  console.log('getToken - Token retrieved:', token ? 'Present' : 'Missing')
   return token
 }
 

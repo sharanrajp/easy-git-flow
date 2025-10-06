@@ -50,6 +50,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   const [allUsers, setAllUsers] = useState<any[]>([])
   const [hrUsers, setHrUsers] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [managers, setManagers] = useState<any[]>([])
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -57,10 +58,12 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       try {
         const users = await getAllUsers()
         setAllUsers(users)
+        setManagers(users.filter((user) => user.panelist_type === "manager"))
         setHrUsers(users.filter((user) => user.role === "hr"))
       } catch (error) {
         console.error("Failed to fetch users:", error)
         setAllUsers([])
+        setManagers([])
         setHrUsers([])
       } finally {
         setIsLoading(false)
@@ -182,7 +185,6 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       formData.drive_date &&
       formData.drive_location &&
       formData.job_desc.trim() &&
-      formData.projectClientName.trim() && // Make project/client name required
       formData.about_position.trim() // Make about position required
     )
   }
@@ -281,12 +283,21 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="hiring_manager_name">Hiring Manager *</Label>
-                  <Input
-                    id="hiring_manager_name"
+                  <Select
                     value={formData.hiring_manager_name}
-                    onChange={(e) => setFormData({ ...formData, hiring_manager_name: e.target.value })}
-                    required
-                  />
+                    onValueChange={(value: any) => setFormData({ ...formData, hiring_manager_name: value })}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select manager" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {managers.map((user) => (
+                      <SelectItem key={user._id} value={user.name}>
+                        {user.name}
+                      </SelectItem>
+                    ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="recruiter_name">Recruiter Name *</Label>
