@@ -1468,7 +1468,7 @@ export default function CandidatesPage() {
             </Button>
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <Button 
-                className="gradient-primary text-white hover:scale-105 smooth-transition shadow-elegant hover:shadow-glow cursor-pointer" 
+                className="bg-blue-600 text-white hover:scale-105 smooth-transition shadow-elegant hover:shadow-glow cursor-pointer" 
                 onClick={() => setIsCreateOpen(true)}
               >
                 <Plus className="h-4 w-4 mr-2" />

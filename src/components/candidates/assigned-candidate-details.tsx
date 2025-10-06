@@ -233,7 +233,7 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:text-blue-800 underline"
                         >
-                          Download Resume
+                          View Resume
                         </a>
                       </div>
                     </div>
