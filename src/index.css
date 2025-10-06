@@ -30,6 +30,10 @@
   --gradient-subtle: linear-gradient(180deg, hsl(215 100% 97%), hsl(220 95% 95%));
   --gradient-card: linear-gradient(145deg, hsl(0 0% 100% / 0.8), hsl(0 0% 100% / 0.4));
   
+  /* VueData Blue Gradient */
+  --gradient-vuedata: linear-gradient(to right, #2AB7F6, #0A6ED1);
+  --gradient-vuedata-hover: linear-gradient(to right, #0A6ED1, #2AB7F6);
+  
   /* Enhanced Shadows */
   --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);
   --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.4);
@@ -71,6 +75,10 @@
   --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
   --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
   --gradient-card: linear-gradient(145deg, hsl(224 71% 8% / 0.8), hsl(224 71% 6% / 0.4));
+  
+  /* VueData Blue Gradient (same in dark mode) */
+  --gradient-vuedata: linear-gradient(to right, #2AB7F6, #0A6ED1);
+  --gradient-vuedata-hover: linear-gradient(to right, #0A6ED1, #2AB7F6);
   
   /* Dark mode shadows */
   --shadow-elegant: 0 10px 30px -10px hsl(0 0% 0% / 0.5);
