@@ -53,7 +53,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
         size="sm"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="gap-1"
+        className="gap-1 h-10"
       >
         <ChevronLeft className="h-4 w-4" />
         Previous
@@ -75,7 +75,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
               variant={currentPage === page ? "default" : "outline"}
               size="sm"
               onClick={() => onPageChange(page as number)}
-              className="min-w-[40px]"
+              className="min-w-[40px] min-h-[38px]"
             >
               {page}
             </Button>
@@ -88,7 +88,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
         size="sm"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="gap-1"
+        className="gap-1 h-10"
       >
         Next
         <ChevronRight className="h-4 w-4" />
