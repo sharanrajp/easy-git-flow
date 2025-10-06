@@ -59,18 +59,18 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
 
   if (user.role === "panelist") {
     return (
-      <div className="flex flex-col min-h-screen bg-background">
+      <div className="flex flex-col min-h-screen bg-background animate-fade-in">
         <Header user={user} />
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-6 animate-slide-up">{children}</main>
       </div>
     )
   }
 
   return (
     <div className="flex h-screen bg-background">
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden animate-fade-in">
         <Header user={user} />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-6 animate-slide-up">{children}</main>
       </div>
     </div>
   )

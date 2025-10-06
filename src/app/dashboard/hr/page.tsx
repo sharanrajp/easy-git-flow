@@ -119,33 +119,33 @@ export default function HRDashboard() {
     filterValue?: string
   }) => {
     const colorClasses = {
-      blue: "bg-blue-50 text-blue-600",
-      green: "bg-green-50 text-green-600",
-      orange: "bg-orange-50 text-orange-600",
-      red: "bg-red-50 text-red-600",
-      gray: "bg-gray-50 text-gray-600",
+      blue: "from-blue-500 to-blue-600",
+      green: "from-green-500 to-green-600",
+      orange: "from-orange-500 to-orange-600",
+      red: "from-red-500 to-red-600",
+      gray: "from-gray-500 to-gray-600",
     }
 
     return (
-      <Card>
+      <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 animate-slide-up">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">{title}</p>
-              <p className="text-2xl font-bold text-gray-900">{value}</p>
-              {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
-              {filterValue && <p className="text-xs text-blue-600 mt-1">({filterValue})</p>}
+            <div className="flex-1">
+              <p className="text-sm font-medium text-muted-foreground">{title}</p>
+              <p className="text-3xl font-bold text-foreground mt-2">{value}</p>
+              {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
+              {filterValue && <p className="text-xs text-primary mt-1 font-medium">({filterValue})</p>}
               {trend && (
-                <div className="flex items-center mt-2">
-                  <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-                  <span className="text-sm text-green-600">
+                <div className="flex items-center mt-3 gap-1">
+                  <TrendingUp className="h-4 w-4 text-green-500" />
+                  <span className="text-sm font-medium text-green-600">
                     +{trend.value}% {trend.label}
                   </span>
                 </div>
               )}
             </div>
-            <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
-              <Icon className="h-6 w-6" />
+            <div className={`p-4 rounded-xl bg-gradient-to-br ${colorClasses[color]} shadow-lg`}>
+              <Icon className="h-7 w-7 text-white" />
             </div>
           </div>
         </CardContent>
@@ -157,7 +157,10 @@ export default function HRDashboard() {
     return (
       <DashboardLayout requiredRole="hr">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="flex flex-col items-center gap-3">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+            <p className="text-sm text-muted-foreground animate-pulse">Loading dashboard...</p>
+          </div>
         </div>
       </DashboardLayout>
     )
@@ -165,22 +168,25 @@ export default function HRDashboard() {
 
   return (
     <DashboardLayout requiredRole="hr">
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">HR Dashboard</h1>
-              <p className="text-gray-600">Welcome back! Here's what's happening with your recruitment.</p>
+              <h1 className="text-3xl font-bold text-foreground">HR Dashboard</h1>
+              <p className="text-muted-foreground">Welcome back! Here's what's happening with your recruitment.</p>
             </div>
           </div>
         </div>
 
         {/* Candidate Overview Metrics */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Candidate Overview</h2>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              Candidate Overview
+            </h2>
             <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-gray-500" />
+              <Filter className="h-4 w-4 text-muted-foreground" />
               <Select value={candidateFilter} onValueChange={setCandidateFilter}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -276,9 +282,12 @@ export default function HRDashboard() {
         </div>
 
         {/* Interview Pipeline */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Interview Pipeline</h2>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              Interview Pipeline
+            </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <MetricCard
@@ -306,11 +315,14 @@ export default function HRDashboard() {
         </div>
 
         {/* Performance & Hiring */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Performance & Hiring Metrics</h2>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              Performance & Hiring Metrics
+            </h2>
             <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-gray-500" />
+              <Filter className="h-4 w-4 text-muted-foreground" />
               <Select value={performanceRecruiterFilter} onValueChange={setPerformanceRecruiterFilter}>
                 <SelectTrigger className="w-40">
                   <SelectValue />
