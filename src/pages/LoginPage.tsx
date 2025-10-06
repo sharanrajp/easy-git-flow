@@ -164,14 +164,14 @@ function LoginPage() {
         />
         
         {/* Content Overlay */}
-        <div className="absolute inset-0 z-20 flex flex-col justify-center px-12 xl:px-20 text-white">
+        <div className="absolute inset-0 z-20 flex flex-col justify-center px-12 xl:px-20">
           <div className="space-y-6 animate-fade-in">
             <h1 className="text-4xl xl:text-5xl font-bold leading-tight">
               Streamline Your
               <br />
               Hiring Process
             </h1>
-            <p className="text-lg xl:text-xl text-white/90 max-w-md">
+            <p className="text-lg xl:text-xl max-w-md">
               Transform your recruitment workflow with our intelligent Applicant Tracking System
             </p>
           </div>
