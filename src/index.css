@@ -43,9 +43,6 @@
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* Dialog/Popper specific */
-  --dialog-backdrop: hsl(0 0% 0% / 0.5);
 }
 
 .dark {
@@ -114,7 +111,7 @@
 }
 
 .status-badge {
-  @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset transition-all duration-200;
+  @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset;
 }
 
 .gradient-primary {
@@ -126,7 +123,7 @@
 }
 
 .glass-effect {
-  @apply backdrop-blur-xl bg-white/10 border border-white/20 shadow-[var(--shadow-lg)];
+  @apply backdrop-blur-xl bg-white/10 border border-white/20;
 }
 
 .smooth-transition {
@@ -135,11 +132,15 @@
 
 /* Interactive Elements */
 .interactive-card {
-  @apply bg-card border border-border rounded-xl shadow-[var(--shadow-card)] transition-all duration-300 hover:shadow-[var(--shadow-lg)] hover:-translate-y-0.5;
+  @apply bg-card border border-border rounded-xl shadow-[var(--shadow-card)] transition-all duration-300;
+}
+
+.interactive-card:hover {
+  @apply shadow-[var(--shadow-lg)] -translate-y-1;
 }
 
 .button-hover-lift {
-  @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0;
+  @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md;
 }
 
 /* Focus Styles for Accessibility */
@@ -154,12 +155,12 @@
 
 /* Table Enhancements */
 .table-row-hover {
-  @apply transition-all duration-200 hover:bg-muted/50 hover:shadow-sm cursor-pointer;
+  @apply transition-colors duration-150 hover:bg-muted/50 cursor-pointer;
 }
 
 /* Form Enhancements */
 .form-input {
-  @apply w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-all;
+  @apply w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-colors;
   @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   @apply disabled:cursor-not-allowed disabled:opacity-50;
 }

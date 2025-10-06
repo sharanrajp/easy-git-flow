@@ -145,21 +145,21 @@ function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-subtle px-4 relative overflow-hidden animate-fade-in">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-subtle px-4 relative overflow-hidden">
       {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-primary opacity-5 animate-pulse"></div>
-      <div className="absolute top-20 left-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-20 right-20 w-96 h-96 bg-primary-glow/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute inset-0 bg-gradient-primary opacity-5"></div>
+      <div className="absolute top-20 left-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-primary-glow/10 rounded-full blur-3xl"></div>
       
-      <Card className="w-full max-w-md shadow-elegant hover:shadow-[var(--shadow-xl)] border-0 backdrop-blur-sm bg-gradient-card relative z-10 animate-scale-in">
+      <Card className="w-full max-w-md shadow-elegant border-0 backdrop-blur-sm bg-gradient-card relative z-10">
         <CardHeader className="text-center space-y-6 pb-8">
-          <div className="flex justify-center animate-slide-down">
-            <div className="transition-transform hover:scale-105">
+          <div className="flex justify-center">
+            <div>
               <img src="/vuedata-blue.webp" alt="vueDataImage" draggable="false" height={25} width={200}/>
             </div>
           </div>
-          <div className="space-y-2 animate-slide-up">
-            <CardTitle className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          <div className="space-y-2">
+            <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Welcome to ATS
             </CardTitle>
             <CardDescription className="text-muted-foreground text-base">
@@ -168,9 +168,9 @@ function LoginPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="font-medium">Email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -178,11 +178,10 @@ function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-11"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="font-medium">Password</Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -190,34 +189,28 @@ function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="h-11"
               />
             </div>
 
             {error && (
-              <Alert variant="destructive" className="animate-shake">
+              <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
             <Button 
               type="submit" 
-              className="w-full bg-gradient-primary hover:shadow-glow smooth-transition text-white font-semibold py-6 text-base" 
+              className="w-full bg-gradient-primary hover:shadow-glow smooth-transition text-white font-semibold py-3" 
               disabled={isLoading}
             >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  Signing in...
-                </span>
-              ) : "Sign In"}
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
 
-            <div className="text-center pt-2">
+            <div className="text-center">
               <button
                 type="button"
                 onClick={handleForgotPassword}
-                className="text-sm text-primary hover:text-primary/80 smooth-transition font-medium underline-offset-4 hover:underline"
+                className="text-sm text-primary hover:text-primary-glow smooth-transition font-medium"
               >
                 Forgot your password?
               </button>
