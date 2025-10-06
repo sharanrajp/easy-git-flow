@@ -289,6 +289,13 @@ export default function VacanciesPage() {
     new Set([...vacancies.map((v) => v.recruiter_name).filter(Boolean), ...hrUsers.map((user) => user.name)]),
   )
 
+  const handleClearFilters = () => {
+    setSearchTerm("")
+    setStatusFilter("all")
+    setPriorityFilter("all")
+    setRecruiterFilter("all")
+  }
+
   return (
     <DashboardLayout requiredRole="hr">
       <div className="flex flex-col h-full">
@@ -341,6 +348,13 @@ export default function VacanciesPage() {
                   className="pl-10"
                 />
               </div>
+              <Button 
+                variant="outline" 
+                onClick={handleClearFilters}
+                className="whitespace-nowrap"
+              >
+                Clear Filters
+              </Button>
               <div className="flex flex-wrap gap-2">
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-32">

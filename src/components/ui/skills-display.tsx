@@ -9,11 +9,7 @@ interface SkillsDisplayProps {
 
 export function SkillsDisplay({ skills, maxVisible = 2, className = "" }: SkillsDisplayProps) {
   if (!Array.isArray(skills) || skills.length === 0) {
-    return (
-      <Badge variant="secondary" className="text-xs">
-        No skills
-      </Badge>
-    )
+    return (<span>-</span>)
   }
 
   const visibleSkills = skills.slice(0, maxVisible)

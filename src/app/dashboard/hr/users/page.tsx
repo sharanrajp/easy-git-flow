@@ -94,6 +94,18 @@ export default function UsersPage() {
     }
   }
 
+  const handleClearFilters = () => {
+    setSearchTerm("")
+    setRoleFilter("all")
+    setStatusFilter("all")
+  }
+
+  const statusArray = [
+    { label: "Available", value: "free" },
+    { label: "In Interview", value: "in_interview" },
+    { label: "Break", value: "break" },
+  ]
+
   const handleSelectUser = (userId: string, checked: boolean) => {
     if (checked) {
       setSelectedUsers((prev) => [...prev, userId])
@@ -340,6 +352,13 @@ export default function UsersPage() {
                 {deleting ? "Deleting..." : `Delete Selected (${selectedUsers.length})`}
               </Button>
             )}
+            <Button 
+              variant="outline" 
+              onClick={handleClearFilters}
+              className="whitespace-nowrap"
+            >
+              Clear Filters
+            </Button>
             <div className="flex flex-wrap gap-2">
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger className="w-32">
@@ -358,9 +377,11 @@ export default function UsersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="free">Available</SelectItem>
-                  <SelectItem value="in_interview">In Interview</SelectItem>
-                  <SelectItem value="break">Break</SelectItem>
+                  {roleFilter !== "hr" && (
+                    statusArray.map((status) => (
+                      <SelectItem key={status.value} value={status.value}>{status.label}</SelectItem>
+                    ))                    
+                  )}
                 </SelectContent>
               </Select>
               <div className="flex items-center space-x-2">
@@ -596,16 +617,7 @@ export default function UsersPage() {
                         {Array.isArray(user.skill_set) && user.skill_set.length > 0 && (
                           <div>
                             <div className="flex flex-wrap gap-1">
-                              {user.skill_set.slice(0, 2).map((skill) => (
-                                <Badge key={skill} variant="outline" className="text-xs">
-                                  {skill}
-                                </Badge>
-                              ))}
-                              {user.skill_set.length > 2 && (
-                                <Badge variant="outline" className="text-xs">
-                                  +{user.skill_set.length - 2}
-                                </Badge>
-                              )}
+                              <SkillsDisplay skills={user.skill_set || []} />
                             </div>
                           </div>
                         )}

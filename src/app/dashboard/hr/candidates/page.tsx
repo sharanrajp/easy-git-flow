@@ -418,6 +418,15 @@ export default function CandidatesPage() {
       { value: "on-hold", label: "On Hold" },
       { value: "assigned", label: "Assigned" },
     ],
+    "completed": [
+      { value: "selected", label: "Selected" },
+      { value: "rejected", label: "Rejected" },
+      { value: "offerReleased", label: "Offer Released" },
+      { value: "candidateDeclined", label: "Candidate Declined" },
+      { value: "joined", label: "Joined" },
+      { value: "hired", label: "Hired" },
+      { value: "on-hold", label: "On Hold" },
+    ]
   }
 
   const roundOptions = [
@@ -1515,11 +1524,16 @@ export default function CandidatesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Rounds</SelectItem>
-                  {roundOptions?.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
+                  {activeTab !== "unassigned" && (
+                    <>
+                      {roundOptions?.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
+                  
                 </SelectContent>
               </Select>
             </div>
