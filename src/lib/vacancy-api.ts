@@ -27,6 +27,8 @@ interface BackendVacancy {
   deadline?: string;
   assignedPanelists?: string[];
   request_type?: string;
+  city?: string;
+  projectClientName?: string;
 }
 
 // Frontend vacancy interface for posting (what we send to API)
@@ -47,6 +49,8 @@ interface VacancyCreateRequest {
   request_type?:string;
   about_position?: string;
   assignedPanelists?: string[];
+  city?: string;
+  projectClientName?: string;
 }
 
 // Transform backend vacancy to frontend format
@@ -78,6 +82,8 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
     about_position: backendVacancy.about_position || "",
     deadline: backendVacancy.deadline || "",
     assignedPanelists: backendVacancy.assignedPanelists || [],
+    city: backendVacancy.city || "",
+    projectClientName: backendVacancy.projectClientName || "",
     applications: 0,
     shortlisted: 0,
     interviewed: 0,
@@ -104,6 +110,8 @@ function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyC
     job_desc: frontendVacancy.job_desc || "",
     about_position: frontendVacancy.about_position || "",
     request_type: frontendVacancy.request_type || "new",
+    city: frontendVacancy.city || "",
+    projectClientName: frontendVacancy.projectClientName || "",
   };
 }
 

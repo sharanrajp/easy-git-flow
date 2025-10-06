@@ -1087,6 +1087,12 @@ export default function CandidatesPage() {
       // Refresh ongoing interviews list
       const interviewsData = await fetchOngoingInterviews()
       setOngoingInterviews(interviewsData)
+      const [updatedUnassigned, updatedAssigned] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates()
+      ])
+      setUnassignedCandidates(updatedUnassigned)
+      setAssignedCandidates(updatedAssigned)
       
       toast({
         title: "Success", 
@@ -2764,7 +2770,7 @@ export default function CandidatesPage() {
                             </div>
                           ) : (
                             <Button
-                              onClick={() => handlePanelAssignmentUpdated(panel._id)}
+                              onClick={() => handlePanelAssignmentUpdated(panel.id || panel._id)}
                               disabled={assigningCandidate === selectedCandidateForPanel?._id}
                             >
                               {assigningCandidate === selectedCandidateForPanel?._id ? "Assigning..." : "Map Candidate"}

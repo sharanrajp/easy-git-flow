@@ -41,6 +41,8 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
     assignedPanelists: vacancy?.assignedPanelists || [],
     deadline: vacancy?.deadline || "",
     request_type: vacancy?.request_type || "",
+    city: vacancy?.city || "",
+    projectClientName: vacancy?.projectClientName || "",
   })
 
   const [newSkill, setNewSkill] = useState("")

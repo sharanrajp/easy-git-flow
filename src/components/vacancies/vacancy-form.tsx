@@ -30,7 +30,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     job_type: vacancy?.job_type || "full_time",
     priority: vacancy?.priority || "P2",
     projectClientName: vacancy?.projectClientName || "",
-    city: vacancy?.city || "Perungudi, Chennai", // default city value
+    city: vacancy?.city || "", // default city value
     status: vacancy?.status || "active",
     hiring_manager_name: vacancy?.hiring_manager_name || "",
     recruiter_name: vacancy?.recruiter_name || "",
@@ -110,7 +110,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       job_type: vacancy?.job_type || "full_time",
       priority: vacancy?.priority || "P2",
       projectClientName: vacancy?.projectClientName || "",
-      city: vacancy?.city || "Perungudi, Chennai",
+      city: vacancy?.city || "",
       status: vacancy?.status || "active",
       hiring_manager_name: vacancy?.hiring_manager_name || "",
       recruiter_name: vacancy?.recruiter_name || "",
@@ -182,6 +182,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       formData.drive_date &&
       formData.drive_location &&
       formData.job_desc.trim() &&
+      formData.projectClientName.trim() && // Make project/client name required
       formData.about_position.trim() // Make about position required
     )
   }

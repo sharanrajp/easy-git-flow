@@ -539,6 +539,7 @@ export default function PanelistDashboard() {
                           <TableHead>Experience</TableHead>
                           <TableHead>Interview Round</TableHead>
                           <TableHead>Resume</TableHead>
+                          <TableHead>Feedback</TableHead>
                           <TableHead>Action</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -592,11 +593,21 @@ export default function PanelistDashboard() {
                               <TableCell>
                                 <Button
                                   size="sm"
+                                  onClick={() => handleViewCandidateFeedback(candidate)}
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                >
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View Feedback
+                                </Button>
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  size="sm"
                                   onClick={() => handleScheduledFeedback(candidate)}
                                   className="bg-green-600 hover:bg-green-700 text-white"
                                 >
                                   <Star className="h-4 w-4 mr-2" />
-                                  Feedback
+                                  Submit Feedback
                                 </Button>
                               </TableCell>
                             </TableRow>
