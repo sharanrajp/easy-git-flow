@@ -951,7 +951,7 @@ export default function CandidatesPage() {
       setLoadingPanels(true)
       let panels = []
       if(candidate.final_status === "selected" && candidate.last_interview_round === "r2"){
-        panels = (await getAllUsers() || []).filter((user) => user.role === "panelist" && user.panelist_type === "manager")
+        panels = (await getAllUsers() || []).filter((user) => user.role === "panelist" && user.panelist_type === "manager" && user.current_status === "free")
       } else {
         // Use the new API endpoint with candidateId and vacancyId from the candidate object
         panels = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
