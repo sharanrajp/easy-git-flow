@@ -67,7 +67,7 @@ export default function PanelistDashboard() {
   const [selectedCandidate, setSelectedCandidate] = useState<PanelistCandidate | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [isCandidatesLoading, setIsCandidatesLoading] = useState(true)
-  
+
   const itemsPerPage = 5
   const { toast } = useToast()
 
@@ -98,10 +98,7 @@ export default function PanelistDashboard() {
 
   // Check if candidate has completed feedback for current round
   const hasFeedbackCompleted = (candidate: any) => {
-    const currentUser = JSON.parse(localStorage.getItem("ats_user") || "{}")
-    const currentPanelistName = currentUser.name
-    console.log("Current Panelist Name:", currentPanelistName);
-    
+    const currentPanelistName = currentUser?.name
 
     // Find if this candidate has a round with the current panelist
     const myRound = candidate.previous_rounds?.find(
@@ -361,12 +358,31 @@ export default function PanelistDashboard() {
     const scheduledCount = filteredCandidates.filter(candidate => candidate.final_status === "assigned").length
 
     const completedInterviewsCount = filteredCandidates.filter(candidate => candidate.feedback_submitted === true).length
+    const currentPanelistName = currentUser?.name
 
-    const selectedCount = filteredCandidates.filter(candidate => ["selected", "offerReleased", "hired", "joined"].includes(candidate.final_status)).length
+    const selectedCount = filteredCandidates.reduce((count, candidate) => {
+      const myRound = candidate.previous_rounds?.find(
+        (round: any) => round.panel_name === currentPanelistName
+      )
+      if (!myRound) return count
+      if (["selected", "offerReleased", "hired", "joined"].includes(myRound.status)) {
+        return count + 1
+      }
+      return count
+    }, 0)
 
-    const rejectedCount = filteredCandidates.filter(candidate => ["rejected", "candidateDeclined"].includes(candidate.final_status)).length
-
-    return {
+    const rejectedCount = filteredCandidates.reduce((count, candidate) => {
+      const myRound = candidate.previous_rounds?.find(
+        (round: any) => round.panel_name === currentPanelistName
+      )
+      if (!myRound) return count
+      if (["rejected", "candidateDeclined"].includes(myRound.status)) {
+        return count + 1
+      }
+      return count
+    }, 0)
+  
+  return {
       completedInterviews: completedInterviewsCount,
       selectedCount: selectedCount,
       rejectedCount: rejectedCount,
