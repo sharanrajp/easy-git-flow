@@ -2746,7 +2746,7 @@ export default function CandidatesPage() {
                     <Card key={panel.id} className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <h3 className="font-medium text-gray-900">Panel ID: {panel.id}</h3>
+                          <h3 className="font-medium text-gray-900">Panel Details</h3>
                           <div className="mt-2 space-y-1">
                             <div className="text-sm text-gray-600">
                               <span className="font-medium">{panel.name || 'N/A'}</span> - {panel.email || 'N/A'}
