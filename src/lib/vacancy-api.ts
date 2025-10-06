@@ -1,7 +1,6 @@
 import { getToken } from './auth';
 import type { Vacancy } from './mock-data';
 
-// API functions for vacancy management
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
 // Backend vacancy interface (what we receive from API)
@@ -173,38 +172,6 @@ export async function addVacancy(vacancyData: Partial<Vacancy>): Promise<Vacancy
     return transformBackendToFrontend(backendVacancy);
   } catch (error) {
     console.error('Error adding vacancy:', error);
-    throw error;
-  }
-}
-
-// Update vacancy by ID
-export async function updateVacancy(vacancyId: string, updates: Partial<Vacancy>): Promise<Vacancy> {
-  const token = getToken();
-  
-  if (!token) {
-    throw new Error('No authentication token found');
-  }
-
-  const backendData = transformFrontendToBackend(updates);
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/Vacancy/${vacancyId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(backendData),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to update vacancy: ${response.status} ${response.statusText}`);
-    }
-
-    const backendVacancy: BackendVacancy = await response.json();
-    return transformBackendToFrontend(backendVacancy);
-  } catch (error) {
-    console.error('Error updating vacancy:', error);
     throw error;
   }
 }
