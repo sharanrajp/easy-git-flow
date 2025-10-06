@@ -154,12 +154,6 @@ export default function PanelistCandidatesPage() {
 
           <TabsContent value="scheduled" className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-blue-600" />
-                  Scheduled Interviews
-                </CardTitle>
-              </CardHeader>
               <CardContent>
                 {isLoading ? (
                   <div className="flex justify-center py-8">
@@ -244,12 +238,6 @@ export default function PanelistCandidatesPage() {
 
           <TabsContent value="completed" className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  Completed Interviews
-                </CardTitle>
-              </CardHeader>
               <CardContent>
                 {isLoading ? (
                   <div className="flex justify-center py-8">
