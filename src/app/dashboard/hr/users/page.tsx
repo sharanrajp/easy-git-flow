@@ -157,13 +157,11 @@ export default function UsersPage() {
       })
 
       if (response.ok) {
-        const newUser = await response.json()
-        // Add the new user to local state directly
-        setUsers([...users, newUser])
+        setUsers([...users, userData])
         setIsCreateOpen(false)
         toast({
           title: "Success",
-          description: `User "${newUser.name}" has been added successfully.`,
+          description: `User "${userData.name}" has been added successfully.`,
         })
       } else {
         console.error("Failed to create user:", await response.text())
