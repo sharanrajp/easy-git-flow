@@ -1626,9 +1626,6 @@ export default function CandidatesPage() {
               </Card>
             ) : unassignedCandidates.length > 0 ? (
               <Card className="h-full flex flex-col">
-                <CardHeader className="flex-shrink-0">
-                  <CardTitle>Unassigned Candidates</CardTitle>
-                </CardHeader>
                 <CardContent className="flex-1 overflow-auto p-0">
                   <Table>
                     <TableHeader className="sticky top-0 bg-background z-10">
@@ -1791,9 +1788,6 @@ export default function CandidatesPage() {
               </Card>
             ) : assignedCandidates.length > 0 ? (
               <Card className="h-full flex flex-col">
-                <CardHeader className="flex-shrink-0">
-                  <CardTitle>Assigned Candidates</CardTitle>
-                </CardHeader>
                 <CardContent className="flex-1 overflow-auto p-0">
                   <Table>
                     <TableHeader className="sticky top-0 bg-background z-10">
@@ -1988,9 +1982,6 @@ export default function CandidatesPage() {
               </Card>
             ) : filteredCompletedCandidates.length > 0 ? (
               <Card className="h-full flex flex-col">
-                <CardHeader className="flex-shrink-0">
-                  <CardTitle>Completed Candidates</CardTitle>
-                </CardHeader>
                 <CardContent className="flex-1 overflow-auto p-0">
                   <Table>
                     <TableHeader className="sticky top-0 bg-background z-10">
