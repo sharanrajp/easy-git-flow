@@ -97,15 +97,22 @@ export default function PanelistDashboard() {
   }, [toast])
 
   // Check if candidate has completed feedback for current round
-  const hasFeedbackCompleted = (candidate: PanelistCandidate) => {
-    if (!candidate.previous_rounds || candidate.previous_rounds.length === 0) return false
+  const hasFeedbackCompleted = (candidate: any) => {
+    const currentUser = JSON.parse(localStorage.getItem("ats_user") || "{}")
+    const currentPanelistName = currentUser.name
+    console.log("Current Panelist Name:", currentPanelistName);
     
-    // Find the most recent round that matches the current interview round
-    const currentRound = candidate.previous_rounds.find((round: any) => 
-      round.round === candidate.last_interview_round
+
+    // Find if this candidate has a round with the current panelist
+    const myRound = candidate.previous_rounds?.find(
+      (round: any) => round.panel_name === currentPanelistName
     )
-    
-    return currentRound?.feedback_submitted === true
+
+    // If no round belongs to current user, then it's not relevant
+    if (!myRound) return null
+
+    // Return whether feedback was submitted for that round
+    return myRound.feedback_submitted === true
   }
 
   const filteredCandidates = candidates.filter(
