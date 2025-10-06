@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input" 
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Building2 } from "lucide-react"
 import { fetchUserProfile } from '../lib/auth'
+import atsHeroImage from "@/assets/ats-hero-image.jpg"
 
 function LoginPage() {
   const [email, setEmail] = useState("")
@@ -145,32 +144,73 @@ function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-subtle px-4 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-primary opacity-5"></div>
-      <div className="absolute top-20 left-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-20 right-20 w-96 h-96 bg-primary-glow/10 rounded-full blur-3xl"></div>
-      
-      <Card className="w-full max-w-md shadow-elegant border-0 backdrop-blur-sm bg-gradient-card relative z-10">
-        <CardHeader className="text-center space-y-6 pb-8">
-          <div className="flex justify-center">
-            <div>
-              <img src="/vuedata-blue.webp" alt="vueDataImage" draggable="false" height={25} width={200}/>
-            </div>
+    <div className="min-h-screen flex overflow-hidden">
+      {/* Left Side - Image with Diagonal Clip */}
+      <div 
+        className="hidden lg:flex lg:w-[55%] relative bg-gradient-primary"
+        style={{
+          clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0 100%)'
+        }}
+      >
+        {/* Overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary/60 to-primary/40 z-10"></div>
+        
+        {/* Hero Image */}
+        <img 
+          src={atsHeroImage} 
+          alt="Applicant Tracking System - Streamline your hiring process" 
+          className="object-cover w-full h-full"
+          draggable="false"
+        />
+        
+        {/* Content Overlay */}
+        <div className="absolute inset-0 z-20 flex flex-col justify-center px-12 xl:px-20 text-white">
+          <div className="space-y-6 animate-fade-in">
+            <h1 className="text-4xl xl:text-5xl font-bold leading-tight">
+              Streamline Your
+              <br />
+              Hiring Process
+            </h1>
+            <p className="text-lg xl:text-xl text-white/90 max-w-md">
+              Transform your recruitment workflow with our intelligent Applicant Tracking System
+            </p>
           </div>
-          <div className="space-y-2">
-            <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Welcome to ATS
-            </CardTitle>
-            <CardDescription className="text-muted-foreground text-base">
+        </div>
+      </div>
+
+      {/* Right Side - Sign-in Form */}
+      <div className="flex-1 flex items-center justify-center px-6 py-12 bg-background relative">
+        {/* Mobile background decoration */}
+        <div className="lg:hidden absolute inset-0 bg-gradient-subtle opacity-50"></div>
+        <div className="lg:hidden absolute top-20 right-20 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
+        
+        <div className="w-full max-w-md relative z-10 animate-fade-in">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <img 
+              src="/vuedata-blue.webp" 
+              alt="VueData Logo" 
+              draggable="false" 
+              height={25} 
+              width={200}
+              className="animate-slide-down"
+            />
+          </div>
+
+          {/* Welcome Section */}
+          <div className="text-center space-y-2 mb-8 animate-slide-up">
+            <h2 className="text-3xl font-bold text-foreground">
+              Welcome Back
+            </h2>
+            <p className="text-muted-foreground">
               Sign in to your account to continue
-            </CardDescription>
+            </p>
           </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* Sign-in Form */}
+          <form onSubmit={handleSubmit} className="space-y-5 animate-scale-in">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -178,10 +218,12 @@ function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="h-11 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/20"
               />
             </div>
+            
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -189,35 +231,48 @@ function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="h-11 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/20"
               />
             </div>
 
             {error && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="animate-shake">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
             <Button 
               type="submit" 
-              className="w-full bg-gradient-primary hover:shadow-glow smooth-transition text-white font-semibold py-3" 
+              className="w-full h-11 bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-semibold hover:scale-[1.02] active:scale-[0.98]" 
               disabled={isLoading}
             >
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  Signing in...
+                </span>
+              ) : (
+                "Sign In"
+              )}
             </Button>
 
-            <div className="text-center">
+            <div className="text-center pt-2">
               <button
                 type="button"
                 onClick={handleForgotPassword}
-                className="text-sm text-primary hover:text-primary-glow smooth-transition font-medium"
+                className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
               >
                 Forgot your password?
               </button>
             </div>
           </form>
-        </CardContent>
-      </Card>
+
+          {/* Footer Text */}
+          <p className="text-center text-sm text-muted-foreground mt-8">
+            Secure and reliable access to your recruitment platform
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
