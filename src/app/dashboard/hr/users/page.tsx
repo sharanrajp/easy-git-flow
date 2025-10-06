@@ -157,13 +157,29 @@ export default function UsersPage() {
       })
 
       if (response.ok) {
+        const newUser = await response.json()
+        // Add the new user to local state directly
+        setUsers([...users, newUser])
         setIsCreateOpen(false)
-        fetchUsers() // Refresh the list
+        toast({
+          title: "Success",
+          description: `User "${newUser.name}" has been added successfully.`,
+        })
       } else {
         console.error("Failed to create user:", await response.text())
+        toast({
+          title: "Error",
+          description: "Failed to create user. Please try again.",
+          variant: "destructive",
+        })
       }
     } catch (error) {
       console.error("Error creating user:", error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while creating the user.",
+        variant: "destructive",
+      })
     }
   }
 
