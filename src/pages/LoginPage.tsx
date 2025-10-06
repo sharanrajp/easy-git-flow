@@ -266,11 +266,6 @@ function LoginPage() {
               </button>
             </div>
           </form>
-
-          {/* Footer Text */}
-          <p className="text-center text-sm text-muted-foreground mt-8">
-            Secure and reliable access to your recruitment platform
-          </p>
         </div>
       </div>
     </div>
