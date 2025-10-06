@@ -139,6 +139,10 @@ function LoginPage() {
     }
   }
 
+  const handleForgotPassword = () => {
+    alert("Forgot password functionality is not implemented in this demo.")
+  }
+
   return (
     <div className="min-h-screen flex overflow-hidden">
       {/* Left Side - Image with Diagonal Clip */}
@@ -251,6 +255,16 @@ function LoginPage() {
                 "Sign In"
               )}
             </Button>
+
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+              >
+                Forgot your password?
+              </button>
+            </div>
           </form>
         </div>
       </div>
