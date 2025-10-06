@@ -32,7 +32,6 @@ export interface DashboardData {
 export interface Vacancy {
   id: string
   position_title: string
-  department: string
   location: string
   job_type: "full_time" | "part-time" | "contract"
   priority: "P3" | "P2" | "P1" | "P0"
@@ -50,13 +49,10 @@ export interface Vacancy {
     date: string
     location: string
   }
-  deadline: string
+  drive_date?: string
+  drive_location?: string
   postedOn: string
   assignedPanelists: string[]
-  applications: number
-  shortlisted: number
-  interviewed: number
-  selected: number
   request_type?: string
   projectClientName?: string
   city?: string

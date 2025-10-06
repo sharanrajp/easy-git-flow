@@ -23,9 +23,7 @@ interface BackendVacancy {
   job_desc?: string;
   about_position?: string;
   // Optional fields that might not be in backend
-  department?: string;
   location?: string;
-  deadline?: string;
   assignedPanelists?: string[];
   request_type?: string;
   city?: string;
@@ -77,18 +75,14 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
     },
     postedOn: backendVacancy.created_at,
     // Default values for missing fields
-    department: backendVacancy.department || "",
     location: backendVacancy.location || "",
     job_desc: backendVacancy.job_desc || "",
     about_position: backendVacancy.about_position || "",
-    deadline: backendVacancy.deadline || "",
     assignedPanelists: backendVacancy.assignedPanelists || [],
     city: backendVacancy.city || "",
     projectClientName: backendVacancy.projectClientName || "",
-    applications: 0,
-    shortlisted: 0,
-    interviewed: 0,
-    selected: 0,
+    drive_date: backendVacancy.drive_date,
+    drive_location: backendVacancy.drive_location,
   };
 }
 

@@ -23,7 +23,6 @@ interface VacancyFormProps {
 export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: VacancyFormProps) {
   const [formData, setFormData] = useState({
     position_title: vacancy?.position_title || "",
-    department: vacancy?.department || "",
     location: vacancy?.location || "",
     job_type: vacancy?.job_type || "full_time",
     priority: vacancy?.priority || "P3",
@@ -36,10 +35,9 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
     skills_required: vacancy?.skills_required || [],
     job_desc: vacancy?.job_desc || "",
     about_position: vacancy?.about_position || "",
-    drive_date: vacancy?.walkInDetails?.date || "",
-    drive_location: vacancy?.walkInDetails?.location || "",
+    drive_date: vacancy?.walkInDetails?.date || vacancy?.drive_date || "",
+    drive_location: vacancy?.walkInDetails?.location || vacancy?.drive_location || "",
     assignedPanelists: vacancy?.assignedPanelists || [],
-    deadline: vacancy?.deadline || "",
     request_type: vacancy?.request_type || "",
     city: vacancy?.city || "",
     projectClientName: vacancy?.projectClientName || "",
@@ -110,10 +108,6 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
       interview_type: "Walk-In" as const,
       id: vacancy?.id || `${Date.now()}`,
       postedOn: vacancy?.postedOn || new Date().toISOString().split('T')[0],
-      applications: vacancy?.applications || 0,
-      shortlisted: vacancy?.shortlisted || 0,
-      interviewed: vacancy?.interviewed || 0,
-      selected: vacancy?.selected || 0,
     }
 
     try {
@@ -195,22 +189,6 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
                 </div>
 
                 <div>
-                  <Label htmlFor="department">Department *</Label>
-                  <Select value={formData.department} onValueChange={(value) => handleInputChange("department", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select department" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {departments.map((dept) => (
-                        <SelectItem key={dept} value={dept}>
-                          {dept}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
                   <Label htmlFor="location">Location *</Label>
                   <Select value={formData.location} onValueChange={(value) => handleInputChange("location", value)}>
                     <SelectTrigger>
@@ -279,17 +257,6 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
                       <SelectItem value="closed">Closed</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="deadline">Application Deadline *</Label>
-                  <Input
-                    id="deadline"
-                    type="date"
-                    value={formData.deadline}
-                    onChange={(e) => handleInputChange("deadline", e.target.value)}
-                    required
-                  />
                 </div>
               </div>
             </CardContent>

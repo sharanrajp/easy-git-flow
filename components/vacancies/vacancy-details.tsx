@@ -100,10 +100,6 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Department</label>
-                  <p className="text-gray-900">{vacancy.department}</p>
-                </div>
-                <div>
                   <label className="text-sm font-medium text-gray-500">Experience Range</label>
                   <p className="text-gray-900">{vacancy.experience_range}</p>
                 </div>
@@ -198,33 +194,10 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                 <p className="text-2xl font-bold text-gray-900">{vacancy.number_of_vacancies}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Applications</label>
-                <p className="text-lg font-semibold text-blue-600">{vacancy.applications}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Shortlisted</label>
-                <p className="text-lg font-semibold text-orange-600">{vacancy.shortlisted}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Interviewed</label>
-                <p className="text-lg font-semibold text-purple-600">{vacancy.interviewed}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Selected</label>
-                <p className="text-lg font-semibold text-green-600">{vacancy.selected}</p>
-              </div>
-              <div>
                 <label className="text-sm font-medium text-gray-500">Posted Date</label>
                 <p className="text-gray-900 flex items-center">
                   <Calendar className="h-4 w-4 mr-1" />
                   {formatDate(vacancy.postedOn)}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Deadline</label>
-                <p className="text-gray-900 flex items-center">
-                  <Clock className="h-4 w-4 mr-1" />
-                  {formatDate(vacancy.deadline)}
                 </p>
               </div>
             </CardContent>
