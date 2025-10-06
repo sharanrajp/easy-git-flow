@@ -657,7 +657,19 @@ export default function VacanciesPage() {
             <DialogHeader>
               <DialogTitle>Vacancy Details</DialogTitle>
             </DialogHeader>
-            <div className="mt-6">{selectedVacancy && <VacancyDetails vacancy={selectedVacancy} />}</div>
+            <div className="mt-6">
+              {selectedVacancy && (
+                <VacancyDetails
+                  vacancy={selectedVacancy}
+                  onUpdate={async (updatedVacancy) => {
+                    // Reload vacancies from API to get updated data
+                    const updatedVacancies = await fetchVacancies()
+                    setVacancies(updatedVacancies)
+                    setSelectedVacancy(updatedVacancy)
+                  }}
+                />
+              )}
+            </div>
           </DialogContent>
         </Dialog>
 
