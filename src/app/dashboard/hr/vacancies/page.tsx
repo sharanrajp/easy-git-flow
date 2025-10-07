@@ -174,7 +174,7 @@ export default function VacanciesPage() {
     if (!selectedVacancy) return
 
     try {
-      const response = await makeAuthenticatedRequest(`http://ec2-34-208-36-73.us-west-2.compute.amazonaws.com:8000/Vacancy/${selectedVacancy.id}`, {
+      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/Vacancy/${selectedVacancy.id}`, {
         method: "PUT",
         body: JSON.stringify({...selectedVacancy, ...vacancyData})
       })
@@ -230,7 +230,7 @@ export default function VacanciesPage() {
 
     try {
       // Update vacancy in database
-      const response = await makeAuthenticatedRequest(`http://ec2-34-208-36-73.us-west-2.compute.amazonaws.com:8000/Vacancy/${selectedVacancy.id}`, {
+      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/Vacancy/${selectedVacancy.id}`, {
         method: "PUT",
         body: JSON.stringify({...selectedVacancy, assignedPanelists: panelistIds})
       })
@@ -254,7 +254,7 @@ export default function VacanciesPage() {
     if (!vacancy) return
 
     try {
-      const response = await makeAuthenticatedRequest(`http://ec2-34-208-36-73.us-west-2.compute.amazonaws.com:8000/Vacancy/${vacancyId}`, {
+      const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/Vacancy/${vacancyId}`, {
         method: "PUT", 
         body: JSON.stringify({...vacancy, status: newStatus})
       })

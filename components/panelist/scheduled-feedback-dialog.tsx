@@ -60,7 +60,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
     try {
       setIsSubmitting(true)
       
-      const response = await fetch('http://ec2-34-208-36-73.us-west-2.compute.amazonaws.com:8000/interviews/update-interview', {
+      const response = await fetch('http://127.0.0.1:8000/interviews/update-interview', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
