@@ -1392,35 +1392,55 @@ export default function CandidatesPage() {
   }
 
   const handleChangeStatus = async (candidateId: string, newStatus: string) => {
+    // Store previous state for rollback
+    const previousUnassigned = [...unassignedCandidates]
+    const previousAssigned = [...assignedCandidates]
+    const previousCandidates = [...candidates]
+    
+    // Optimistically update UI immediately
+    setUnassignedCandidates((prev) =>
+      prev.map((c) =>
+        c._id === candidateId ? { ...c, final_status: newStatus } : c
+      )
+    )
+    setAssignedCandidates((prev) =>
+      prev.map((c) =>
+        c._id === candidateId ? { ...c, final_status: newStatus } : c
+      )
+    )
+    setCandidates((prev) =>
+      prev.map((c) =>
+        c.id === candidateId || c._id === candidateId ? { ...c, final_status: newStatus, status: newStatus } : c
+      )
+    )
+    
+    // Process backend update asynchronously
     try {
-      // Update the candidate status via API
       await updateCandidate(candidateId, { final_status: newStatus })
       
-      // Refresh all candidate data
-      const [unassignedData, assignedData] = await Promise.all([
+      // Silently refresh data in background to ensure sync
+      Promise.all([
         fetchUnassignedCandidates(),
         fetchAssignedCandidates()
-      ])
-      
-      setUnassignedCandidates(unassignedData)
-      setAssignedCandidates(assignedData)
-      
-      // Update local candidates state as well
-      setCandidates((prev) =>
-        prev.map((c) =>
-          c.id === candidateId || c._id === candidateId ? { ...c, final_status: newStatus, status: newStatus } : c
-        )
-      )
+      ]).then(([unassignedData, assignedData]) => {
+        setUnassignedCandidates(unassignedData)
+        setAssignedCandidates(assignedData)
+      }).catch(err => console.error('Background refresh failed:', err))
       
       toast({
         title: "Success",
         description: "Candidate status updated successfully",
       })
     } catch (error) {
+      // Rollback optimistic update on failure
+      setUnassignedCandidates(previousUnassigned)
+      setAssignedCandidates(previousAssigned)
+      setCandidates(previousCandidates)
+      
       console.error('Failed to update candidate status:', error)
       toast({
         title: "Error",
-        description: "Failed to update candidate status",
+        description: "Failed to update candidate status. Changes reverted.",
         variant: "destructive",
       })
     }
