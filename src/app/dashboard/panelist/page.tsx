@@ -27,6 +27,7 @@ import {
   Eye,
   ExternalLink,
   CircleMinus,
+  X,
 } from "lucide-react"
 import { getPanelistDashboardData } from "@/lib/panelist-data"
 import {
@@ -521,8 +522,16 @@ export default function PanelistDashboard() {
               placeholder="Search candidates..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 pr-8"
             />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           {/* Interview Tabs */}

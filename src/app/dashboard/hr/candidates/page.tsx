@@ -41,6 +41,7 @@ import {
   List,
   Download,
   Search,
+  X,
 } from "lucide-react"
 import { fetchVacancies } from "@/lib/vacancy-api"
 import { CandidateForm } from "@/components/candidates/candidate-form"
@@ -1497,13 +1498,21 @@ export default function CandidatesPage() {
         <div className="flex flex-col lg:flex-row gap-4 pt-4">
           <div className="relative flex-1">
             <div className="flex items-center gap-4">
-              <div className="flex-1">
+              <div className="flex-1 relative">
                 <Input
                   placeholder="Search candidates..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="max-w-sm"
+                  className="max-w-sm pr-8"
                 />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px]">
@@ -2210,13 +2219,21 @@ export default function CandidatesPage() {
 
                   return (
                     <>
-                      <div className="mb-4">
+                      <div className="mb-4 relative">
                         <Input
                           placeholder="Search panelists by name or skills..."
                           value={panelistSearch}
                           onChange={(e) => setPanelistSearch(e.target.value)}
-                          className="w-full"
+                          className="w-full pr-8"
                         />
+                        {panelistSearch && (
+                          <button
+                            onClick={() => setPanelistSearch("")}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
 
                       {/* Available Panelists */}
@@ -2435,13 +2452,21 @@ export default function CandidatesPage() {
 
                   return (
                     <>
-                      <div className="mb-4">
+                      <div className="mb-4 relative">
                         <Input
                           placeholder="Search panelists by name or skills..."
                           value={panelistSearch}
                           onChange={(e) => setPanelistSearch(e.target.value)}
-                          className="w-full"
+                          className="w-full pr-8"
                         />
+                        {panelistSearch && (
+                          <button
+                            onClick={() => setPanelistSearch("")}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
 
                       {/* Available Panelists */}
@@ -2725,8 +2750,16 @@ export default function CandidatesPage() {
                     placeholder="Search panel members by name or email..."
                     value={panelSearchTerm}
                     onChange={(e) => setPanelSearchTerm(e.target.value)}
-                    className="pl-9"
+                    className="pl-9 pr-8"
                   />
+                  {panelSearchTerm && (
+                    <button
+                      onClick={() => setPanelSearchTerm("")}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
                 {availablePanels
                   .filter((panel) => {
@@ -2843,8 +2876,16 @@ export default function CandidatesPage() {
                     placeholder="Search by candidate or panel member name..."
                     value={interviewSearchTerm}
                     onChange={(e) => setInterviewSearchTerm(e.target.value)}
-                    className="pl-9"
+                    className="pl-9 pr-8"
                   />
+                  {interviewSearchTerm && (
+                    <button
+                      onClick={() => setInterviewSearchTerm("")}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
                 <div className="max-h-96 overflow-y-auto">
                   <Table>

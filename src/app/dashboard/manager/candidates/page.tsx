@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Popover, PopoverContent } from "@/components/ui/popover"
-import { Search, Eye, Clock, CheckCircle, XCircle } from "lucide-react"
+import { Search, Eye, Clock, CheckCircle, XCircle, X } from "lucide-react"
 import { getManagerCandidates } from "@/lib/manager-data"
 import { CandidateDetails } from "@/components/candidates/candidate-details"
 import { ManagerInterviewFlow } from "@/components/manager/manager-interview-flow"
@@ -98,8 +98,16 @@ export default function ManagerCandidatesPage() {
                 placeholder="Search candidates..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 pr-8"
               />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </CardContent>
         </Card>
