@@ -299,9 +299,9 @@ export default function VacanciesPage() {
 
   return (
     <DashboardLayout requiredRole="hr">
-      <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
+      <div className="flex flex-col h-full">
         {/* Fixed header section */}
-        <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background z-10">
+        <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -422,8 +422,8 @@ export default function VacanciesPage() {
           )}
         </div>
 
-        {/* Content section with fixed height and internal structure */}
-        <div className="flex-1 flex flex-col pt-4 min-h-0">
+        {/* Content section */}
+        <div className="flex-1 pt-4">
           {/* Loading State */}
           {loading && (
             <div className="flex justify-center items-center py-12">
@@ -436,12 +436,11 @@ export default function VacanciesPage() {
           {!loading && !error && (
           <>
             {viewMode === "list" ? (
-              <div className="flex flex-col flex-1 min-h-0">
-                <div className="flex-1 min-h-0">
-                  <Card>
-                    <CardContent className="p-0">
-                      <TooltipProvider>
-                        <Table>
+              <>
+                <Card>
+                  <CardContent className="p-0">
+                    <TooltipProvider>
+                      <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>S.No</TableHead>
@@ -561,25 +560,22 @@ export default function VacanciesPage() {
                         </TableRow>
                       )
                      })}
-                  </TableBody>
-                </Table>
-                      </TooltipProvider>
-                    </CardContent>
-                  </Card>
-                </div>
-                <div className="flex-shrink-0 pt-4 pb-2">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col flex-1 min-h-0">
-                <div className="flex-1 overflow-auto">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {paginatedVacancies.map((vacancy) => {
+                   </TableBody>
+                 </Table>
+                 </TooltipProvider>
+               </CardContent>
+             </Card>
+             <Pagination
+               currentPage={currentPage}
+               totalPages={totalPages}
+               onPageChange={setCurrentPage}
+               className="mt-4"
+             />
+           </>
+         ) : (
+           <>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+               {paginatedVacancies.map((vacancy) => {
               const counts = candidateCounts[vacancy.position_title] || {
                 applications: 0,
                 shortlisted: 0,
@@ -645,17 +641,15 @@ export default function VacanciesPage() {
                 </Card>
               )
                })}
-                  </div>
-                </div>
-                <div className="flex-shrink-0 pt-4 pb-2">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
-            )}
+             </div>
+             <Pagination
+               currentPage={currentPage}
+               totalPages={totalPages}
+               onPageChange={setCurrentPage}
+               className="mt-4"
+             />
+           </>
+          )}
           </>
           )}
 

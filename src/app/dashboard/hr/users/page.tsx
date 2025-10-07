@@ -306,9 +306,9 @@ export default function UsersPage() {
 
   return (
     <DashboardLayout requiredRole="hr">
-      <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
+      <div className="flex flex-col h-full">
         {/* Fixed header section */}
-        <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background z-10">
+        <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -414,146 +414,120 @@ export default function UsersPage() {
           </div>
         </div>
 
-        {/* Content section with fixed height and internal structure */}
-        <div className="flex-1 flex flex-col pt-4 min-h-0">
+        {/* Content section */}
+        <div className="flex-1 pt-4">
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
-          ) : viewMode === "list" ? (
-            <div className="flex flex-col flex-1 min-h-0">
-              <div className="flex-1 min-h-0">
+          ) : (
+          <>
+            {viewMode === "list" ? (
+              <>
                 <Card>
                   <CardContent className="p-0">
                     <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-12">
-                            <Checkbox
-                              checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
-                              onCheckedChange={handleSelectAll}
-                              className="cursor-pointer"
-                            />
-                          </TableHead>
-                          <TableHead>User</TableHead>
-                          <TableHead>Role</TableHead>
-                          <TableHead>Skills</TableHead>
-                          <TableHead>Interview Rounds</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {paginatedUsers.map((user) => (
-                          <TableRow key={user._id}>
-                            <TableCell>
-                              <Checkbox
-                                checked={selectedUsers.includes(user._id)}
-                                onCheckedChange={(checked) => handleSelectUser(user._id, checked as boolean)}
-                                className="cursor-pointer"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <div className="font-medium">{user.name}</div>
-                                <div className="text-sm text-gray-500">{user.email}</div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={getRoleColor(user.role, user.panelist_type)}>{formatRole(user.role, user.panelist_type)}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              <SkillsDisplay skills={user.skill_set || []} />
-                            </TableCell>
-                            <TableCell>
-                              {user.available_rounds ? (
-                                <div className="flex flex-wrap gap-1">
-                                  {user.available_rounds.map((round) => (
-                                    <Badge key={round} variant="outline" className="text-xs">
-                                      {round}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              ) : (
-                                <span className="text-gray-400 text-sm">N/A</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {user.role === "hr" ? (
-                                <Badge className={getStatusColor("free")}>Available</Badge>
-                              ) : (
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-8 px-2 cursor-pointer">
-                                      <Badge className={getStatusColor(user.current_status)}>
-                                        {user.current_status === "free"
-                                          ? "Available"
-                                          : user.current_status === "in_interview"
-                                            ? "In Interview"
-                                            : user.current_status === "break"
-                                              ? "Break"
-                                              : user.current_status || "Available"}
-                                      </Badge>
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent>
-                                    {statusArray.map((status) => (
-                                      <DropdownMenuItem
-                                        key={status.value}
-                                        onClick={() => handleStatusChange(user._id, status.value as User["current_status"])}
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          <div className={`w-2 h-2 rounded-full ${getStatusColor(status.value).split(" ")[0]}`} />
-                                          {status.label}
-                                        </div>
-                                      </DropdownMenuItem>
-                                    ))}
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center space-x-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedUser(user)
-                                    setIsEditOpen(true)
-                                  }}
-                                  className="cursor-pointer"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setDeleteUser(user)}
-                                  className="cursor-pointer"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
+                        onCheckedChange={handleSelectAll}
+                        className="cursor-pointer"
+                      />
+                    </TableHead>
+                    <TableHead>User</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Skills</TableHead>
+                    <TableHead>Interview Rounds</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedUsers.map((user) => (
+                    <TableRow key={user._id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedUsers.includes(user._id)}
+                          onCheckedChange={(checked) => handleSelectUser(user._id, checked as boolean)}
+                          className="cursor-pointer"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{user.name}</div>
+                          <div className="text-sm text-gray-500">{user.email}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getRoleColor(user.role, user.panelist_type)}>{formatRole(user.role, user.panelist_type)}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <SkillsDisplay skills={user.skill_set || []} />
+                      </TableCell>
+                      <TableCell>
+                        {user.available_rounds ? (
+                          <div className="flex flex-wrap gap-1">
+                            {user.available_rounds.map((round) => (
+                              <Badge key={round} variant="secondary" className="text-xs">
+                                {round}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {user.role === "panelist" && user.current_status ? (
+                          user.current_status === "in_interview" ? (
+                            <Badge className={getStatusColor(user.current_status)}>in_interview</Badge>
+                          ) : (
+                            <Badge className={getStatusColor(user.current_status)}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
+                          )
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedUser(user)
+                              setIsEditOpen(true)
+                            }}
+                            className="cursor-pointer"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteUser(user)}
+                            className="cursor-pointer"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
                     </Table>
                   </CardContent>
                 </Card>
-              </div>
-              {/* Fixed pagination at bottom */}
-              <div className="flex-shrink-0 pt-4 pb-2">
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
+                  className="mt-4"
                 />
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col flex-1 min-h-0">
-              <div className="flex-1 overflow-auto">
+              </>
+            ) : (
+              <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {paginatedUsers.length > 0 ? (
                 paginatedUsers.map((user) => (
@@ -682,16 +656,15 @@ export default function UsersPage() {
                 </div>
               )}
                 </div>
-              </div>
-              {/* Fixed pagination at bottom */}
-              <div className="flex-shrink-0 pt-4 pb-2">
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
+                  className="mt-4"
                 />
-              </div>
-            </div>
+              </>
+            )}
+          </>
           )}
         </div>
 
