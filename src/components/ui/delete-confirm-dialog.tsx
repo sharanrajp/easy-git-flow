@@ -27,7 +27,7 @@ export function DeleteConfirmDialog({ open, onOpenChange, onConfirm, title, desc
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} className="bg-red-600 hover:bg-red-700">
+          <AlertDialogAction onClick={onConfirm} className="[background:var(--gradient-delete)] hover:[background:var(--gradient-delete-hover)] text-white hover:shadow-lg">
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>

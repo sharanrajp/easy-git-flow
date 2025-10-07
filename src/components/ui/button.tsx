@@ -12,7 +12,7 @@ const buttonVariants = cva(
         default:
           'text-white shadow-md [background:var(--gradient-vuedata)] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 hover:[background:var(--gradient-vuedata-hover)] disabled:opacity-50 disabled:cursor-not-allowed',
         destructive:
-          'bg-destructive text-white shadow-xs hover:bg-destructive/90 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
+          'text-white shadow-md [background:var(--gradient-delete)] hover:[background:var(--gradient-delete-hover)] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 transition-all',
         outline:
           'border-2 border-transparent bg-white shadow-xs [background:linear-gradient(white,white)_padding-box,var(--gradient-vuedata)_border-box] [background-clip:padding-box,border-box] text-[#0A6ED1] hover:bg-blue-50',
         secondary:

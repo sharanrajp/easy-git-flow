@@ -354,7 +354,7 @@ export default function UsersPage() {
                 variant="destructive"
                 onClick={handleDeleteSelected}
                 disabled={deleting}
-                className="bg-red-600 hover:bg-red-700 cursor-pointer"
+                className="[background:var(--gradient-delete)] hover:[background:var(--gradient-delete-hover)] text-white hover:shadow-lg cursor-pointer"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 {deleting ? "Deleting..." : `Delete Selected (${selectedUsers.length})`}
