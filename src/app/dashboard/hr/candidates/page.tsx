@@ -1664,11 +1664,11 @@ export default function CandidatesPage() {
                         <TableHead className="w-12">
                           <Checkbox
                             checked={
-                              filteredUnassignedCandidates.length > 0 &&
-                              filteredUnassignedCandidates.every((c) => selectedCandidates.includes(c._id))
+                              paginatedUnassignedCandidates.length > 0 &&
+                              paginatedUnassignedCandidates.every((c) => selectedCandidates.includes(c._id))
                             }
                             onCheckedChange={(checked) => {
-                              const candidateIds = filteredUnassignedCandidates.map((c) => c._id)
+                              const candidateIds = paginatedUnassignedCandidates.map((c) => c._id)
                               if (checked) {
                                 setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
                               } else {
@@ -1819,11 +1819,11 @@ export default function CandidatesPage() {
                         <TableHead className="w-12">
                           <Checkbox
                             checked={
-                              filteredAssignedCandidates.length > 0 &&
-                              filteredAssignedCandidates.every((c) => selectedCandidates.includes(c._id))
+                              paginatedAssignedCandidates.length > 0 &&
+                              paginatedAssignedCandidates.every((c) => selectedCandidates.includes(c._id))
                             }
                             onCheckedChange={(checked) => {
-                              const candidateIds = filteredAssignedCandidates.map((c) => c._id)
+                              const candidateIds = paginatedAssignedCandidates.map((c) => c._id)
                               if (checked) {
                                 setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
                               } else {
@@ -2006,11 +2006,11 @@ export default function CandidatesPage() {
                         <TableHead className="w-12">
                           <Checkbox
                             checked={
-                              filteredCompletedCandidates.length > 0 &&
-                              filteredCompletedCandidates.every((c) => selectedCandidates.includes(c._id))
+                              paginatedCompletedCandidates.length > 0 &&
+                              paginatedCompletedCandidates.every((c) => selectedCandidates.includes(c._id))
                             }
                             onCheckedChange={(checked) => {
-                              const candidateIds = filteredCompletedCandidates.map((c) => c._id)
+                              const candidateIds = paginatedCompletedCandidates.map((c) => c._id)
                               if (checked) {
                                 setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
                               } else {
