@@ -142,7 +142,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Posted On</label>
-                <p className="text-sm font-semibold text-gray-900 mt-1">{formatDate(vacancy.postedOn)}</p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">{formatDate(vacancy.postedOn ? vacancy.postedOn : new Date())}</p>
               </div>
             </div>
           </div>
