@@ -301,11 +301,7 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {candidate.feedback
-                    .sort((a, b) => {
-                      const roundOrder = { r3: 3, r2: 2, r1: 1 }
-                      return roundOrder[b.round] - roundOrder[a.round]
-                    })
+                  {candidate.feedback.slice().reverse()
                     .map((feedback, index) => (
                       <div key={index} className="border rounded-lg p-6 space-y-4">
                         <div className="flex items-center justify-between">

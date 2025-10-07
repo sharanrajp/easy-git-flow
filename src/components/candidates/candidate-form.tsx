@@ -325,7 +325,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
 
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="current_ctc">Current CTC (₹)</Label>
+          <Label htmlFor="current_ctc">Current CTC (₹) *</Label>
           <Input
             id="current_ctc"
             placeholder="e.g., 2"
@@ -340,7 +340,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="expected_ctc">Expected CTC (₹)</Label>
+          <Label htmlFor="expected_ctc">Expected CTC (₹) *</Label>
           <Input
             id="expected_ctc"
             placeholder="e.g., 4"
@@ -376,7 +376,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
       </div>
 
       <div className="space-y-2">
-        <Label>Skills/Stack</Label>
+        <Label>Skills *</Label>
         <div className="flex space-x-2">
           <Input
             placeholder="Add a skill"

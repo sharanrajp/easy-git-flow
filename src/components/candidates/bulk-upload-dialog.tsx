@@ -271,41 +271,44 @@ Jane Smith,jane.smith@email.com,+1234567891,2-4 years,"Node.js,Python,MongoDB",C
 
       {/* Form Fields */}
       <div className="space-y-3">
-        {/* Applied Position Dropdown */}
-        <div className="space-y-1.5">
-          <Label htmlFor="appliedPosition" className="text-xs font-medium">Applied Position *</Label>
-          <Select value={appliedPosition} onValueChange={handleAppliedPositionChange} disabled={loadingVacancies}>
-            <SelectTrigger className="text-sm">
-              <SelectValue placeholder={loadingVacancies ? "Loading positions..." : "Select applied position"} />
-            </SelectTrigger>
-            <SelectContent>
-              {vacancies.map((vacancy) => (
-                <SelectItem key={vacancy.id} value={vacancy.position_title}>
-                  {vacancy.position_title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* First row: Applied Position + Source */}
+        <div className="flex space-x-3">
+          {/* Applied Position */}
+          <div className="flex-1 space-y-1.5">
+            <Label htmlFor="appliedPosition" className="text-xs font-medium">Applied Position *</Label>
+            <Select value={appliedPosition} onValueChange={handleAppliedPositionChange} disabled={loadingVacancies}>
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder={loadingVacancies ? "Loading positions..." : "Select applied position"} />
+              </SelectTrigger>
+              <SelectContent>
+                {vacancies.map((vacancy) => (
+                  <SelectItem key={vacancy.id} value={vacancy.position_title}>
+                    {vacancy.position_title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Source */}
+          <div className="flex-1 space-y-1.5">
+            <Label htmlFor="source" className="text-xs font-medium">Source *</Label>
+            <Select value={source} onValueChange={setSource}>
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="Select source" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="naukri">Naukri</SelectItem>
+                <SelectItem value="linkedin">LinkedIn</SelectItem>
+                <SelectItem value="website">Website</SelectItem>
+                <SelectItem value="referral">Referral</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        {/* Source Dropdown */}
-        <div className="space-y-1.5">
-          <Label htmlFor="source" className="text-xs font-medium">Source *</Label>
-          <Select value={source} onValueChange={setSource}>
-            <SelectTrigger className="text-sm">
-              <SelectValue placeholder="Select source" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="naukri">Naukri</SelectItem>
-              <SelectItem value="linkedin">LinkedIn</SelectItem>
-              <SelectItem value="website">Website</SelectItem>
-              <SelectItem value="referral">Referral</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Other Source Input (conditional) */}
+        {/* Second row: Other Source (conditionally) */}
         {source === "other" && (
           <div className="space-y-1.5">
             <Label htmlFor="otherSource" className="text-xs font-medium">Other Source *</Label>
@@ -319,7 +322,7 @@ Jane Smith,jane.smith@email.com,+1234567891,2-4 years,"Node.js,Python,MongoDB",C
           </div>
         )}
 
-        {/* File Upload */}
+        {/* Third row: Upload CSV */}
         <div className="space-y-1.5">
           <Label htmlFor="csvFile" className="text-xs font-medium">Upload CSV File *</Label>
           <Input

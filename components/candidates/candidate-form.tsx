@@ -89,7 +89,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+    <form onSubmit={handleSubmit} className="space-y-4 p-3">
       <div className="grid grid-cols-2 gap-0">
         <div className="space-y-2">
           <Label htmlFor="name">Full Name *</Label>
@@ -330,7 +330,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
         </div>
       </div>
 
-      <div className="flex justify-end space-x-3">
+      <div className="flex space-x-3 mt-0">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>

@@ -1089,6 +1089,7 @@ export default function CandidatesPage() {
       setOngoingInterviews([])
     } finally {
       setLoadingInterviews(false)
+      setInterviewSearchTerm("")
     }
   }
   
@@ -1497,11 +1498,9 @@ export default function CandidatesPage() {
                 <Plus className="h-4 w-4 mr-2" />
                 Add Candidate
               </Button>
-              <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto p-0 gap-0 animate-scale-in">
-                <div className="gradient-card border-0 rounded-lg overflow-hidden">
-                  <DialogHeader className="px-6 py-4 bg-gradient-primary text-white">
-                    <DialogTitle className="text-xl font-bold flex items-center">
-                      Add New Candidate
+              <DialogContent className="max-w-3xl max-h-[75vh] p-4 overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle> Add New Candidate
                     </DialogTitle>
                   </DialogHeader>
                   <div className="px-6 pb-6">
@@ -1511,7 +1510,6 @@ export default function CandidatesPage() {
                       onFormChange={setFormHasChanges}
                     />
                   </div>
-                </div>
               </DialogContent>
             </Dialog>
           </div>
@@ -1834,9 +1832,9 @@ export default function CandidatesPage() {
                         </TableHead>
                         <TableHead>Candidate</TableHead>
                         <TableHead>Position</TableHead>
-                        <TableHead>Skillset</TableHead>
-                        <TableHead>Total Experience</TableHead>
-                        <TableHead>Interview Round</TableHead>
+                        <TableHead>Skills</TableHead>
+                        <TableHead>Experience</TableHead>
+                        <TableHead>Round</TableHead>
                         <TableHead>Panelist</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
@@ -2021,8 +2019,8 @@ export default function CandidatesPage() {
                         </TableHead>
                         <TableHead>Candidate</TableHead>
                         <TableHead>Position</TableHead>
-                        <TableHead>Skillset</TableHead>
-                        <TableHead>Total Experience</TableHead>
+                        <TableHead>Skills</TableHead>
+                        <TableHead>Experience</TableHead>
                         <TableHead>Interview Round</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>

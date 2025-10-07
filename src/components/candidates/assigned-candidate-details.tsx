@@ -130,7 +130,7 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
     <Dialog open={isOpen} onOpenChange={() => onClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle className="flex items-center gap-3">
             <span>{candidate.name}</span>
             <Badge className={getStatusColor(candidate.final_status || "assigned")}>
               {candidate.final_status ? candidate.final_status.charAt(0).toUpperCase() + candidate.final_status.slice(1) : "Assigned"}
@@ -258,7 +258,7 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
-                      {candidate.previous_rounds!.map((round: any, index: number) => (
+                      {candidate.previous_rounds!.slice().reverse().map((round: any, index: number) => (
                         <div 
                           key={index} 
                           className="border border-gray-200 rounded-xl p-6 bg-gradient-to-r from-white to-gray-50 hover:shadow-md transition-all duration-200"
