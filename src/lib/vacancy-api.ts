@@ -1,7 +1,7 @@
 import { getToken } from './auth';
 import type { Vacancy } from './schema-data';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'http://ec2-34-208-36-73.us-west-2.compute.amazonaws.com:8000';
 
 // Backend vacancy interface (what we receive from API)
 interface BackendVacancy {

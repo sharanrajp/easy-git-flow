@@ -28,7 +28,7 @@ function LoginPage() {
 
     try {
       // Call login endpoint
-      const loginResponse = await fetch("http://127.0.0.1:8000/auth/auth/login", {
+      const loginResponse = await fetch(`http://ec2-34-208-36-73.us-west-2.compute.amazonaws.com:8000/auth/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
@@ -62,7 +62,7 @@ function LoginPage() {
       localStorage.setItem("refresh_token", refresh_token)
 
       // Fetch users with the token
-      const usersResponse = await fetch("http://127.0.0.1:8000/panels/with-status", {
+      const usersResponse = await fetch("http://ec2-34-208-36-73.us-west-2.compute.amazonaws.com:8000/panels/with-status", {
         method: "GET",
         headers: { 
           "Content-Type": "application/json",
