@@ -8,7 +8,7 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      className="relative w-full max-h-[calc(100vh-20rem)] overflow-auto"
     >
       <table
         data-slot="table"
@@ -23,7 +23,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<'thead'>) {
   return (
     <thead
       data-slot="table-header"
-      className={cn('bg-gray-100 sticky top-0 z-10 [&_tr]:border-b [&_tr]:border-gray-200', className)}
+      className={cn('bg-background sticky top-0 z-10 [&_tr]:border-b', className)}
       {...props}
     />
   )

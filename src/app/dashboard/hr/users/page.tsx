@@ -414,8 +414,8 @@ export default function UsersPage() {
           </div>
         </div>
 
-        {/* Scrollable content section */}
-        <div className="flex-1 overflow-auto pt-4">
+        {/* Content section */}
+        <div className="flex-1 pt-4">
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

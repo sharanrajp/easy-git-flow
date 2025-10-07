@@ -1655,9 +1655,9 @@ export default function CandidatesPage() {
               </Card>
             ) : unassignedCandidates.length > 0 ? (
               <Card className="h-full flex flex-col">
-                <CardContent className="flex-1 overflow-auto p-0">
+                <CardContent className="flex-1 p-0">
                   <Table>
-                    <TableHeader className="sticky top-0 bg-background z-10">
+                    <TableHeader>
                       <TableRow>
                         <TableHead className="w-12">
                           <Checkbox
@@ -1817,9 +1817,9 @@ export default function CandidatesPage() {
               </Card>
             ) : assignedCandidates.length > 0 ? (
               <Card className="h-full flex flex-col">
-                <CardContent className="flex-1 overflow-auto p-0">
+                <CardContent className="flex-1 p-0">
                   <Table>
-                    <TableHeader className="sticky top-0 bg-background z-10">
+                    <TableHeader>
                       <TableRow>
                         <TableHead className="w-12">
                           <Checkbox
@@ -2011,9 +2011,9 @@ export default function CandidatesPage() {
               </Card>
             ) : filteredCompletedCandidates.length > 0 ? (
               <Card className="h-full flex flex-col">
-                <CardContent className="flex-1 overflow-auto p-0">
+                <CardContent className="flex-1 p-0">
                   <Table>
-                    <TableHeader className="sticky top-0 bg-background z-10">
+                    <TableHeader>
                       <TableRow>
                         <TableHead className="w-12">
                           <Checkbox

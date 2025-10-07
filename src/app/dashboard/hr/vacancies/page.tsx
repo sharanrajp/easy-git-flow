@@ -422,8 +422,8 @@ export default function VacanciesPage() {
           )}
         </div>
 
-        {/* Scrollable content section */}
-        <div className="flex-1 overflow-auto pt-4">
+        {/* Content section */}
+        <div className="flex-1 pt-4">
           {/* Loading State */}
           {loading && (
             <div className="flex justify-center items-center py-12">
