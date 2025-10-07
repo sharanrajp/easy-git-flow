@@ -185,8 +185,8 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
               <div className="flex space-x-4 mt-4">
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-gray-500">Negotiable:</span>
-                  <Badge variant={candidate.negotiable ? "default" : "secondary"}>
-                    {candidate.negotiable ? "Yes" : "No"}
+                  <Badge variant={candidate.negotiable_ctc ? "default" : "secondary"}>
+                    {candidate.negotiable_ctc ? "Yes" : "No"}
                   </Badge>
                 </div>
                 <div className="flex items-center space-x-2">

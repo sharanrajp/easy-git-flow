@@ -515,7 +515,7 @@ export default function CandidatesPage() {
         current_ctc: newBackendCandidate.current_ctc || "",
         expected_ctc: newBackendCandidate.expected_ctc || "",
         willing_to_relocate: newBackendCandidate.willing_to_relocate || false,
-        negotiable: newBackendCandidate.negotiable || false,
+        negotiable_ctc: newBackendCandidate.negotiable_ctc || false,
       };
 
       // Update local state with new candidate

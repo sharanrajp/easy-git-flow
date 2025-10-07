@@ -28,7 +28,7 @@ export interface BackendCandidate {
   expected_ctc?: string;
   notice_period?: string;
   willing_to_relocate?: boolean;
-  negotiable?: boolean;
+  negotiable_ctc?: boolean;
   vacancyId?: string;
   previous_rounds?: Array<{
     round: string;

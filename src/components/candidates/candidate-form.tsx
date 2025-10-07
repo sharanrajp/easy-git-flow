@@ -35,7 +35,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     other_source: (candidate as any)?.other_source || "",
     current_ctc: candidate?.current_ctc || "",
     expected_ctc: candidate?.expected_ctc || "",
-    negotiable: candidate?.negotiable || false,
+    negotiable_ctc: candidate?.negotiable_ctc || false,
     willing_to_relocate: candidate?.willing_to_relocate || false,
     skill_set: (candidate as any)?.skill_set || (candidate as any)?.skills || [],
     resume: null as File | null,
@@ -328,9 +328,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           <Label htmlFor="current_ctc">Current CTC (₹)</Label>
           <Input
             id="current_ctc"
-            type="number"
-            min="0"
-            placeholder="e.g., 800000"
+            placeholder="e.g., 2"
             value={formData.current_ctc}
             onChange={(e) => setFormData({ ...formData, current_ctc: e.target.value })}
             className="w-full"
@@ -340,9 +338,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           <Label htmlFor="expected_ctc">Expected CTC (₹)</Label>
           <Input
             id="expected_ctc"
-            type="number"
-            min="0"
-            placeholder="e.g., 950000"
+            placeholder="e.g., 4"
             value={formData.expected_ctc}
             onChange={(e) => setFormData({ ...formData, expected_ctc: e.target.value })}
             className="w-full"
@@ -353,11 +349,11 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
       <div className="flex space-x-6">
         <div className="flex items-center space-x-2">
           <Checkbox
-            id="negotiable"
-            checked={formData.negotiable}
-            onCheckedChange={(checked) => setFormData({ ...formData, negotiable: checked as boolean })}
+            id="negotiable_ctc"
+            checked={formData.negotiable_ctc}
+            onCheckedChange={(checked) => setFormData({ ...formData, negotiable_ctc: checked as boolean })}
           />
-          <Label htmlFor="negotiable">Negotiable</Label>
+          <Label htmlFor="negotiable_ctc">Negotiable</Label>
         </div>
         <div className="flex items-center space-x-2">
           <Checkbox

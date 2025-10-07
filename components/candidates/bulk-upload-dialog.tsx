@@ -146,8 +146,8 @@ Jane Smith,jane.smith@email.com,+1234567891,Backend Developer,2-4 years,"Node.js
             case "expected ctc":
               candidate.expected_ctc = value
               break
-            case "negotiable":
-              candidate.negotiable = value.toLowerCase() === "yes" || value.toLowerCase() === "true"
+            case "negotiable_ctc":
+              candidate.negotiable_ctc = value.toLowerCase() === "yes" || value.toLowerCase() === "true"
               break
             case "relocation":
               candidate.willing_to_relocate = value.toLowerCase() === "yes" || value.toLowerCase() === "true"
@@ -171,7 +171,7 @@ Jane Smith,jane.smith@email.com,+1234567891,Backend Developer,2-4 years,"Node.js
         candidate.notice_period = candidate.notice_period || "Not specified"
         candidate.current_ctc = candidate.current_ctc || "Not specified"
         candidate.expected_ctc = candidate.expected_ctc || "Not specified"
-        candidate.negotiable = candidate.negotiable || false
+        candidate.negotiable_ctc = candidate.negotiable_ctc || false
         candidate.willing_to_relocate = candidate.willing_to_relocate || false
         candidate.created_at = new Date().toISOString().split("T")[0]
         candidate.status = "unassigned"

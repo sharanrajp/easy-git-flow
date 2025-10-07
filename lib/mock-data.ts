@@ -73,7 +73,7 @@ export interface Candidate {
   source: string
   current_ctc?: string
   expected_ctc?: string
-  negotiable?: boolean
+  negotiable_ctc?: boolean
   willing_to_relocate?: boolean
   skill_set?: string[]
   resumeUrl?: string

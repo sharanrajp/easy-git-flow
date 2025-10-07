@@ -74,7 +74,7 @@ export interface Candidate {
   other_source?: string
   current_ctc?: string
   expected_ctc?: string
-  negotiable?: boolean
+  negotiable_ctc?: boolean
   willing_to_relocate?: boolean
   skills?: string[]
   skill_set?: string[] // alias for skills

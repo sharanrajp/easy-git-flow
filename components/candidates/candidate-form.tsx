@@ -37,7 +37,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     source: candidate?.source || "",
     current_ctc: candidate?.current_ctc || "",
     expected_ctc: candidate?.expected_ctc || "",
-    negotiable: candidate?.negotiable || false,
+    negotiable_ctc: candidate?.negotiable_ctc || false,
     willing_to_relocate: candidate?.willing_to_relocate || false,
     skill_set: candidate?.skill_set || [],
     resume: null as File | null,
@@ -289,11 +289,11 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
       <div className="flex space-x-6">
         <div className="flex items-center space-x-2">
           <Checkbox
-            id="negotiable"
-            checked={formData.negotiable}
-            onCheckedChange={(checked) => setFormData({ ...formData, negotiable: checked as boolean })}
+            id="negotiable_ctc"
+            checked={formData.negotiable_ctc}
+            onCheckedChange={(checked) => setFormData({ ...formData, negotiable_ctc: checked as boolean })}
           />
-          <Label htmlFor="negotiable">Negotiable</Label>
+          <Label htmlFor="negotiable_ctc">Negotiable</Label>
         </div>
         <div className="flex items-center space-x-2">
           <Checkbox
