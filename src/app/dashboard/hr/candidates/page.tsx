@@ -1450,10 +1450,10 @@ export default function CandidatesPage() {
 
   return (
     <DashboardLayout requiredRole="hr">
-      <div className="flex flex-col h-full pt-6">
+      <div className="flex-col h-full pt-1">
         {/* Fixed header section */}
-        <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background z-20">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex-shrink-0 space-y-4 pb-2 border-b bg-background z-20">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-0 pb-0">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Candidates</h1>
             </div>          
@@ -1517,7 +1517,7 @@ export default function CandidatesPage() {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-4 pt-4">
+        <div className="flex flex-col lg:flex-row gap-4">
           <div className="relative flex-1">
             <div className="flex items-center gap-4">
               <div className="flex-1 relative">
@@ -1632,8 +1632,8 @@ export default function CandidatesPage() {
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto">
-        <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="flex-1 flex flex-col overflow-hidden pt-4">
-          <div className="pt-4">
+        <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="flex-1 flex flex-col overflow-hidden">
+          <div>
           <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
             <TabsTrigger value="unassigned">
               Unassigned ({loadingUnassigned ? "..." : filteredUnassignedCandidates.length})
@@ -1646,7 +1646,7 @@ export default function CandidatesPage() {
             </TabsTrigger>
           </TabsList>
           </div>
-          <div className="flex-1 overflow-hidden pt-4">
+          <div className="flex-1 overflow-hidden">
             <TabsContent value="unassigned" className="mt-0 h-full overflow-auto">
             {loadingUnassigned ? (
               <Card>
@@ -2185,7 +2185,7 @@ export default function CandidatesPage() {
         </Tabs>
       </div>
 
-      <div className="p-4 border-t flex-shrink-0">
+      <div className="p-2 pb-0 border-t flex-shrink-0">
         <Pagination
           currentPage={activeTab === "unassigned" ? unassignedCurrentPage : activeTab === "completed" ? completedCurrentPage : assignedCurrentPage}
           totalPages={activeTab === "unassigned" ? unassignedTotalPages : activeTab === "completed" ? completedTotalPages : assignedTotalPages}
