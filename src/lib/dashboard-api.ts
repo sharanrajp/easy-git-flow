@@ -74,10 +74,16 @@ export function calculateHRMetrics(
     c.final_status === "offerReleased"
   ).length
 
-  // Calculate ongoing interviews by round from the /interviews/ongoing endpoint
-  const ongoing_r1 = ongoingInterviews.filter(i => i.round === "r1").length
-  const ongoing_r2 = ongoingInterviews.filter(i => i.round === "r2").length
-  const ongoing_r3 = ongoingInterviews.filter(i => i.round === "r3").length
+  // Filter ongoing interviews to match the filtered candidates
+  const filteredCandidateIds = new Set(allCandidates.map(c => c._id))
+  const filteredOngoingInterviews = ongoingInterviews.filter(interview => 
+    filteredCandidateIds.has(interview.candidate_id)
+  )
+
+  // Calculate ongoing interviews by round from the filtered ongoing interviews
+  const ongoing_r1 = filteredOngoingInterviews.filter(i => i.round === "r1" || i.round === "R1").length
+  const ongoing_r2 = filteredOngoingInterviews.filter(i => i.round === "r2" || i.round === "R2").length
+  const ongoing_r3 = filteredOngoingInterviews.filter(i => i.round === "r3" || i.round === "R3").length
 
   // 1. Successful Hires: Count candidates with final_status = "selected", "offerReleased", or "joined"
   const successful_hires = filteredAssigned.filter(c => 

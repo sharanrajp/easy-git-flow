@@ -19,6 +19,7 @@ export default function HRDashboard() {
   // Independent filters for each section
   const [candidateFilter, setCandidateFilter] = useState("day")
   const [candidateVacancyFilter, setCandidateVacancyFilter] = useState("all")
+  const [pipelineVacancyFilter, setPipelineVacancyFilter] = useState("all")
   const [performanceRecruiterFilter, setPerformanceRecruiterFilter] = useState("all")
   
   const [vacancies, setVacancies] = useState<Vacancy[]>([])
@@ -40,12 +41,16 @@ export default function HRDashboard() {
     return calculateHRMetrics(unassignedCandidates, assignedCandidates, ongoingInterviews, filters, vacancies)
   }, [unassignedCandidates, assignedCandidates, ongoingInterviews, candidateVacancyFilter, vacancies])
 
-  // Calculate metrics for Interview Pipeline (no filters)
+  // Calculate metrics for Interview Pipeline with vacancy filter
   const pipelineMetrics = useMemo(() => {
     if (unassignedCandidates.length === 0 && assignedCandidates.length === 0) return null
     
-    return calculateHRMetrics(unassignedCandidates, assignedCandidates, ongoingInterviews, {}, vacancies)
-  }, [unassignedCandidates, assignedCandidates, ongoingInterviews, vacancies])
+    const filters = {
+      vacancy: pipelineVacancyFilter !== "all" ? pipelineVacancyFilter : undefined,
+    }
+    
+    return calculateHRMetrics(unassignedCandidates, assignedCandidates, ongoingInterviews, filters, vacancies)
+  }, [unassignedCandidates, assignedCandidates, ongoingInterviews, pipelineVacancyFilter, vacancies])
 
   // Calculate metrics for Performance & Hiring section
   const performanceMetrics = useMemo(() => {
@@ -288,6 +293,22 @@ export default function HRDashboard() {
               <Clock className="h-5 w-5 text-primary" />
               Interview Pipeline
             </h2>
+            <div className="flex items-center space-x-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={pipelineVacancyFilter} onValueChange={setPipelineVacancyFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="All Roles" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  {vacancies.map(vacancy => (
+                    <SelectItem key={vacancy.id} value={vacancy.id}>
+                      {vacancy.position_title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <MetricCard
