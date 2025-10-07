@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Download, Mail, Phone, MapPin, Calendar, DollarSign, FileText, Star, MessageSquare } from "lucide-react"
-import type { Candidate } from "@/lib/mock-data"
+import type { Candidate } from "@/lib/schema-data"
 import { getInterviewSessionForCandidate } from "@/lib/interview-data"
 import { useState, useEffect } from "react"
 import { formatDate } from "../../src/lib/utils"
@@ -26,20 +26,16 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "unassigned":
-        return "bg-gray-100 text-gray-800"
-      case "r1-scheduled":
-      case "r2-scheduled":
-      case "r3-scheduled":
-        return "bg-blue-100 text-blue-800"
-      case "r1-completed":
-      case "r2-completed":
-      case "r3-completed":
+      case "assigned":
         return "bg-orange-100 text-orange-800"
+      case "unassigned":
+        return "bg-blue-100 text-blue-800"
       case "selected":
         return "bg-green-100 text-green-800"
       case "rejected":
         return "bg-red-100 text-red-800"
+      case "on-hold":
+        return "bg-yellow-100 text-yellow-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -49,22 +45,14 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
     switch (status) {
       case "unassigned":
         return "Unassigned"
-      case "r1-scheduled":
-        return "r1 Scheduled"
-      case "r1-completed":
-        return "r1 Completed"
-      case "r2-scheduled":
-        return "r2 Scheduled"
-      case "r2-completed":
-        return "r2 Completed"
-      case "r3-scheduled":
-        return "r3 Scheduled"
-      case "r3-completed":
-        return "r3 Completed"
       case "selected":
         return "Selected"
       case "rejected":
         return "Rejected"
+      case "on-hold":
+        return "On Hold"
+      case "assigned":
+        return "Assigned"
       default:
         return status
     }

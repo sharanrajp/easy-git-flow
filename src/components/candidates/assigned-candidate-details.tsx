@@ -74,14 +74,16 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "assigned":
+        return "bg-orange-100 text-orange-800"
+      case "unassigned":
+        return "bg-blue-100 text-blue-800"
       case "selected":
         return "bg-green-100 text-green-800"
       case "rejected":
         return "bg-red-100 text-red-800"
       case "on-hold":
         return "bg-yellow-100 text-yellow-800"
-      case "assigned":
-        return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
     }

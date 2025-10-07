@@ -421,12 +421,12 @@ export default function CandidatesPage() {
     ],
     "completed": [
       { value: "selected", label: "Selected" },
-      { value: "rejected", label: "Rejected" },
-      { value: "offerReleased", label: "Offer Released" },
-      { value: "candidateDeclined", label: "Candidate Declined" },
-      { value: "joined", label: "Joined" },
       { value: "hired", label: "Hired" },
+      { value: "offerReleased", label: "Offer Released" },
+      { value: "joined", label: "Joined" },
       { value: "on-hold", label: "On Hold" },
+      { value: "candidateDeclined", label: "Candidate Declined" },
+      { value: "rejected", label: "Rejected" },
     ]
   }
 
@@ -485,6 +485,7 @@ export default function CandidatesPage() {
         created_at: new Date().toISOString().split("T")[0],
         status: "unassigned",
         recruiter_name: candidateData?.recruiter_name || "Unknown",
+        other_source: candidateData?.other_source || "",
       };
 
       // Call the API to add candidate
@@ -516,6 +517,7 @@ export default function CandidatesPage() {
         expected_ctc: newBackendCandidate.expected_ctc || "",
         willing_to_relocate: newBackendCandidate.willing_to_relocate || false,
         negotiable_ctc: newBackendCandidate.negotiable_ctc || false,
+        other_source: newBackendCandidate.other_source || "",
       };
 
       // Update local state with new candidate
@@ -2131,11 +2133,11 @@ export default function CandidatesPage() {
                                 {candidate.final_status !== "rejected" &&
                                 <DropdownMenuContent>
                                   <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "selected")}>Selected</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "on-hold")}>On Hold</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "on-hold")}>On Hold</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "rejected")}>Rejected</DropdownMenuItem>
                                 </DropdownMenuContent>
                                 }

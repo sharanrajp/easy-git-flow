@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { X, Upload, Search, UserPlus, UserMinus, Loader2 } from "lucide-react"
-import type { Vacancy } from "@/lib/mock-data"
+import type { Vacancy } from "@/lib/schema-data"
 import { getAllUsers } from "@/lib/auth"
 
 interface VacancyFormProps {

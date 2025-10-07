@@ -26,7 +26,7 @@ import {
   ChevronDown,
   X,
 } from "lucide-react"
-import { type Vacancy } from "@/lib/mock-data"
+import { type Vacancy } from "@/lib/schema-data"
 import { getAllUsers } from "@/lib/auth"
 import { fetchVacancies, addVacancy } from "@/lib/vacancy-api"
 import { makeAuthenticatedRequest } from "@/lib/auth"

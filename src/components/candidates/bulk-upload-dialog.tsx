@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { makeAuthenticatedRequest } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { fetchVacancies } from "../../lib/vacancy-api"
-import type { Vacancy } from "../../lib/mock-data"
+import type { Vacancy } from "../../lib/schema-data"
 
 interface BulkUploadDialogProps {
   onSubmit: (candidates: any[]) => void

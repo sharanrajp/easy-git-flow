@@ -9,7 +9,7 @@ import { calculateHRMetrics, type HRDashboardMetrics } from "@/lib/dashboard-api
 import { useToast } from "@/hooks/use-toast"
 import { fetchVacancies } from "@/lib/vacancy-api"
 import { getAllUsers, type User } from "@/lib/auth"
-import type { Vacancy } from "@/lib/mock-data"
+import type { Vacancy } from "@/lib/schema-data"
 import { fetchUnassignedCandidates, fetchAssignedCandidates, fetchOngoingInterviews, type BackendCandidate } from "@/lib/candidates-api"
 
 export default function HRDashboard() {

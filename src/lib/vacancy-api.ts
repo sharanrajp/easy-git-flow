@@ -1,5 +1,5 @@
 import { getToken } from './auth';
-import type { Vacancy } from './mock-data';
+import type { Vacancy } from './schema-data';
 
 const API_BASE_URL = 'http://127.0.0.1:8000';
 

@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import type { Candidate } from "@/lib/mock-data"
+import type { Candidate } from "@/lib/schema-data"
 import { getAllUsers, type User } from "@/lib/auth"
 
 interface ScheduleInterviewFormProps {

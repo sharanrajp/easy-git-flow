@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { X, FileText } from "lucide-react"
-import type { Candidate } from "@/lib/mock-data"
+import type { Candidate } from "@/lib/schema-data"
 import { getStoredUser } from "@/lib/auth"
 
 interface CandidateFormProps {
@@ -42,6 +42,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     skill_set: candidate?.skill_set || [],
     resume: null as File | null,
     recruiter_name: candidate?.recruiter_name || currentUser?.name || "",
+    other_source: candidate?.other_source || "",
   })
 
   const [newSkill, setNewSkill] = useState("")

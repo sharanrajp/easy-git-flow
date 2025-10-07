@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { X, FileText } from "lucide-react"
-import type { Candidate } from "@/lib/mock-data"
+import type { Candidate } from "@/lib/schema-data"
 
 interface CandidateFormProps {
   candidate?: Candidate
@@ -330,7 +330,12 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
             id="current_ctc"
             placeholder="e.g., 2"
             value={formData.current_ctc}
-            onChange={(e) => setFormData({ ...formData, current_ctc: e.target.value })}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (/^\d*$/.test(value)) {
+                setFormData({ ...formData, current_ctc: value });
+              }
+            }}
             className="w-full"
           />
         </div>
@@ -340,7 +345,12 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
             id="expected_ctc"
             placeholder="e.g., 4"
             value={formData.expected_ctc}
-            onChange={(e) => setFormData({ ...formData, expected_ctc: e.target.value })}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (/^\d*$/.test(value)) {
+                setFormData({ ...formData, expected_ctc: value });
+              }
+            }}
             className="w-full"
           />
         </div>

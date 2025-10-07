@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { X, Plus, Upload, Building, MapPin, Calendar, User as UserIcon, Target, FileText } from "lucide-react"
-import type { Vacancy } from "@/lib/mock-data"
+import type { Vacancy } from "@/lib/schema-data"
 import { getAllUsers, type User } from "@/lib/auth"
 import { PanelistSelector } from "@/components/vacancies/panelist-selector"
 

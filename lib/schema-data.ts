@@ -63,6 +63,7 @@ export interface Candidate {
   id: string
   name: string
   email: string
+  other_source?: string
   phone_number: string
   location: string
   total_experience: string

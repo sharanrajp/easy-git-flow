@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Loader2 } from "lucide-react"
-import type { Candidate } from "@/lib/mock-data"
+import type { Candidate } from "@/lib/schema-data"
 import { getAllUsers } from "@/lib/auth"
 
 interface ScheduleInterviewFormProps {
