@@ -86,9 +86,14 @@ export default function UsersPage() {
     setCurrentPage(1)
   }, [searchTerm, roleFilter, statusFilter])
 
+  // Clear selections when page changes
+  useEffect(() => {
+    setSelectedUsers([])
+  }, [currentPage])
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedUsers(filteredUsers.map((user) => user._id))
+      setSelectedUsers(paginatedUsers.map((user) => user._id))
     } else {
       setSelectedUsers([])
     }
@@ -431,7 +436,7 @@ export default function UsersPage() {
                   <TableRow>
                     <TableHead className="w-12">
                       <Checkbox
-                        checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
+                        checked={paginatedUsers.length > 0 && paginatedUsers.every((user) => selectedUsers.includes(user._id))}
                         onCheckedChange={handleSelectAll}
                         className="cursor-pointer"
                       />
