@@ -60,7 +60,7 @@ export default function ManagerDashboard() {
 
   return (
     <DashboardLayout requiredRole="manager">
-      <div className="space-y-6">
+      <div className="space-y-6 pt-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

@@ -1,6 +1,7 @@
 // @ts-nocheck
 
 import { useState } from "react"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -76,8 +77,9 @@ export default function OffersPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <DashboardLayout requiredRole="manager">
+      <div className="space-y-6 pt-6">
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Offer Management</h1>
           <p className="text-gray-600">Manage job offers and track acceptance status</p>
@@ -363,6 +365,7 @@ export default function OffersPage() {
           )}
         </SheetContent>
       </Sheet>
-    </div>
+      </div>
+    </DashboardLayout>
   )
 }

@@ -81,7 +81,7 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
     return (
       <div className="flex flex-col min-h-screen bg-background">
         <Header user={user} onUserUpdate={handleUserUpdate} />
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 px-6 pb-6">{children}</main>
       </div>
     )
   }
@@ -90,7 +90,7 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
     <div className="flex h-screen bg-background">
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header user={user} onUserUpdate={handleUserUpdate} />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto px-6 pb-6">{children}</main>
       </div>
     </div>
   )

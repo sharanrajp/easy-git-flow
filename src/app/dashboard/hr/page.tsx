@@ -168,7 +168,7 @@ export default function HRDashboard() {
 
   return (
     <DashboardLayout requiredRole="hr">
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-fade-in pt-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div>

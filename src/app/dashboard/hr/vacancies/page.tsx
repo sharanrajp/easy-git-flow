@@ -299,7 +299,7 @@ export default function VacanciesPage() {
 
   return (
     <DashboardLayout requiredRole="hr">
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full pt-6">
         {/* Fixed header section */}
         <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background">
           {/* Header */}
