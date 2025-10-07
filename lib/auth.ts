@@ -12,33 +12,41 @@ export interface User {
 // Token management functions
 export function getToken(): string | null {
   if (typeof window === "undefined") return null
-  return localStorage.getItem("ats_token")
+  return localStorage.getItem("access_token")
 }
 
-export function setToken(token: string): void {
+export function getRefreshToken(): string | null {
+  if (typeof window === "undefined") return null
+  return localStorage.getItem("refresh_token")
+}
+
+export function setToken(access_token: string, refresh_token: string): void {
   if (typeof window !== "undefined") {
-    localStorage.setItem("ats_token", token)
+    localStorage.setItem("access_token", access_token)
+    localStorage.setItem("refresh_token", refresh_token) // Store refresh token as well
   }
 }
 
 export function removeToken(): void {
   if (typeof window !== "undefined") {
-    localStorage.removeItem("ats_token")
+    localStorage.removeItem("access_token")
   }
 }
 
 // Refresh token function
 export async function refreshToken(): Promise<string | null> {
-  const currentToken = getToken()
-  if (!currentToken) return null
+  const refreshToken = getRefreshToken()
+  if (!refreshToken) return null
 
   try {
     const response = await fetch("http://127.0.0.1:8000/auth/auth/refresh", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${currentToken}`
-      }
+      },
+      body: JSON.stringify({
+        refresh_token: refreshToken
+      })
     })
 
     if (!response.ok) {
@@ -47,10 +55,10 @@ export async function refreshToken(): Promise<string | null> {
     }
 
     const data = await response.json()
-    const { access_token } = data
+    const { access_token, refresh_token } = data
     
-    if (access_token) {
-      setToken(access_token)
+    if (access_token && refresh_token) {
+      setToken(access_token, refresh_token)
       return access_token
     }
     

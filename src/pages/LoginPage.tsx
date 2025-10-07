@@ -16,7 +16,7 @@ function LoginPage() {
 
   // Clear any stale authentication data on mount
   useEffect(() => {
-    localStorage.removeItem("ats_token")
+    localStorage.removeItem("access_token")
     localStorage.removeItem("ats_user")
     localStorage.removeItem("ats_users")
   }, [])
@@ -50,7 +50,7 @@ function LoginPage() {
       }
 
       const loginData = await loginResponse.json()
-      const { access_token } = loginData
+      const { access_token, refresh_token } = loginData
 
       if (!access_token) {
         setError("Login failed. No access token received.")
@@ -58,7 +58,8 @@ function LoginPage() {
       }
 
       // Store token in localStorage
-      localStorage.setItem("ats_token", access_token)
+      localStorage.setItem("access_token", access_token)
+      localStorage.setItem("refresh_token", refresh_token)
 
       // Fetch users with the token
       const usersResponse = await fetch("http://127.0.0.1:8000/panels/with-status", {

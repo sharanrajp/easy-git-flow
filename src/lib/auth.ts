@@ -12,19 +12,19 @@ export interface User {
 // Token management functions
 export function getToken(): string | null {
   if (typeof window === "undefined") return null
-  const token = localStorage.getItem("ats_token")
+  const token = localStorage.getItem("access_token")
   return token
 }
 
 export function setToken(token: string): void {
   if (typeof window !== "undefined") {
-    localStorage.setItem("ats_token", token)
+    localStorage.setItem("access_token", token)
   }
 }
 
 export function removeToken(): void {
   if (typeof window !== "undefined") {
-    localStorage.removeItem("ats_token")
+    localStorage.removeItem("access_token")
   }
 }
 
