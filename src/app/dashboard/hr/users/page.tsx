@@ -519,12 +519,7 @@ export default function UsersPage() {
                     </Table>
                   </CardContent>
                 </Card>
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                  className="mt-4"
-                />
+                
               </>
             ) : (
               <>
@@ -656,17 +651,18 @@ export default function UsersPage() {
                 </div>
               )}
                 </div>
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                  className="mt-4"
-                />
               </>
             )}
           </>
           )}
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          className="mt-4"
+        />
 
         {/* Edit Dialog */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>

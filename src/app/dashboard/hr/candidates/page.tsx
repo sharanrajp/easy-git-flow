@@ -1786,13 +1786,6 @@ export default function CandidatesPage() {
                     </TableBody>
                   </Table>
                 </CardContent>
-                <div className="p-4 border-t flex-shrink-0">
-                  <Pagination
-                    currentPage={unassignedCurrentPage}
-                    totalPages={unassignedTotalPages}
-                    onPageChange={setUnassignedCurrentPage}
-                  />
-                </div>
               </Card>
             ) : (
               <Card>
@@ -1962,7 +1955,7 @@ export default function CandidatesPage() {
                                 >
                                   <Trash2 className="h-4 w-4 text-red-600" />
                                 </Button>
-                                {candidate.final_status === "selected" && (candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && (
+                                {["selected", "on-hold"].includes(candidate.final_status) && (candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && (
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -1980,13 +1973,6 @@ export default function CandidatesPage() {
                      </TableBody>
                   </Table>
                 </CardContent>
-                <div className="p-4 border-t flex-shrink-0">
-                  <Pagination
-                    currentPage={assignedCurrentPage}
-                    totalPages={assignedTotalPages}
-                    onPageChange={setAssignedCurrentPage}
-                  />
-                </div>
               </Card>
             ) : (
               <Card>
@@ -2180,13 +2166,6 @@ export default function CandidatesPage() {
                     </TableBody>
                   </Table>
                 </CardContent>
-                <div className="p-4 border-t flex-shrink-0">
-                  <Pagination
-                    currentPage={completedCurrentPage}
-                    totalPages={completedTotalPages}
-                    onPageChange={setCompletedCurrentPage}
-                  />
-                </div>
               </Card>
             ) : (
               <Card>
@@ -2204,6 +2183,14 @@ export default function CandidatesPage() {
           </TabsContent>
           </div>
         </Tabs>
+      </div>
+
+      <div className="p-4 border-t flex-shrink-0">
+        <Pagination
+          currentPage={activeTab === "unassigned" ? unassignedCurrentPage : activeTab === "completed" ? completedCurrentPage : assignedCurrentPage}
+          totalPages={activeTab === "unassigned" ? unassignedTotalPages : activeTab === "completed" ? completedTotalPages : assignedTotalPages}
+          onPageChange={activeTab === "unassigned" ? setUnassignedCurrentPage : activeTab === "completed" ? setCompletedCurrentPage : setAssignedCurrentPage}
+        />
       </div>
 
       <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>

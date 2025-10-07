@@ -565,12 +565,6 @@ export default function VacanciesPage() {
                  </TooltipProvider>
                </CardContent>
              </Card>
-             <Pagination
-               currentPage={currentPage}
-               totalPages={totalPages}
-               onPageChange={setCurrentPage}
-               className="mt-4"
-             />
            </>
          ) : (
            <>
@@ -642,12 +636,6 @@ export default function VacanciesPage() {
               )
                })}
              </div>
-             <Pagination
-               currentPage={currentPage}
-               totalPages={totalPages}
-               onPageChange={setCurrentPage}
-               className="mt-4"
-             />
            </>
           )}
           </>
@@ -674,6 +662,13 @@ export default function VacanciesPage() {
           </div>
           )}
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          className="mt-4"
+        />
 
         <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
           <DialogContent className="w-[80%] max-w-none max-h-[90vh] overflow-y-auto">
