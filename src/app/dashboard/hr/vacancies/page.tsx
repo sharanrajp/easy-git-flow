@@ -645,15 +645,17 @@ export default function VacanciesPage() {
                 </Card>
               )
                })}
-             </div>
-             <Pagination
-               currentPage={currentPage}
-               totalPages={totalPages}
-               onPageChange={setCurrentPage}
-               className="mt-4"
-             />
-           </>
-          )}
+                  </div>
+                </div>
+                <div className="flex-shrink-0 pt-4 pb-2">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
+              </div>
+            )}
           </>
           )}
 
