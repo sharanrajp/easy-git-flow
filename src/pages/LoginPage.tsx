@@ -57,7 +57,7 @@ function LoginPage() {
         return
       }
 
-      // Store token in localStorage
+      // Store both tokens in localStorage
       localStorage.setItem("access_token", access_token)
       localStorage.setItem("refresh_token", refresh_token)
 
