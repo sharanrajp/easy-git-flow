@@ -365,13 +365,6 @@ export default function UsersPage() {
                 {deleting ? "Deleting..." : `Delete Selected (${selectedUsers.length})`}
               </Button>
             )}
-            <Button 
-              variant="outline" 
-              onClick={handleClearFilters}
-              className="whitespace-nowrap"
-            >
-              Clear Filters
-            </Button>
             <div className="flex flex-wrap gap-2">
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger className="w-32">
@@ -414,7 +407,14 @@ export default function UsersPage() {
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
-              </div>
+              </div>              
+              <Button 
+                variant="outline" 
+                onClick={handleClearFilters}
+                className="whitespace-nowrap"
+              >
+                Clear Filters
+              </Button>
             </div>
           </div>
         </div>

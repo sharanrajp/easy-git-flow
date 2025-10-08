@@ -357,13 +357,6 @@ export default function VacanciesPage() {
                   </button>
                 )}
               </div>
-              <Button 
-                variant="outline" 
-                onClick={handleClearFilters}
-                className="whitespace-nowrap"
-              >
-                Clear Filters
-              </Button>
               <div className="flex flex-wrap gap-2">
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-32">
@@ -416,7 +409,14 @@ export default function VacanciesPage() {
                   >
                     <Grid className="h-4 w-4" />
                   </Button>
-                </div>
+                </div>                
+                <Button 
+                  variant="outline" 
+                  onClick={handleClearFilters}
+                  className="whitespace-nowrap"
+                >
+                  Clear Filters
+                </Button>
               </div>
             </div>
           )}

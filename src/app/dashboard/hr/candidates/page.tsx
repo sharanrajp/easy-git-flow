@@ -2920,6 +2920,9 @@ export default function CandidatesPage() {
                         </TableCell>
                         <TableCell>{interview.panel_name}</TableCell>
                         <TableCell>
+                          {interview.status !== "interview-assigned" ? (
+                            <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">Interview Started</Badge>
+                          ) : (
                           <Button
                             variant="outline"
                             size="sm"
@@ -2927,7 +2930,7 @@ export default function CandidatesPage() {
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
                             Unassign
-                          </Button>
+                          </Button>)}
                         </TableCell>
                       </TableRow>
                         ))}
