@@ -106,7 +106,7 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
               </div>
               <div>
                 <span className="text-sm text-gray-500">Current CTC</span>
-                <p className="font-medium">{formatDate(candidate.current_ctc)}</p>
+                <p className="font-medium">{candidate.current_ctc}</p>
               </div>
               <div>
                 <span className="text-sm text-gray-500">Expected CTC</span>
