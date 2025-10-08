@@ -627,9 +627,10 @@ export default function PanelistDashboard() {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex gap-3 pt-4 border-t">
+                        <div className="flex gap-2 pt-4 border-t">
                           {!isInInterview && canStartInterview && (
                             <Button
+                              size="sm"
                               onClick={async () => {
                                 try {
                                   await fetch("http://127.0.0.1:8000/privileges/my-status", {
@@ -656,28 +657,30 @@ export default function PanelistDashboard() {
                                   })
                                 }
                               }}
-                              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                              className="bg-green-600 hover:bg-green-700 text-white"
                             >
-                              <Play className="h-4 w-4 mr-2" />
+                              <Play className="h-3.5 w-3.5 mr-1.5" />
                               Start Interview
                             </Button>
                           )}
 
                           {isInInterview && (
                             <Button
+                              size="sm"
                               onClick={() => handleScheduledFeedback(candidate)}
-                              className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                              className="bg-red-600 hover:bg-red-700 text-white"
                             >
-                              <CircleMinus className="h-4 w-4 mr-2" />
+                              <CircleMinus className="h-3.5 w-3.5 mr-1.5" />
                               End Interview & Submit Feedback
                             </Button>
                           )}
 
                           <Button
+                            size="sm"
                             variant="outline"
                             onClick={() => handleViewCandidateFeedback(candidate)}
                           >
-                            <Eye className="h-4 w-4 mr-2" />
+                            <Eye className="h-3.5 w-3.5 mr-1.5" />
                             View Feedback History
                           </Button>
                         </div>
