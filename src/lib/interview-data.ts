@@ -30,25 +30,13 @@ export interface InterviewSession {
 const INTERVIEW_STORAGE_KEY = "interview_sessions"
 
 export function getInterviewSessions(): InterviewSession[] {
-  if (typeof window === "undefined") return []
-  const stored = localStorage.getItem(INTERVIEW_STORAGE_KEY)
-  return stored ? JSON.parse(stored) : []
+  // Removed localStorage usage - return empty array
+  return []
 }
 
 export function saveInterviewSession(session: InterviewSession) {
-  const sessions = getInterviewSessions()
-  const existingIndex = sessions.findIndex((s) => s.id === session.id)
-
-  if (existingIndex >= 0) {
-    sessions[existingIndex] = session
-  } else {
-    sessions.push(session)
-  }
-
-  localStorage.setItem(INTERVIEW_STORAGE_KEY, JSON.stringify(sessions))
-
-  // Dispatch custom event for real-time updates
-  window.dispatchEvent(new CustomEvent("interviewSessionUpdated", { detail: session }))
+  // Removed localStorage usage - no-op
+  return
 }
 
 export function getInterviewSessionsForPanelist(panelistName: string): InterviewSession[] {
@@ -61,21 +49,8 @@ export function getInterviewSessionForCandidate(candidateId: string): InterviewS
 }
 
 export function updatePanelistStatus(panelistName: string, current_status: "free" | "in_interview") {
-  // Update user status in localStorage
-  const users = JSON.parse(localStorage.getItem("users") || "[]")
-  const userIndex = users.findIndex((u: any) => u.name === panelistName)
-
-  if (userIndex >= 0) {
-    users[userIndex].accountStatus = current_status
-    localStorage.setItem("users", JSON.stringify(users))
-
-    // Also update current user if it's the same person
-    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}")
-    if (currentUser.name === panelistName) {
-      currentUser.accountStatus = current_status
-      localStorage.setItem("currentUser", JSON.stringify(currentUser))
-    }
-  }
+  // Removed localStorage usage for users - should be managed via API
+  return
 }
 
 export function startInterview(sessionId: string) {
@@ -93,29 +68,8 @@ export function startInterview(sessionId: string) {
 }
 
 export function updateCandidateStatusToInProgress(candidateId: string, round: string) {
-  if (typeof window === "undefined") return
-
-  const candidates = JSON.parse(localStorage.getItem("candidates") || "[]")
-  const candidateIndex = candidates.findIndex((c: any) => c.id === candidateId)
-
-  if (candidateIndex >= 0) {
-    const candidate = candidates[candidateIndex]
-
-    // Update status to show interview in progress
-    if (round === "r1") {
-      candidate.status = "r1-in-progress"
-    } else if (round === "r2") {
-      candidate.status = "r2-in-progress"
-    } else if (round === "r3") {
-      candidate.status = "r3-in-progress"
-    }
-
-    candidates[candidateIndex] = candidate
-    localStorage.setItem("candidates", JSON.stringify(candidates))
-
-    // Dispatch event to notify other components
-    window.dispatchEvent(new CustomEvent("candidateUpdated"))
-  }
+  // Removed localStorage usage - candidates should be managed via API
+  return
 }
 
 export function completeInterview(sessionId: string, feedback: InterviewSession["feedback"]) {
@@ -145,41 +99,8 @@ export function updateCandidateStatusAfterInterview(
   feedback: InterviewSession["feedback"],
   currentRound: string,
 ) {
-  if (typeof window === "undefined") return
-
-  const candidates = JSON.parse(localStorage.getItem("candidates") || "[]")
-  const candidateIndex = candidates.findIndex((c: any) => c.id === candidateId)
-
-  if (candidateIndex >= 0 && feedback) {
-    const candidate = candidates[candidateIndex]
-
-    if (feedback.decision === "selected") {
-      // Move to next round or complete if final round
-      if (currentRound === "r1") {
-        candidate.status = "r2-scheduled"
-        candidate.currentRound = "r2"
-      } else if (currentRound === "r2") {
-        candidate.status = "r3-scheduled"
-        candidate.currentRound = "r3"
-      } else if (currentRound === "r3") {
-        candidate.status = "hired"
-        candidate.currentRound = "Completed"
-      }
-    } else if (feedback.decision === "rejected") {
-      // Move to completed tab with rejected status
-      candidate.status = "rejected"
-      candidate.currentRound = "Completed"
-    }
-
-    // Update completion timestamp
-    candidate.completedAt = new Date().toISOString()
-
-    candidates[candidateIndex] = candidate
-    localStorage.setItem("candidates", JSON.stringify(candidates))
-
-    // Dispatch event to notify other components
-    window.dispatchEvent(new CustomEvent("candidateUpdated"))
-  }
+  // Removed localStorage usage - candidates should be managed via API
+  return
 }
 
 export function pauseInterview(sessionId: string) {
@@ -196,6 +117,6 @@ export function pauseInterview(sessionId: string) {
 }
 
 export function getCandidateDetails(candidateId: string) {
-  const candidates = JSON.parse(localStorage.getItem("candidates") || "[]")
-  return candidates.find((c: any) => c.id === candidateId) || null
+  // Removed localStorage usage - candidates should be fetched via API
+  return null
 }

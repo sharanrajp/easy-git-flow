@@ -121,18 +121,7 @@ export async function makeAuthenticatedRequest(url: string, options: RequestInit
   return response
 }
 
-// User management functions
-function getStoredUsers(): User[] {
-  if (typeof window === "undefined") return []
-  const stored = localStorage.getItem("ats_users")
-  return stored ? JSON.parse(stored) : []
-}
-
-function saveUsers(users: User[]): void {
-  if (typeof window !== "undefined") {
-    localStorage.setItem("ats_users", JSON.stringify(users))
-  }
-}
+// User management functions - removed localStorage usage for ats_users
 
 export function getStoredUser(): User | null {
   if (typeof window === "undefined") return null
@@ -149,12 +138,10 @@ async function fetchUsers(): Promise<User[]> {
     }
     
     const users = await response.json() || []
-    saveUsers(users)
     return users
   } catch (error) {
     console.error("Error fetching users:", error)
-    // Return cached users if API fails
-    return getStoredUsers()
+    throw error
   }
 }
 
@@ -165,7 +152,6 @@ export async function getAllUsers(): Promise<User[]> {
 export function logout(): void {
   removeToken()
   localStorage.removeItem("ats_user")
-  localStorage.removeItem("ats_users")
   localStorage.removeItem("refresh_token")
 }
 

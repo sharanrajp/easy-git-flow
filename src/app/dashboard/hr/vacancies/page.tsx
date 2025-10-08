@@ -58,21 +58,8 @@ export default function VacanciesPage() {
   const itemsPerPage = 15
 
   const getCandidateCountsForVacancy = useCallback((vacancyTitle: string) => {
-    if (typeof window === "undefined") return { applications: 0, shortlisted: 0, interviewed: 0, joined: 0 }
-
-    const storedCandidates = localStorage.getItem("candidates")
-    if (!storedCandidates) return { applications: 0, shortlisted: 0, interviewed: 0, joined: 0 }
-
-    const candidates = JSON.parse(storedCandidates)
-    const vacancyCandidates = candidates.filter((c: any) => c.applied_position === vacancyTitle)
-
-    return {
-      applications: vacancyCandidates.length,
-      shortlisted: vacancyCandidates.filter((c: any) => c.status === "shortlisted").length,
-      interviewed: vacancyCandidates.filter((c: any) => c.status === "interviewed" || c.status === "in_interview")
-        .length,
-      joined: vacancyCandidates.filter((c: any) => c.status === "hired" || c.status === "joined").length,
-    }
+    // Removed localStorage usage - should fetch from API
+    return { applications: 0, shortlisted: 0, interviewed: 0, joined: 0 }
   }, [])
 
   // Load vacancies from API on component mount
