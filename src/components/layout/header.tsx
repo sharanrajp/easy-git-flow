@@ -166,7 +166,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
         {/* Logo and Brand */}
         <div className="flex items-center space-x-6">
           <div className="flex-shrink-0">
-            <img src="/vuedata-blue.webp" alt="vueDataImage" draggable="false" height={25} width={200}/>
+            <img src="/vuedata-blue.webp" alt="vueDataImage" draggable="false" height={25} width={150}/>
           </div>
           
           {/* Navigation Items */}
