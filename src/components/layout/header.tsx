@@ -107,7 +107,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
         toast({
           title: "Error",
           description: "Failed to update status. Please try again.",
-          variant: "destructive",
+          variant: "error",
         })
       } finally {
         setIsUpdatingStatus(false)
@@ -154,7 +154,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
       toast({
         title: "Error",
         description: "Failed to update interview status. Please try again.",
-        variant: "destructive",
+        variant: "error",
       })
     } finally {
       setIsUpdatingInterviewStatus(false)
@@ -184,7 +184,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
       toast({
         title: "Error",
         description: "Failed to update status after feedback",
-        variant: "destructive",
+        variant: "error",
       })
     }
     

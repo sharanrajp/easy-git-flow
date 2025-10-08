@@ -51,7 +51,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
         toast({
           title: "Error",
           description: "Failed to update status. Please try again.",
-          variant: "destructive",
+          variant: "error",
         })
       } finally {
         setIsUpdatingStatus(false)

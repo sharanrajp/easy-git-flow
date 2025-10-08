@@ -50,7 +50,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
       toast({
         title: "Error",
         description: "User not authenticated",
-        variant: "destructive",
+        variant: "error",
       })
       return
     }
@@ -145,7 +145,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
       toast({
         title: "Error",
         description: "Failed to submit feedback. Please try again.",
-        variant: "destructive",
+        variant: "error",
       })
     } finally {
       setIsSubmitting(false)

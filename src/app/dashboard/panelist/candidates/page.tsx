@@ -34,7 +34,7 @@ export default function PanelistCandidatesPage() {
       toast({
         title: "Error",
         description: "Failed to load assigned candidates",
-        variant: "destructive",
+        variant: "error",
       })
     } finally {
       setIsLoading(false)

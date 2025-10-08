@@ -25,6 +25,16 @@
   --ring: 200 75% 51%;
   --radius: 0.75rem;
   
+  /* Toast variants */
+  --toast-success: 142 76% 36%;
+  --toast-success-foreground: 0 0% 100%;
+  --toast-error: 0 72% 51%;
+  --toast-error-foreground: 0 0% 100%;
+  --toast-warning: 38 92% 50%;
+  --toast-warning-foreground: 24 10% 10%;
+  --toast-info: 217 91% 60%;
+  --toast-info-foreground: 0 0% 100%;
+  
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
   --gradient-subtle: linear-gradient(180deg, hsl(215 100% 97%), hsl(220 95% 95%));
@@ -74,6 +84,16 @@
   --border: 215 28% 17%;
   --input: 215 28% 17%;
   --ring: 200 70% 50%;
+  
+  /* Toast variants (dark mode) */
+  --toast-success: 142 71% 45%;
+  --toast-success-foreground: 0 0% 100%;
+  --toast-error: 0 72% 51%;
+  --toast-error-foreground: 0 0% 100%;
+  --toast-warning: 38 92% 50%;
+  --toast-warning-foreground: 24 10% 10%;
+  --toast-info: 217 91% 60%;
+  --toast-info-foreground: 0 0% 100%;
   
   /* Dark mode gradients */
   --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
