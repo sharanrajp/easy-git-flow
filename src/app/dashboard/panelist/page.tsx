@@ -195,13 +195,37 @@ export default function PanelistDashboard() {
     setShowScheduledFeedback(true)
   }, [])
 
-  const handleScheduledFeedbackSubmit = useCallback(() => {
+  const handleScheduledFeedbackSubmit = useCallback(async () => {
+    try {
+      // Update status to free via API
+      const { makeAuthenticatedRequest } = await import("@/lib/auth")
+      await makeAuthenticatedRequest("/privileges/my-status", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "free" }),
+      })
+      
+      toast({
+        title: "Feedback Submitted",
+        description: "Your status has been updated to free",
+      })
+    } catch (error) {
+      console.error('Error updating status after feedback:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update status",
+        variant: "destructive",
+      })
+    }
+    
     loadCandidates() // Refresh the candidates list
     handleScheduledFeedbackClose()
     
     // Notify other components to refresh
     window.dispatchEvent(new Event('dashboardUpdate'))
-  }, [loadCandidates, handleScheduledFeedbackClose])
+  }, [loadCandidates, handleScheduledFeedbackClose, toast])
 
   useEffect(() => {
     if (currentUser?.name) {
@@ -269,9 +293,36 @@ export default function PanelistDashboard() {
     return () => window.removeEventListener("interviewSessionUpdated", handleInterviewUpdate as EventListener)
   }, [currentUser?.name])
 
-  const handleStartInterview = (sessionId: string) => {
-    setInterviewTimers((prev) => ({ ...prev, [sessionId]: 0 }))
-    startInterview(sessionId)
+  const handleStartInterview = async (sessionId: string) => {
+    try {
+      setInterviewTimers((prev) => ({ ...prev, [sessionId]: 0 }))
+      startInterview(sessionId)
+      
+      // Update status to in_interview via API
+      const { makeAuthenticatedRequest } = await import("@/lib/auth")
+      await makeAuthenticatedRequest("/privileges/my-status", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "in_interview" }),
+      })
+      
+      toast({
+        title: "Interview Started",
+        description: "Your status has been updated to in-interview",
+      })
+      
+      // Trigger dashboard update
+      window.dispatchEvent(new Event('dashboardUpdate'))
+    } catch (error) {
+      console.error('Error starting interview:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update status",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleEndWithFeedback = (session: InterviewSession) => {

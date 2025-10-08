@@ -249,29 +249,6 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* Interview Control Button */}
-          {showInterviewButton && (
-            <Button
-              variant={isInterviewInProgress ? "destructive" : "default"}
-              size="sm"
-              onClick={handleInterviewStatusChange}
-              disabled={isUpdatingInterviewStatus}
-              className="smooth-transition"
-            >
-              {isInterviewInProgress ? (
-                <>
-                  <Square className="h-4 w-4 mr-2" />
-                  End Interview
-                </>
-              ) : (
-                <>
-                  <Play className="h-4 w-4 mr-2" />
-                  Start Interview
-                </>
-              )}
-            </Button>
-          )}
-
           {/* Mobile Navigation Menu for non-panelist users */}
           {user.role !== "panelist" && (
             <DropdownMenu>
