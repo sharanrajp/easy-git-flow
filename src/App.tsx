@@ -6,9 +6,6 @@ import HRCandidatesPage from "./app/dashboard/hr/candidates/page"
 import HRUsersPage from "./app/dashboard/hr/users/page"
 import HRVacanciesPage from "./app/dashboard/hr/vacancies/page"
 import PanelistDashboard from "./app/dashboard/panelist/page"
-import ManagerDashboard from "./app/dashboard/manager/page"
-import ManagerCandidatesPage from "./app/dashboard/manager/candidates/page"
-import ManagerOffersPage from "./app/dashboard/manager/offers/page"
 import { Toaster } from "./components/ui/toaster"
 import { ThemeProvider } from "./components/theme-provider"
 
@@ -25,9 +22,6 @@ function App() {
             <Route path="/dashboard/hr/users" element={<HRUsersPage />} />
             <Route path="/dashboard/hr/vacancies" element={<HRVacanciesPage />} />
             <Route path="/dashboard/panelist" element={<PanelistDashboard />} />
-            <Route path="/dashboard/manager" element={<ManagerDashboard />} />
-            <Route path="/dashboard/manager/candidates" element={<ManagerCandidatesPage />} />
-            <Route path="/dashboard/manager/offers" element={<ManagerOffersPage />} />
           </Routes>
           <Toaster />
         </div>
