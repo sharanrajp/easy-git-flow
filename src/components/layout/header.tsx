@@ -60,14 +60,14 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
     navigate("/login")
   }
 
-  const handleStatusChange = async (current_status: User["current_status"]) => {
+  const handleStatusChange = async (current_status: User["privileges"]["status"]) => {
     if (user.role !== "hr" && current_status && !isUpdatingStatus) {
       try {
         setIsUpdatingStatus(true)
         await updateUserStatus(user._id, current_status)
         
         // Update the user object and notify parent component
-        const updatedUser = { ...user, current_status }
+        const updatedUser = { ...user, privileges: { ...user.privileges, status: current_status } }
         onUserUpdate?.(updatedUser)
         
         toast({
@@ -90,9 +90,9 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
   const handleInterviewStatusChange = async () => {
     if (isUpdatingInterviewStatus) return
     
-    const isStarting = user.current_status === "interview-assigned"
-    const newStatus = isStarting ? "in-interview" : "available"
-    
+    const isStarting = user?.privileges?.status
+    const newStatus = isStarting === "interview-assigned" ? "in_interview" : "available"
+
     try {
       setIsUpdatingInterviewStatus(true)
       
@@ -105,13 +105,13 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
       })
       
       // Update UI with proper status format
-      const uiStatus: User["current_status"] = isStarting ? "in_interview" : "free"
-      const updatedUser = { ...user, current_status: uiStatus }
+      const uiStatus: User["privileges"]["status"] = isStarting === "interview-assigned" ? "in_interview" : "free"
+      const updatedUser = { ...user, privileges: { ...user.privileges, status: uiStatus } }
       onUserUpdate?.(updatedUser)
       
       toast({
-        title: isStarting ? "Interview Started" : "Interview Ended",
-        description: `Your status has been changed to ${isStarting ? "in-interview" : "available"}`,
+        title: isStarting === "interview-assigned" ? "Interview Started" : "Interview Ended",
+        description: `Your status has been changed to ${isStarting === "interview-assigned" ? "in_interview" : "available"}`,
       })
     } catch (error) {
       console.error('Failed to update interview status:', error)
@@ -133,7 +133,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
         return "bg-amber-100 text-amber-800 ring-amber-200"
       case "break":
         return "bg-slate-100 text-slate-800 ring-slate-200"
-      case "unavailable":
+      case "interview-assigned":
         return "bg-rose-100 text-rose-800 ring-rose-200"
       default:
         return "bg-slate-100 text-slate-800 ring-slate-200"
@@ -141,8 +141,8 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
   }
 
   const showInterviewButton = user.role === "panelist" && 
-    (user.current_status === "interview-assigned" || user.current_status === "in_interview")
-  const isInterviewInProgress = user.current_status === "in_interview"
+    (user?.privileges?.status === "interview-assigned" || user?.privileges?.status === "in_interview")
+  const isInterviewInProgress = user?.privileges?.status === "in_interview"
 
   return (
     <header className="bg-gradient-card backdrop-blur-xl border-b border-border/50 shadow-card sticky top-0 z-50">
@@ -263,12 +263,14 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
                   variant="ghost" 
                   className={cn(
                     "status-badge px-3 py-1.5 h-auto smooth-transition cursor-pointer hover:opacity-80",
-                    getStatusColor(user.current_status || "free")
+                    getStatusColor(user?.privileges?.status || "free")
                   )}
+                  onClick={(e) => e.preventDefault()}
                 >
-                  {user.current_status === "free" ? "available" : user.current_status || "available"}
+                  {user?.privileges?.status === "free" ? "available" : user?.privileges?.status || "available"}
                 </Button>
               </PopoverTrigger>
+              {!["interview-assigned", "in_interview"].includes(user?.privileges?.status || "") && (
               <PopoverContent align="end" className="w-56 bg-card/95 backdrop-blur-xl border-border/50 shadow-elegant p-2">
                 <div className="space-y-1">
                   <div className="px-3 py-2 text-sm font-semibold text-foreground">Change Status</div>
@@ -280,7 +282,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
                   >
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-emerald-500 rounded-full mr-3 shadow-sm"></div>
-                      Available {isUpdatingStatus && user.current_status !== "free" ? "(updating...)" : ""}
+                      Available {isUpdatingStatus && user?.privileges?.status !== "free" ? "(updating...)" : ""}
                     </div>
                   </Button>
                   <Button
@@ -291,11 +293,11 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
                   >
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-slate-500 rounded-full mr-3 shadow-sm"></div>
-                      Break {isUpdatingStatus && user.current_status !== "break" ? "(updating...)" : ""}
+                      Break {isUpdatingStatus && user?.privileges?.status !== "break" ? "(updating...)" : ""}
                     </div>
                   </Button>
                 </div>
-              </PopoverContent>
+              </PopoverContent>)}
             </Popover>
           )}
 

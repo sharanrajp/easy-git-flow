@@ -1,4 +1,5 @@
 export interface User {
+  privileges: any
   _id: string
   name: string
   email: string
