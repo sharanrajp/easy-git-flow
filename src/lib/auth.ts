@@ -6,7 +6,7 @@ export interface User {
   panelist_type?: "panel_member" | "manager"
   skill_set?: string[]
   available_rounds?: string[]
-  current_status?: "free" | "in_interview" | "break"
+  current_status?: "free" | "in_interview" | "break" | "unavailable" | "interview-assigned"
 }
 
 // Token management functions

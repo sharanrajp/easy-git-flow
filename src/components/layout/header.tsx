@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Bell, LogOut, User as UserIcon, Settings, LayoutDashboard, Users, UserCheck, Briefcase, Menu, ChevronDown } from "lucide-react"
-import { type User, logout, updateUserStatus } from "@/lib/auth"
+import { Bell, LogOut, User as UserIcon, Settings, LayoutDashboard, Users, UserCheck, Briefcase, Menu, ChevronDown, Play, Square } from "lucide-react"
+import { type User, logout, updateUserStatus, makeAuthenticatedRequest } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 
 interface HeaderProps {
@@ -50,6 +50,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
   const pathname = useLocation().pathname
   const { toast } = useToast()
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+  const [isUpdatingInterviewStatus, setIsUpdatingInterviewStatus] = useState(false)
 
   const items = navigationItems[user.role] || []
 
@@ -85,6 +86,44 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
     }
   }
 
+  const handleInterviewStatusChange = async () => {
+    if (isUpdatingInterviewStatus) return
+    
+    const isStarting = user.current_status === "interview-assigned"
+    const newStatus = isStarting ? "in-interview" : "available"
+    
+    try {
+      setIsUpdatingInterviewStatus(true)
+      
+      await makeAuthenticatedRequest("/privileges/my-status", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      
+      // Update UI with proper status format
+      const uiStatus: User["current_status"] = isStarting ? "in_interview" : "free"
+      const updatedUser = { ...user, current_status: uiStatus }
+      onUserUpdate?.(updatedUser)
+      
+      toast({
+        title: isStarting ? "Interview Started" : "Interview Ended",
+        description: `Your status has been changed to ${isStarting ? "in-interview" : "available"}`,
+      })
+    } catch (error) {
+      console.error('Failed to update interview status:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update interview status. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUpdatingInterviewStatus(false)
+    }
+  }
+
   const getStatusColor = (current_status?: string) => {
     switch (current_status) {
       case "free":
@@ -99,6 +138,10 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
         return "bg-slate-100 text-slate-800 ring-slate-200"
     }
   }
+
+  const showInterviewButton = user.role === "panelist" && 
+    (user.current_status === "interview-assigned" || user.current_status === "in_interview")
+  const isInterviewInProgress = user.current_status === "in_interview"
 
   return (
     <header className="bg-gradient-card backdrop-blur-xl border-b border-border/50 shadow-card sticky top-0 z-50">
@@ -138,6 +181,29 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
         </div>
 
         <div className="flex items-center space-x-4">
+          {/* Interview Control Button */}
+          {showInterviewButton && (
+            <Button
+              variant={isInterviewInProgress ? "destructive" : "default"}
+              size="sm"
+              onClick={handleInterviewStatusChange}
+              disabled={isUpdatingInterviewStatus}
+              className="smooth-transition"
+            >
+              {isInterviewInProgress ? (
+                <>
+                  <Square className="h-4 w-4 mr-2" />
+                  End Interview
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4 mr-2" />
+                  Start Interview
+                </>
+              )}
+            </Button>
+          )}
+
           {/* Mobile Navigation Menu for non-panelist users */}
           {user.role !== "panelist" && (
             <DropdownMenu>
