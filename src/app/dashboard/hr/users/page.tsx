@@ -175,8 +175,7 @@ export default function UsersPage() {
       })
 
       if (response.ok) {
-        const createdUser = await response.json()
-        setUsers([...users, createdUser])
+        setUsers([...users, userData])
         setIsCreateOpen(false)
         toast({
           title: "Success",
