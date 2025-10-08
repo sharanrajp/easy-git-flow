@@ -6,7 +6,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent } from "@/components/ui/popover"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -534,262 +533,254 @@ export default function PanelistDashboard() {
             )}
           </div>
 
-          {/* Interview Tabs */}
-          <Tabs defaultValue="scheduled" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="scheduled" className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Scheduled Interviews ({scheduledInterviews.length})
-              </TabsTrigger>
-              <TabsTrigger value="completed" className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4" />
-                Completed Interviews ({completedCandidateInterviews.length})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="scheduled" className="space-y-4">
-              <Card className="border-2 border-primary/20">
-                <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-primary/10">
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-primary" />
-                    Scheduled Interview
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  {isCandidatesLoading ? (
-                    <div className="flex justify-center py-12">
-                      <div className="text-sm text-muted-foreground">Loading interview details...</div>
+          {/* Scheduled Interview Card */}
+          <div className="space-y-6">
+            <Card className="border-2 border-primary/20">
+              <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-primary/10">
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  Scheduled Interview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                {isCandidatesLoading ? (
+                  <div className="flex justify-center py-12">
+                    <div className="text-sm text-muted-foreground">Loading interview details...</div>
+                  </div>
+                ) : scheduledInterviews.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+                      <Calendar className="h-8 w-8 text-muted-foreground" />
                     </div>
-                  ) : scheduledInterviews.length === 0 ? (
-                    <div className="text-center py-12">
-                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
-                        <Calendar className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                      <p className="text-lg font-medium text-muted-foreground">No scheduled interviews.</p>
-                      <p className="text-sm text-muted-foreground mt-2">You don't have any interviews scheduled at the moment.</p>
-                    </div>
-                  ) : (
-                    // Show only the first scheduled candidate
-                    (() => {
-                      const candidate = scheduledInterviews[0]
-                      const isInInterview = currentUser?.privileges?.status === "in_interview"
-                      const canStartInterview = currentUser?.privileges?.status === "interview-assigned"
+                    <p className="text-lg font-medium text-muted-foreground">No scheduled interviews.</p>
+                    <p className="text-sm text-muted-foreground mt-2">You don't have any interviews scheduled at the moment.</p>
+                  </div>
+                ) : (
+                  // Show only the first scheduled candidate
+                  (() => {
+                    const candidate = scheduledInterviews[0]
+                    const isInInterview = currentUser?.privileges?.status === "in_interview"
+                    const canStartInterview = currentUser?.privileges?.status === "interview-assigned"
 
-                      return (
-                        <div className="space-y-6">
-                          {/* Candidate Details */}
-                          <div className="grid grid-cols-2 gap-6">
-                            <div>
-                              <label className="text-sm font-medium text-muted-foreground">Registration Number</label>
-                              <p className="text-base font-semibold mt-1">{candidate.register_number}</p>
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium text-muted-foreground">Name</label>
-                              <p className="text-base font-semibold mt-1">{candidate.name}</p>
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium text-muted-foreground">Email</label>
-                              <p className="text-base mt-1 text-blue-600">{candidate.email}</p>
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium text-muted-foreground">Experience</label>
-                              <p className="text-base mt-1">{candidate.total_experience} years</p>
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium text-muted-foreground">Interview Round</label>
-                              <div className="mt-1">
-                                {candidate.last_interview_round ? (
-                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                    {candidate.last_interview_round}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-muted-foreground">N/A</span>
-                                )}
-                              </div>
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium text-muted-foreground">Resume</label>
-                              <div className="mt-1">
-                                {candidate.resume_link ? (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => window.open(candidate.resume_link, '_blank')}
-                                    className="p-0 h-auto text-blue-600 hover:text-blue-800"
-                                  >
-                                    <ExternalLink className="h-4 w-4 mr-1" />
-                                    View Resume
-                                  </Button>
-                                ) : (
-                                  <span className="text-muted-foreground text-sm">Not available</span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Skills */}
+                    return (
+                      <div className="space-y-6">
+                        {/* Candidate Details */}
+                        <div className="grid grid-cols-2 gap-6">
                           <div>
-                            <label className="text-sm font-medium text-muted-foreground">Skill Set</label>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              {(Array.isArray(candidate.skill_set) ? candidate.skill_set : [candidate.skill_set]).map((skill, index) => (
-                                <Badge key={index} variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                                  {skill}
+                            <label className="text-sm font-medium text-muted-foreground">Registration Number</label>
+                            <p className="text-base font-semibold mt-1">{candidate.register_number}</p>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-muted-foreground">Name</label>
+                            <p className="text-base font-semibold mt-1">{candidate.name}</p>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-muted-foreground">Email</label>
+                            <p className="text-base mt-1 text-blue-600">{candidate.email}</p>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-muted-foreground">Experience</label>
+                            <p className="text-base mt-1">{candidate.total_experience} years</p>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-muted-foreground">Interview Round</label>
+                            <div className="mt-1">
+                              {candidate.last_interview_round ? (
+                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                  {candidate.last_interview_round}
                                 </Badge>
-                              ))}
+                              ) : (
+                                <span className="text-muted-foreground">N/A</span>
+                              )}
                             </div>
                           </div>
-
-                          {/* Action Buttons */}
-                          <div className="flex gap-3 pt-4 border-t">
-                            {!isInInterview && canStartInterview && (
-                              <Button
-                                onClick={async () => {
-                                  try {
-                                    await fetch("http://127.0.0.1:8000/privileges/my-status", {
-                                      method: "PUT",
-                                      headers: {
-                                        "Content-Type": "application/json",
-                                        "Authorization": `Bearer ${localStorage.getItem("token")}`,
-                                      },
-                                      body: JSON.stringify({ status: "in_interview" }),
-                                    })
-                                    
-                                    const updatedUser = { ...currentUser, privileges: { ...currentUser.privileges, status: "in_interview" } }
-                                    setCurrentUser(updatedUser)
-                                    
-                                    toast({
-                                      title: "Interview Started",
-                                      description: "Your status has been changed to in_interview",
-                                    })
-                                  } catch (error) {
-                                    console.error('Failed to start interview:', error)
-                                    toast({
-                                      title: "Error",
-                                      description: "Failed to start interview. Please try again.",
-                                    })
-                                  }
-                                }}
-                                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                              >
-                                <Play className="h-4 w-4 mr-2" />
-                                Start Interview
-                              </Button>
-                            )}
-
-                            {isInInterview && (
-                              <Button
-                                onClick={() => handleScheduledFeedback(candidate)}
-                                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                              >
-                                <CircleMinus className="h-4 w-4 mr-2" />
-                                End Interview & Submit Feedback
-                              </Button>
-                            )}
-
-                            <Button
-                              variant="outline"
-                              onClick={() => handleViewCandidateFeedback(candidate)}
-                            >
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Feedback History
-                            </Button>
+                          <div>
+                            <label className="text-sm font-medium text-muted-foreground">Resume</label>
+                            <div className="mt-1">
+                              {candidate.resume_link ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => window.open(candidate.resume_link, '_blank')}
+                                  className="p-0 h-auto text-blue-600 hover:text-blue-800"
+                                >
+                                  <ExternalLink className="h-4 w-4 mr-1" />
+                                  View Resume
+                                </Button>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">Not available</span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      )
-                    })()
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
 
-            <TabsContent value="completed" className="space-y-4">
-              <Card>
-                <CardContent>
-                  {isCandidatesLoading ? (
-                    <div className="flex justify-center py-8">
-                      <div className="text-sm text-muted-foreground">Loading candidates...</div>
-                    </div>
-                  ) : (
-                    <Table>
-                      <TableHeader>
+                        {/* Skills */}
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Skill Set</label>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {(Array.isArray(candidate.skill_set) ? candidate.skill_set : [candidate.skill_set]).map((skill, index) => (
+                              <Badge key={index} variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                                {skill}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 pt-4 border-t">
+                          {!isInInterview && canStartInterview && (
+                            <Button
+                              onClick={async () => {
+                                try {
+                                  await fetch("http://127.0.0.1:8000/privileges/my-status", {
+                                    method: "PUT",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                      "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                                    },
+                                    body: JSON.stringify({ status: "in_interview" }),
+                                  })
+                                  
+                                  const updatedUser = { ...currentUser, privileges: { ...currentUser.privileges, status: "in_interview" } }
+                                  setCurrentUser(updatedUser)
+                                  
+                                  toast({
+                                    title: "Interview Started",
+                                    description: "Your status has been changed to in_interview",
+                                  })
+                                } catch (error) {
+                                  console.error('Failed to start interview:', error)
+                                  toast({
+                                    title: "Error",
+                                    description: "Failed to start interview. Please try again.",
+                                  })
+                                }
+                              }}
+                              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              <Play className="h-4 w-4 mr-2" />
+                              Start Interview
+                            </Button>
+                          )}
+
+                          {isInInterview && (
+                            <Button
+                              onClick={() => handleScheduledFeedback(candidate)}
+                              className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                            >
+                              <CircleMinus className="h-4 w-4 mr-2" />
+                              End Interview & Submit Feedback
+                            </Button>
+                          )}
+
+                          <Button
+                            variant="outline"
+                            onClick={() => handleViewCandidateFeedback(candidate)}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Feedback History
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  })()
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Completed Interviews Table */}
+            <Card>
+              <CardHeader className="border-b">
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  Completed Interviews ({completedCandidateInterviews.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isCandidatesLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="text-sm text-muted-foreground">Loading candidates...</div>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Reg. No.</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Skill Set</TableHead>
+                        <TableHead>Experience</TableHead>
+                        <TableHead>Interview Round</TableHead>
+                        <TableHead>Resume</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {completedCandidateInterviews.length === 0 ? (
                         <TableRow>
-                          <TableHead>Reg. No.</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Skill Set</TableHead>
-                          <TableHead>Experience</TableHead>
-                          <TableHead>Interview Round</TableHead>
-                          <TableHead>Resume</TableHead>
-                          <TableHead>Action</TableHead>
+                          <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                            No completed interviews found
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {completedCandidateInterviews.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                              No completed interviews found
+                      ) : (
+                        completedCandidateInterviews.map((candidate) => (
+                          <TableRow key={candidate._id}>
+                            <TableCell className="font-medium">
+                              {candidate.register_number}
+                            </TableCell>
+                            <TableCell>{candidate.name}</TableCell>
+                            <TableCell>{candidate.email}</TableCell>
+                            <TableCell>
+                              <div className="max-w-xs truncate" title={Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}>
+                                {Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {candidate.total_experience} years
+                            </TableCell>
+                            <TableCell>
+                              {candidate.last_interview_round ? (
+                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                  {candidate.last_interview_round}
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground">N/A</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {candidate.resume_link ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => window.open(candidate.resume_link, '_blank')}
+                                  className="p-0 h-auto text-blue-600 hover:text-blue-800"
+                                >
+                                  <ExternalLink className="h-4 w-4 mr-1" />
+                                  View Resume
+                                </Button>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">Resume Not Found</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                onClick={() => handleViewCandidateFeedback(candidate)}
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Feedback
+                              </Button>
                             </TableCell>
                           </TableRow>
-                        ) : (
-                          completedCandidateInterviews.map((candidate) => (
-                            <TableRow key={candidate._id}>
-                              <TableCell className="font-medium">
-                                {candidate.register_number}
-                              </TableCell>
-                              <TableCell>{candidate.name}</TableCell>
-                              <TableCell>{candidate.email}</TableCell>
-                              <TableCell>
-                                <div className="max-w-xs truncate" title={Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}>
-                                  {Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                {candidate.total_experience} years
-                              </TableCell>
-                              <TableCell>
-                                {candidate.last_interview_round ? (
-                                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                    {candidate.last_interview_round}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-muted-foreground">N/A</span>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {candidate.resume_link ? (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => window.open(candidate.resume_link, '_blank')}
-                                    className="p-0 h-auto text-blue-600 hover:text-blue-800"
-                                  >
-                                    <ExternalLink className="h-4 w-4 mr-1" />
-                                    View Resume
-                                  </Button>
-                                ) : (
-                                  <span className="text-muted-foreground text-sm">Resume Not Found</span>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleViewCandidateFeedback(candidate)}
-                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                >
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  View Feedback
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Candidate Details Popover */}
