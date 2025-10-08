@@ -198,7 +198,7 @@ export default function PanelistDashboard() {
   const handleScheduledFeedbackSubmit = useCallback(async () => {
     try {
       // Update status to free via API
-      const { makeAuthenticatedRequest } = await import("@/lib/auth")
+      const { makeAuthenticatedRequest, getStoredUser } = await import("@/lib/auth")
       await makeAuthenticatedRequest("/privileges/my-status", {
         method: "PUT",
         headers: {
@@ -206,6 +206,14 @@ export default function PanelistDashboard() {
         },
         body: JSON.stringify({ status: "free" }),
       })
+      
+      // Update user in localStorage and dispatch event for immediate header update
+      const storedUser = getStoredUser()
+      if (storedUser) {
+        const updatedUser = { ...storedUser, privileges: { ...storedUser.privileges, status: "free" } }
+        localStorage.setItem("ats_user", JSON.stringify(updatedUser))
+        window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }))
+      }
       
       toast({
         title: "Feedback Submitted",
@@ -299,7 +307,7 @@ export default function PanelistDashboard() {
       startInterview(sessionId)
       
       // Update status to in_interview via API
-      const { makeAuthenticatedRequest } = await import("@/lib/auth")
+      const { makeAuthenticatedRequest, getStoredUser } = await import("@/lib/auth")
       await makeAuthenticatedRequest("/privileges/my-status", {
         method: "PUT",
         headers: {
@@ -307,6 +315,14 @@ export default function PanelistDashboard() {
         },
         body: JSON.stringify({ status: "in_interview" }),
       })
+      
+      // Update user in localStorage and dispatch event for immediate header update
+      const storedUser = getStoredUser()
+      if (storedUser) {
+        const updatedUser = { ...storedUser, privileges: { ...storedUser.privileges, status: "in_interview" } }
+        localStorage.setItem("ats_user", JSON.stringify(updatedUser))
+        window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }))
+      }
       
       toast({
         title: "Interview Started",
