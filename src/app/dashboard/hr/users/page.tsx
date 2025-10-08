@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Checkbox } from "@/components/ui/checkbox"
 import { Plus, Search, Edit, Trash2, Grid, List, X } from "lucide-react"
 import { getAllUsers, type User, makeAuthenticatedRequest } from "@/lib/auth"
+import { API_BASE_URL } from "@/lib/api-config"
 import { UserForm } from "@/components/users/user-form"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
@@ -128,7 +129,7 @@ export default function UsersPage() {
       
       // Delete each selected user
       const deletePromises = selectedUsers.map(userId =>
-        makeAuthenticatedRequest(`https://b2ma3tdd2m.us-west-2.awsapprunner.com/admin/delete-user/${userId}`, {
+        makeAuthenticatedRequest(`${API_BASE_URL}/admin/delete-user/${userId}`, {
           method: "DELETE"
         })
       )
@@ -169,7 +170,7 @@ export default function UsersPage() {
 
   const handleCreateUser = async (userData: Partial<User>) => {
     try {
-      const response = await makeAuthenticatedRequest("https://b2ma3tdd2m.us-west-2.awsapprunner.com/admin/add-user", {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/admin/add-user`, {
         method: "POST",
         body: JSON.stringify({...userData, password : "user123"})
       })
@@ -204,7 +205,7 @@ export default function UsersPage() {
 
     try {
       const updatedUser: User = { ...selectedUser, ...userData }
-      const response = await makeAuthenticatedRequest(`https://b2ma3tdd2m.us-west-2.awsapprunner.com/admin/edit-user/${selectedUser._id}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/admin/edit-user/${selectedUser._id}`, {
         method: "PUT",
         body: JSON.stringify(updatedUser)
       })
@@ -227,7 +228,7 @@ export default function UsersPage() {
 
     try {
       setDeleting(true)
-      const response = await makeAuthenticatedRequest(`https://b2ma3tdd2m.us-west-2.awsapprunner.com/admin/delete-user/${deleteUser._id}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/admin/delete-user/${deleteUser._id}`, {
         method: "DELETE"
       })
 

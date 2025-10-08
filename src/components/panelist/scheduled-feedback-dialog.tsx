@@ -7,6 +7,7 @@ import { Star } from "lucide-react"
 import { type PanelistCandidate } from "@/lib/candidates-api"
 import { useToast } from "@/hooks/use-toast"
 import { getCurrentUser, makeAuthenticatedRequest } from "@/lib/auth"
+import { API_BASE_URL } from "@/lib/api-config"
 
 interface ScheduledFeedbackDialogProps {
   isOpen: boolean
@@ -60,7 +61,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
     try {
       setIsSubmitting(true)
       
-      const response = await makeAuthenticatedRequest('https://b2ma3tdd2m.us-west-2.awsapprunner.com/interviews/update-interview', {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/interviews/update-interview`, {
         method: 'POST',
         body: JSON.stringify({
           candidate_id: candidate._id,
@@ -83,7 +84,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
       // Update panelist status to available after successful feedback submission
       let statusUpdated = false
       try {
-        const statusResponse = await makeAuthenticatedRequest('https://b2ma3tdd2m.us-west-2.awsapprunner.com/privileges/my-status', {
+        const statusResponse = await makeAuthenticatedRequest(`${API_BASE_URL}/privileges/my-status`, {
           method: 'PUT',
           body: JSON.stringify({
             status: "free"
@@ -95,7 +96,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
           
           // Fetch updated user profile from /user/me
           try {
-            const userProfileResponse = await makeAuthenticatedRequest('https://b2ma3tdd2m.us-west-2.awsapprunner.com/user/me', {
+            const userProfileResponse = await makeAuthenticatedRequest(`${API_BASE_URL}/user/me`, {
               method: 'GET'
             })
             

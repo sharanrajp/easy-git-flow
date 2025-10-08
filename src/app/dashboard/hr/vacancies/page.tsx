@@ -30,6 +30,7 @@ import { type Vacancy } from "@/lib/schema-data"
 import { getAllUsers } from "@/lib/auth"
 import { fetchVacancies, addVacancy } from "@/lib/vacancy-api"
 import { makeAuthenticatedRequest } from "@/lib/auth"
+import { API_BASE_URL } from "@/lib/api-config"
 import { VacancyForm } from "@/components/vacancies/vacancy-form"
 import { VacancyDetails } from "@/components/vacancies/vacancy-details"
 import { PanelistSelector } from "@/components/vacancies/panelist-selector"
@@ -169,7 +170,7 @@ export default function VacanciesPage() {
     if (!selectedVacancy) return
 
     try {
-      const response = await makeAuthenticatedRequest(`https://b2ma3tdd2m.us-west-2.awsapprunner.com/Vacancy/${selectedVacancy.id}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${selectedVacancy.id}`, {
         method: "PUT",
         body: JSON.stringify({...selectedVacancy, ...vacancyData})
       })
@@ -225,7 +226,7 @@ export default function VacanciesPage() {
 
     try {
       // Update vacancy in database
-      const response = await makeAuthenticatedRequest(`https://b2ma3tdd2m.us-west-2.awsapprunner.com/Vacancy/${selectedVacancy.id}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${selectedVacancy.id}`, {
         method: "PUT",
         body: JSON.stringify({...selectedVacancy, assignedPanelists: panelistIds})
       })
@@ -249,7 +250,7 @@ export default function VacanciesPage() {
     if (!vacancy) return
 
     try {
-      const response = await makeAuthenticatedRequest(`https://b2ma3tdd2m.us-west-2.awsapprunner.com/Vacancy/${vacancyId}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${vacancyId}`, {
         method: "PUT", 
         body: JSON.stringify({...vacancy, status: newStatus})
       })

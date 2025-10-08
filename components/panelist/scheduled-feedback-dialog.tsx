@@ -7,6 +7,7 @@ import { Star } from "lucide-react"
 import { type PanelistCandidate } from "@/lib/candidates-api"
 import { useToast } from "@/hooks/use-toast"
 import { getCurrentUser } from "@/lib/auth"
+import { API_BASE_URL } from "@/lib/api-config"
 
 interface ScheduledFeedbackDialogProps {
   isOpen: boolean
@@ -60,7 +61,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
     try {
       setIsSubmitting(true)
       
-      const response = await fetch('https://b2ma3tdd2m.us-west-2.awsapprunner.com/interviews/update-interview', {
+      const response = await fetch(`${API_BASE_URL}/interviews/update-interview`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

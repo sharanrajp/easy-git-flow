@@ -6,6 +6,7 @@ import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { fetchUserProfile } from '../lib/auth'
+import { API_BASE_URL } from '../lib/api-config'
 import atsHeroImage from "@/assets/ats-hero-image.jpg"
 
 function LoginPage() {
@@ -28,7 +29,7 @@ function LoginPage() {
 
     try {
       // Call login endpoint
-      const loginResponse = await fetch("https://b2ma3tdd2m.us-west-2.awsapprunner.com/auth/auth/login", {
+      const loginResponse = await fetch(`${API_BASE_URL}/auth/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
@@ -62,7 +63,7 @@ function LoginPage() {
       localStorage.setItem("refresh_token", refresh_token)
 
       // Fetch users with the token
-      const usersResponse = await fetch("https://b2ma3tdd2m.us-west-2.awsapprunner.com/panels/with-status", {
+      const usersResponse = await fetch(`${API_BASE_URL}/panels/with-status`, {
         method: "GET",
         headers: { 
           "Content-Type": "application/json",
