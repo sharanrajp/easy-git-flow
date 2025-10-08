@@ -18,6 +18,7 @@ function LoginPage() {
   useEffect(() => {
     localStorage.removeItem("access_token")
     localStorage.removeItem("ats_user")
+    localStorage.removeItem("ats_users")
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +28,7 @@ function LoginPage() {
 
     try {
       // Call login endpoint
-      const loginResponse = await fetch("https://b2ma3tdd2m.us-west-2.awsapprunner.com/auth/auth/login", {
+      const loginResponse = await fetch("http://127.0.0.1:8000/auth/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
@@ -61,7 +62,7 @@ function LoginPage() {
       localStorage.setItem("refresh_token", refresh_token)
 
       // Fetch users with the token
-      const usersResponse = await fetch("https://b2ma3tdd2m.us-west-2.awsapprunner.com/panels/with-status", {
+      const usersResponse = await fetch("http://127.0.0.1:8000/panels/with-status", {
         method: "GET",
         headers: { 
           "Content-Type": "application/json",
@@ -79,6 +80,9 @@ function LoginPage() {
       }
 
       const users = await usersResponse.json()
+      
+      // Store users in localStorage
+      localStorage.setItem("ats_users", JSON.stringify(users))
 
       // Find current user to determine redirect
       const currentUser = users.find((u: any) => u.email === email || u.username === email)

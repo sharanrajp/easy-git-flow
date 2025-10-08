@@ -40,7 +40,7 @@ export async function refreshToken(): Promise<string | null> {
   if (!refreshToken) return null
 
   try {
-    const response = await fetch("https://b2ma3tdd2m.us-west-2.awsapprunner.com/auth/auth/refresh", {
+    const response = await fetch("http://127.0.0.1:8000/auth/auth/refresh", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -72,7 +72,7 @@ export async function refreshToken(): Promise<string | null> {
 }
 
 // API Base URL Configuration
-const API_BASE_URL = "https://b2ma3tdd2m.us-west-2.awsapprunner.com"
+const API_BASE_URL = "http://127.0.0.1:8000"
 
 // Authenticated API call helper
 export async function makeAuthenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
@@ -121,7 +121,18 @@ export async function makeAuthenticatedRequest(url: string, options: RequestInit
   return response
 }
 
-// User management functions - removed localStorage usage for ats_users
+// User management functions
+function getStoredUsers(): User[] {
+  if (typeof window === "undefined") return []
+  const stored = localStorage.getItem("ats_users")
+  return stored ? JSON.parse(stored) : []
+}
+
+function saveUsers(users: User[]): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("ats_users", JSON.stringify(users))
+  }
+}
 
 export function getStoredUser(): User | null {
   if (typeof window === "undefined") return null
@@ -131,17 +142,19 @@ export function getStoredUser(): User | null {
 
 async function fetchUsers(): Promise<User[]> {
   try {
-    const response = await makeAuthenticatedRequest("https://b2ma3tdd2m.us-west-2.awsapprunner.com/panels/with-status")
+    const response = await makeAuthenticatedRequest("http://127.0.0.1:8000/panels/with-status")
     
     if (!response.ok) {
       throw new Error("Failed to fetch users")
     }
     
     const users = await response.json() || []
+    saveUsers(users)
     return users
   } catch (error) {
     console.error("Error fetching users:", error)
-    throw error
+    // Return cached users if API fails
+    return getStoredUsers()
   }
 }
 
@@ -152,6 +165,7 @@ export async function getAllUsers(): Promise<User[]> {
 export function logout(): void {
   removeToken()
   localStorage.removeItem("ats_user")
+  localStorage.removeItem("ats_users")
   localStorage.removeItem("refresh_token")
 }
 
@@ -161,7 +175,7 @@ export async function addUser(user: User): Promise<void> {
 }
 
 export async function updateUser(updatedUser: User): Promise<void> {
-  const response = await makeAuthenticatedRequest(`https://b2ma3tdd2m.us-west-2.awsapprunner.com/admin/edit-user/${updatedUser._id}`, {
+  const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/edit-user/${updatedUser._id}`, {
     method: "PUT",
     body: JSON.stringify(updatedUser)
   })
@@ -172,7 +186,7 @@ export async function updateUser(updatedUser: User): Promise<void> {
 }
 
 export async function deleteUser(userId: string): Promise<void> {
-  const response = await makeAuthenticatedRequest(`https://b2ma3tdd2m.us-west-2.awsapprunner.com/admin/delete-user/${userId}`, {
+  const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/delete-user/${userId}`, {
     method: "DELETE"
   })
 

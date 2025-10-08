@@ -731,8 +731,21 @@ export default function CandidatesPage() {
     // Update candidates list
     setCandidates((prev) => prev.map((c) => (c.id === candidateToReschedule.id ? updatedCandidate : c)))
 
-    // Update interview sessions - removed localStorage usage
-    // Sessions should be managed via API
+    // Update interview sessions
+    const sessions = getInterviewSessions()
+    const updatedSessions = sessions.map((session) => {
+      if (session.candidateId === candidateToReschedule.id && session.status === "scheduled") {
+        return {
+          ...session,
+          panelistId,
+          panelistName,
+        }
+      }
+      return session
+    })
+
+    // Save updated sessions (assuming there's a function to save)
+    localStorage.setItem("interviewSessions", JSON.stringify(updatedSessions))
 
     setShowRescheduleDialog(false)
     setCandidateToReschedule(null)

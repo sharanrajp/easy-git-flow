@@ -40,7 +40,7 @@ export async function refreshToken(): Promise<string | null> {
   if (!refreshToken) return null
 
   try {
-    const response = await fetch("https://b2ma3tdd2m.us-west-2.awsapprunner.com/auth/auth/refresh", {
+    const response = await fetch("http://127.0.0.1:8000/auth/auth/refresh", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -126,7 +126,7 @@ export function getStoredUser(): User | null {
 
 async function fetchUsers(): Promise<User[]> {
   try {
-    const response = await makeAuthenticatedRequest("https://b2ma3tdd2m.us-west-2.awsapprunner.com/panels/with-status")
+    const response = await makeAuthenticatedRequest("http://127.0.0.1:8000/panels/with-status")
     
     if (!response.ok) {
       throw new Error("Failed to fetch users")
