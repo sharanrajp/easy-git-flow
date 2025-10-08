@@ -816,9 +816,7 @@ export default function CandidatesPage() {
       setUnassignedCandidates(prev => {
         if (checked) {
           // Move checked-in candidate to the top
-          const updatedCandidate = { ...candidate, checked_in: true }
-          const otherCandidates = prev.filter(c => c._id !== candidate._id)
-          return [, ...otherCandidates, updatedCandidate]
+          return prev.map(c => c._id === candidate._id ? { ...c, checked_in: true } : c)
         } else {
           // Just update the checked_in status for check-out
           return prev.map(c => 
