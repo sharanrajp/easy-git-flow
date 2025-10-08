@@ -5,11 +5,8 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Search, Plus, X, Users, CheckCircle, Loader2 } from "lucide-react"
 import { getAllUsers } from "@/lib/auth"
-import { makeAuthenticatedRequest } from "@/lib/auth"
-import { useToast } from "@/hooks/use-toast"
 
 interface PanelistSelectorProps {
   selectedPanelists: string[]
@@ -20,8 +17,6 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
   const [searchTerm, setSearchTerm] = useState("")
   const [allUsers, setAllUsers] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [statusPopoverOpen, setStatusPopoverOpen] = useState<string | null>(null)
-  const { toast } = useToast()
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -65,43 +60,6 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
   const handleRemovePanelist = (panelistId: string) => {
     const updatedPanelists = selectedPanelists.filter((id) => id !== panelistId)
     onUpdate(updatedPanelists)
-  }
-
-  const handleStatusChange = async (userId: string, newStatus: string) => {
-    try {
-      const response = await makeAuthenticatedRequest(
-        `https://b2ma3tdd2m.us-west-2.awsapprunner.com/privileges/status/${userId}`,
-        {
-          method: "PUT",
-          body: JSON.stringify({ status: newStatus }),
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error("Failed to update status")
-      }
-
-      // Update local state
-      setAllUsers((prev) =>
-        prev.map((user) =>
-          user._id === userId ? { ...user, current_status: newStatus } : user
-        )
-      )
-
-      toast({
-        title: "Status updated",
-        description: "Panelist status has been updated successfully.",
-      })
-
-      setStatusPopoverOpen(null)
-    } catch (error) {
-      console.error("Error updating status:", error)
-      toast({
-        title: "Error",
-        description: "Failed to update panelist status.",
-        variant: "destructive",
-      })
-    }
   }
 
   const PanelistCard = ({
@@ -158,41 +116,9 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
             )}
 
             {user.current_status && (
-              <Popover
-                open={statusPopoverOpen === user._id}
-                onOpenChange={(open) => setStatusPopoverOpen(open ? user._id : null)}
-              >
-                <PopoverTrigger asChild>
-                  <Badge
-                    variant={user.current_status === "free" ? "default" : "secondary"}
-                    className="text-xs mt-2 cursor-pointer hover:opacity-80 transition-opacity"
-                  >
-                    {user.current_status === "free" ? "Available" : user.current_status.replace("_", " ")}
-                  </Badge>
-                </PopoverTrigger>
-                <PopoverContent className="w-56 p-2" align="start">
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground mb-2 px-2">Change Status</p>
-                    {[
-                      { label: "Available", value: "free" },
-                      { label: "In Interview", value: "in_interview" },
-                      { label: "Interview Assigned", value: "interview-assigned" },
-                      { label: "Break", value: "break" },
-                      { label: "Unavailable", value: "unavailable" },
-                    ].map((status) => (
-                      <Button
-                        key={status.value}
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start text-xs h-8"
-                        onClick={() => handleStatusChange(user._id, status.value)}
-                      >
-                        {status.label}
-                      </Button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <Badge variant={user.current_status === "free" ? "default" : "secondary"} className="text-xs mt-2">
+                {user.current_status === "free" ? "available" : user.current_status}
+              </Badge>
             )}
           </div>
         </div>
