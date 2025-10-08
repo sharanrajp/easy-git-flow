@@ -212,7 +212,6 @@ export default function CandidatesPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("candidates", JSON.stringify(candidates))
       // Dispatch event to notify other components
       window.dispatchEvent(new CustomEvent("candidateUpdated"))
     }
@@ -744,8 +743,7 @@ export default function CandidatesPage() {
       return session
     })
 
-    // Save updated sessions (assuming there's a function to save)
-    localStorage.setItem("interviewSessions", JSON.stringify(updatedSessions))
+    // Note: Interview sessions are now managed via API calls
 
     setShowRescheduleDialog(false)
     setCandidateToReschedule(null)

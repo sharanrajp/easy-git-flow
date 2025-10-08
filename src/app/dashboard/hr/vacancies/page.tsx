@@ -58,13 +58,8 @@ export default function VacanciesPage() {
   const itemsPerPage = 15
 
   const getCandidateCountsForVacancy = useCallback((vacancyTitle: string) => {
-    if (typeof window === "undefined") return { applications: 0, shortlisted: 0, interviewed: 0, joined: 0 }
-
-    const storedCandidates = localStorage.getItem("candidates")
-    if (!storedCandidates) return { applications: 0, shortlisted: 0, interviewed: 0, joined: 0 }
-
-    const candidates = JSON.parse(storedCandidates)
-    const vacancyCandidates = candidates.filter((c: any) => c.applied_position === vacancyTitle)
+    return { applications: 0, shortlisted: 0, interviewed: 0, joined: 0 }
+    // Note: Candidate counts should now be fetched from API
 
     return {
       applications: vacancyCandidates.length,

@@ -300,10 +300,9 @@ export default function PanelistDashboard() {
   }
 
   const handleViewResume = (candidateId: string) => {
-    const candidateDetails = getCandidateDetails(candidateId)
-    if (candidateDetails?.resume) {
-      window.open(candidateDetails.resume, "_blank", "noopener,noreferrer")
-    }
+    // Note: getCandidateDetails is deprecated and returns null
+    // Resume viewing should be implemented via API call
+    console.log("Resume viewing requires API implementation for candidate:", candidateId)
   }
 
   const handleViewFeedback = (session: InterviewSession) => {

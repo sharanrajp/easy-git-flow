@@ -18,7 +18,6 @@ function LoginPage() {
   useEffect(() => {
     localStorage.removeItem("access_token")
     localStorage.removeItem("ats_user")
-    localStorage.removeItem("ats_users")
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,9 +79,6 @@ function LoginPage() {
       }
 
       const users = await usersResponse.json()
-      
-      // Store users in localStorage
-      localStorage.setItem("ats_users", JSON.stringify(users))
 
       // Find current user to determine redirect
       const currentUser = users.find((u: any) => u.email === email || u.username === email)

@@ -106,17 +106,6 @@ export async function makeAuthenticatedRequest(url: string, options: RequestInit
 }
 
 // User management functions
-function getStoredUsers(): User[] {
-  if (typeof window === "undefined") return []
-  const stored = localStorage.getItem("ats_users")
-  return stored ? JSON.parse(stored) : []
-}
-
-function saveUsers(users: User[]): void {
-  if (typeof window !== "undefined") {
-    localStorage.setItem("ats_users", JSON.stringify(users))
-  }
-}
 
 export function getStoredUser(): User | null {
   if (typeof window === "undefined") return null
@@ -132,13 +121,10 @@ async function fetchUsers(): Promise<User[]> {
       throw new Error("Failed to fetch users")
     }
     
-    const users = await response.json() || []
-    saveUsers(users)
-    return users
+    return await response.json() || []
   } catch (error) {
     console.error("Error fetching users:", error)
-    // Return cached users if API fails
-    return getStoredUsers()
+    return []
   }
 }
 
@@ -149,52 +135,32 @@ export function getAllUsers(): Promise<User[]> {
 export function logout(): void {
   removeToken()
   localStorage.removeItem("ats_user")
-  localStorage.removeItem("ats_users")
 }
 
-// Legacy functions for compatibility
+// Legacy functions for compatibility - now deprecated
 export function authenticateUser(email: string, password: string): User | null {
   console.log("[v0] Legacy authenticateUser called - use login API instead")
   return null
 }
 
 export function updateUsersList(users: User[]): void {
-  saveUsers(users)
+  console.log("[v0] Legacy updateUsersList called - no longer supported")
 }
 
 export function addUser(user: User): void {
-  const users = getStoredUsers()
-  users.push(user)
-  saveUsers(users)
+  console.log("[v0] Legacy addUser called - use API instead")
 }
 
 export function updateUser(updatedUser: User): void {
-  const users = getStoredUsers()
-  const index = users.findIndex((u) => u._id === updatedUser._id)
-  if (index !== -1) {
-    users[index] = updatedUser
-    saveUsers(users)
-  }
+  console.log("[v0] Legacy updateUser called - use API instead")
 }
 
 export function deleteUser(userId: string): void {
-  const users = getStoredUsers()
-  const filteredUsers = users.filter((u) => u._id !== userId)
-  saveUsers(filteredUsers)
+  console.log("[v0] Legacy deleteUser called - use API instead")
 }
 
 export function updateUserStatus(userId: string, current_status: User["current_status"]): void {
-  const users = getStoredUsers()
-  const user = users.find((u) => u._id === userId)
-  if (user) {
-    user.current_status = current_status
-    saveUsers(users)
-    // Update stored user if it's the current user
-    const currentUser = getStoredUser()
-    if (currentUser && currentUser._id === userId) {
-      localStorage.setItem("ats_user", JSON.stringify({ ...currentUser, current_status }))
-    }
-  }
+  console.log("[v0] Legacy updateUserStatus called - use API instead")
 }
 
 export function getCurrentUser(): User | null {
