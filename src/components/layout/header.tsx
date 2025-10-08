@@ -215,8 +215,8 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
     <header className="bg-gradient-card backdrop-blur-xl border-b border-border/50 shadow-card sticky top-0 z-50">
       <div className="flex items-center justify-between px-6 py-4">
         {/* Logo and Brand */}
-        <div className="flex items-center space-x-8">
-          <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-6">
+          <div className="flex-shrink-0">
             <img src="/vuedata-blue.webp" alt="vueDataImage" draggable="false" height={25} width={200}/>
           </div>
           
