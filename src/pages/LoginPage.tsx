@@ -28,7 +28,7 @@ function LoginPage() {
 
     try {
       // Call login endpoint
-      const loginResponse = await fetch("http://127.0.0.1:8000/auth/auth/login", {
+      const loginResponse = await fetch("http://34.208.36.73:8000/auth/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
