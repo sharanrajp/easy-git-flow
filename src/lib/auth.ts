@@ -40,7 +40,7 @@ export async function refreshToken(): Promise<string | null> {
   if (!refreshToken) return null
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/auth/auth/refresh", {
+    const response = await fetch("https://b2ma3tdd2m.us-west-2.awsapprunner.com/auth/auth/refresh", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -72,7 +72,7 @@ export async function refreshToken(): Promise<string | null> {
 }
 
 // API Base URL Configuration
-const API_BASE_URL = "http://127.0.0.1:8000"
+const API_BASE_URL = "https://b2ma3tdd2m.us-west-2.awsapprunner.com"
 
 // Authenticated API call helper
 export async function makeAuthenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
@@ -142,7 +142,7 @@ export function getStoredUser(): User | null {
 
 async function fetchUsers(): Promise<User[]> {
   try {
-    const response = await makeAuthenticatedRequest("http://127.0.0.1:8000/panels/with-status")
+    const response = await makeAuthenticatedRequest("https://b2ma3tdd2m.us-west-2.awsapprunner.com/panels/with-status")
     
     if (!response.ok) {
       throw new Error("Failed to fetch users")
@@ -175,7 +175,7 @@ export async function addUser(user: User): Promise<void> {
 }
 
 export async function updateUser(updatedUser: User): Promise<void> {
-  const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/edit-user/${updatedUser._id}`, {
+  const response = await makeAuthenticatedRequest(`https://b2ma3tdd2m.us-west-2.awsapprunner.com/admin/edit-user/${updatedUser._id}`, {
     method: "PUT",
     body: JSON.stringify(updatedUser)
   })
@@ -186,7 +186,7 @@ export async function updateUser(updatedUser: User): Promise<void> {
 }
 
 export async function deleteUser(userId: string): Promise<void> {
-  const response = await makeAuthenticatedRequest(`http://127.0.0.1:8000/admin/delete-user/${userId}`, {
+  const response = await makeAuthenticatedRequest(`https://b2ma3tdd2m.us-west-2.awsapprunner.com/admin/delete-user/${userId}`, {
     method: "DELETE"
   })
 

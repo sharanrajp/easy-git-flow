@@ -1,7 +1,7 @@
 import { getToken } from './auth';
 import type { Vacancy } from './schema-data';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'https://b2ma3tdd2m.us-west-2.awsapprunner.com';
 
 // Backend vacancy interface (what we receive from API)
 interface BackendVacancy {

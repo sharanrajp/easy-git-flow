@@ -60,7 +60,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
     try {
       setIsSubmitting(true)
       
-      const response = await makeAuthenticatedRequest('http://127.0.0.1:8000/interviews/update-interview', {
+      const response = await makeAuthenticatedRequest('https://b2ma3tdd2m.us-west-2.awsapprunner.com/interviews/update-interview', {
         method: 'POST',
         body: JSON.stringify({
           candidate_id: candidate._id,
@@ -83,7 +83,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
       // Update panelist status to available after successful feedback submission
       let statusUpdated = false
       try {
-        const statusResponse = await makeAuthenticatedRequest('http://127.0.0.1:8000/privileges/my-status', {
+        const statusResponse = await makeAuthenticatedRequest('https://b2ma3tdd2m.us-west-2.awsapprunner.com/privileges/my-status', {
           method: 'PUT',
           body: JSON.stringify({
             status: "free"
@@ -95,7 +95,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
           
           // Fetch updated user profile from /user/me
           try {
-            const userProfileResponse = await makeAuthenticatedRequest('http://127.0.0.1:8000/user/me', {
+            const userProfileResponse = await makeAuthenticatedRequest('https://b2ma3tdd2m.us-west-2.awsapprunner.com/user/me', {
               method: 'GET'
             })
             
