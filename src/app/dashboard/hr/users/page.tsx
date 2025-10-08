@@ -108,6 +108,7 @@ export default function UsersPage() {
   const statusArray = [
     { label: "Available", value: "free" },
     { label: "In Interview", value: "in_interview" },
+    { label: "Interview Assigned", value: "interview-assigned" },
     { label: "Break", value: "break" },
   ]
 
@@ -287,6 +288,8 @@ export default function UsersPage() {
         return "bg-green-100 text-green-800"
       case "in_interview":
         return "bg-orange-100 text-orange-800"
+      case "interview-assigned":
+        return "bg-yellow-100 text-yellow-800"
       case "break":
         return "bg-gray-100 text-gray-800"
       case "unavailable":

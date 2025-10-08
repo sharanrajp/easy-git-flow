@@ -818,7 +818,7 @@ export default function CandidatesPage() {
           // Move checked-in candidate to the top
           const updatedCandidate = { ...candidate, checked_in: true }
           const otherCandidates = prev.filter(c => c._id !== candidate._id)
-          return [updatedCandidate, ...otherCandidates]
+          return [, ...otherCandidates, updatedCandidate]
         } else {
           // Just update the checked_in status for check-out
           return prev.map(c => 
