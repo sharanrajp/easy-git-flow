@@ -114,7 +114,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
                   >
                     <div className="flex items-center">
                       <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                      Available {isUpdatingStatus && user.current_status !== "free" ? "(updating...)" : ""}
+                      Available
                     </div>
                   </DropdownMenuItem>
                   <DropdownMenuItem 
@@ -123,7 +123,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
                   >
                     <div className="flex items-center">
                       <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
-                      Break {isUpdatingStatus && user.current_status !== "break" ? "(updating...)" : ""}
+                      Break
                     </div>
                   </DropdownMenuItem>
                 </>

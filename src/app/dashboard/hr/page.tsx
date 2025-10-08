@@ -88,11 +88,11 @@ export default function HRDashboard() {
         fetchOngoingInterviews()
       ])
       
-      setVacancies(fetchedVacancies)
-      setHrUsers(fetchedUsers.filter(user => user.role === 'hr'))
-      setUnassignedCandidates(fetchedUnassigned)
-      setAssignedCandidates(fetchedAssigned)
-      setOngoingInterviews(fetchedOngoing)
+      setVacancies(fetchedVacancies || [])
+      setHrUsers(fetchedUsers.filter(user => user.role === 'hr') || [])
+      setUnassignedCandidates(fetchedUnassigned || [])
+      setAssignedCandidates(fetchedAssigned || [])
+      setOngoingInterviews(fetchedOngoing || [])
     } catch (error) {
       console.error('Error loading initial data:', error)
       toast({
@@ -158,7 +158,7 @@ export default function HRDashboard() {
     )
   }
 
-  if (isLoading || !candidateMetrics || !pipelineMetrics || !performanceMetrics) {
+  if (isLoading) {
     return (
       <DashboardLayout requiredRole="hr">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -221,7 +221,7 @@ export default function HRDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <MetricCard
               title="Total Applications"
-              value={candidateMetrics.total_applications}
+              value={candidateMetrics?.total_applications || 0}
               icon={Users}
               trend={{ value: 12, label: candidateFilter === "day" ? "vs yesterday" : `vs last ${candidateFilter}` }}
               color="blue"
@@ -237,7 +237,7 @@ export default function HRDashboard() {
             />
             <MetricCard
               title="Unassigned Candidates"
-              value={candidateMetrics.unassigned_candidates}
+              value={candidateMetrics?.unassigned_candidates || 0}
               description="Awaiting recruiter assignment"
               icon={UserCheck}
               color="orange"
@@ -253,7 +253,7 @@ export default function HRDashboard() {
             />
             <MetricCard
               title="Interviews Scheduled"
-              value={candidateMetrics.interviews_scheduled}
+              value={candidateMetrics?.interviews_scheduled || 0}
               description="Across all rounds"
               icon={Clock}
               color="green"
@@ -269,7 +269,7 @@ export default function HRDashboard() {
             />
             <MetricCard
               title="Joined/Offer Released"
-              value={`${candidateMetrics.joined_count}/${candidateMetrics.offer_released_count}`}
+              value={`${candidateMetrics?.joined_count || 0}/${candidateMetrics?.offer_released_count || 0}`}
               icon={CheckCircle}
               trend={{ value: 25, label: `vs last ${candidateFilter}` }}
               color="green"
@@ -313,21 +313,21 @@ export default function HRDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <MetricCard
               title="Ongoing r1"
-              value={pipelineMetrics.ongoing_r1}
+              value={pipelineMetrics?.ongoing_r1 || 0}
               description="Technical Screen in progress"
               icon={Users}
               color="blue"
             />
             <MetricCard
               title="Ongoing r2"
-              value={pipelineMetrics.ongoing_r2}
+              value={pipelineMetrics?.ongoing_r2 || 0}
               description="Technical + Behavioral in progress"
               icon={Users}
               color="orange"
             />
             <MetricCard
               title="Ongoing r3"
-              value={pipelineMetrics.ongoing_r3}
+              value={pipelineMetrics?.ongoing_r3 || 0}
               description="Manager Interview in progress"
               icon={Users}
               color="green"
@@ -362,7 +362,7 @@ export default function HRDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <MetricCard
               title="Successful Hires"
-              value={performanceMetrics.successful_hires}
+              value={performanceMetrics?.successful_hires || 0}
               description="This month"
               icon={CheckCircle}
               trend={{ value: 25, label: "vs last month" }}
@@ -370,21 +370,21 @@ export default function HRDashboard() {
             />
             <MetricCard
               title="Interview-to-Offer Rate"
-              value={`${performanceMetrics.interview_to_offer_rate}%`}
+              value={`${performanceMetrics?.interview_to_offer_rate || 0}%`}
               description="Conversion efficiency"
               icon={TrendingUp}
               color="blue"
             />
             <MetricCard
               title="Avg. Time to Hire"
-              value={`${performanceMetrics.avg_time_to_hire} days`}
+              value={`${performanceMetrics?.avg_time_to_hire || 0} days`}
               description="From application to offer"
               icon={Calendar}
               color="gray"
             />
             <MetricCard
               title="Offer Acceptance Rate"
-              value={`${performanceMetrics.offer_acceptance_rate}%`}
+              value={`${performanceMetrics?.offer_acceptance_rate || 0}%`}
               description="Offers accepted vs. offered"
               icon={ThumbsUp}
               trend={{ value: 5, label: "vs last month" }}
