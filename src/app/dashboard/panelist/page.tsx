@@ -548,50 +548,56 @@ export default function PanelistDashboard() {
             </TabsList>
 
             <TabsContent value="scheduled" className="space-y-4">
-              <Card>
-                <CardContent>
+              <Card className="border-2 border-primary/20">
+                <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-primary/10">
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-primary" />
+                    Scheduled Interview
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
                   {isCandidatesLoading ? (
-                    <div className="flex justify-center py-8">
-                      <div className="text-sm text-muted-foreground">Loading candidates...</div>
+                    <div className="flex justify-center py-12">
+                      <div className="text-sm text-muted-foreground">Loading interview details...</div>
+                    </div>
+                  ) : scheduledInterviews.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+                        <Calendar className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                      <p className="text-lg font-medium text-muted-foreground">No scheduled interviews.</p>
+                      <p className="text-sm text-muted-foreground mt-2">You don't have any interviews scheduled at the moment.</p>
                     </div>
                   ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Reg. No.</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Skill Set</TableHead>
-                          <TableHead>Experience</TableHead>
-                          <TableHead>Interview Round</TableHead>
-                          <TableHead>Resume</TableHead>
-                          <TableHead>Feedback</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {scheduledInterviews.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                              No scheduled interviews found
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          scheduledInterviews.map((candidate) => (
-                            <TableRow key={candidate._id}>
-                              <TableCell className="font-medium">
-                                {candidate.register_number}
-                              </TableCell>
-                              <TableCell>{candidate.name}</TableCell>
-                              <TableCell>{candidate.email}</TableCell>
-                              <TableCell>
-                                <div className="max-w-xs truncate" title={Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}>
-                                  {Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                {candidate.total_experience} years
-                              </TableCell>
-                              <TableCell>
+                    // Show only the first scheduled candidate
+                    (() => {
+                      const candidate = scheduledInterviews[0]
+                      const isInInterview = currentUser?.privileges?.status === "in_interview"
+                      const canStartInterview = currentUser?.privileges?.status === "interview-assigned"
+
+                      return (
+                        <div className="space-y-6">
+                          {/* Candidate Details */}
+                          <div className="grid grid-cols-2 gap-6">
+                            <div>
+                              <label className="text-sm font-medium text-muted-foreground">Registration Number</label>
+                              <p className="text-base font-semibold mt-1">{candidate.register_number}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-muted-foreground">Name</label>
+                              <p className="text-base font-semibold mt-1">{candidate.name}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-muted-foreground">Email</label>
+                              <p className="text-base mt-1 text-blue-600">{candidate.email}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-muted-foreground">Experience</label>
+                              <p className="text-base mt-1">{candidate.total_experience} years</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-muted-foreground">Interview Round</label>
+                              <div className="mt-1">
                                 {candidate.last_interview_round ? (
                                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                                     {candidate.last_interview_round}
@@ -599,8 +605,11 @@ export default function PanelistDashboard() {
                                 ) : (
                                   <span className="text-muted-foreground">N/A</span>
                                 )}
-                              </TableCell>
-                              <TableCell>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-muted-foreground">Resume</label>
+                              <div className="mt-1">
                                 {candidate.resume_link ? (
                                   <Button
                                     variant="ghost"
@@ -612,24 +621,82 @@ export default function PanelistDashboard() {
                                     View Resume
                                   </Button>
                                 ) : (
-                                  <span className="text-muted-foreground text-sm">Resume Not Found</span>
+                                  <span className="text-muted-foreground text-sm">Not available</span>
                                 )}
-                              </TableCell>
-                              <TableCell>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleViewCandidateFeedback(candidate)}
-                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                >
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  View Feedback
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Skills */}
+                          <div>
+                            <label className="text-sm font-medium text-muted-foreground">Skill Set</label>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {(Array.isArray(candidate.skill_set) ? candidate.skill_set : [candidate.skill_set]).map((skill, index) => (
+                                <Badge key={index} variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                                  {skill}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex gap-3 pt-4 border-t">
+                            {!isInInterview && canStartInterview && (
+                              <Button
+                                onClick={async () => {
+                                  try {
+                                    await fetch("http://127.0.0.1:8000/privileges/my-status", {
+                                      method: "PUT",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                        "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                                      },
+                                      body: JSON.stringify({ status: "in_interview" }),
+                                    })
+                                    
+                                    const updatedUser = { ...currentUser, privileges: { ...currentUser.privileges, status: "in_interview" } }
+                                    setCurrentUser(updatedUser)
+                                    
+                                    toast({
+                                      title: "Interview Started",
+                                      description: "Your status has been changed to in_interview",
+                                    })
+                                  } catch (error) {
+                                    console.error('Failed to start interview:', error)
+                                    toast({
+                                      title: "Error",
+                                      description: "Failed to start interview. Please try again.",
+                                    })
+                                  }
+                                }}
+                                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                              >
+                                <Play className="h-4 w-4 mr-2" />
+                                Start Interview
+                              </Button>
+                            )}
+
+                            {isInInterview && (
+                              <Button
+                                onClick={() => handleScheduledFeedback(candidate)}
+                                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                              >
+                                <CircleMinus className="h-4 w-4 mr-2" />
+                                End Interview & Submit Feedback
+                              </Button>
+                            )}
+
+                            <Button
+                              variant="outline"
+                              onClick={() => handleViewCandidateFeedback(candidate)}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Feedback History
+                            </Button>
+                          </div>
+                        </div>
+                      )
+                    })()
                   )}
                 </CardContent>
               </Card>
