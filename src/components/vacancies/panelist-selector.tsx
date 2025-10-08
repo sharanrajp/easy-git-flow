@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Search, Plus, X, Users, CheckCircle, Loader2 } from "lucide-react"
-import { getAllUsers } from "@/lib/auth"
+import { getAllUsers, makeAuthenticatedRequest } from "@/lib/auth"
+import { useToast } from "@/hooks/use-toast"
 
 interface PanelistSelectorProps {
   selectedPanelists: string[]
@@ -14,9 +16,11 @@ interface PanelistSelectorProps {
 }
 
 export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelectorProps) {
+  const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [allUsers, setAllUsers] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [statusPopoverOpen, setStatusPopoverOpen] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -60,6 +64,36 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
   const handleRemovePanelist = (panelistId: string) => {
     const updatedPanelists = selectedPanelists.filter((id) => id !== panelistId)
     onUpdate(updatedPanelists)
+  }
+
+  const handleStatusChange = async (userId: string, newStatus: string) => {
+    try {
+      await makeAuthenticatedRequest(`/privileges/status/${userId}`, {
+        method: "PUT",
+        body: JSON.stringify({ current_status: newStatus }),
+      })
+
+      // Update local state
+      setAllUsers(prevUsers =>
+        prevUsers.map(user =>
+          user._id === userId ? { ...user, current_status: newStatus } : user
+        )
+      )
+
+      setStatusPopoverOpen(null)
+
+      toast({
+        title: "Status Updated",
+        description: `Panelist status changed to ${newStatus === "free" ? "available" : newStatus}`,
+      })
+    } catch (error) {
+      console.error("Failed to update status:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update panelist status",
+        variant: "destructive",
+      })
+    }
   }
 
   const PanelistCard = ({
@@ -116,9 +150,42 @@ export function PanelistSelector({ selectedPanelists, onUpdate }: PanelistSelect
             )}
 
             {user.current_status && (
-              <Badge variant={user.current_status === "free" ? "default" : "secondary"} className="text-xs mt-2">
-                {user.current_status === "free" ? "available" : user.current_status}
-              </Badge>
+              <Popover
+                open={statusPopoverOpen === user._id}
+                onOpenChange={(open) => setStatusPopoverOpen(open ? user._id : null)}
+              >
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm" className="p-0 h-auto cursor-pointer mt-2">
+                    <Badge variant={user.current_status === "free" ? "default" : "secondary"} className="text-xs">
+                      {user.current_status === "free" ? "available" : user.current_status}
+                    </Badge>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-2" align="start">
+                  <div className="space-y-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start text-sm"
+                      onClick={() => handleStatusChange(user._id, "free")}
+                    >
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                      Available
+                    </Button>
+                    {user.current_status === "free" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start text-sm"
+                        onClick={() => handleStatusChange(user._id, "break")}
+                      >
+                        <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
+                        Break
+                      </Button>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
             )}
           </div>
         </div>
