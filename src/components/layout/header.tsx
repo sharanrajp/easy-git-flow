@@ -12,9 +12,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Bell, LogOut, User as UserIcon, Settings, LayoutDashboard, Users, UserCheck, Briefcase, Menu, ChevronDown, Play, Square } from "lucide-react"
+import { Bell, LogOut, User as UserIcon, Settings, LayoutDashboard, Users, UserCheck, Briefcase, Menu, ChevronDown, Play, Square, Power } from "lucide-react"
 import { type User, logout, updateUserStatus, makeAuthenticatedRequest } from "@/lib/auth"
 import { cn } from "@/lib/utils"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 interface HeaderProps {
   user: User
@@ -238,68 +239,76 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
             </DropdownMenu>
           )}
 
-          {/* Profile */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-accent/50 smooth-transition">
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-gradient-primary text-white font-semibold">
-                    {user.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="text-left hidden sm:block">
-                  <div className="text-sm font-semibold text-foreground">{user.name}</div>
-                  <div className="text-xs text-muted-foreground capitalize">{user.role || "Panelist"}</div>
-                </div>
-                {user.role !== "hr" && (
-                  <Badge className={cn("status-badge", getStatusColor(user.current_status || "free"))}>{user.current_status === "free" ? "available" : user.current_status || "available"}</Badge>
-                )}
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-card/95 backdrop-blur-xl border-border/50 shadow-elegant">
-              <DropdownMenuLabel className="font-semibold">My Account</DropdownMenuLabel>
+          {/* Profile Display */}
+          <div className="flex items-center space-x-3">
+            <Avatar className="h-10 w-10">
+              <AvatarFallback className="bg-gradient-primary text-white font-semibold">
+                {user.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </AvatarFallback>
+            </Avatar>
+            <div className="text-left hidden sm:block">
+              <div className="text-sm font-semibold text-foreground">{user.name}</div>
+              <div className="text-xs text-muted-foreground capitalize">{user.role || "Panelist"}</div>
+            </div>
+          </div>
 
-              {user.role !== "hr" && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="font-semibold">Change Status</DropdownMenuLabel>
-                  <DropdownMenuItem 
-                    onClick={() => handleStatusChange("free")} 
-                    className="smooth-transition"
+          {/* Status Badge with Popover for Panelists */}
+          {user.role !== "hr" && user.role !== "admin" && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className={cn(
+                    "status-badge px-3 py-1.5 h-auto smooth-transition cursor-pointer hover:opacity-80",
+                    getStatusColor(user.current_status || "free")
+                  )}
+                >
+                  {user.current_status === "free" ? "available" : user.current_status || "available"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-56 bg-card/95 backdrop-blur-xl border-border/50 shadow-elegant p-2">
+                <div className="space-y-1">
+                  <div className="px-3 py-2 text-sm font-semibold text-foreground">Change Status</div>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start smooth-transition"
+                    onClick={() => handleStatusChange("free")}
                     disabled={isUpdatingStatus}
                   >
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-emerald-500 rounded-full mr-3 shadow-sm"></div>
                       Available {isUpdatingStatus && user.current_status !== "free" ? "(updating...)" : ""}
                     </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleStatusChange("break")} 
-                    className="smooth-transition"
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start smooth-transition"
+                    onClick={() => handleStatusChange("break")}
                     disabled={isUpdatingStatus}
                   >
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-slate-500 rounded-full mr-3 shadow-sm"></div>
                       Break {isUpdatingStatus && user.current_status !== "break" ? "(updating...)" : ""}
                     </div>
-                  </DropdownMenuItem>
-                </>
-              )}
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
 
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={handleLogout}
-                className="text-destructive focus:text-destructive smooth-transition"
-              >
-                <LogOut className="mr-3 h-4 w-4" />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Logout Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            className="text-muted-foreground hover:text-destructive smooth-transition rounded-xl"
+            title="Logout"
+          >
+            <Power className="h-5 w-5" />
+          </Button>
         </div>
       </div>
     </header>
