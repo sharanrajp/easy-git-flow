@@ -555,6 +555,23 @@ export default function VacanciesPage() {
                         </TableRow>
                       )
                      })}
+                     {!loading && !error && filteredVacancies.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={10} className="py-12">
+                            <div className="flex flex-col items-center justify-center text-center w-full">
+                              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <Plus className="h-8 w-8 text-gray-400" />
+                              </div>
+                              <h3 className="text-lg font-medium text-gray-900 mb-2">No vacancies found</h3>
+                              <p className="text-gray-500 mb-4">
+                                {searchTerm || statusFilter !== "all" || priorityFilter !== "all" || recruiterFilter !== "all"
+                                  ? "Try adjusting your search criteria"
+                                  : "Get started by creating your first vacancy"}
+                              </p>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                    )}
                    </TableBody>
                  </Table>
                  </TooltipProvider>
@@ -634,27 +651,6 @@ export default function VacanciesPage() {
            </>
           )}
           </>
-          )}
-
-          {/* Empty State */}
-          {!loading && !error && filteredVacancies.length === 0 && (
-          <div className="text-center py-12">
-            <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <Plus className="h-8 w-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No vacancies found</h3>
-            <p className="text-gray-500 mb-4">
-              {searchTerm || statusFilter !== "all" || priorityFilter !== "all" || recruiterFilter !== "all"
-                ? "Try adjusting your search criteria"
-                : "Get started by creating your first vacancy"}
-            </p>
-            {!searchTerm && statusFilter === "all" && priorityFilter === "all" && recruiterFilter === "all" && (
-              <Button onClick={() => setIsCreateOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Vacancy
-              </Button>
-            )}
-          </div>
           )}
         </div>
 
