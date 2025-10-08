@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate, Link, useLocation } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,8 @@ import { Bell, LogOut, User as UserIcon, Settings, LayoutDashboard, Users, UserC
 import { type User, logout, updateUserStatus, makeAuthenticatedRequest } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { ScheduledFeedbackDialog } from "@/components/panelist/scheduled-feedback-dialog"
+import { fetchPanelistAssignedCandidates, type PanelistCandidate } from "@/lib/candidates-api"
 
 interface HeaderProps {
   user: User
@@ -52,8 +54,34 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
   const { toast } = useToast()
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isUpdatingInterviewStatus, setIsUpdatingInterviewStatus] = useState(false)
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false)
+  const [scheduledCandidate, setScheduledCandidate] = useState<PanelistCandidate | null>(null)
 
   const items = navigationItems[user.role] || []
+
+  // Load scheduled candidate when user is in interview state
+  useEffect(() => {
+    if (user.role === "panelist" && user?.privileges?.status === "in_interview") {
+      loadScheduledCandidate()
+    }
+  }, [user?.privileges?.status])
+
+  const loadScheduledCandidate = async () => {
+    try {
+      const candidates = await fetchPanelistAssignedCandidates()
+      const scheduled = candidates.find(c => {
+        const hasFeedback = c.previous_rounds?.find(
+          (round: any) => round.panel_name === user.name
+        )?.feedback_submitted
+        return !hasFeedback
+      })
+      if (scheduled) {
+        setScheduledCandidate(scheduled)
+      }
+    } catch (error) {
+      console.error("Error loading scheduled candidate:", error)
+    }
+  }
 
   const handleLogout = () => {
     logout()
@@ -90,8 +118,16 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
   const handleInterviewStatusChange = async () => {
     if (isUpdatingInterviewStatus) return
     
-    const isStarting = user?.privileges?.status
-    const newStatus = isStarting === "interview-assigned" ? "in_interview" : "available"
+    const isStarting = user?.privileges?.status === "interview-assigned"
+    
+    // If ending interview, show feedback dialog first
+    if (!isStarting) {
+      setShowFeedbackDialog(true)
+      return
+    }
+    
+    // Starting interview
+    const newStatus = "in_interview"
 
     try {
       setIsUpdatingInterviewStatus(true)
@@ -105,13 +141,13 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
       })
       
       // Update UI with proper status format
-      const uiStatus: User["privileges"]["status"] = isStarting === "interview-assigned" ? "in_interview" : "free"
+      const uiStatus: User["privileges"]["status"] = "in_interview"
       const updatedUser = { ...user, privileges: { ...user.privileges, status: uiStatus } }
       onUserUpdate?.(updatedUser)
       
       toast({
-        title: isStarting === "interview-assigned" ? "Interview Started" : "Interview Ended",
-        description: `Your status has been changed to ${isStarting === "interview-assigned" ? "in_interview" : "available"}`,
+        title: "Interview Started",
+        description: "Your status has been changed to in_interview",
       })
     } catch (error) {
       console.error('Failed to update interview status:', error)
@@ -123,6 +159,37 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
     } finally {
       setIsUpdatingInterviewStatus(false)
     }
+  }
+
+  const handleFeedbackSubmit = async () => {
+    // Update status to available after feedback is submitted
+    try {
+      await makeAuthenticatedRequest("/privileges/my-status", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "available" }),
+      })
+
+      const updatedUser = { ...user, privileges: { ...user.privileges, status: "free" } }
+      onUserUpdate?.(updatedUser)
+
+      toast({
+        title: "Interview Ended",
+        description: "Feedback submitted successfully",
+      })
+    } catch (error) {
+      console.error("Error updating status after feedback:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update status after feedback",
+        variant: "destructive",
+      })
+    }
+    
+    setShowFeedbackDialog(false)
+    setScheduledCandidate(null)
   }
 
   const getStatusColor = (current_status?: string) => {
@@ -313,6 +380,16 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
           </Button>
         </div>
       </div>
+
+      {/* Feedback Dialog */}
+      {showFeedbackDialog && scheduledCandidate && (
+        <ScheduledFeedbackDialog
+          isOpen={showFeedbackDialog}
+          onClose={() => setShowFeedbackDialog(false)}
+          candidate={scheduledCandidate}
+          onSubmit={handleFeedbackSubmit}
+        />
+      )}
     </header>
   )
 }
