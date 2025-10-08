@@ -169,6 +169,7 @@ export function ManagerInterviewFlow({ candidate, onComplete }: ManagerInterview
                   placeholder="e.g., $120,000"
                   value={feedback.salaryRecommendation}
                   onChange={(e) => setFeedback({ ...feedback, salaryRecommendation: e.target.value })}
+                  autoComplete="off"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -180,6 +181,7 @@ export function ManagerInterviewFlow({ candidate, onComplete }: ManagerInterview
                   type="date"
                   value={feedback.startDate}
                   onChange={(e) => setFeedback({ ...feedback, startDate: e.target.value })}
+                  autoComplete="off"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
