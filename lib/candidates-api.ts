@@ -1,6 +1,6 @@
 import { getToken, makeAuthenticatedRequest } from './auth';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'https://b2ma3tdd2m.us-west-2.awsapprunner.com';
 
 export interface BackendCandidate {
   _id: string;

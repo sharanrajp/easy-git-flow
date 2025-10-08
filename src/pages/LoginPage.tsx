@@ -62,7 +62,7 @@ function LoginPage() {
       localStorage.setItem("refresh_token", refresh_token)
 
       // Fetch users with the token
-      const usersResponse = await fetch("http://127.0.0.1:8000/panels/with-status", {
+      const usersResponse = await fetch("https://b2ma3tdd2m.us-west-2.awsapprunner.com/panels/with-status", {
         method: "GET",
         headers: { 
           "Content-Type": "application/json",

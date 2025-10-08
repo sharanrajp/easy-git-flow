@@ -53,7 +53,6 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
   const pathname = useLocation().pathname
   const { toast } = useToast()
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
-  const [isUpdatingInterviewStatus, setIsUpdatingInterviewStatus] = useState(false)
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false)
   const [scheduledCandidate, setScheduledCandidate] = useState<PanelistCandidate | null>(null)
 
@@ -115,52 +114,6 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
     }
   }
 
-  const handleInterviewStatusChange = async () => {
-    if (isUpdatingInterviewStatus) return
-    
-    const isStarting = user?.privileges?.status === "interview-assigned"
-    
-    // If ending interview, show feedback dialog first
-    if (!isStarting) {
-      setShowFeedbackDialog(true)
-      return
-    }
-    
-    // Starting interview
-    const newStatus = "in_interview"
-
-    try {
-      setIsUpdatingInterviewStatus(true)
-      
-      await makeAuthenticatedRequest("/privileges/my-status", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: newStatus }),
-      })
-      
-      // Update UI with proper status format
-      const uiStatus: User["privileges"]["status"] = "in_interview"
-      const updatedUser = { ...user, privileges: { ...user.privileges, status: uiStatus } }
-      onUserUpdate?.(updatedUser)
-      
-      toast({
-        title: "Interview Started",
-        description: "Your status has been changed to in_interview",
-      })
-    } catch (error) {
-      console.error('Failed to update interview status:', error)
-      toast({
-        title: "Error",
-        description: "Failed to update interview status. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsUpdatingInterviewStatus(false)
-    }
-  }
-
   const handleFeedbackSubmit = async () => {
     // Update status to available after feedback is submitted
     try {
@@ -206,10 +159,6 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
         return "bg-slate-100 text-slate-800 ring-slate-200"
     }
   }
-
-  const showInterviewButton = user.role === "panelist" && 
-    (user?.privileges?.status === "interview-assigned" || user?.privileges?.status === "in_interview")
-  const isInterviewInProgress = user?.privileges?.status === "in_interview"
 
   return (
     <header className="bg-gradient-card backdrop-blur-xl border-b border-border/50 shadow-card sticky top-0 z-50">

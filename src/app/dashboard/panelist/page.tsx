@@ -603,7 +603,7 @@ export default function PanelistDashboard() {
           {/* Scheduled Interview Card */}
           <div className="space-y-6">
             <Card className="border-2 border-primary/20">
-              <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-primary/10">
+              <CardHeader className="border-b from-primary/5 to-primary/10">
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-primary" />
                   Scheduled Interview
@@ -700,11 +700,11 @@ export default function PanelistDashboard() {
                               size="sm"
                               onClick={async () => {
                                 try {
-                                  await fetch("http://127.0.0.1:8000/privileges/my-status", {
+                                  await fetch("https://b2ma3tdd2m.us-west-2.awsapprunner.com/privileges/my-status", {
                                     method: "PUT",
                                     headers: {
                                       "Content-Type": "application/json",
-                                      "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                                      "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
                                     },
                                     body: JSON.stringify({ status: "in_interview" }),
                                   })
