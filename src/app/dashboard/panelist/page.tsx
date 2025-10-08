@@ -29,7 +29,6 @@ import {
   CircleMinus,
   X,
 } from "lucide-react"
-import { getPanelistDashboardData } from "@/lib/panelist-data"
 import {
   getInterviewSessionsForPanelist,
   startInterview,
@@ -309,8 +308,6 @@ export default function PanelistDashboard() {
     setViewingFeedbackSession(session)
     setShowViewFeedback(true)
   }
-
-  const data = getPanelistDashboardData()
 
   const getMetricsForPanelistType = () => {
     const now = new Date()
