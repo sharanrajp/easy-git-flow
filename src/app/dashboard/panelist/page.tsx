@@ -90,7 +90,7 @@ export default function PanelistDashboard() {
       toast({
         title: "Error",
         description: "Failed to load assigned candidates",
-        variant: "error",
+        variant: "destructive",
       })
     } finally {
       setIsCandidatesLoading(false)

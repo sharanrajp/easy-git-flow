@@ -57,7 +57,7 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
       } catch (error) {
         console.error('Failed to load vacancies:', error)
         toast({
-          variant: "error",
+          variant: "destructive",
           title: "Error loading vacancies",
           description: "Failed to load active positions. Please refresh and try again.",
         })
@@ -92,7 +92,7 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
         setValidationErrors([])
       } else {
         toast({
-          variant: "error",
+          variant: "destructive",
           title: "Invalid file type",
           description: "Please select a CSV file only.",
         })
@@ -243,7 +243,7 @@ Jane Smith,jane.smith@email.com,+1234567891,2-4 years,"Node.js,Python,MongoDB",C
       setResults({ success: 0, errors: errorMessages })
       
       toast({
-        variant: "error",
+        variant: "destructive",
         title: "Upload failed",
         description: errorMessages[0],
       })
