@@ -17,7 +17,7 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
   const getStatusColor = (status: string) => {
     switch (status) {
       case "unassigned":
-        return "bg-gray-100 text-gray-800"
+        return "bg-orange-100 text-gray-800"
       case "selected":
         return "bg-green-100 text-green-800"
       case "rejected":
@@ -50,11 +50,13 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">{candidate.name}</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-gray-900">{candidate.name}</h2>
+          <Badge className={getStatusColor(candidateStatus)}>
+            {candidateStatus || "Unassigned"}
+          </Badge>
+        </div>
         <p className="text-gray-600">{candidate.applied_position || "N/A"}</p>
-        <Badge className={getStatusColor(candidateStatus)}>
-          {candidateStatus || "Unassigned"}
-        </Badge>
       </div>
 
       <div className="space-y-6">
@@ -72,6 +74,10 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
               <Phone className="h-4 w-4 text-gray-500" />
               <span>{formatPhoneNumber(candidate.phone_number)}</span>
             </div>
+            <div className="flex items-center space-x-3">
+              <MapPin className="h-4 w-4 text-gray-500" />
+              <span>{candidate.location || "N/A"}</span>
+            </div>
           </CardContent>
         </Card>
 
@@ -81,7 +87,7 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
             <CardTitle>Professional Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-2">
               <div>
                 <span className="text-sm text-gray-500">Experience</span>
                 <p className="font-medium">{candidate.total_experience ? `${candidate.total_experience} years` : "N/A"}</p>
@@ -97,6 +103,14 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
               <div>
                 <span className="text-sm text-gray-500">Recruiter</span>
                 <p className="font-medium">{candidate.recruiter_name || "N/A"}</p>
+              </div>
+              <div>
+                <span className="text-sm text-gray-500">Current CTC</span>
+                <p className="font-medium">{formatDate(candidate.current_ctc)}</p>
+              </div>
+              <div>
+                <span className="text-sm text-gray-500">Expected CTC</span>
+                <p className="font-medium">{candidate.expected_ctc || "N/A"}</p>
               </div>
             </div>
           </CardContent>

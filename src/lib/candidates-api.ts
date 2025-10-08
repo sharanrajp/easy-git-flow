@@ -3,6 +3,7 @@ import { getToken, makeAuthenticatedRequest } from './auth';
 const API_BASE_URL = 'https://b2ma3tdd2m.us-west-2.awsapprunner.com';
 
 export interface BackendCandidate {
+  location: string;
   last_interview_round: string;
   final_status: string;
   _id: string;

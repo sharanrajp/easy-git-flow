@@ -28,7 +28,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     position_title: vacancy?.position_title || "",
     request_type: vacancy?.request_type || "new",
     job_type: vacancy?.job_type || "full_time",
-    priority: vacancy?.priority || "P2",
+    priority: vacancy?.priority || "P0",
     projectClientName: vacancy?.projectClientName || "",
     city: vacancy?.city || "", // default city value
     status: vacancy?.status || "active",
@@ -111,7 +111,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       position_title: vacancy?.position_title || "",
       request_type: vacancy?.request_type || "new",
       job_type: vacancy?.job_type || "full_time",
-      priority: vacancy?.priority || "P2",
+      priority: vacancy?.priority || "P0",
       projectClientName: vacancy?.projectClientName || "",
       city: vacancy?.city || "",
       status: vacancy?.status || "active",

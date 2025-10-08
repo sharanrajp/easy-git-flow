@@ -124,9 +124,9 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
   }
 
   const downloadTemplate = () => {
-    const csvContent = `Name,Email,Phone,Experience,Skills,Job Type,Location,Notice Period,Current CTC,Expected CTC,Negotiable,Relocation
-John Doe,john.doe@email.com,+1234567890,3-5 years,"React,JavaScript,TypeScript",Full Time,San Francisco CA,2 weeks,$95000,$110000,Yes,No
-Jane Smith,jane.smith@email.com,+1234567891,2-4 years,"Node.js,Python,MongoDB",Contract,New York NY,1 month,$85000,$100000,No,Yes`
+    const csvContent = `Name,Email,Phone,Location,Applied Position,Experience,Skills,Source,Notice Period,Current CTC(in LPA),Expected CTC(in LPA),Negotiable,Relocation
+John Doe,john.doe@email.com,+911234567890,Madurai,Senior Frontend Developer,3-5 years,"React,JavaScript,TypeScript",LinkedIn,2 weeks,9,10,Yes,No
+Jane Smith,jane.smith@email.com,+911234567891,Chennai,Backend Developer,2-4 years,"Node.js,Python,MongoDB",Website,1 month,8,10,No,Yes`
 
     const blob = new Blob([csvContent], { type: "text/csv" })
     const url = window.URL.createObjectURL(blob)

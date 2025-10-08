@@ -280,7 +280,6 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Walk-In">Walk-In</SelectItem>
-              <SelectItem value="Scheduled">Scheduled</SelectItem>
               <SelectItem value="Virtual">Virtual</SelectItem>
             </SelectContent>
           </Select>
