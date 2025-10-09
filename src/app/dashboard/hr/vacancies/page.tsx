@@ -158,7 +158,15 @@ export default function VacanciesPage() {
     try {
       setError(null)
       const newVacancy = await addVacancy(vacancyData)
-      setVacancies([...vacancies, newVacancy])
+      
+      // Merge backend response with original data to ensure all fields are preserved
+      const completeVacancy = {
+        ...vacancyData,
+        ...newVacancy,
+        id: newVacancy.id || newVacancy._id, // Ensure id is set from backend
+      }
+      
+      setVacancies([...vacancies, completeVacancy])
       setIsCreateOpen(false)
     } catch (err) {
       console.error('Failed to create vacancy:', err)
