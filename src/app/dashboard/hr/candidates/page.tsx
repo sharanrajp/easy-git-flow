@@ -603,6 +603,9 @@ export default function CandidatesPage() {
       setAssignedCandidates(prev => prev.filter(c => c._id !== candidateId))
       setCandidates(candidates.filter((c) => c.id !== deleteCandidate.id))
       
+      // Remove from selected candidates if it was selected
+      setSelectedCandidates(prev => prev.filter(id => id !== candidateId))
+      
       toast({
         title: "Candidate deleted",
         description: "Candidate has been removed successfully.",
@@ -1704,7 +1707,11 @@ export default function CandidatesPage() {
                           <TableCell>
                             <SkillsDisplay skills={candidate.skill_set || []} />
                           </TableCell>
-                          <TableCell>{candidate.source || "Not specified"}</TableCell>
+                          <TableCell>
+                            {candidate.source?.toLowerCase() === "other" && candidate.other_source
+                              ? `Other(${candidate.other_source})`
+                              : candidate.source || "Not specified"}
+                          </TableCell>
                           <TableCell>{new Date(candidate.created_at).toLocaleDateString()}</TableCell>
                           <TableCell>
                             <span className={candidate.checked_in ? "font-medium text-orange-600" : "text-gray-500"}>
