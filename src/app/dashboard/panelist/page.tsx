@@ -213,6 +213,7 @@ export default function PanelistDashboard() {
       }
       setCurrentUser(updatedUser)
       localStorage.setItem("ats_user", JSON.stringify(updatedUser))
+      window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }))
     }
     
     setIsUpdatingStatus(true)
@@ -632,26 +633,54 @@ export default function PanelistDashboard() {
                                          currentUser?.privileges?.status === "in_interview"
                   
                   return (
-                    <Card key={candidate._id} className="hover:shadow-lg transition-shadow">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-1">
-                            <CardTitle className="text-lg">{candidate.name}</CardTitle>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Badge variant="outline" className="font-mono">
-                                {candidate.register_number}
+                    <Card
+                      key={candidate._id}
+                      className="w-full h-full p-6 hover:shadow-lg transition-shadow relative"
+                    >
+                      {/* Top Section with Name + Start/End Interview Button */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="space-y-1">
+                          <CardTitle className="text-2xl font-bold">{candidate.name}</CardTitle>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Badge variant="outline" className="font-mono bg-emerald-50 text-emerald-700 border-emerald-200">
+                              {candidate.register_number}
+                            </Badge>
+                            {candidate.last_interview_round && (
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                {candidate.last_interview_round}
                               </Badge>
-                              {candidate.last_interview_round && (
-                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                  {candidate.last_interview_round}
-                                </Badge>
-                              )}
-                            </div>
+                            )}
                           </div>
                         </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid gap-2 text-sm">
+
+                        {/* Interview Action Button in Top Right */}
+                        {canStartInterview && (
+                          <Button
+                            onClick={() => handleStartInterview(candidate._id)}
+                            disabled={isUpdatingStatus}
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Play className="h-4 w-4 mr-1" />
+                            Start Interview
+                          </Button>
+                        )}
+                        {canEndInterview && (
+                          <Button
+                            onClick={() => handleEndInterview(candidate)}
+                            disabled={isUpdatingStatus}
+                            size="sm"
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            <Pause className="h-4 w-4 mr-1" />
+                            End Interview with Feedback
+                          </Button>
+                        )}
+                      </div>
+
+                      <CardContent className="space-y-6">
+                        {/* Candidate Details */}
+                        <div className="grid gap-3 text-sm">
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <Mail className="h-4 w-4" />
                             <span className="truncate">{candidate.email}</span>
@@ -675,18 +704,17 @@ export default function PanelistDashboard() {
                           </div>
                         </div>
 
-                        <div className="flex gap-2 pt-2">
-                          {candidate.resume_link && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => window.open(candidate.resume_link, '_blank')}
-                              className="flex-1"
-                            >
-                              <ExternalLink className="h-4 w-4 mr-2" />
-                              Resume
-                            </Button>
-                          )}
+                        {/* Resume + Feedback Buttons */}
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(candidate?.resume_link, "_blank")}
+                            className="flex-1"
+                          >
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Resume
+                          </Button>
                           <Button
                             variant="outline"
                             size="sm"
@@ -697,33 +725,9 @@ export default function PanelistDashboard() {
                             View Feedback
                           </Button>
                         </div>
-
-                        {(canStartInterview || canEndInterview) && (
-                          <div className="flex gap-2 pt-2 border-t">
-                            {canStartInterview && (
-                              <Button
-                                onClick={() => handleStartInterview(candidate._id)}
-                                disabled={isUpdatingStatus}
-                                className="flex-1 bg-green-600 hover:bg-green-700"
-                              >
-                                <Play className="h-4 w-4 mr-2" />
-                                Start Interview
-                              </Button>
-                            )}
-                            {canEndInterview && (
-                              <Button
-                                onClick={() => handleEndInterview(candidate)}
-                                disabled={isUpdatingStatus}
-                                className="flex-1 bg-red-600 hover:bg-red-700"
-                              >
-                                <Pause className="h-4 w-4 mr-2" />
-                                End Interview with Feedback
-                              </Button>
-                            )}
-                          </div>
-                        )}
                       </CardContent>
                     </Card>
+
                   )
                 })}
               </div>
