@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Bell, LogOut, User as UserIcon, Settings, LayoutDashboard, Users, UserCheck, Briefcase, Menu, ChevronDown, Play, Square, Power } from "lucide-react"
+import { Bell, LogOut, User as UserIcon, Settings, LayoutDashboard, Users, UserCheck, Briefcase, Menu, ChevronDown, Play, Square, Power, Pause } from "lucide-react"
 import { type User, logout, updateUserStatus, makeAuthenticatedRequest } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -53,6 +53,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
   const pathname = useLocation().pathname
   const { toast } = useToast()
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+  const [isUpdatingInterviewStatus, setIsUpdatingInterviewStatus] = useState(false)
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false)
   const [scheduledCandidate, setScheduledCandidate] = useState<PanelistCandidate | null>(null)
 
@@ -114,6 +115,56 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
     }
   }
 
+  const handleInterviewStatusChange = async () => {
+    if (isUpdatingInterviewStatus) return
+    
+    const isStarting = user?.privileges?.status === "interview-assigned"
+    
+    // If ending interview, show feedback dialog first
+    if (!isStarting) {
+      setShowFeedbackDialog(true)
+      return
+    }
+    
+    // Starting interview
+    const newStatus = "in_interview"
+
+    try {
+      setIsUpdatingInterviewStatus(true)
+      
+      await makeAuthenticatedRequest("/privileges/my-status", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      
+      // Update UI with proper status format
+      const uiStatus: User["privileges"]["status"] = "in_interview"
+      const updatedUser = { ...user, privileges: { ...user.privileges, status: uiStatus } }
+      onUserUpdate?.(updatedUser)
+      
+      toast({
+        title: "Interview Started",
+        description: "Your status has been changed to in_interview",
+      })
+    } catch (error) {
+      console.error('Failed to update interview status:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update interview status. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUpdatingInterviewStatus(false)
+    }
+  }
+
+  const showInterviewButton = user.role === "panelist" && 
+    (user?.privileges?.status === "interview-assigned" || user?.privileges?.status === "in_interview")
+  const isInterviewInProgress = user?.privileges?.status === "in_interview"
+
   const handleFeedbackSubmit = async () => {
     // Update status to available after feedback is submitted
     try {
@@ -139,10 +190,11 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
         description: "Failed to update status after feedback",
         variant: "destructive",
       })
+    } finally {
+      setShowFeedbackDialog(false)
+      setScheduledCandidate(null)
     }
     
-    setShowFeedbackDialog(false)
-    setScheduledCandidate(null)
   }
 
   const getStatusColor = (current_status?: string) => {
@@ -230,6 +282,29 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
                 })}
               </DropdownMenuContent>
             </DropdownMenu>
+          )}
+
+          {/* Interview Start/End Button for Panelists */}
+          {showInterviewButton && (
+            <Button
+              onClick={handleInterviewStatusChange}
+              className={cn(
+                "flex items-center space-x-2 px-4 py-2 rounded-md",
+                isInterviewInProgress ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"
+              )}
+            >
+              {isInterviewInProgress ? (
+                <>
+                  <Pause className="h-4 w-4" />
+                  <span>End Interview</span>
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4" />
+                  <span>Start Interview</span>
+                </>
+              )}
+            </Button>
           )}
 
           {/* Profile Display */}
