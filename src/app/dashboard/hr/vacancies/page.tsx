@@ -159,11 +159,11 @@ export default function VacanciesPage() {
       setError(null)
       const newVacancy = await addVacancy(vacancyData)
       
-      // Merge backend response with original data to ensure all fields are preserved
+      // Keep all original form data and only take id and postedOn from backend
       const completeVacancy = {
         ...vacancyData,
-        ...newVacancy,
-        id: newVacancy.id || newVacancy._id, // Ensure id is set from backend
+        id: newVacancy.id || newVacancy._id,
+        postedOn: newVacancy.postedOn || new Date().toISOString(),
       }
       
       setVacancies([...vacancies, completeVacancy])
