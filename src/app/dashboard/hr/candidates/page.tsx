@@ -520,7 +520,7 @@ export default function CandidatesPage() {
       };
 
       // Update local state with new candidate
-      setCandidates([newCandidate, ...candidates]);
+      setCandidates([...candidates, newCandidate]);
       setIsCreateOpen(false);
       setFormHasChanges(false);
       

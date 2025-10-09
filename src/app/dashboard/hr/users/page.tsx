@@ -174,9 +174,10 @@ export default function UsersPage() {
         method: "POST",
         body: JSON.stringify({...userData, password : "user123"})
       })
-
+      const result = await response.json();
       if (response.ok) {
-        setUsers([...users, userData])
+        const newUser = {...userData, _id : result?.user_id}
+        setUsers([...users, newUser])
         setIsCreateOpen(false)
         toast({
           title: "Success",
