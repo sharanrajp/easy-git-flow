@@ -53,34 +53,34 @@ interface VacancyCreateRequest {
 // Transform backend vacancy to frontend format
 function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
   return {
-    id: backendVacancy._id,
-    position_title: backendVacancy.position_title,
-    hiring_manager_name: backendVacancy.hiring_manager_name,
-    recruiter_name: backendVacancy.recruiter_name,
-    job_type: backendVacancy.job_type as "full_time" | "part-time" | "contract",
-    priority: backendVacancy.priority as "P3" | "P2" | "P1" | "P0",
-    number_of_vacancies: backendVacancy.number_of_vacancies,
+    id: backendVacancy._id || "",
+    position_title: backendVacancy.position_title || "",
+    hiring_manager_name: backendVacancy.hiring_manager_name || "",
+    recruiter_name: backendVacancy.recruiter_name || "",
+    job_type: (backendVacancy.job_type as "full_time" | "part-time" | "contract") || "full_time",
+    priority: (backendVacancy.priority as "P3" | "P2" | "P1" | "P0") || "P3",
+    number_of_vacancies: backendVacancy.number_of_vacancies || 1,
     request_type: backendVacancy.request_type || "new",
-    status: backendVacancy.status as "active" | "paused" | "closed",
-    experience_range: backendVacancy.experience_range,
-    skills_required: backendVacancy.skills_required,
-    interview_type: backendVacancy.interview_type as "Walk-In",
+    status: (backendVacancy.status as "active" | "paused" | "closed") || "active",
+    experience_range: backendVacancy.experience_range || "",
+    skills_required: Array.isArray(backendVacancy.skills_required) ? backendVacancy.skills_required : [],
+    interview_type: (backendVacancy.interview_type as "Walk-In") || "Walk-In",
     walkInDetails: {
       date: backendVacancy.drive_date
         ? backendVacancy.drive_date.split("T")[0] // Pure date without timezone conversion
         : "",
-      location: backendVacancy.drive_location,
+      location: backendVacancy.drive_location || "",
     },
-    postedOn: backendVacancy.created_at,
+    postedOn: backendVacancy.created_at || new Date().toISOString(),
     // Default values for missing fields
     location: backendVacancy.location || "",
     job_desc: backendVacancy.job_desc || "",
     about_position: backendVacancy.about_position || "",
-    assignedPanelists: backendVacancy.assignedPanelists || [],
+    assignedPanelists: Array.isArray(backendVacancy.assignedPanelists) ? backendVacancy.assignedPanelists : [],
     city: backendVacancy.city || "",
     projectClientName: backendVacancy.projectClientName || "",
-    drive_date: backendVacancy.drive_date,
-    drive_location: backendVacancy.drive_location,
+    drive_date: backendVacancy.drive_date || "",
+    drive_location: backendVacancy.drive_location || "",
   };
 }
 
