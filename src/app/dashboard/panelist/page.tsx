@@ -205,17 +205,25 @@ export default function PanelistDashboard() {
   const handleStartInterview = async (candidateId: string) => {
     if (isUpdatingStatus) return
     
+    // Optimistic update: Update UI immediately
+    if (currentUser) {
+      const updatedUser = {
+        ...currentUser,
+        privileges: { ...currentUser.privileges, status: "in_interview" as const }
+      }
+      setCurrentUser(updatedUser)
+      localStorage.setItem("ats_user", JSON.stringify(updatedUser))
+    }
+    
     setIsUpdatingStatus(true)
     try {
       const { makeAuthenticatedRequest } = await import("@/lib/auth")
       
+      // API call runs in background
       await makeAuthenticatedRequest("/privileges/my-status", {
         method: "PUT",
         body: JSON.stringify({ status: "in_interview" }),
       })
-      
-      // Refresh user data to get updated privileges
-      loadCurrentUser()
       
       toast({
         title: "Interview Started",
@@ -223,6 +231,10 @@ export default function PanelistDashboard() {
       })
     } catch (error) {
       console.error("Error starting interview:", error)
+      
+      // Rollback on error
+      loadCurrentUser()
+      
       toast({
         title: "Error",
         description: "Failed to start interview",
@@ -675,7 +687,7 @@ export default function PanelistDashboard() {
                                 className="flex-1 bg-red-600 hover:bg-red-700"
                               >
                                 <Pause className="h-4 w-4 mr-2" />
-                                End Interview
+                                End Interview with Feedback
                               </Button>
                             )}
                           </div>
