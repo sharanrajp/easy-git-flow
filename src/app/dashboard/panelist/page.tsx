@@ -40,6 +40,16 @@ import { getCurrentUser } from "@/lib/auth"
 import { useEffect, useState, useCallback, useMemo } from "react"
 import { FeedbackDialog } from "@/components/panelist/feedback-dialog"
 import { ScheduledFeedbackDialog } from "@/components/panelist/scheduled-feedback-dialog"
+
+interface FeedbackData {
+  communication: number
+  problem_solving: number
+  logical_thinking: number
+  code_quality: number
+  technical_knowledge: number
+  status: string
+  feedback: string
+}
 import { formatDate } from "@/lib/utils"
 import { fetchPanelistAssignedCandidates, type PanelistCandidate } from "@/lib/candidates-api"
 import { useToast } from "@/hooks/use-toast"
@@ -250,16 +260,33 @@ export default function PanelistDashboard() {
     handleScheduledFeedback(candidate)
   }
 
-  const handleScheduledFeedbackSubmit = useCallback(() => {
+  const handleScheduledFeedbackSubmit = useCallback((feedbackData: FeedbackData) => {
     // Optimistic update: Move candidate from scheduled to completed immediately
     if (selectedScheduledCandidate && currentUser) {
       setCandidates(prevCandidates => 
         prevCandidates.map(candidate => {
           if (candidate._id === selectedScheduledCandidate._id) {
-            // Mark feedback as submitted for the current panelist's round
+            // Mark feedback as submitted for the current panelist's round with actual feedback data
             const updatedRounds = (candidate.previous_rounds || []).map((round: any) => {
               if (round.panel_name === currentUser.name) {
-                return { ...round, feedback_submitted: true }
+                return { 
+                  ...round, 
+                  feedback_submitted: true,
+                  communication: feedbackData.communication,
+                  problem_solving: feedbackData.problem_solving,
+                  logical_thinking: feedbackData.logical_thinking,
+                  code_quality: feedbackData.code_quality,
+                  technical_knowledge: feedbackData.technical_knowledge,
+                  status: feedbackData.status,
+                  feedback: feedbackData.feedback,
+                  rating: Math.round((
+                    feedbackData.communication +
+                    feedbackData.problem_solving +
+                    feedbackData.logical_thinking +
+                    feedbackData.code_quality +
+                    feedbackData.technical_knowledge
+                  ) / 5)
+                }
               }
               return round
             })

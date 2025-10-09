@@ -6,17 +6,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Star } from "lucide-react"
 import { type PanelistCandidate } from "@/lib/candidates-api"
 import { useToast } from "@/hooks/use-toast"
-import { getCurrentUser } from "@/lib/auth"
+import { getCurrentUser, makeAuthenticatedRequest } from "@/lib/auth"
 import { API_BASE_URL } from "@/lib/api-config"
 
-interface ScheduledFeedbackDialogProps {
-  isOpen: boolean
-  onClose: () => void
-  candidate: PanelistCandidate
-  onSubmit: () => void
-}
-
-interface FeedbackData {
+export interface FeedbackData {
   communication: number
   problem_solving: number
   logical_thinking: number
@@ -24,6 +17,13 @@ interface FeedbackData {
   technical_knowledge: number
   status: string
   feedback: string
+}
+
+interface ScheduledFeedbackDialogProps {
+  isOpen: boolean
+  onClose: () => void
+  candidate: PanelistCandidate
+  onSubmit: (feedbackData: FeedbackData) => void
 }
 
 export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }: ScheduledFeedbackDialogProps) {
@@ -61,37 +61,20 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
     try {
       setIsSubmitting(true)
       
-      const response = await fetch(`${API_BASE_URL}/interviews/update-interview`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          candidate_id: candidate._id,
-          panel_id: currentUser._id,
-          round: candidate.last_interview_round,
-          communication: feedback.communication,
-          problem_solving: feedback.problem_solving,
-          logical_thinking: feedback.logical_thinking,
-          code_quality: feedback.code_quality,
-          technical_knowledge: feedback.technical_knowledge,
-          status: feedback.status,
-          feedback: feedback.feedback
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to submit feedback')
+      // Optimistic update: Update UI immediately before API calls
+      const updatedUser = {
+        ...currentUser,
+        privileges: { ...currentUser.privileges, status: "free" as const }
       }
-
-      toast({
-        title: "Success",
-        description: "Feedback submitted successfully",
-      })
-
-      // Reset form first
-      setFeedback({
+      localStorage.setItem("ats_user", JSON.stringify(updatedUser))
+      window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }))
+      
+      // Trigger UI updates immediately with feedback data
+      onSubmit(feedback)
+      onClose()
+      
+      // Reset form after submission
+      const resetFeedback = {
         communication: 0,
         problem_solving: 0,
         logical_thinking: 0,
@@ -99,13 +82,60 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
         technical_knowledge: 0,
         status: "",
         feedback: "",
-      })
+      }
+      setFeedback(resetFeedback)
 
-      // Then call callbacks
-      onSubmit()
-      onClose()
+      // API calls run in background (no await for user experience)
+      const submitFeedback = async () => {
+        try {
+          const response = await makeAuthenticatedRequest(`${API_BASE_URL}/interviews/update-interview`, {
+            method: 'POST',
+            body: JSON.stringify({
+              candidate_id: candidate._id,
+              panel_id: currentUser._id,
+              round: candidate.last_interview_round,
+              communication: feedback.communication,
+              problem_solving: feedback.problem_solving,
+              logical_thinking: feedback.logical_thinking,
+              code_quality: feedback.code_quality,
+              technical_knowledge: feedback.technical_knowledge,
+              status: feedback.status,
+              feedback: feedback.feedback
+            })
+          })
+
+          if (!response.ok) {
+            throw new Error('Failed to submit feedback')
+          }
+
+          // Update panelist status to available
+          await makeAuthenticatedRequest(`${API_BASE_URL}/privileges/my-status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status: "free" })
+          })
+
+          toast({
+            title: "Success",
+            description: "Feedback submitted successfully. Your status has been updated to available.",
+          })
+        } catch (error) {
+          console.error('Error submitting feedback:', error)
+          toast({
+            title: "Error",
+            description: "Failed to submit feedback. Please try again.",
+            variant: "destructive",
+          })
+          
+          // Rollback optimistic update on error
+          localStorage.setItem("ats_user", JSON.stringify(currentUser))
+          window.dispatchEvent(new CustomEvent('userUpdated', { detail: currentUser }))
+        }
+      }
+
+      // Execute in background
+      submitFeedback()
     } catch (error) {
-      console.error('Error submitting feedback:', error)
+      console.error('Error in feedback submission:', error)
       toast({
         title: "Error",
         description: "Failed to submit feedback. Please try again.",

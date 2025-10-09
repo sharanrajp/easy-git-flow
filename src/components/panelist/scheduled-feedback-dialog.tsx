@@ -9,14 +9,7 @@ import { useToast } from "@/hooks/use-toast"
 import { getCurrentUser, makeAuthenticatedRequest } from "@/lib/auth"
 import { API_BASE_URL } from "@/lib/api-config"
 
-interface ScheduledFeedbackDialogProps {
-  isOpen: boolean
-  onClose: () => void
-  candidate: PanelistCandidate
-  onSubmit: () => void
-}
-
-interface FeedbackData {
+export interface FeedbackData {
   communication: number
   problem_solving: number
   logical_thinking: number
@@ -24,6 +17,13 @@ interface FeedbackData {
   technical_knowledge: number
   status: string
   feedback: string
+}
+
+interface ScheduledFeedbackDialogProps {
+  isOpen: boolean
+  onClose: () => void
+  candidate: PanelistCandidate
+  onSubmit: (feedbackData: FeedbackData) => void
 }
 
 export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }: ScheduledFeedbackDialogProps) {
@@ -69,8 +69,12 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
       localStorage.setItem("ats_user", JSON.stringify(updatedUser))
       window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }))
       
-      // Reset form
-      setFeedback({
+      // Trigger UI updates immediately with feedback data
+      onSubmit(feedback)
+      onClose()
+      
+      // Reset form after submission
+      const resetFeedback = {
         communication: 0,
         problem_solving: 0,
         logical_thinking: 0,
@@ -78,11 +82,8 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
         technical_knowledge: 0,
         status: "",
         feedback: "",
-      })
-
-      // Trigger UI updates immediately
-      onSubmit()
-      onClose()
+      }
+      setFeedback(resetFeedback)
 
       // API calls run in background (no await for user experience)
       const submitFeedback = async () => {
