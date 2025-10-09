@@ -61,7 +61,6 @@ export default function PanelistDashboard() {
   const [showScheduledFeedback, setShowScheduledFeedback] = useState(false)
   const [selectedScheduledCandidate, setSelectedScheduledCandidate] = useState<PanelistCandidate | null>(null)
   const [performanceFilter, setPerformanceFilter] = useState<string>("this-month")
-  const [interviewStates, setInterviewStates] = useState<Record<string, 'idle' | 'in-progress'>>({})
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   
   // Candidates state
@@ -74,9 +73,14 @@ export default function PanelistDashboard() {
   const itemsPerPage = 5
   const { toast } = useToast()
 
-  useEffect(() => {
+  const loadCurrentUser = useCallback(() => {
     const user = getCurrentUser()
     setCurrentUser(user)
+    return user
+  }, [])
+
+  useEffect(() => {
+    const user = loadCurrentUser()
     if (user) {
       loadCandidates()
     }
@@ -210,7 +214,8 @@ export default function PanelistDashboard() {
         body: JSON.stringify({ status: "in_interview" }),
       })
       
-      setInterviewStates(prev => ({ ...prev, [candidateId]: 'in-progress' }))
+      // Refresh user data to get updated privileges
+      loadCurrentUser()
       
       toast({
         title: "Interview Started",
@@ -234,11 +239,12 @@ export default function PanelistDashboard() {
 
   const handleScheduledFeedbackSubmit = useCallback(() => {
     loadCandidates() // Refresh the candidates list
+    loadCurrentUser() // Refresh user data to get updated privileges
     handleScheduledFeedbackClose()
     
     // Notify other components to refresh
     window.dispatchEvent(new Event('dashboardUpdate'))
-  }, [loadCandidates, handleScheduledFeedbackClose])
+  }, [loadCandidates, loadCurrentUser, handleScheduledFeedbackClose])
 
   useEffect(() => {
     if (currentUser?.name) {
@@ -578,7 +584,10 @@ export default function PanelistDashboard() {
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {scheduledInterviews.map((candidate) => {
-                  const isInProgress = interviewStates[candidate._id] === 'in-progress'
+                  const canStartInterview = currentUser?.role === "panelist" && 
+                                           currentUser?.privileges?.status === "interview-assigned"
+                  const canEndInterview = currentUser?.role === "panelist" && 
+                                         currentUser?.privileges?.status === "in_interview"
                   
                   return (
                     <Card key={candidate._id} className="hover:shadow-lg transition-shadow">
@@ -647,26 +656,30 @@ export default function PanelistDashboard() {
                           </Button>
                         </div>
 
-                        <div className="flex gap-2 pt-2 border-t">
-                          {!isInProgress ? (
-                            <Button
-                              onClick={() => handleStartInterview(candidate._id)}
-                              disabled={isUpdatingStatus}
-                              className="flex-1 bg-green-600 hover:bg-green-700"
-                            >
-                              <Play className="h-4 w-4 mr-2" />
-                              Start Interview
-                            </Button>
-                          ) : (
-                            <Button
-                              onClick={() => handleEndInterview(candidate)}
-                              className="flex-1 bg-red-600 hover:bg-red-700"
-                            >
-                              <Pause className="h-4 w-4 mr-2" />
-                              End Interview
-                            </Button>
-                          )}
-                        </div>
+                        {(canStartInterview || canEndInterview) && (
+                          <div className="flex gap-2 pt-2 border-t">
+                            {canStartInterview && (
+                              <Button
+                                onClick={() => handleStartInterview(candidate._id)}
+                                disabled={isUpdatingStatus}
+                                className="flex-1 bg-green-600 hover:bg-green-700"
+                              >
+                                <Play className="h-4 w-4 mr-2" />
+                                Start Interview
+                              </Button>
+                            )}
+                            {canEndInterview && (
+                              <Button
+                                onClick={() => handleEndInterview(candidate)}
+                                disabled={isUpdatingStatus}
+                                className="flex-1 bg-red-600 hover:bg-red-700"
+                              >
+                                <Pause className="h-4 w-4 mr-2" />
+                                End Interview
+                              </Button>
+                            )}
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   )
