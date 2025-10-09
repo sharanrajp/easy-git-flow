@@ -668,7 +668,8 @@ export default function PanelistDashboard() {
                       <div className="flex items-start justify-between mb-4">
                         <div className="space-y-1">
                           <CardTitle className="text-2xl font-bold">{candidate.name}</CardTitle>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                            <div className="text-sm text-gray-600">{candidate.applied_position || "N/A"}</div>
                             <Badge variant="outline" className="font-mono bg-emerald-50 text-emerald-700 border-emerald-200">
                               {candidate.register_number}
                             </Badge>
@@ -707,19 +708,24 @@ export default function PanelistDashboard() {
 
                       <CardContent className="space-y-6">
                         {/* Candidate Details */}
-                        <div className="grid gap-3 text-sm">
-                          <div className="flex items-center gap-2 text-muted-foreground">
+                        <div className="flex gap-10 text-sm flex-wrap">
+                          {/* Email */}
+                          <div className="flex items-center gap-2 text-muted-foreground min-w-[150px]">
                             <Mail className="h-4 w-4" />
                             <span className="truncate">{candidate.email}</span>
                           </div>
-                          <div className="flex items-center gap-2 text-muted-foreground">
+
+                          {/* Experience */}
+                          <div className="flex items-center gap-2 text-muted-foreground min-w-[130px]">
                             <Briefcase className="h-4 w-4" />
                             <span>{candidate.total_experience} years experience</span>
                           </div>
-                          <div className="flex items-start gap-2 text-muted-foreground">
-                            <Star className="h-4 w-4 mt-0.5" />
+
+                          {/* Skills */}
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Star className="h-4 w-4" />
                             <div className="flex flex-wrap gap-1">
-                              {Array.isArray(candidate.skill_set) 
+                              {Array.isArray(candidate.skill_set)
                                 ? candidate.skill_set.map((skill, idx) => (
                                     <Badge key={idx} variant="secondary" className="text-xs">
                                       {skill}
@@ -780,6 +786,7 @@ export default function PanelistDashboard() {
                           <TableHead>Reg. No.</TableHead>
                           <TableHead>Name</TableHead>
                           <TableHead>Email</TableHead>
+                          <TableHead>Position</TableHead>
                           <TableHead>Skill Set</TableHead>
                           <TableHead>Experience</TableHead>
                           <TableHead>Interview Round</TableHead>
@@ -802,6 +809,7 @@ export default function PanelistDashboard() {
                               </TableCell>
                               <TableCell>{candidate.name}</TableCell>
                               <TableCell>{candidate.email}</TableCell>
+                              <TableCell>{candidate.applied_position || "N/A"}</TableCell>
                               <TableCell>
                                 <div className="max-w-xs truncate" title={Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}>
                                   {Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}
