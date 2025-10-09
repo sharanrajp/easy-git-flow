@@ -1454,7 +1454,7 @@ export default function CandidatesPage() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Candidates</h1>
             </div>          
-            {selectedCandidates.length > 0 && (
+            {selectedCandidates.length > 1 && (
               <BulkActionsToolbar
                 selectedCount={selectedCandidates.length}
                 onBulkAction={handleBulkAction}
