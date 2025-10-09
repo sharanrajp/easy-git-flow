@@ -6,7 +6,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent } from "@/components/ui/popover"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -28,6 +27,8 @@ import {
   ExternalLink,
   CircleMinus,
   X,
+  Mail,
+  Briefcase,
 } from "lucide-react"
 import {
   getInterviewSessionsForPanelist,
@@ -60,6 +61,8 @@ export default function PanelistDashboard() {
   const [showScheduledFeedback, setShowScheduledFeedback] = useState(false)
   const [selectedScheduledCandidate, setSelectedScheduledCandidate] = useState<PanelistCandidate | null>(null)
   const [performanceFilter, setPerformanceFilter] = useState<string>("this-month")
+  const [interviewStates, setInterviewStates] = useState<Record<string, 'idle' | 'in-progress'>>({})
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   
   // Candidates state
   const [candidates, setCandidates] = useState<PanelistCandidate[]>([])
@@ -195,6 +198,40 @@ export default function PanelistDashboard() {
     setShowScheduledFeedback(true)
   }, [])
 
+  const handleStartInterview = async (candidateId: string) => {
+    if (isUpdatingStatus) return
+    
+    setIsUpdatingStatus(true)
+    try {
+      const { makeAuthenticatedRequest } = await import("@/lib/auth")
+      
+      await makeAuthenticatedRequest("/privileges/my-status", {
+        method: "PUT",
+        body: JSON.stringify({ status: "in_interview" }),
+      })
+      
+      setInterviewStates(prev => ({ ...prev, [candidateId]: 'in-progress' }))
+      
+      toast({
+        title: "Interview Started",
+        description: "Your status has been updated to in_interview",
+      })
+    } catch (error) {
+      console.error("Error starting interview:", error)
+      toast({
+        title: "Error",
+        description: "Failed to start interview",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUpdatingStatus(false)
+    }
+  }
+
+  const handleEndInterview = (candidate: PanelistCandidate) => {
+    handleScheduledFeedback(candidate)
+  }
+
   const handleScheduledFeedbackSubmit = useCallback(() => {
     loadCandidates() // Refresh the candidates list
     handleScheduledFeedbackClose()
@@ -268,16 +305,6 @@ export default function PanelistDashboard() {
     window.addEventListener("interviewSessionUpdated", handleInterviewUpdate as EventListener)
     return () => window.removeEventListener("interviewSessionUpdated", handleInterviewUpdate as EventListener)
   }, [currentUser?.name])
-
-  const handleStartInterview = (sessionId: string) => {
-    setInterviewTimers((prev) => ({ ...prev, [sessionId]: 0 }))
-    startInterview(sessionId)
-  }
-
-  const handleEndWithFeedback = (session: InterviewSession) => {
-    setSelectedSession(session)
-    setShowFeedbackDialog(true)
-  }
 
   const handleFeedbackSubmit = () => {
     if (currentUser?.name) {
@@ -530,108 +557,130 @@ export default function PanelistDashboard() {
             )}
           </div>
 
-          {/* Interview Tabs */}
-          <Tabs defaultValue="scheduled" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="scheduled" className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Scheduled Interviews ({scheduledInterviews.length})
-              </TabsTrigger>
-              <TabsTrigger value="completed" className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4" />
-                Completed Interviews ({completedCandidateInterviews.length})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="scheduled" className="space-y-4">
+          {/* Scheduled Interviews Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-semibold">Scheduled Interviews ({scheduledInterviews.length})</h2>
+            </div>
+            
+            {isCandidatesLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="text-sm text-muted-foreground">Loading candidates...</div>
+              </div>
+            ) : scheduledInterviews.length === 0 ? (
               <Card>
-                <CardContent>
-                  {isCandidatesLoading ? (
-                    <div className="flex justify-center py-8">
-                      <div className="text-sm text-muted-foreground">Loading candidates...</div>
-                    </div>
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Reg. No.</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Skill Set</TableHead>
-                          <TableHead>Experience</TableHead>
-                          <TableHead>Interview Round</TableHead>
-                          <TableHead>Resume</TableHead>
-                          <TableHead>Feedback</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {scheduledInterviews.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                              No scheduled interviews found
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          scheduledInterviews.map((candidate) => (
-                            <TableRow key={candidate._id}>
-                              <TableCell className="font-medium">
-                                {candidate.register_number}
-                              </TableCell>
-                              <TableCell>{candidate.name}</TableCell>
-                              <TableCell>{candidate.email}</TableCell>
-                              <TableCell>
-                                <div className="max-w-xs truncate" title={Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}>
-                                  {Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                {candidate.total_experience} years
-                              </TableCell>
-                              <TableCell>
-                                {candidate.last_interview_round ? (
-                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                    {candidate.last_interview_round}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-muted-foreground">N/A</span>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {candidate.resume_link ? (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => window.open(candidate.resume_link, '_blank')}
-                                    className="p-0 h-auto text-blue-600 hover:text-blue-800"
-                                  >
-                                    <ExternalLink className="h-4 w-4 mr-1" />
-                                    View Resume
-                                  </Button>
-                                ) : (
-                                  <span className="text-muted-foreground text-sm">Resume Not Found</span>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleViewCandidateFeedback(candidate)}
-                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                >
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  View Feedback
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  )}
+                <CardContent className="py-12 text-center">
+                  <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No scheduled interviews</p>
                 </CardContent>
               </Card>
-            </TabsContent>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {scheduledInterviews.map((candidate) => {
+                  const isInProgress = interviewStates[candidate._id] === 'in-progress'
+                  
+                  return (
+                    <Card key={candidate._id} className="hover:shadow-lg transition-shadow">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <CardTitle className="text-lg">{candidate.name}</CardTitle>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Badge variant="outline" className="font-mono">
+                                {candidate.register_number}
+                              </Badge>
+                              {candidate.last_interview_round && (
+                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                  {candidate.last_interview_round}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid gap-2 text-sm">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Mail className="h-4 w-4" />
+                            <span className="truncate">{candidate.email}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Briefcase className="h-4 w-4" />
+                            <span>{candidate.total_experience} years experience</span>
+                          </div>
+                          <div className="flex items-start gap-2 text-muted-foreground">
+                            <Star className="h-4 w-4 mt-0.5" />
+                            <div className="flex flex-wrap gap-1">
+                              {Array.isArray(candidate.skill_set) 
+                                ? candidate.skill_set.map((skill, idx) => (
+                                    <Badge key={idx} variant="secondary" className="text-xs">
+                                      {skill}
+                                    </Badge>
+                                  ))
+                                : <span>{candidate.skill_set}</span>
+                              }
+                            </div>
+                          </div>
+                        </div>
 
-            <TabsContent value="completed" className="space-y-4">
+                        <div className="flex gap-2 pt-2">
+                          {candidate.resume_link && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => window.open(candidate.resume_link, '_blank')}
+                              className="flex-1"
+                            >
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Resume
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewCandidateFeedback(candidate)}
+                            className="flex-1"
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Feedback
+                          </Button>
+                        </div>
+
+                        <div className="flex gap-2 pt-2 border-t">
+                          {!isInProgress ? (
+                            <Button
+                              onClick={() => handleStartInterview(candidate._id)}
+                              disabled={isUpdatingStatus}
+                              className="flex-1 bg-green-600 hover:bg-green-700"
+                            >
+                              <Play className="h-4 w-4 mr-2" />
+                              Start Interview
+                            </Button>
+                          ) : (
+                            <Button
+                              onClick={() => handleEndInterview(candidate)}
+                              className="flex-1 bg-red-600 hover:bg-red-700"
+                            >
+                              <Pause className="h-4 w-4 mr-2" />
+                              End Interview
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Completed Interviews Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-semibold">Completed Interviews ({completedCandidateInterviews.length})</h2>
+            </div>
               <Card>
                 <CardContent>
                   {isCandidatesLoading ? (
@@ -717,8 +766,7 @@ export default function PanelistDashboard() {
                   )}
                 </CardContent>
               </Card>
-            </TabsContent>
-          </Tabs>
+          </div>
         </div>
 
         {/* Candidate Details Popover */}

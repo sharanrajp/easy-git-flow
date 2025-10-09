@@ -12,12 +12,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Bell, LogOut, User as UserIcon, Settings, LayoutDashboard, Users, UserCheck, Briefcase, Menu, ChevronDown, Play, Square, Power, Pause } from "lucide-react"
-import { type User, logout, updateUserStatus, makeAuthenticatedRequest } from "@/lib/auth"
+import { Bell, LogOut, User as UserIcon, Settings, LayoutDashboard, Users, UserCheck, Briefcase, Menu, ChevronDown, Power } from "lucide-react"
+import { type User, logout, updateUserStatus } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { ScheduledFeedbackDialog } from "@/components/panelist/scheduled-feedback-dialog"
-import { fetchPanelistAssignedCandidates, type PanelistCandidate } from "@/lib/candidates-api"
 
 interface HeaderProps {
   user: User
@@ -53,35 +51,8 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
   const pathname = useLocation().pathname
   const { toast } = useToast()
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
-  const [isUpdatingInterviewStatus, setIsUpdatingInterviewStatus] = useState(false)
-  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false)
-  const [scheduledCandidate, setScheduledCandidate] = useState<PanelistCandidate | null>(null)
 
   const items = navigationItems[user.role] || []
-
-  // Load scheduled candidate when user is in interview state
-  useEffect(() => {
-    if (user.role === "panelist" && user?.privileges?.status === "in_interview") {
-      loadScheduledCandidate()
-    }
-  }, [user?.privileges?.status])
-
-  const loadScheduledCandidate = async () => {
-    try {
-      const candidates = await fetchPanelistAssignedCandidates()
-      const scheduled = candidates.find(c => {
-        const hasFeedback = c.previous_rounds?.find(
-          (round: any) => round.panel_name === user.name
-        )?.feedback_submitted
-        return !hasFeedback
-      })
-      if (scheduled) {
-        setScheduledCandidate(scheduled)
-      }
-    } catch (error) {
-      console.error("Error loading scheduled candidate:", error)
-    }
-  }
 
   const handleLogout = () => {
     logout()
@@ -113,88 +84,6 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
         setIsUpdatingStatus(false)
       }
     }
-  }
-
-  const handleInterviewStatusChange = async () => {
-    if (isUpdatingInterviewStatus) return
-    
-    const isStarting = user?.privileges?.status === "interview-assigned"
-    
-    // If ending interview, show feedback dialog first
-    if (!isStarting) {
-      setShowFeedbackDialog(true)
-      return
-    }
-    
-    // Starting interview
-    const newStatus = "in_interview"
-
-    try {
-      setIsUpdatingInterviewStatus(true)
-      
-      await makeAuthenticatedRequest("/privileges/my-status", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: newStatus }),
-      })
-      
-      // Update UI with proper status format
-      const uiStatus: User["privileges"]["status"] = "in_interview"
-      const updatedUser = { ...user, privileges: { ...user.privileges, status: uiStatus } }
-      onUserUpdate?.(updatedUser)
-      
-      toast({
-        title: "Interview Started",
-        description: "Your status has been changed to in_interview",
-      })
-    } catch (error) {
-      console.error('Failed to update interview status:', error)
-      toast({
-        title: "Error",
-        description: "Failed to update interview status. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsUpdatingInterviewStatus(false)
-    }
-  }
-
-  const showInterviewButton = user.role === "panelist" && 
-    (user?.privileges?.status === "interview-assigned" || user?.privileges?.status === "in_interview")
-  const isInterviewInProgress = user?.privileges?.status === "in_interview"
-
-  const handleFeedbackSubmit = async () => {
-    // Update status to available after feedback is submitted
-    try {
-      await makeAuthenticatedRequest("/privileges/my-status", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: "available" }),
-      })
-
-      const updatedUser = { ...user, privileges: { ...user.privileges, status: "free" } }
-      onUserUpdate?.(updatedUser)
-
-      toast({
-        title: "Interview Ended",
-        description: "Feedback submitted successfully",
-      })
-    } catch (error) {
-      console.error("Error updating status after feedback:", error)
-      toast({
-        title: "Error",
-        description: "Failed to update status after feedback",
-        variant: "destructive",
-      })
-    } finally {
-      setShowFeedbackDialog(false)
-      setScheduledCandidate(null)
-    }
-    
   }
 
   const getStatusColor = (current_status?: string) => {
@@ -284,29 +173,6 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
             </DropdownMenu>
           )}
 
-          {/* Interview Start/End Button for Panelists */}
-          {showInterviewButton && (
-            <Button
-              onClick={handleInterviewStatusChange}
-              className={cn(
-                "flex items-center space-x-2 px-4 py-2 rounded-md",
-                isInterviewInProgress ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"
-              )}
-            >
-              {isInterviewInProgress ? (
-                <>
-                  <Pause className="h-4 w-4" />
-                  <span>End Interview</span>
-                </>
-              ) : (
-                <>
-                  <Play className="h-4 w-4" />
-                  <span>Start Interview</span>
-                </>
-              )}
-            </Button>
-          )}
-
           {/* Profile Display */}
           <div className="flex items-center space-x-3">
             <Avatar className="h-10 w-10">
@@ -380,16 +246,6 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
           </Button>
         </div>
       </div>
-
-      {/* Feedback Dialog */}
-      {showFeedbackDialog && scheduledCandidate && (
-        <ScheduledFeedbackDialog
-          isOpen={showFeedbackDialog}
-          onClose={() => setShowFeedbackDialog(false)}
-          candidate={scheduledCandidate}
-          onSubmit={handleFeedbackSubmit}
-        />
-      )}
     </header>
   )
 }
