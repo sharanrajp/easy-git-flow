@@ -250,13 +250,47 @@ export default function PanelistDashboard() {
   }
 
   const handleScheduledFeedbackSubmit = useCallback(() => {
-    loadCandidates() // Refresh the candidates list
-    loadCurrentUser() // Refresh user data to get updated privileges
+    // Optimistic update: Move candidate from scheduled to completed immediately
+    if (selectedScheduledCandidate) {
+      setCandidates(prevCandidates => 
+        prevCandidates.map(candidate => {
+          if (candidate._id === selectedScheduledCandidate._id) {
+            // Mark feedback as submitted for the current panelist's round
+            const updatedRounds = candidate.previous_rounds?.map((round: any) => {
+              if (round.panel_name === currentUser?.name && !round.feedback_submitted) {
+                return { ...round, feedback_submitted: true }
+              }
+              return round
+            })
+            return { ...candidate, previous_rounds: updatedRounds, feedback_submitted: true }
+          }
+          return candidate
+        })
+      )
+    }
+
+    // Optimistic update: Update user status to free
+    if (currentUser) {
+      const updatedUser = {
+        ...currentUser,
+        privileges: { ...currentUser.privileges, status: "free" as const }
+      }
+      setCurrentUser(updatedUser)
+      localStorage.setItem("ats_user", JSON.stringify(updatedUser))
+      window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }))
+    }
+    
     handleScheduledFeedbackClose()
+    
+    // Background tasks: Refresh data from backend
+    setTimeout(() => {
+      loadCandidates() // Refresh the candidates list
+      loadCurrentUser() // Refresh user data to get updated privileges
+    }, 100)
     
     // Notify other components to refresh
     window.dispatchEvent(new Event('dashboardUpdate'))
-  }, [loadCandidates, loadCurrentUser, handleScheduledFeedbackClose])
+  }, [selectedScheduledCandidate, currentUser, loadCandidates, loadCurrentUser, handleScheduledFeedbackClose])
 
   useEffect(() => {
     if (currentUser?.name) {
