@@ -220,11 +220,11 @@ export default function PanelistCandidatesPage() {
                               )}
                             </TableCell>
                             <TableCell>
-                              {candidate.resume_link ? (
+                              {candidate.resume_url ? (
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleViewResume(candidate.resume_link!, candidate.name)}
+                                  onClick={() => handleViewResume(candidate.resume_url!, candidate.name)}
                                   className="p-0 h-auto text-blue-600 hover:text-blue-800"
                                 >
                                   <FileText className="h-4 w-4 mr-1" />
@@ -304,11 +304,11 @@ export default function PanelistCandidatesPage() {
                               )}
                             </TableCell>
                             <TableCell>
-                              {candidate.resume_link ? (
+                              {candidate.resume_url ? (
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleViewResume(candidate.resume_link!, candidate.name)}
+                                  onClick={() => handleViewResume(candidate.resume_url!, candidate.name)}
                                   className="p-0 h-auto text-blue-600 hover:text-blue-800"
                                 >
                                   <FileText className="h-4 w-4 mr-1" />
@@ -396,11 +396,11 @@ export default function PanelistCandidatesPage() {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Resume</label>
-                      {selectedCandidate.resume_link ? (
+                      {selectedCandidate.resume_url ? (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => window.open(selectedCandidate.resume_link, '_blank')}
+                          onClick={() => window.open(selectedCandidate.resume_url, '_blank')}
                           className="p-0 h-auto text-blue-600 hover:text-blue-800"
                         >
                           <ExternalLink className="h-4 w-4 mr-1" />
