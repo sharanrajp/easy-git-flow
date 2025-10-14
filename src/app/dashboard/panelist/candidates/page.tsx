@@ -11,6 +11,7 @@ import { Search, Eye, ExternalLink, FileText, Users, Clock, CheckCircle, X } fro
 import { fetchPanelistAssignedCandidates, type PanelistCandidate } from "../../../../lib/candidates-api"
 import { useToast } from "@/hooks/use-toast"
 import { AssignedCandidateDetails } from "../../../../components/candidates/assigned-candidate-details"
+import { ResumeDialog } from "../../../../components/candidates/resume-dialog"
 
 export default function PanelistCandidatesPage() {
   const [candidates, setCandidates] = useState<PanelistCandidate[]>([])
@@ -18,6 +19,9 @@ export default function PanelistCandidatesPage() {
   const [selectedCandidate, setSelectedCandidate] = useState<PanelistCandidate | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isResumeOpen, setIsResumeOpen] = useState(false)
+  const [selectedResumeUrl, setSelectedResumeUrl] = useState<string | null>(null)
+  const [selectedCandidateName, setSelectedCandidateName] = useState<string>("")
   const { toast } = useToast()
 
   useEffect(() => {
@@ -84,6 +88,12 @@ export default function PanelistCandidatesPage() {
   const handleViewDetails = (candidate: PanelistCandidate) => {
     setSelectedCandidate(candidate)
     setIsDetailsOpen(true)
+  }
+
+  const handleViewResume = (resumeUrl: string, candidateName: string) => {
+    setSelectedResumeUrl(resumeUrl)
+    setSelectedCandidateName(candidateName)
+    setIsResumeOpen(true)
   }
 
   // Convert PanelistCandidate to BackendCandidate format for the details component
@@ -214,11 +224,11 @@ export default function PanelistCandidatesPage() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => window.open(candidate.resume_link, '_blank')}
+                                  onClick={() => handleViewResume(candidate.resume_link!, candidate.name)}
                                   className="p-0 h-auto text-blue-600 hover:text-blue-800"
                                 >
-                                  <ExternalLink className="h-4 w-4 mr-1" />
-                                  View Resume
+                                  <FileText className="h-4 w-4 mr-1" />
+                                  Resume
                                 </Button>
                               ) : (
                                 <span className="text-muted-foreground text-sm">Resume Not Found</span>
@@ -298,11 +308,11 @@ export default function PanelistCandidatesPage() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => window.open(candidate.resume_link, '_blank')}
+                                  onClick={() => handleViewResume(candidate.resume_link!, candidate.name)}
                                   className="p-0 h-auto text-blue-600 hover:text-blue-800"
                                 >
-                                  <ExternalLink className="h-4 w-4 mr-1" />
-                                  View Resume
+                                  <FileText className="h-4 w-4 mr-1" />
+                                  Resume
                                 </Button>
                               ) : (
                                 <span className="text-muted-foreground text-sm">Resume Not Found</span>
@@ -335,6 +345,14 @@ export default function PanelistCandidatesPage() {
           candidate={selectedCandidate ? convertToBackendCandidate(selectedCandidate) : null}
           isOpen={isDetailsOpen}
           onClose={() => setIsDetailsOpen(false)}
+        />
+
+        {/* Resume Dialog */}
+        <ResumeDialog
+          isOpen={isResumeOpen}
+          onClose={() => setIsResumeOpen(false)}
+          resumeUrl={selectedResumeUrl}
+          candidateName={selectedCandidateName}
         />
 
         {/* Candidate Details Popover */}
