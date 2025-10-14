@@ -40,7 +40,7 @@ export interface PanelistCandidate {
   phone_number?: string;
   skill_set: string[];
   last_interview_round?: string;
-  resume_url?: string;
+  resume_link?: string;
   total_experience?:any;
   notice_period?:string;
   current_ctc?:any;

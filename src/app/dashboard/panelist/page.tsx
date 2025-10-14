@@ -746,7 +746,7 @@ export default function PanelistDashboard() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => candidate.resume_url && handleViewResume(candidate.resume_url, candidate.name)}
+                            onClick={() => candidate.resume_link && handleViewResume(candidate.resume_link, candidate.name)}
                             className="flex-1"
                           >
                             <FileText className="h-4 w-4 mr-2" />
@@ -832,11 +832,11 @@ export default function PanelistDashboard() {
                                 )}
                               </TableCell>
                               <TableCell>
-                                {candidate.resume_url ? (
+                                {candidate.resume_link ? (
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => candidate.resume_url && handleViewResume(candidate.resume_url, candidate.name)}
+                                    onClick={() => candidate.resume_link && handleViewResume(candidate.resume_link, candidate.name)}
                                     className="p-0 h-auto text-blue-600 hover:text-blue-800"
                                   >
                                     <FileText className="h-4 w-4 mr-1" />
