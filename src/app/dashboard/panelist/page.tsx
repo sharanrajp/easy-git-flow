@@ -104,6 +104,8 @@ export default function PanelistDashboard() {
     try {
       setIsCandidatesLoading(true)
       const data = await fetchPanelistAssignedCandidates()
+      console.log('Fetched candidates data:', data)
+      console.log('First candidate resume_url:', data[0]?.resume_url)
       setCandidates(data)
     } catch (error) {
       console.error('Error loading candidates:', error)
@@ -146,6 +148,12 @@ export default function PanelistDashboard() {
 
   const scheduledInterviews = filteredCandidates.filter(candidate => !hasFeedbackCompleted(candidate))
   const completedCandidateInterviews = filteredCandidates.filter(candidate => hasFeedbackCompleted(candidate))
+  
+  console.log('Completed candidates:', completedCandidateInterviews.map(c => ({
+    name: c.name,
+    resume_url: c.resume_url,
+    has_resume: !!c.resume_url
+  })))
 
   const getPreviousRoundsText = (rounds: PanelistCandidate['previous_rounds']) => {
     if (!rounds || rounds.length === 0) return "No Previous Rounds"
