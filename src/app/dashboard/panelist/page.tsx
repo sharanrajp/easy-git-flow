@@ -55,6 +55,7 @@ import { fetchPanelistAssignedCandidates, type PanelistCandidate } from "@/lib/c
 import { useToast } from "@/hooks/use-toast"
 import { AssignedCandidateDetails } from "../../../components/candidates/assigned-candidate-details"
 import { Cancel } from "@radix-ui/react-alert-dialog"
+import { ResumeDialog } from "../../../components/candidates/resume-dialog"
 
 export default function PanelistDashboard() {
   const [interviewSessions, setInterviewSessions] = useState<InterviewSession[]>([])
@@ -79,6 +80,9 @@ export default function PanelistDashboard() {
   const [selectedCandidate, setSelectedCandidate] = useState<PanelistCandidate | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [isCandidatesLoading, setIsCandidatesLoading] = useState(true)
+  const [isResumeOpen, setIsResumeOpen] = useState(false)
+  const [selectedResumeUrl, setSelectedResumeUrl] = useState<string | null>(null)
+  const [selectedCandidateName, setSelectedCandidateName] = useState<string>("")
 
   const itemsPerPage = 5
   const { toast } = useToast()
@@ -401,10 +405,10 @@ export default function PanelistDashboard() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
 
-  const handleViewResume = (candidateId: string) => {
-    // Note: getCandidateDetails is deprecated and returns null
-    // Resume viewing should be implemented via API call
-    console.log("Resume viewing requires API implementation for candidate:", candidateId)
+  const handleViewResume = (resumeUrl: string, candidateName: string) => {
+    setSelectedResumeUrl(resumeUrl)
+    setSelectedCandidateName(candidateName)
+    setIsResumeOpen(true)
   }
 
   const handleViewFeedback = (session: InterviewSession) => {
@@ -742,10 +746,11 @@ export default function PanelistDashboard() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => window.open(candidate?.resume_link, "_blank")}
+                            onClick={() => candidate.resume_link && handleViewResume(candidate.resume_link, candidate.name)}
+                            disabled={!candidate.resume_link}
                             className="flex-1"
                           >
-                            <ExternalLink className="h-4 w-4 mr-2" />
+                            <FileText className="h-4 w-4 mr-2" />
                             Resume
                           </Button>
                           <Button
@@ -832,10 +837,10 @@ export default function PanelistDashboard() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => window.open(candidate.resume_link, '_blank')}
+                                    onClick={() => candidate.resume_link && handleViewResume(candidate.resume_link, candidate.name)}
                                     className="p-0 h-auto text-blue-600 hover:text-blue-800"
                                   >
-                                    <ExternalLink className="h-4 w-4 mr-1" />
+                                    <FileText className="h-4 w-4 mr-1" />
                                     View Resume
                                   </Button>
                                 ) : (
@@ -982,6 +987,14 @@ export default function PanelistDashboard() {
           candidate={viewingCandidate ? convertToBackendCandidate(viewingCandidate) : null}
           isOpen={showCandidateFeedback}
           onClose={() => setShowCandidateFeedback(false)}
+        />
+
+        {/* Resume Dialog */}
+        <ResumeDialog
+          isOpen={isResumeOpen}
+          onClose={() => setIsResumeOpen(false)}
+          resumeUrl={selectedResumeUrl}
+          candidateName={selectedCandidateName}
         />
       </div>
     </DashboardLayout>
