@@ -104,8 +104,6 @@ export default function PanelistDashboard() {
     try {
       setIsCandidatesLoading(true)
       const data = await fetchPanelistAssignedCandidates()
-      console.log('Fetched candidates data:', data)
-      console.log('First candidate resume_url:', data[0]?.resume_url)
       setCandidates(data)
     } catch (error) {
       console.error('Error loading candidates:', error)
@@ -148,12 +146,6 @@ export default function PanelistDashboard() {
 
   const scheduledInterviews = filteredCandidates.filter(candidate => !hasFeedbackCompleted(candidate))
   const completedCandidateInterviews = filteredCandidates.filter(candidate => hasFeedbackCompleted(candidate))
-  
-  console.log('Completed candidates:', completedCandidateInterviews.map(c => ({
-    name: c.name,
-    resume_url: c.resume_url,
-    has_resume: !!c.resume_url
-  })))
 
   const getPreviousRoundsText = (rounds: PanelistCandidate['previous_rounds']) => {
     if (!rounds || rounds.length === 0) return "No Previous Rounds"
@@ -754,7 +746,7 @@ export default function PanelistDashboard() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => candidate.resume_url && handleViewResume(candidate.resume_url, candidate.name)}
+                            onClick={() => candidate.resume_link && handleViewResume(candidate.resume_link, candidate.name)}
                             className="flex-1"
                           >
                             <FileText className="h-4 w-4 mr-2" />
@@ -840,11 +832,11 @@ export default function PanelistDashboard() {
                                 )}
                               </TableCell>
                               <TableCell>
-                                {candidate.resume_url ? (
+                                {candidate.resume_link ? (
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => candidate.resume_url && handleViewResume(candidate.resume_url, candidate.name)}
+                                    onClick={() => candidate.resume_link && handleViewResume(candidate.resume_link, candidate.name)}
                                     className="p-0 h-auto text-blue-600 hover:text-blue-800"
                                   >
                                     <FileText className="h-4 w-4 mr-1" />
