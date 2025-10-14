@@ -747,7 +747,6 @@ export default function PanelistDashboard() {
                             variant="outline"
                             size="sm"
                             onClick={() => candidate.resume_link && handleViewResume(candidate.resume_link, candidate.name)}
-                            disabled={!candidate.resume_link}
                             className="flex-1"
                           >
                             <FileText className="h-4 w-4 mr-2" />
