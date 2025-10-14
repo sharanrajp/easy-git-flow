@@ -95,7 +95,7 @@ export async function fetchUnassignedCandidates(): Promise<BackendCandidate[]> {
 }
 
 // Add a new candidate
-export async function addCandidate(candidateData: Partial<BackendCandidate>): Promise<BackendCandidate> {
+export async function addCandidate(candidateData: Partial<BackendCandidate>, resumeFile?: File): Promise<BackendCandidate> {
   const token = getToken();
   
   if (!token) {
@@ -105,6 +105,12 @@ export async function addCandidate(candidateData: Partial<BackendCandidate>): Pr
   try {
     const formData = new FormData()
     formData.append("candidate_data", JSON.stringify(candidateData))
+    
+    // Append resume file if provided
+    if (resumeFile) {
+      formData.append("resume", resumeFile)
+    }
+    
     const response = await fetch(`${API_BASE_URL}/candidates/add`, {
       method: 'POST',
       headers: {

@@ -487,8 +487,8 @@ export default function CandidatesPage() {
         other_source: candidateData?.other_source || "",
       };
 
-      // Call the API to add candidate
-      const newBackendCandidate = await addCandidate(backendCandidateData);
+      // Call the API to add candidate with resume file
+      const newBackendCandidate = await addCandidate(backendCandidateData, candidateData.resume as File);
 
       // Convert backend candidate to local candidate format
       const newCandidate: Candidate = {
