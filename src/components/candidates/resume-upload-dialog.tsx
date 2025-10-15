@@ -54,7 +54,7 @@ export function ResumeUploadDialog({ open, onClose, onSuccess }: ResumeUploadDia
 
     const formData = new FormData()
     selectedFiles.forEach(file => {
-      formData.append('resumes', file)
+      formData.append('files', file)
     })
 
     try {
