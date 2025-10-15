@@ -217,6 +217,32 @@ export default function CandidatesPage() {
     }
   }, [candidates])
 
+  // Auto-refresh candidates when feedback is submitted
+  useEffect(() => {
+    const handleFeedbackUpdate = async () => {
+      try {
+        const [unassignedData, assignedData] = await Promise.all([
+          fetchUnassignedCandidates(),
+          fetchAssignedCandidates()
+        ])
+        
+        setUnassignedCandidates(unassignedData)
+        setAssignedCandidates(assignedData)
+      } catch (error) {
+        console.error('Failed to refresh candidates:', error)
+      }
+    }
+
+    // Listen for feedback submission events
+    window.addEventListener('interview-sessions:update', handleFeedbackUpdate)
+    window.addEventListener('candidateUpdated', handleFeedbackUpdate)
+    
+    return () => {
+      window.removeEventListener('interview-sessions:update', handleFeedbackUpdate)
+      window.removeEventListener('candidateUpdated', handleFeedbackUpdate)
+    }
+  }, [])
+
   // Reset pagination when filters change
   useEffect(() => {
     setUnassignedCurrentPage(1)
