@@ -55,6 +55,7 @@ import { saveInterviewSession, type InterviewSession } from "@/lib/interview-dat
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, fetchPanelistsForCandidate, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
+import { API_BASE_URL } from "@/lib/api-config"
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
@@ -98,6 +99,7 @@ export default function CandidatesPage() {
   const [loadingUnassigned, setLoadingUnassigned] = useState(false)
   const [loadingAssigned, setLoadingAssigned] = useState(false)
   const [selectedAssignedCandidate, setSelectedAssignedCandidate] = useState<BackendCandidate | null>(null)
+  const [isScreening, setIsScreening] = useState(false)
   const [isAssignedDetailsOpen, setIsAssignedDetailsOpen] = useState(false)
   const [selectedUnassignedCandidate, setSelectedUnassignedCandidate] = useState<BackendCandidate | null>(null)
   const [isUnassignedDetailsOpen, setIsUnassignedDetailsOpen] = useState(false)
@@ -462,6 +464,54 @@ export default function CandidatesPage() {
     { value: "r2", label: "r2" },
     { value: "r3", label: "r3" },
   ]
+
+  const handleScreening = async () => {
+    try {
+      setIsScreening(true)
+      const token = localStorage.getItem('token')
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+
+      const response = await fetch(`${API_BASE_URL}/screening/screen-candidates`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to trigger screening')
+      }
+
+      const result = await response.json()
+      
+      toast({
+        title: "Success",
+        description: result.message || "Screening triggered successfully for unscreened candidates",
+      })
+
+      // Refresh candidate lists
+      const [updatedUnassigned, updatedAssigned] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates()
+      ])
+      setUnassignedCandidates(updatedUnassigned)
+      setAssignedCandidates(updatedAssigned)
+
+    } catch (error) {
+      console.error('Failed to trigger screening:', error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to trigger screening",
+        variant: "destructive",
+      })
+    } finally {
+      setIsScreening(false)
+    }
+  }
 
   const handleExportCandidates = async () => {
     try {
@@ -1515,6 +1565,15 @@ export default function CandidatesPage() {
             >
               <Upload className="h-4 w-4 mr-2" />
               Upload Resumes
+            </Button>
+            <Button 
+              variant="outline" 
+              className="cursor-pointer bg-transparent"
+              onClick={handleScreening}
+              disabled={isScreening}
+            >
+              <UserCheck className="h-4 w-4 mr-2" />
+              {isScreening ? "Screening..." : "Screening"}
             </Button>
             <Button 
               variant="outline" 
