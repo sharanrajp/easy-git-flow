@@ -193,7 +193,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
           </div>
 
           {/* Status Badge with Popover for Panelists */}
-          {user.role !== "hr" && user.role !== "admin" && (
+          {user.role !== "hr" && user.role !== "admin" && user.role !== "superadmin" && (
             <Popover>
               <PopoverTrigger asChild>
                 <Button 
