@@ -90,7 +90,7 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
             <div className="grid grid-cols-3 gap-2">
               <div>
                 <span className="text-sm text-gray-500">Experience</span>
-                <p className="font-medium">{candidate.total_experience ? `${candidate.total_experience} years` : "N/A"}</p>
+                <p className="font-medium">{candidate.total_experience ? `${candidate.total_experience}` : "N/A"}</p>
               </div>
               <div>
                 <span className="text-sm text-gray-500">Source</span>
