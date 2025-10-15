@@ -494,6 +494,55 @@ export default function CandidatesPage() {
     }
   }
 
+  const handleScreening = async () => {
+    setIsScreening(true)
+    try {
+      const token = getToken()
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "No authentication token found. Please log in again.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      const response = await fetch(`${API_BASE_URL}/screening/screen-candidates`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to trigger screening")
+      }
+
+      toast({
+        title: "Success",
+        description: "Screening triggered successfully for all unscreened candidates.",
+      })
+
+      // Refresh candidate lists
+      const [updatedUnassigned, updatedAssigned] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates()
+      ])
+      setUnassignedCandidates(updatedUnassigned)
+      setAssignedCandidates(updatedAssigned)
+    } catch (error) {
+      console.error('Error triggering screening:', error)
+      toast({
+        title: "Error",
+        description: "Failed to trigger screening. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsScreening(false)
+    }
+  }
+
   const handleCreateCandidate = async (candidateData: Partial<Candidate>) => {
     try {
       // Prepare data for backend API
