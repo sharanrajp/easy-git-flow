@@ -51,6 +51,12 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
       return
     }
 
+    // Prevent superadmin from accessing HR-only pages
+    if (storedUser.role === "superadmin" && requiredRole === "hr") {
+      navigate("/dashboard/superadmin")
+      return
+    }
+
     setUser(storedUser)
     setIsLoading(false)
   }, [navigate, requiredRole])

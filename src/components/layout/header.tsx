@@ -45,10 +45,7 @@ const navigationItems = {
     { name: "Offers", href: "/dashboard/manager/offers", icon: Briefcase },
   ],
   superadmin: [
-    { name: "Dashboard", href: "/dashboard/superadmin", icon: LayoutDashboard },
-    { name: "Candidates", href: "/dashboard/hr/candidates", icon: UserCheck },
-    { name: "Users", href: "/dashboard/hr/users", icon: Users },
-    { name: "Vacancies", href: "/dashboard/hr/vacancies", icon: Briefcase },
+    { name: "Analytics Dashboard", href: "/dashboard/superadmin", icon: LayoutDashboard },
   ],
 }
 
