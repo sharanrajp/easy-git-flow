@@ -336,8 +336,8 @@ export default function SuperadminDashboard() {
                       <TableCell>{vacancy.drive_date ? format(new Date(vacancy.drive_date), "MMM dd, yyyy") : "N/A"}</TableCell>
                       <TableCell>{vacancy.insights?.total_candidates || 0}</TableCell>
                       <TableCell>{vacancy.insights?.cleared_all_rounds || 0}</TableCell>
-                      <TableCell>{vacancy.insights?.selection_rate.toFixed(1) || 0}%</TableCell>
-                      <TableCell>{vacancy.insights?.avg_time_to_hire.toFixed(1) || 0}</TableCell>
+                      <TableCell>{(vacancy.insights?.selection_rate ?? 0).toFixed(1)}%</TableCell>
+                      <TableCell>{(vacancy.insights?.avg_time_to_hire ?? 0).toFixed(1)}</TableCell>
                       <TableCell>
                         <Badge variant={vacancy.status === "active" ? "default" : "secondary"}>
                           {vacancy.status}
