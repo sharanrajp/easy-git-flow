@@ -57,6 +57,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, fetchPanelistsForCandidate, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
 import { formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
+import { API_BASE_URL } from "@/lib/api-config"
+import { getToken } from "@/lib/auth"
 import { Switch } from "@/components/ui/switch"
 import { SkillsDisplay } from "@/components/ui/skills-display"
 import { Pagination } from "@/components/ui/pagination"
@@ -120,6 +122,7 @@ export default function CandidatesPage() {
   const [isInterviewsDialogOpen, setIsInterviewsDialogOpen] = useState(false)
   const [loadingInterviews, setLoadingInterviews] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+  const [isScreening, setIsScreening] = useState(false)
   
   // Search states for dialogs
   const [panelSearchTerm, setPanelSearchTerm] = useState("")
@@ -1524,6 +1527,15 @@ export default function CandidatesPage() {
             >
               <Download className="h-4 w-4 mr-2" />
               {isExporting ? "Exporting..." : "Export"}
+            </Button>
+            <Button 
+              variant="outline" 
+              className="cursor-pointer bg-transparent"
+              onClick={handleScreening}
+              disabled={isScreening}
+            >
+              <Search className="h-4 w-4 mr-2" />
+              {isScreening ? "Screening..." : "Screening"}
             </Button>
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <Button 
