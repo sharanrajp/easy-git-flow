@@ -229,10 +229,10 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                     </div>
                   </div>
 
-                  {candidate.resume_link && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">Resume</label>
-                      <div className="mt-1">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Resume</label>
+                    <div className="mt-1">
+                      {candidate.resume_link ? (
                         <Button
                           variant="link"
                           onClick={() => setIsResumeDialogOpen(true)}
@@ -240,9 +240,11 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                         >
                           View Resume
                         </Button>
-                      </div>
+                      ) : (
+                        <p className="text-gray-400 text-sm">No resume available</p>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

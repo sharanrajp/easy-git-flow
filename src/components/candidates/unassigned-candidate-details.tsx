@@ -140,12 +140,12 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
         </Card>
 
         {/* Resume */}
-        {candidate.resume_link && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Resume</CardTitle>
-            </CardHeader>
-            <CardContent>
+        <Card>
+          <CardHeader>
+            <CardTitle>Resume</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {candidate.resume_link ? (
               <Button
                 variant="link"
                 onClick={() => setIsResumeDialogOpen(true)}
@@ -153,9 +153,11 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
               >
                 View Resume
               </Button>
-            </CardContent>
-          </Card>
-        )}
+            ) : (
+              <p className="text-gray-400 text-sm">No resume available</p>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Action Buttons */}
         {candidateStatus === "unassigned" && onScheduleInterview && (
