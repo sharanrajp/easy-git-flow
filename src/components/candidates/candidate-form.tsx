@@ -25,7 +25,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
   const [formData, setFormData] = useState({
     name: candidate?.name || "",
     email: candidate?.email || "",
-    phone_number: candidate?.phone_number || "+91",
+    phone_number: candidate?.phone_number || "",
     location: candidate?.location || "",
     total_experience: candidate?.total_experience || "",
     notice_period: candidate?.notice_period || "",
@@ -82,9 +82,9 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     e.preventDefault()
     
     // Validate phone number
-    const phoneRegex = /^\+91\d{10}$/
+    const phoneRegex = /^\d{10}$/
     if (!phoneRegex.test(formData.phone_number)) {
-      alert("Phone number must start with +91 and have exactly 10 digits after it")
+      alert("Please enter a valid 10-digit phone number")
       return
     }
     
@@ -161,13 +161,20 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           <Label htmlFor="phone_number">Phone Number *</Label>
           <Input
             id="phone_number"
+            type="tel"
             value={formData.phone_number}
-            onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-            placeholder="+91XXXXXXXXXX"
+            onChange={(e) => {
+              const value = e.target.value;
+              if (/^\d{0,10}$/.test(value)) {
+                setFormData({ ...formData, phone_number: value });
+              }
+            }}
+            placeholder="Enter 10-digit phone number"
+            maxLength={10}
             required
             className="w-full"
           />
-          <p className="text-xs text-muted-foreground">Must start with +91 and have exactly 10 digits after it</p>
+          <p className="text-xs text-muted-foreground">Enter exactly 10 digits</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="location">Location *</Label>

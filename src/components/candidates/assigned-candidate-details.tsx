@@ -2,6 +2,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { ResumeDialog } from "./resume-dialog"
+import { useState } from "react"
 
 // Local formatDate function since it's not exported from utils
 function formatDate(dateString: string | Date): string {
@@ -71,6 +74,7 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
   if (!candidate) return null
   const currentUser = localStorage.getItem("ats_user")
   const userRole = currentUser ? JSON.parse(currentUser).role : null
+  const [isResumeDialogOpen, setIsResumeDialogOpen] = useState(false)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -225,21 +229,22 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                     </div>
                   </div>
 
-                  {candidate.resume_link && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">Resume</label>
-                      <div className="mt-1">
-                        <a
-                          href={candidate.resume_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 underline"
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Resume</label>
+                    <div className="mt-1">
+                      {candidate.resume_link ? (
+                        <Button
+                          variant="link"
+                          onClick={() => setIsResumeDialogOpen(true)}
+                          className="text-blue-600 hover:text-blue-800 p-0 h-auto"
                         >
                           View Resume
-                        </a>
-                      </div>
+                        </Button>
+                      ) : (
+                        <p className="text-gray-400 text-sm">No resume available</p>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -327,6 +332,13 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
           </Tabs>
         </div>
       </DialogContent>
+
+      <ResumeDialog
+        isOpen={isResumeDialogOpen}
+        onClose={() => setIsResumeDialogOpen(false)}
+        resumeUrl={candidate.resume_link || null}
+        candidateName={candidate.name}
+      />
     </Dialog>
   )
 }

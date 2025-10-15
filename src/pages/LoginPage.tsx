@@ -97,7 +97,9 @@ function LoginPage() {
           localStorage.setItem("ats_user", JSON.stringify(enrichedUser))
           
           // Redirect based on role
-          if (enrichedUser.role === "admin") {
+          if (enrichedUser.role === "superadmin") {
+            navigate("/dashboard/superadmin")
+          } else if (enrichedUser.role === "admin") {
             navigate("/dashboard/hr")
           } else if (enrichedUser.role === "panelist") {
             navigate("/dashboard/panelist")
@@ -112,7 +114,9 @@ function LoginPage() {
           localStorage.setItem("ats_user", JSON.stringify(currentUser))
           
           // Redirect based on role
-          if (currentUser.role === "admin") {
+          if (currentUser.role === "superadmin") {
+            navigate("/dashboard/superadmin")
+          } else if (currentUser.role === "admin") {
             navigate("/dashboard/hr")
           } else if (currentUser.role === "panelist") {
             navigate("/dashboard/panelist")

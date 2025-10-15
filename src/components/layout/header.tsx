@@ -44,6 +44,9 @@ const navigationItems = {
     { name: "Candidates", href: "/dashboard/manager/candidates", icon: UserCheck },
     { name: "Offers", href: "/dashboard/manager/offers", icon: Briefcase },
   ],
+  superadmin: [
+    { name: "Analytics Dashboard", href: "/dashboard/superadmin", icon: LayoutDashboard },
+  ],
 }
 
 export function Header({ user, onUserUpdate }: HeaderProps) {
@@ -190,7 +193,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
           </div>
 
           {/* Status Badge with Popover for Panelists */}
-          {user.role !== "hr" && user.role !== "admin" && (
+          {user.role !== "hr" && user.role !== "admin" && user.role !== "superadmin" && (
             <Popover>
               <PopoverTrigger asChild>
                 <Button 

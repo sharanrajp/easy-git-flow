@@ -44,6 +44,7 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
   const [selectedRecruiter, setSelectedRecruiter] = useState("")
   const [loadingVacancies, setLoadingVacancies] = useState(true)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [interviewType, setInterviewType] = useState("walk-in")
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load active vacancies on component mount
@@ -85,8 +86,13 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0]
     if (selectedFile) {
-      // Only allow CSV files
-      if (selectedFile.type === "text/csv" || selectedFile.name.endsWith(".csv")) {
+      // Only allow CSV and XLSX files
+      if (
+        selectedFile.type === "text/csv" || 
+        selectedFile.name.endsWith(".csv") ||
+        selectedFile.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+        selectedFile.name.endsWith(".xlsx")
+      ) {
         setFile(selectedFile)
         setResults(null)
         setValidationErrors([])
@@ -94,7 +100,7 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
         toast({
           variant: "destructive",
           title: "Invalid file type",
-          description: "Please select a CSV file only.",
+          description: "Please select a CSV or XLSX file only.",
         })
       }
     }
@@ -152,6 +158,7 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
       formData.append('file', file!)
       formData.append('applied_position', appliedPosition)
       formData.append('source', source === 'other' ? otherSource : source)
+      formData.append('interview_type', interviewType)
       if (selectedRecruiter) {
         formData.append('recruiter_name', selectedRecruiter)
       }
@@ -213,6 +220,7 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
         setSource("")
         setOtherSource("")
         setSelectedRecruiter("")
+        setInterviewType("walk-in")
         setResults(null)
         if (fileInputRef.current) {
           fileInputRef.current.value = ""
@@ -322,14 +330,28 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
           </div>
         )}
 
-        {/* Third row: Upload CSV */}
+        {/* Interview Type */}
         <div className="space-y-1.5">
-          <Label htmlFor="csvFile" className="text-xs font-medium">Upload CSV File *</Label>
+          <Label htmlFor="interviewType" className="text-xs font-medium">Interview Type *</Label>
+          <Select value={interviewType} onValueChange={setInterviewType}>
+            <SelectTrigger className="text-sm">
+              <SelectValue placeholder="Select interview type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="walk-in">Walk-In</SelectItem>
+              <SelectItem value="virtual">Virtual</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Upload CSV/XLSX */}
+        <div className="space-y-1.5">
+          <Label htmlFor="csvFile" className="text-xs font-medium">Upload CSV/XLSX File *</Label>
           <Input
             id="csvFile"
             ref={fileInputRef}
             type="file"
-            accept=".csv"
+            accept=".csv,.xlsx"
             onChange={handleFileSelect}
             className="text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 smooth-transition"
           />

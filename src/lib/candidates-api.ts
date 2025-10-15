@@ -31,6 +31,7 @@ export interface BackendCandidate {
   negotiable_ctc?: boolean;
   other_source?: string;
   vacancyId?: string;
+  resume_link?: string;
   previous_rounds?: Array<{
     round: string;
     status: string;
