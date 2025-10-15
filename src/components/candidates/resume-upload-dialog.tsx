@@ -47,25 +47,43 @@ export function ResumeUploadDialog({ open, onClose, onSuccess }: ResumeUploadDia
   }
 
   const handleUpload = async () => {
-    if (selectedFiles.length === 0) return
+    if (selectedFiles.length === 0) {
+      console.error('No files selected')
+      return
+    }
+
+    console.log('Starting upload with files:', selectedFiles.map(f => ({ name: f.name, size: f.size, type: f.type })))
 
     setIsProcessing(true)
     setOverallProgress(0)
 
     const formData = new FormData()
-    selectedFiles.forEach(file => {
-      formData.append('files', file)
+    selectedFiles.forEach((file, index) => {
+      console.log(`Appending file ${index + 1}:`, file.name, file.type, file.size)
+      formData.append('files', file, file.name)
     })
+
+    // Log FormData contents
+    console.log('FormData entries:', Array.from(formData.entries()).map(([key, value]) => ({
+      key,
+      fileName: value instanceof File ? value.name : 'not a file',
+      size: value instanceof File ? value.size : 0
+    })))
 
     try {
       const token = getToken()
+      console.log('Making request to:', `${API_BASE_URL}/resumes/upload-resumes`)
+      
       const response = await fetch(`${API_BASE_URL}/resumes/upload-resumes`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
+          // Do NOT set Content-Type - let browser set it with boundary
         },
         body: formData
       })
+
+      console.log('Response status:', response.status, response.statusText)
 
       if (!response.ok) {
         throw new Error(`Upload failed: ${response.statusText}`)
