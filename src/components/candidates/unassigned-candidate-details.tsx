@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Download, Mail, Phone, MapPin, DollarSign, FileText } from "lucide-react"
 import type { BackendCandidate } from "../../lib/candidates-api"
+import { ResumeDialog } from "./resume-dialog"
+import { useState } from "react"
 
 interface UnassignedCandidateDetailsProps {
   candidate: BackendCandidate
@@ -13,6 +15,7 @@ interface UnassignedCandidateDetailsProps {
 export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInterview }: UnassignedCandidateDetailsProps) {
   // Debug logging to inspect candidate data structure
   console.log("Candidate data in UnassignedCandidateDetails:", candidate)
+  const [isResumeDialogOpen, setIsResumeDialogOpen] = useState(false)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -136,6 +139,24 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
           </CardContent>
         </Card>
 
+        {/* Resume */}
+        {candidate.resume_link && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Resume</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="link"
+                onClick={() => setIsResumeDialogOpen(true)}
+                className="text-blue-600 hover:text-blue-800 p-0 h-auto"
+              >
+                View Resume
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Action Buttons */}
         {candidateStatus === "unassigned" && onScheduleInterview && (
           <Card>
@@ -147,6 +168,13 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
           </Card>
         )}
       </div>
+
+      <ResumeDialog
+        isOpen={isResumeDialogOpen}
+        onClose={() => setIsResumeDialogOpen(false)}
+        resumeUrl={candidate.resume_link || null}
+        candidateName={candidate.name}
+      />
     </div>
   )
 }
