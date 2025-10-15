@@ -48,6 +48,7 @@ import { CandidateForm } from "@/components/candidates/candidate-form"
 import { CandidateDetails } from "@/components/candidates/candidate-details"
 import { BulkActionsToolbar } from "@/components/candidates/bulk-actions-toolbar"
 import { BulkUploadDialog } from "@/components/candidates/bulk-upload-dialog"
+import { ResumeUploadDialog } from "@/components/candidates/resume-upload-dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
@@ -78,6 +79,7 @@ export default function CandidatesPage() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [isScheduleOpen, setIsScheduleOpen] = useState(false)
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false)
+  const [isResumeUploadOpen, setIsResumeUploadOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [deleteCandidate, setDeleteCandidate] = useState<Candidate | null>(null)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
@@ -1509,6 +1511,14 @@ export default function CandidatesPage() {
             <Button 
               variant="outline" 
               className="cursor-pointer bg-transparent"
+              onClick={() => setIsResumeUploadOpen(true)}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Upload Resumes
+            </Button>
+            <Button 
+              variant="outline" 
+              className="cursor-pointer bg-transparent"
               onClick={handleExportCandidates}
               disabled={isExporting}
             >
@@ -2733,6 +2743,29 @@ export default function CandidatesPage() {
             </div>
           </DialogContent>
         </Dialog>
+
+        <ResumeUploadDialog 
+          open={isResumeUploadOpen}
+          onClose={() => setIsResumeUploadOpen(false)}
+          onSuccess={async () => {
+            // Refresh candidate lists after successful upload
+            try {
+              const [unassignedData, assignedData] = await Promise.all([
+                fetchUnassignedCandidates(),
+                fetchAssignedCandidates()
+              ])
+              setUnassignedCandidates(unassignedData)
+              setAssignedCandidates(assignedData)
+              
+              toast({
+                title: "Success",
+                description: "Resumes uploaded and candidates updated successfully.",
+              })
+            } catch (error) {
+              console.error('Error refreshing candidates:', error)
+            }
+          }}
+        />
 
 
         <DeleteConfirmDialog
