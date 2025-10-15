@@ -273,7 +273,7 @@ export default function SuperadminDashboard() {
               <TrendingUp className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{aggregateMetrics.selection_rate.toFixed(1)}%</div>
+              <div className="text-2xl font-bold">{(aggregateMetrics.selection_rate ?? 0).toFixed(1)}%</div>
             </CardContent>
           </Card>
 
@@ -283,7 +283,7 @@ export default function SuperadminDashboard() {
               <Clock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{aggregateMetrics.avg_time_to_hire.toFixed(1)} days</div>
+              <div className="text-2xl font-bold">{(aggregateMetrics.avg_time_to_hire ?? 0).toFixed(1)} days</div>
             </CardContent>
           </Card>
 
