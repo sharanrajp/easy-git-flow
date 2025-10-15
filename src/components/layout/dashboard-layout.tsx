@@ -44,6 +44,9 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
         case "manager":
           navigate("/dashboard/manager")
           break
+        case "superadmin":
+          navigate("/dashboard/superadmin")
+          break
       }
       return
     }

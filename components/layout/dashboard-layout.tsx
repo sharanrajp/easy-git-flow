@@ -34,10 +34,16 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
         case "panelist":
           navigate("/dashboard/panelist")
           break
-        case "manager":
-          navigate("/dashboard/manager")
-          break
-      }
+      case "manager":
+        navigate("/dashboard/manager")
+        break
+      case "superadmin":
+        navigate("/dashboard/superadmin")
+        break
+      default:
+        navigate("/login")
+        break
+    }
       return
     }
 

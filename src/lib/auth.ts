@@ -4,7 +4,7 @@ export interface User {
   _id: string
   name: string
   email: string
-  role: "hr" | "panelist" | "manager" | "admin"
+  role: "hr" | "panelist" | "manager" | "admin" | "superadmin"
   panelist_type?: "panel_member" | "manager"
   skill_set?: string[]
   available_rounds?: string[]
