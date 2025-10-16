@@ -14,6 +14,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -132,6 +135,12 @@ export default function CandidatesPage() {
   const [unassignedCurrentPage, setUnassignedCurrentPage] = useState(1)
   const [assignedCurrentPage, setAssignedCurrentPage] = useState(1)
   const itemsPerPage = 15
+
+  // Status change dialog states
+  const [isStatusChangeDialogOpen, setIsStatusChangeDialogOpen] = useState(false)
+  const [statusChangeCandidateId, setStatusChangeCandidateId] = useState<string | null>(null)
+  const [statusChangeType, setStatusChangeType] = useState<"offerReleased" | "joined" | null>(null)
+  const [statusChangeDate, setStatusChangeDate] = useState<Date | undefined>(undefined)
 
   // Helper function to get next round
   const getNextRound = (currentRound: string): string => {
@@ -1474,6 +1483,15 @@ export default function CandidatesPage() {
   }
 
   const handleChangeStatus = async (candidateId: string, newStatus: string) => {
+    // If status is offerReleased or joined, show date picker dialog
+    if (newStatus === "offerReleased" || newStatus === "joined") {
+      setStatusChangeCandidateId(candidateId)
+      setStatusChangeType(newStatus as "offerReleased" | "joined")
+      setStatusChangeDate(undefined)
+      setIsStatusChangeDialogOpen(true)
+      return
+    }
+
     // Store previous state for rollback
     const previousUnassigned = [...unassignedCandidates]
     const previousAssigned = [...assignedCandidates]
@@ -1512,6 +1530,89 @@ export default function CandidatesPage() {
       toast({
         title: "Success",
         description: "Candidate status updated successfully",
+      })
+    } catch (error) {
+      // Rollback optimistic update on failure
+      setUnassignedCandidates(previousUnassigned)
+      setAssignedCandidates(previousAssigned)
+      setCandidates(previousCandidates)
+      
+      console.error('Failed to update candidate status:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update candidate status. Changes reverted.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleStatusChangeWithDate = async () => {
+    if (!statusChangeCandidateId || !statusChangeType || !statusChangeDate) {
+      toast({
+        title: "Error",
+        description: "Please select a date",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Store previous state for rollback
+    const previousUnassigned = [...unassignedCandidates]
+    const previousAssigned = [...assignedCandidates]
+    const previousCandidates = [...candidates]
+
+    // Format date as YYYY-MM-DD
+    const formattedDate = statusChangeDate.toISOString().split('T')[0]
+
+    // Determine the payload based on status type
+    const payload: any = {
+      final_status: statusChangeType
+    }
+
+    if (statusChangeType === "offerReleased") {
+      payload.offer_released_date = formattedDate
+    } else if (statusChangeType === "joined") {
+      payload.joined_date = formattedDate
+    }
+
+    // Optimistically update UI immediately
+    setUnassignedCandidates((prev) =>
+      prev.map((c) =>
+        c._id === statusChangeCandidateId ? { ...c, ...payload } : c
+      )
+    )
+    setAssignedCandidates((prev) =>
+      prev.map((c) =>
+        c._id === statusChangeCandidateId ? { ...c, ...payload } : c
+      )
+    )
+    setCandidates((prev) =>
+      prev.map((c) =>
+        c.id === statusChangeCandidateId || c._id === statusChangeCandidateId 
+          ? { ...c, ...payload, status: statusChangeType } 
+          : c
+      )
+    )
+
+    // Close dialog
+    setIsStatusChangeDialogOpen(false)
+
+    // Process backend update asynchronously
+    try {
+      await updateCandidate(statusChangeCandidateId, payload)
+      
+      // Silently refresh data in background to ensure sync
+      Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates()
+      ]).then(([unassignedData, assignedData]) => {
+        setUnassignedCandidates(unassignedData)
+        setAssignedCandidates(assignedData)
+      }).catch(err => console.error('Background refresh failed:', err))
+      
+      toast({
+        title: "Success",
+        description: `Candidate status updated to ${statusChangeType === "offerReleased" ? "Offer Released" : "Joined"}`,
       })
     } catch (error) {
       // Rollback optimistic update on failure
@@ -3077,6 +3178,69 @@ export default function CandidatesPage() {
                 No ongoing interviews found
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Status Change Dialog for Offer Released/Joined */}
+        <Dialog open={isStatusChangeDialogOpen} onOpenChange={setIsStatusChangeDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {statusChangeType === "offerReleased" ? "Offer Released Date" : "Joining Date"}
+              </DialogTitle>
+              <DialogDescription>
+                Select the {statusChangeType === "offerReleased" ? "date when the offer was released" : "date when the candidate joined"}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  {statusChangeType === "offerReleased" ? "Offer Released Date" : "Joining Date"}
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !statusChangeDate && "text-muted-foreground"
+                      )}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {statusChangeDate ? format(statusChangeDate, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={statusChangeDate}
+                      onSelect={setStatusChangeDate}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsStatusChangeDialogOpen(false)
+                  setStatusChangeDate(undefined)
+                  setStatusChangeCandidateId(null)
+                  setStatusChangeType(null)
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleStatusChangeWithDate}
+                disabled={!statusChangeDate}
+              >
+                Confirm
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
