@@ -13,8 +13,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DatePicker } from "@/components/ui/date-picker"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -3213,12 +3215,30 @@ export default function CandidatesPage() {
             </DialogHeader>
             <div className="py-6">
               <div className="space-y-4">
-                <DatePicker
-                  selected={statusChangeDate}
-                  onChange={setStatusChangeDate}
-                  placeholder="Pick a date"
-                  dateFormat="dd MMM yyyy"
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal h-12 text-base",
+                        !statusChangeDate && "text-muted-foreground"
+                      )}
+                    >
+                      <Calendar className="mr-3 h-5 w-5" />
+                      {statusChangeDate ? format(statusChangeDate, "dd MMM yyyy") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 z-[150]" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={statusChangeDate}
+                      onSelect={setStatusChangeDate}
+                      initialFocus
+                      captionLayout="dropdown"
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <div className="flex justify-end gap-3">
