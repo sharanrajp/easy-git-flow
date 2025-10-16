@@ -44,7 +44,7 @@ export interface Vacancy {
   experience_range: string
   skills_required: string[]
   job_desc?: string
-  interview_type: "Walk-In"
+  interview_type: "Walk-In" | "Virtual" | "walk-in" | "virtual"
   walkInDetails?: {
     date: string
     location: string
@@ -68,7 +68,7 @@ export interface Candidate {
   total_experience: string
   notice_period: string
   applied_position: string
-  interview_type: "Walk-In"
+  interview_type?: "Walk-In" | "Virtual" | "walk-in" | "virtual"
   job_type: "full_time" | "part-time" | "contract"
   source: string
   other_source?: string

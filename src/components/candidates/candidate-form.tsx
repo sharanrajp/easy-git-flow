@@ -49,7 +49,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     total_experience: formatExperience(initialExp.years, initialExp.months),
     notice_period: candidate?.notice_period || "",
     applied_position: candidate?.applied_position || "",
-    interview_type: candidate?.interview_type || "Walk-In",
+    interview_type: (candidate?.interview_type || "walk-in") as "Walk-In" | "Virtual" | "walk-in" | "virtual",
     source: candidate?.source || "",
     other_source: (candidate as any)?.other_source || "",
     current_ctc: candidate?.current_ctc || "",
@@ -60,11 +60,6 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     resume: null as File | null,
     recruiter_name: candidate?.recruiter_name || "",
   })
-
-  // Debug logging
-  console.log("CandidateForm - Candidate prop:", candidate)
-  console.log("CandidateForm - interview_type from candidate:", candidate?.interview_type)
-  console.log("CandidateForm - formData.interview_type:", formData.interview_type)
 
   const [newSkill, setNewSkill] = useState("")
   const [initialFormData] = useState(formData)
@@ -118,7 +113,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
       return
     }
     
-    onSubmit(formData)
+    onSubmit(formData as Partial<Candidate>)
   }
 
   const addSkill = () => {
@@ -349,8 +344,8 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
               <SelectValue placeholder="Select interview type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Walk-In">Walk-In</SelectItem>
-              <SelectItem value="Virtual">Virtual</SelectItem>
+              <SelectItem value="walk-in">Walk-In</SelectItem>
+              <SelectItem value="virtual">Virtual</SelectItem>
             </SelectContent>
           </Select>
         </div>
