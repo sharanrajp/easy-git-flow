@@ -77,8 +77,8 @@ export default function PanelistCandidatesPage() {
        ))
   )
 
-  const scheduledInterviews = filteredCandidates.filter(candidate => hasFeedbackCompleted(candidate))
-  const completedInterviews = filteredCandidates.filter(candidate => !hasFeedbackCompleted(candidate))
+  const scheduledInterviews = filteredCandidates.filter(candidate => !hasFeedbackCompleted(candidate))
+  const completedInterviews = filteredCandidates.filter(candidate => hasFeedbackCompleted(candidate))
 
   const getPreviousRoundsText = (rounds: PanelistCandidate['previous_rounds']) => {
     if (!rounds || rounds.length === 0) return "No Previous Rounds"
