@@ -59,6 +59,12 @@ export interface PanelistCandidate {
   willing_to_relocate?:boolean;
   created_at?:string;
   applied_position?: string
+  job_match?: {
+    strengths: string[];
+    gaps: string[];
+    match_percentage: number;
+  };
+  resume_summary?: string;
   previous_rounds: Array<{
     round: string;
     status: string;

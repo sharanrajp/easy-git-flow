@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Popover, PopoverContent } from "@/components/ui/popover"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, Eye, ExternalLink, FileText, Users, Clock, CheckCircle, X } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Search, Eye, ExternalLink, FileText, Users, Clock, CheckCircle, X, FileSearch } from "lucide-react"
 import { fetchPanelistAssignedCandidates, type PanelistCandidate } from "../../../../lib/candidates-api"
 import { useToast } from "@/hooks/use-toast"
 import { AssignedCandidateDetails } from "../../../../components/candidates/assigned-candidate-details"
@@ -22,6 +24,8 @@ export default function PanelistCandidatesPage() {
   const [isResumeOpen, setIsResumeOpen] = useState(false)
   const [selectedResumeUrl, setSelectedResumeUrl] = useState<string | null>(null)
   const [selectedCandidateName, setSelectedCandidateName] = useState<string>("")
+  const [isScreeningDialogOpen, setIsScreeningDialogOpen] = useState(false)
+  const [selectedScreeningCandidate, setSelectedScreeningCandidate] = useState<PanelistCandidate | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -94,6 +98,11 @@ export default function PanelistCandidatesPage() {
     setSelectedResumeUrl(resumeUrl)
     setSelectedCandidateName(candidateName)
     setIsResumeOpen(true)
+  }
+
+  const handleViewScreening = (candidate: PanelistCandidate) => {
+    setSelectedScreeningCandidate(candidate)
+    setIsScreeningDialogOpen(true)
   }
 
   // Convert PanelistCandidate to BackendCandidate format for the details component
@@ -187,6 +196,7 @@ export default function PanelistCandidatesPage() {
                         <TableHead>Skill Set</TableHead>
                         <TableHead>Interview Round</TableHead>
                         <TableHead>Resume</TableHead>
+                        <TableHead>Screening</TableHead>
                         <TableHead>Action</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -236,6 +246,17 @@ export default function PanelistCandidatesPage() {
                             </TableCell>
                             <TableCell>
                               <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleViewScreening(candidate)}
+                                className="p-0 h-auto text-purple-600 hover:text-purple-800"
+                              >
+                                <FileSearch className="h-4 w-4 mr-1" />
+                                View
+                              </Button>
+                            </TableCell>
+                            <TableCell>
+                              <Button
                                 variant="default"
                                 size="sm"
                                 className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -271,6 +292,7 @@ export default function PanelistCandidatesPage() {
                         <TableHead>Skill Set</TableHead>
                         <TableHead>Interview Round</TableHead>
                         <TableHead>Resume</TableHead>
+                        <TableHead>Screening</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -320,6 +342,17 @@ export default function PanelistCandidatesPage() {
                             </TableCell>
                             <TableCell>
                               <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleViewScreening(candidate)}
+                                className="p-0 h-auto text-purple-600 hover:text-purple-800"
+                              >
+                                <FileSearch className="h-4 w-4 mr-1" />
+                                View
+                              </Button>
+                            </TableCell>
+                            <TableCell>
+                              <Button
                                 variant="default"
                                 size="sm"
                                 onClick={() => handleViewDetails(candidate)}
@@ -354,6 +387,91 @@ export default function PanelistCandidatesPage() {
           resumeUrl={selectedResumeUrl}
           candidateName={selectedCandidateName}
         />
+
+        {/* Screening Result Dialog */}
+        <Dialog open={isScreeningDialogOpen} onOpenChange={setIsScreeningDialogOpen}>
+          <DialogContent className="max-w-3xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>Screening Result - {selectedScreeningCandidate?.name}</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[60vh] pr-4">
+              {selectedScreeningCandidate ? (
+                <div className="space-y-6">
+                  {/* Job Match Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">Job Match Analysis</h3>
+                      {selectedScreeningCandidate.job_match?.match_percentage !== undefined && (
+                        <Badge 
+                          variant="outline" 
+                          className={`text-lg px-4 py-2 ${
+                            selectedScreeningCandidate.job_match.match_percentage >= 70 
+                              ? 'bg-green-50 text-green-700 border-green-200' 
+                              : selectedScreeningCandidate.job_match.match_percentage >= 40
+                              ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                              : 'bg-red-50 text-red-700 border-red-200'
+                          }`}
+                        >
+                          {selectedScreeningCandidate.job_match.match_percentage}% Match
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Strengths */}
+                    {selectedScreeningCandidate.job_match?.strengths && selectedScreeningCandidate.job_match.strengths.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-green-700 flex items-center gap-2">
+                          <CheckCircle className="h-5 w-5" />
+                          Strengths
+                        </h4>
+                        <ul className="space-y-2 pl-7">
+                          {selectedScreeningCandidate.job_match.strengths.map((strength, index) => (
+                            <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                              <span>{strength}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Gaps */}
+                    {selectedScreeningCandidate.job_match?.gaps && selectedScreeningCandidate.job_match.gaps.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-orange-700 flex items-center gap-2">
+                          <X className="h-5 w-5" />
+                          Gaps
+                        </h4>
+                        <ul className="space-y-2 pl-7">
+                          {selectedScreeningCandidate.job_match.gaps.map((gap, index) => (
+                            <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
+                              <X className="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                              <span>{gap}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Resume Summary */}
+                  {selectedScreeningCandidate.resume_summary && (
+                    <div className="space-y-2 pt-4 border-t">
+                      <h4 className="font-medium">Resume Summary</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {selectedScreeningCandidate.resume_summary}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center py-8">
+                  <p className="text-muted-foreground">No screening data available</p>
+                </div>
+              )}
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
 
         {/* Candidate Details Popover */}
         <Popover open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
