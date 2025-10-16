@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent } from "@/components/ui/popover"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Calendar,
@@ -29,6 +30,7 @@ import {
   X,
   Mail,
   Briefcase,
+  FileSearch,
 } from "lucide-react"
 import {
   getInterviewSessionsForPanelist,
@@ -83,6 +85,8 @@ export default function PanelistDashboard() {
   const [isResumeOpen, setIsResumeOpen] = useState(false)
   const [selectedResumeUrl, setSelectedResumeUrl] = useState<string | null>(null)
   const [selectedCandidateName, setSelectedCandidateName] = useState<string>("")
+  const [isScreeningDialogOpen, setIsScreeningDialogOpen] = useState(false)
+  const [selectedScreeningCandidate, setSelectedScreeningCandidate] = useState<PanelistCandidate | null>(null)
 
   const itemsPerPage = 5
   const { toast } = useToast()
@@ -409,6 +413,11 @@ export default function PanelistDashboard() {
     setSelectedResumeUrl(resumeUrl)
     setSelectedCandidateName(candidateName)
     setIsResumeOpen(true)
+  }
+
+  const handleViewScreening = (candidate: PanelistCandidate) => {
+    setSelectedScreeningCandidate(candidate)
+    setIsScreeningDialogOpen(true)
   }
 
   const handleViewFeedback = (session: InterviewSession) => {
@@ -741,7 +750,7 @@ export default function PanelistDashboard() {
                           </div>
                         </div>
 
-                        {/* Resume + Feedback Buttons */}
+                        {/* Resume + Feedback + Screening Buttons */}
                         <div className="flex gap-2">
                           <Button
                             variant="outline"
@@ -760,6 +769,15 @@ export default function PanelistDashboard() {
                           >
                             <Eye className="h-4 w-4 mr-2" />
                             View Feedback
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewScreening(candidate)}
+                            className="flex-1"
+                          >
+                            <FileSearch className="h-4 w-4 mr-2" />
+                            View Screening Result
                           </Button>
                         </div>
                       </CardContent>
@@ -795,13 +813,14 @@ export default function PanelistDashboard() {
                           <TableHead>Experience</TableHead>
                           <TableHead>Interview Round</TableHead>
                           <TableHead>Resume</TableHead>
+                          <TableHead>Screening</TableHead>
                           <TableHead>Action</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {completedCandidateInterviews.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                               No completed interviews found
                             </TableCell>
                           </TableRow>
@@ -845,6 +864,17 @@ export default function PanelistDashboard() {
                                 ) : (
                                   <span className="text-muted-foreground text-sm">Resume Not Found</span>
                                 )}
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleViewScreening(candidate)}
+                                  className="p-0 h-auto text-purple-600 hover:text-purple-800"
+                                >
+                                  <FileSearch className="h-4 w-4 mr-1" />
+                                  View
+                                </Button>
                               </TableCell>
                               <TableCell>
                                 <Button
@@ -995,6 +1025,93 @@ export default function PanelistDashboard() {
           resumeUrl={selectedResumeUrl}
           candidateName={selectedCandidateName}
         />
+
+        {/* Screening Result Dialog */}
+        <Dialog open={isScreeningDialogOpen} onOpenChange={setIsScreeningDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>Screening Result - {selectedScreeningCandidate?.name}</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[60vh] pr-4">
+              {selectedScreeningCandidate && (
+                <div className="space-y-6">
+                  {/* Job Match Section */}
+                  {(selectedScreeningCandidate as any).job_match && (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold">Job Match</h3>
+                        <Badge 
+                          variant="outline" 
+                          className={`text-lg px-3 py-1 ${
+                            (selectedScreeningCandidate as any).job_match.match_percentage >= 70 
+                              ? 'bg-green-50 text-green-700 border-green-200' 
+                              : (selectedScreeningCandidate as any).job_match.match_percentage >= 40
+                              ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                              : 'bg-red-50 text-red-700 border-red-200'
+                          }`}
+                        >
+                          {(selectedScreeningCandidate as any).job_match.match_percentage}% Match
+                        </Badge>
+                      </div>
+
+                      {/* Strengths */}
+                      {(selectedScreeningCandidate as any).job_match.strengths && (selectedScreeningCandidate as any).job_match.strengths.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-green-700 mb-2 flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            Strengths
+                          </h4>
+                          <ul className="space-y-2">
+                            {(selectedScreeningCandidate as any).job_match.strengths.map((strength: string, index: number) => (
+                              <li key={index} className="flex items-start gap-2 text-sm">
+                                <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                                <span>{strength}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Gaps */}
+                      {(selectedScreeningCandidate as any).job_match.gaps && (selectedScreeningCandidate as any).job_match.gaps.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-red-700 mb-2 flex items-center gap-2">
+                            <X className="h-4 w-4" />
+                            Gaps
+                          </h4>
+                          <ul className="space-y-2">
+                            {(selectedScreeningCandidate as any).job_match.gaps.map((gap: string, index: number) => (
+                              <li key={index} className="flex items-start gap-2 text-sm">
+                                <X className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                                <span>{gap}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Resume Summary */}
+                  {(selectedScreeningCandidate as any).resume_summary && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Resume Summary</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {(selectedScreeningCandidate as any).resume_summary}
+                      </p>
+                    </div>
+                  )}
+
+                  {!(selectedScreeningCandidate as any).job_match && !(selectedScreeningCandidate as any).resume_summary && (
+                    <p className="text-center text-muted-foreground py-8">
+                      No screening data available for this candidate.
+                    </p>
+                  )}
+                </div>
+              )}
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   )
