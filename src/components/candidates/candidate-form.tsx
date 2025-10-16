@@ -341,7 +341,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
             onValueChange={(value: any) => setFormData({ ...formData, interview_type: value })}
           >
             <SelectTrigger className="w-full">
-              <SelectValue />
+              <SelectValue placeholder="Select interview type" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Walk-In">Walk-In</SelectItem>
