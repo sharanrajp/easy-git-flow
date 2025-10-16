@@ -1561,8 +1561,11 @@ export default function CandidatesPage() {
     const previousAssigned = [...assignedCandidates]
     const previousCandidates = [...candidates]
 
-    // Format date as YYYY-MM-DD
-    const formattedDate = statusChangeDate.toISOString().split('T')[0]
+    // Format date as UTC start-of-day to avoid timezone shift
+    const year = statusChangeDate.getFullYear()
+    const month = String(statusChangeDate.getMonth() + 1).padStart(2, '0')
+    const day = String(statusChangeDate.getDate()).padStart(2, '0')
+    const formattedDate = `${year}-${month}-${day}T00:00:00Z`
 
     // Determine the payload based on status type
     const payload: any = {
