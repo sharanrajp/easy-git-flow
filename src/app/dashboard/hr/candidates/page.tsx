@@ -2320,13 +2320,31 @@ export default function CandidatesPage() {
                                 </DropdownMenuTrigger>
                                 {candidate.final_status !== "rejected" &&
                                 <DropdownMenuContent>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "selected")}>Selected</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "on-hold")}>On Hold</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "rejected")}>Rejected</DropdownMenuItem>
+                                  {/* Status progression: selected → hired → offerReleased → joined */}
+                                  {/* Allow only forward progression, not backward */}
+                                  {(() => {
+                                    const currentStatus = candidate.final_status || "selected"
+                                    const statusOrder = ["selected", "hired", "offerReleased", "joined"]
+                                    const currentIndex = statusOrder.indexOf(currentStatus)
+                                    
+                                    return (
+                                      <>
+                                        {currentIndex < statusOrder.indexOf("hired") && (
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
+                                        )}
+                                        {currentIndex < statusOrder.indexOf("offerReleased") && (
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
+                                        )}
+                                        {currentIndex < statusOrder.indexOf("joined") && (
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
+                                        )}
+                                        {/* Allow alternate paths at any point */}
+                                        <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "on-hold")}>On Hold</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "rejected")}>Rejected</DropdownMenuItem>
+                                      </>
+                                    )
+                                  })()}
                                 </DropdownMenuContent>
                                 }
                               </DropdownMenu>
@@ -3219,7 +3237,7 @@ export default function CandidatesPage() {
                       selected={statusChangeDate}
                       onSelect={setStatusChangeDate}
                       initialFocus
-                      className="pointer-events-auto"
+                      className="pointer-events-auto scale-110"
                     />
                   </PopoverContent>
                 </Popover>
