@@ -70,11 +70,11 @@ function Calendar({
           defaultClassNames.dropdowns,
         ),
         dropdown_root: cn(
-          'relative has-focus:border-ring border border-input shadow-xs has-focus:ring-ring/50 has-focus:ring-[3px] rounded-md min-w-[100px] bg-background hover:bg-accent/50 transition-colors',
+          'relative has-focus:border-ring border border-input shadow-xs has-focus:ring-ring/50 has-focus:ring-[3px] rounded-md min-w-[120px] bg-background hover:bg-accent/50 transition-colors pointer-events-auto',
           defaultClassNames.dropdown_root,
         ),
         dropdown: cn(
-          'absolute bg-transparent inset-0 opacity-0 cursor-pointer z-10 appearance-none',
+          'absolute inset-0 opacity-0 cursor-pointer z-20 w-full h-full',
           defaultClassNames.dropdown,
         ),
         caption_label: cn(
