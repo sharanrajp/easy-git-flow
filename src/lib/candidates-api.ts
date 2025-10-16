@@ -82,15 +82,6 @@ export interface OngoingInterview {
   round: string;
 }
 
-export interface ScreeningResult {
-  job_match: {
-    strengths: string[];
-    gaps: string[];
-    match_percentage: number;
-  };
-  resume_summary: string;
-}
-
 // Fetch unassigned candidates from backend
 export async function fetchUnassignedCandidates(): Promise<BackendCandidate[]> {
   const token = getToken();
@@ -473,34 +464,6 @@ export async function deleteCandidates(candidateIds: string[]): Promise<{ delete
     return result;
   } catch (error) {
     console.error('Error deleting candidates:', error);
-    throw error;
-  }
-}
-
-// Fetch screening result for a candidate
-export async function fetchScreeningResult(candidateId: string): Promise<ScreeningResult> {
-  const token = getToken();
-  
-  if (!token) {
-    throw new Error('No authentication token found');
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/candidates/${candidateId}/screening-result`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch screening result: ${response.status} ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching screening result:', error);
     throw error;
   }
 }

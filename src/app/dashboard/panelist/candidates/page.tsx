@@ -7,13 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Popover, PopoverContent } from "@/components/ui/popover"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, Eye, ExternalLink, FileText, Users, Clock, CheckCircle, X, FileSearch } from "lucide-react"
-import { fetchPanelistAssignedCandidates, type PanelistCandidate, fetchScreeningResult, type ScreeningResult } from "../../../../lib/candidates-api"
+import { Search, Eye, ExternalLink, FileText, Users, Clock, CheckCircle, X } from "lucide-react"
+import { fetchPanelistAssignedCandidates, type PanelistCandidate } from "../../../../lib/candidates-api"
 import { useToast } from "@/hooks/use-toast"
 import { AssignedCandidateDetails } from "../../../../components/candidates/assigned-candidate-details"
 import { ResumeDialog } from "../../../../components/candidates/resume-dialog"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function PanelistCandidatesPage() {
   const [candidates, setCandidates] = useState<PanelistCandidate[]>([])
@@ -24,9 +22,6 @@ export default function PanelistCandidatesPage() {
   const [isResumeOpen, setIsResumeOpen] = useState(false)
   const [selectedResumeUrl, setSelectedResumeUrl] = useState<string | null>(null)
   const [selectedCandidateName, setSelectedCandidateName] = useState<string>("")
-  const [isScreeningDialogOpen, setIsScreeningDialogOpen] = useState(false)
-  const [screeningResult, setScreeningResult] = useState<ScreeningResult | null>(null)
-  const [isLoadingScreening, setIsLoadingScreening] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -78,8 +73,8 @@ export default function PanelistCandidatesPage() {
        ))
   )
 
-  const scheduledInterviews = filteredCandidates.filter(candidate => !hasFeedbackCompleted(candidate))
-  const completedInterviews = filteredCandidates.filter(candidate => hasFeedbackCompleted(candidate))
+  const scheduledInterviews = filteredCandidates.filter(candidate => hasFeedbackCompleted(candidate))
+  const completedInterviews = filteredCandidates.filter(candidate => !hasFeedbackCompleted(candidate))
 
   const getPreviousRoundsText = (rounds: PanelistCandidate['previous_rounds']) => {
     if (!rounds || rounds.length === 0) return "No Previous Rounds"
@@ -99,25 +94,6 @@ export default function PanelistCandidatesPage() {
     setSelectedResumeUrl(resumeUrl)
     setSelectedCandidateName(candidateName)
     setIsResumeOpen(true)
-  }
-
-  const handleViewScreening = async (candidateId: string) => {
-    setIsLoadingScreening(true)
-    setIsScreeningDialogOpen(true)
-    try {
-      const result = await fetchScreeningResult(candidateId)
-      setScreeningResult(result)
-    } catch (error) {
-      console.error('Error fetching screening result:', error)
-      toast({
-        title: "Error",
-        description: "Failed to load screening result",
-        variant: "destructive",
-      })
-      setIsScreeningDialogOpen(false)
-    } finally {
-      setIsLoadingScreening(false)
-    }
   }
 
   // Convert PanelistCandidate to BackendCandidate format for the details component
@@ -211,7 +187,6 @@ export default function PanelistCandidatesPage() {
                         <TableHead>Skill Set</TableHead>
                         <TableHead>Interview Round</TableHead>
                         <TableHead>Resume</TableHead>
-                        <TableHead>Screening</TableHead>
                         <TableHead>Action</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -258,17 +233,6 @@ export default function PanelistCandidatesPage() {
                               ) : (
                                 <span className="text-muted-foreground text-sm">Resume Not Found</span>
                               )}
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleViewScreening(candidate._id)}
-                                className="p-0 h-auto text-purple-600 hover:text-purple-800"
-                              >
-                                <FileSearch className="h-4 w-4 mr-1" />
-                                Screening
-                              </Button>
                             </TableCell>
                             <TableCell>
                               <Button
@@ -390,91 +354,6 @@ export default function PanelistCandidatesPage() {
           resumeUrl={selectedResumeUrl}
           candidateName={selectedCandidateName}
         />
-
-        {/* Screening Result Dialog */}
-        <Dialog open={isScreeningDialogOpen} onOpenChange={setIsScreeningDialogOpen}>
-          <DialogContent className="max-w-3xl max-h-[80vh]">
-            <DialogHeader>
-              <DialogTitle>Screening Result</DialogTitle>
-              <DialogDescription>
-                AI-powered job match analysis and resume summary
-              </DialogDescription>
-            </DialogHeader>
-            
-            {isLoadingScreening ? (
-              <div className="flex justify-center py-8">
-                <div className="text-sm text-muted-foreground">Loading screening result...</div>
-              </div>
-            ) : screeningResult ? (
-              <ScrollArea className="max-h-[60vh] pr-4">
-                <div className="space-y-6">
-                  {/* Job Match Section */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold">Job Match Analysis</h3>
-                      <Badge 
-                        variant="outline" 
-                        className={`text-lg px-3 py-1 ${
-                          screeningResult.job_match.match_percentage >= 70 
-                            ? 'bg-green-50 text-green-700 border-green-200'
-                            : screeningResult.job_match.match_percentage >= 40
-                            ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
-                            : 'bg-red-50 text-red-700 border-red-200'
-                        }`}
-                      >
-                        {screeningResult.job_match.match_percentage}% Match
-                      </Badge>
-                    </div>
-                    
-                    {/* Strengths */}
-                    <div>
-                      <h4 className="font-medium text-green-700 mb-2 flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        Strengths
-                      </h4>
-                      <ul className="space-y-2">
-                        {screeningResult.job_match.strengths.map((strength, index) => (
-                          <li key={index} className="flex items-start gap-2 text-sm">
-                            <span className="text-green-600 mt-1">•</span>
-                            <span>{strength}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    
-                    {/* Gaps */}
-                    <div>
-                      <h4 className="font-medium text-orange-700 mb-2 flex items-center gap-2">
-                        <X className="h-4 w-4" />
-                        Gaps
-                      </h4>
-                      <ul className="space-y-2">
-                        {screeningResult.job_match.gaps.map((gap, index) => (
-                          <li key={index} className="flex items-start gap-2 text-sm">
-                            <span className="text-orange-600 mt-1">•</span>
-                            <span>{gap}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                  
-                  {/* Resume Summary Section */}
-                  <div className="pt-4 border-t">
-                    <h3 className="text-lg font-semibold mb-3">Resume Summary</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {screeningResult.resume_summary}
-                    </p>
-                  </div>
-                </div>
-              </ScrollArea>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                No screening result available
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
 
         {/* Candidate Details Popover */}
         <Popover open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
