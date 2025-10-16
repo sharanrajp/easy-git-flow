@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ResumeDialog } from "./resume-dialog"
 import { useState } from "react"
+import { FileSearch, CheckCircle, X } from "lucide-react"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 // Local formatDate function since it's not exported from utils
 function formatDate(dateString: string | Date): string {
@@ -75,6 +77,7 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
   const currentUser = localStorage.getItem("ats_user")
   const userRole = currentUser ? JSON.parse(currentUser).role : null
   const [isResumeDialogOpen, setIsResumeDialogOpen] = useState(false)
+  const [isScreeningDialogOpen, setIsScreeningDialogOpen] = useState(false)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -247,6 +250,20 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Screening Result Button */}
+              <Card>
+                <CardContent className="pt-6">
+                  <Button 
+                    onClick={() => setIsScreeningDialogOpen(true)} 
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <FileSearch className="h-4 w-4 mr-2" />
+                    View Screening Result
+                  </Button>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="interviews" className="space-y-6">
@@ -339,6 +356,90 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
         resumeUrl={candidate.resume_link || null}
         candidateName={candidate.name}
       />
+
+      {/* Screening Result Dialog */}
+      <Dialog open={isScreeningDialogOpen} onOpenChange={setIsScreeningDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Screening Result - {candidate.name}</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh] pr-4">
+            <div className="space-y-6">
+              {/* Job Match Section */}
+              {(candidate as any).job_match ? (
+                <>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">Job Match</h3>
+                    
+                    {/* Match Percentage */}
+                    <div className="mb-4">
+                      <span className="text-sm text-gray-500">Match Percentage</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge 
+                          className={
+                            (candidate as any).job_match.match_percentage >= 70
+                              ? "bg-green-100 text-green-800"
+                              : (candidate as any).job_match.match_percentage >= 40
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }
+                        >
+                          {(candidate as any).job_match.match_percentage}%
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Strengths */}
+                    {(candidate as any).job_match.strengths && (candidate as any).job_match.strengths.length > 0 && (
+                      <div className="mb-4">
+                        <span className="text-sm font-medium text-gray-700">Strengths</span>
+                        <ul className="mt-2 space-y-2">
+                          {(candidate as any).job_match.strengths.map((strength: string, index: number) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                              <span className="text-sm text-gray-700">{strength}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Gaps */}
+                    {(candidate as any).job_match.gaps && (candidate as any).job_match.gaps.length > 0 && (
+                      <div>
+                        <span className="text-sm font-medium text-gray-700">Gaps</span>
+                        <ul className="mt-2 space-y-2">
+                          {(candidate as any).job_match.gaps.map((gap: string, index: number) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <X className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                              <span className="text-sm text-gray-700">{gap}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Resume Summary */}
+                  {(candidate as any).resume_summary && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Resume Summary</h3>
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {(candidate as any).resume_summary}
+                      </p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <FileSearch className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-500">No screening result available for this candidate.</p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }
