@@ -3210,25 +3210,22 @@ export default function CandidatesPage() {
                 {statusChangeType === "offerReleased" ? "Offer Released Date" : "Joining Date"}
               </DialogTitle>
               <DialogDescription>
-                Select the {statusChangeType === "offerReleased" ? "date when the offer was released" : "date when the candidate joined"}
+                Please select the {statusChangeType === "offerReleased" ? "offer release" : "joining"} date for this candidate.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  {statusChangeType === "offerReleased" ? "Offer Released Date" : "Joining Date"}
-                </label>
+            <div className="py-6">
+              <div className="space-y-4">
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
-                      variant="outline"
+                      variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal",
+                        "w-full justify-start text-left font-normal h-12 text-base",
                         !statusChangeDate && "text-muted-foreground"
                       )}
                     >
-                      <Calendar className="mr-2 h-4 w-4" />
-                      {statusChangeDate ? format(statusChangeDate, "PPP") : <span>Pick a date</span>}
+                      <Calendar className="mr-3 h-5 w-5" />
+                      {statusChangeDate ? format(statusChangeDate, "dd MMM yyyy") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -3237,7 +3234,7 @@ export default function CandidatesPage() {
                       selected={statusChangeDate}
                       onSelect={setStatusChangeDate}
                       initialFocus
-                      className="pointer-events-auto scale-110"
+                      className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
