@@ -1,4 +1,4 @@
- 
+
 
 import * as React from 'react'
 import {
@@ -6,10 +6,47 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from 'lucide-react'
-import { DayButton, DayPicker, getDefaultClassNames } from 'react-day-picker'
+import { DayButton, DayPicker, getDefaultClassNames, DropdownProps } from 'react-day-picker'
 
 import { cn } from '@/lib/utils'
 import { Button, buttonVariants } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+function CustomDropdown(props: DropdownProps) {
+  const { options, value, onChange } = props
+
+  const handleChange = (newValue: string) => {
+    const changeEvent = {
+      target: { value: newValue },
+    } as React.ChangeEvent<HTMLSelectElement>
+    onChange?.(changeEvent)
+  }
+
+  return (
+    <Select value={value?.toString()} onValueChange={handleChange}>
+      <SelectTrigger className="w-[110px] h-10 text-base font-medium">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent position="popper" className="max-h-[300px]">
+        {options?.map((option) => (
+          <SelectItem 
+            key={option.value} 
+            value={option.value.toString()}
+            className="text-base"
+          >
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
 
 function Calendar({
   className,
@@ -68,14 +105,6 @@ function Calendar({
         dropdowns: cn(
           'w-full flex items-center text-base font-medium justify-center h-12 gap-3',
           defaultClassNames.dropdowns,
-        ),
-        dropdown_root: cn(
-          'relative has-focus:border-ring border border-input shadow-xs has-focus:ring-ring/50 has-focus:ring-[3px] rounded-md min-w-[120px] bg-background hover:bg-accent/50 transition-colors pointer-events-auto',
-          defaultClassNames.dropdown_root,
-        ),
-        dropdown: cn(
-          'absolute inset-0 opacity-0 cursor-pointer z-20 w-full h-full',
-          defaultClassNames.dropdown,
         ),
         caption_label: cn(
           'select-none font-medium',
@@ -155,6 +184,7 @@ function Calendar({
             <ChevronDownIcon className={cn('size-5', className)} {...props} />
           )
         },
+        Dropdown: CustomDropdown,
         DayButton: CalendarDayButton,
         WeekNumber: ({ children, ...props }) => {
           return (
