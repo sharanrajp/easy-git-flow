@@ -34,14 +34,14 @@ function CustomDropdown(props: DropdownProps) {
 
   return (
     <Select open={open} onOpenChange={setOpen} value={value?.toString()} onValueChange={handleChange}>
-      <SelectTrigger className="w-[120px] h-10 text-base font-medium z-[200]">
+      <SelectTrigger className="w-[120px] h-10 text-base font-medium">
         <SelectValue>{selected?.label}</SelectValue>
       </SelectTrigger>
       <SelectContent 
         position="popper" 
         side="bottom" 
         align="center" 
-        className="max-h-[250px] z-[200]"
+        className="max-h-[250px] z-[9999] pointer-events-auto"
         sideOffset={4}
       >
         {options?.map((option) => (
