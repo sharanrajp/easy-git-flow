@@ -36,12 +36,11 @@ export function ResumeDialog({ isOpen, onClose, resumeUrl, candidateName }: Resu
           
           <ScrollArea className="h-full w-full">
             <iframe
-              src={`https://docs.google.com/viewer?url=${encodeURIComponent(resumeUrl)}&embedded=true`}
+              src={resumeUrl}
               className="w-full h-full border-0"
               style={{ minHeight: '75vh' }}
               onLoad={() => setIsLoading(false)}
               title={`Resume for ${candidateName || 'candidate'}`}
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
             />
           </ScrollArea>
         </div>
