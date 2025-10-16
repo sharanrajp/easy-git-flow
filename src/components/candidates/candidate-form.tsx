@@ -61,6 +61,11 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     recruiter_name: candidate?.recruiter_name || "",
   })
 
+  // Debug logging
+  console.log("CandidateForm - Candidate prop:", candidate)
+  console.log("CandidateForm - interview_type from candidate:", candidate?.interview_type)
+  console.log("CandidateForm - formData.interview_type:", formData.interview_type)
+
   const [newSkill, setNewSkill] = useState("")
   const [initialFormData] = useState(formData)
   const [vacancies, setVacancies] = useState<any[]>([])
