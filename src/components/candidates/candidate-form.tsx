@@ -22,12 +22,31 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
   // No stored user available since we removed localStorage
   const currentUser = null
 
+  // Parse existing experience to extract years and months
+  const parseExperience = (expString: string) => {
+    if (!expString) return { years: "0", months: "0" }
+    const yearMatch = expString.match(/(\d+)\s*Year/)
+    const monthMatch = expString.match(/(\d+)\s*Month/)
+    return {
+      years: yearMatch ? yearMatch[1] : "0",
+      months: monthMatch ? monthMatch[1] : "0"
+    }
+  }
+
+  const initialExp = parseExperience(candidate?.total_experience || "")
+  const [experienceYears, setExperienceYears] = useState(initialExp.years)
+  const [experienceMonths, setExperienceMonths] = useState(initialExp.months)
+
+  const formatExperience = (years: string, months: string) => {
+    return `${years} Year(s) ${months} Month(s)`
+  }
+
   const [formData, setFormData] = useState({
     name: candidate?.name || "",
     email: candidate?.email || "",
     phone_number: candidate?.phone_number || "",
     location: candidate?.location || "",
-    total_experience: candidate?.total_experience || "",
+    total_experience: formatExperience(initialExp.years, initialExp.months),
     notice_period: candidate?.notice_period || "",
     applied_position: candidate?.applied_position || "",
     interview_type: candidate?.interview_type || "Walk-In",
@@ -190,15 +209,54 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
 
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="total_experience">Total Experience (years) *</Label>
-          <Input
-            id="total_experience"
-            placeholder="e.g., 3.5"
-            value={formData.total_experience}
-            onChange={(e) => setFormData({ ...formData, total_experience: e.target.value })}
-            required
-            className="w-full"
-          />
+          <Label>Total Experience *</Label>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="experience_years" className="text-xs text-muted-foreground">Years</Label>
+              <Select
+                value={experienceYears}
+                onValueChange={(value) => {
+                  setExperienceYears(value)
+                  setFormData({ ...formData, total_experience: formatExperience(value, experienceMonths) })
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 31 }, (_, i) => (
+                    <SelectItem key={i} value={i.toString()}>
+                      {i}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="experience_months" className="text-xs text-muted-foreground">Months</Label>
+              <Select
+                value={experienceMonths}
+                onValueChange={(value) => {
+                  setExperienceMonths(value)
+                  setFormData({ ...formData, total_experience: formatExperience(experienceYears, value) })
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <SelectItem key={i} value={i.toString()}>
+                      {i}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Display: {formData.total_experience}
+          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="notice_period">Notice Period *</Label>
