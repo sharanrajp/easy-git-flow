@@ -20,25 +20,29 @@ import {
 
 function CustomDropdown(props: DropdownProps) {
   const { options, value, onChange } = props
+  const [open, setOpen] = React.useState(false)
 
   const handleChange = (newValue: string) => {
     const changeEvent = {
       target: { value: newValue },
     } as React.ChangeEvent<HTMLSelectElement>
     onChange?.(changeEvent)
+    setOpen(false)
   }
 
+  const selected = options?.find((opt) => opt.value === value)
+
   return (
-    <Select value={value?.toString()} onValueChange={handleChange}>
-      <SelectTrigger className="w-[110px] h-10 text-base font-medium">
-        <SelectValue />
+    <Select open={open} onOpenChange={setOpen} value={value?.toString()} onValueChange={handleChange}>
+      <SelectTrigger className="w-[120px] h-10 text-base font-medium">
+        <SelectValue>{selected?.label}</SelectValue>
       </SelectTrigger>
-      <SelectContent position="popper" className="max-h-[300px]">
+      <SelectContent position="popper" side="bottom" align="center" className="max-h-[250px] z-[100]">
         {options?.map((option) => (
           <SelectItem 
             key={option.value} 
             value={option.value.toString()}
-            className="text-base"
+            className="text-base cursor-pointer"
           >
             {option.label}
           </SelectItem>
