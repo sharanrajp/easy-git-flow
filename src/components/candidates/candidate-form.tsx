@@ -395,7 +395,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           <Label htmlFor="current_ctc">Current CTC (₹) *</Label>
           <Input
             id="current_ctc"
-            placeholder="e.g., 2"
+            placeholder="e.g., 400000"
             value={formData.current_ctc}
             onChange={(e) => {
               const value = e.target.value;
@@ -410,7 +410,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           <Label htmlFor="expected_ctc">Expected CTC (₹) *</Label>
           <Input
             id="expected_ctc"
-            placeholder="e.g., 4"
+            placeholder="e.g., 600000"
             value={formData.expected_ctc}
             onChange={(e) => {
               const value = e.target.value;
