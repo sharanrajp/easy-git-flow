@@ -210,8 +210,8 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label>Total Experience *</Label>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1.5">
               <Label htmlFor="experience_years" className="text-xs text-muted-foreground">Years</Label>
               <Select
                 value={experienceYears}
@@ -220,7 +220,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
                   setFormData({ ...formData, total_experience: formatExperience(value, experienceMonths) })
                 }}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -232,7 +232,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="experience_months" className="text-xs text-muted-foreground">Months</Label>
               <Select
                 value={experienceMonths}
@@ -241,7 +241,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
                   setFormData({ ...formData, total_experience: formatExperience(experienceYears, value) })
                 }}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -254,20 +254,23 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
               </Select>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mt-1.5">
             Display: {formData.total_experience}
           </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="notice_period">Notice Period *</Label>
-          <Input
-            id="notice_period"
-            placeholder="e.g., 2 weeks, Immediate"
-            value={formData.notice_period}
-            onChange={(e) => setFormData({ ...formData, notice_period: e.target.value })}
-            required
-            className="w-full"
-          />
+          <div className="pt-[22px]">
+            <Input
+              id="notice_period"
+              placeholder="e.g., 2 weeks, Immediate"
+              value={formData.notice_period}
+              onChange={(e) => setFormData({ ...formData, notice_period: e.target.value })}
+              required
+              className="w-full h-9"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground invisible mt-1.5">Placeholder</p>
         </div>
       </div>
 
