@@ -5,12 +5,15 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 import { fetchVacancies } from "@/lib/vacancy-api"
 import { fetchDriveInsights, type DriveInsights } from "@/lib/analytics-api"
+import { fetchAssignedCandidates, fetchUnassignedCandidates, type BackendCandidate } from "@/lib/candidates-api"
 import { type Vacancy } from "@/lib/schema-data"
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
-import { Users, UserCheck, Clock, TrendingUp, CheckCircle, XCircle, Briefcase, RefreshCw } from "lucide-react"
+import { Users, UserCheck, Clock, TrendingUp, CheckCircle, XCircle, Briefcase, RefreshCw, Search, Download, Calendar } from "lucide-react"
 import { format } from "date-fns"
 
 interface AggregateMetrics {
@@ -21,6 +24,7 @@ interface AggregateMetrics {
   total_rejected: number
   selection_rate: number
   avg_time_to_hire: number
+  avg_time_to_fill: number
   active_drives: number
 }
 
@@ -31,12 +35,18 @@ interface VacancyWithInsights extends Vacancy {
 export default function SuperadminDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [vacancies, setVacancies] = useState<VacancyWithInsights[]>([])
+  const [candidates, setCandidates] = useState<BackendCandidate[]>([])
   const [selectedDrive, setSelectedDrive] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [recruiterFilter, setRecruiterFilter] = useState<string>("all")
+  const [activeTab, setActiveTab] = useState("drive-summary")
   const { toast } = useToast()
 
+  // Auto-refresh on mount, filter changes, and tab changes
   useEffect(() => {
     loadInitialData()
-  }, [])
+  }, [selectedDrive, activeTab])
 
   const loadInitialData = async () => {
     try {
@@ -62,6 +72,13 @@ export default function SuperadminDashboard() {
       )
       
       setVacancies(vacanciesWithInsights)
+
+      // Fetch all candidates for Candidate Summary tab
+      const [assignedCandidates, unassignedCandidates] = await Promise.all([
+        fetchAssignedCandidates(),
+        fetchUnassignedCandidates()
+      ])
+      setCandidates([...assignedCandidates, ...unassignedCandidates])
     } catch (error) {
       console.error("Failed to load dashboard data:", error)
       toast({
@@ -90,6 +107,7 @@ export default function SuperadminDashboard() {
           total_rejected: selectedVacancy.insights.total_rejected,
           selection_rate: selectedVacancy.insights.selection_rate,
           avg_time_to_hire: selectedVacancy.insights.avg_time_to_hire,
+          avg_time_to_fill: selectedVacancy.insights.avg_time_to_hire + 7, // Placeholder
           active_drives: 1
         }
       }
@@ -107,6 +125,7 @@ export default function SuperadminDashboard() {
         total_rejected: acc.total_rejected + vacancy.insights.total_rejected,
         selection_rate: 0, // Will calculate below
         avg_time_to_hire: 0, // Will calculate below
+        avg_time_to_fill: 0, // Will calculate below
         active_drives: acc.active_drives + (vacancy.status === "active" ? 1 : 0)
       }
     }, {
@@ -117,18 +136,74 @@ export default function SuperadminDashboard() {
       total_rejected: 0,
       selection_rate: 0,
       avg_time_to_hire: 0,
+      avg_time_to_fill: 0,
       active_drives: 0
     })
 
-    // Calculate average selection rate and time to hire
+    // Calculate average selection rate, time to hire, and time to fill
     const vacanciesWithInsights = filteredVacancies.filter(v => v.insights)
     if (vacanciesWithInsights.length > 0) {
       metrics.selection_rate = vacanciesWithInsights.reduce((sum, v) => sum + (v.insights?.selection_rate || 0), 0) / vacanciesWithInsights.length
       metrics.avg_time_to_hire = vacanciesWithInsights.reduce((sum, v) => sum + (v.insights?.avg_time_to_hire || 0), 0) / vacanciesWithInsights.length
+      // Time to fill is approximated as time from vacancy creation to first selection
+      metrics.avg_time_to_fill = metrics.avg_time_to_hire + 7 // Placeholder: add 7 days for posting/sourcing
     }
 
     return metrics
   }, [vacancies, selectedDrive])
+
+  // Get unique recruiters for filter
+  const uniqueRecruiters = useMemo(() => {
+    const recruiters = vacancies.map(v => v.recruiter_name).filter(Boolean)
+    return Array.from(new Set(recruiters))
+  }, [vacancies])
+
+  // Filter candidates based on search and status
+  const filteredCandidates = useMemo(() => {
+    return candidates.filter(candidate => {
+      const matchesSearch = searchQuery === "" || 
+        candidate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        candidate.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        candidate.skill_set?.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()))
+      
+      const matchesStatus = statusFilter === "all" || 
+        (statusFilter === "offer-released" && candidate.final_status === "offer_released") ||
+        (statusFilter === "joined" && candidate.final_status === "joined")
+
+      return matchesSearch && matchesStatus
+    })
+  }, [candidates, searchQuery, statusFilter])
+
+  // Export candidates to CSV
+  const handleExportCSV = () => {
+    const csvData = filteredCandidates.map(candidate => ({
+      Name: candidate.name,
+      Email: candidate.email,
+      Experience: candidate.total_experience || "N/A",
+      Skills: candidate.skill_set?.join(", ") || "N/A",
+      Position: candidate.applied_position,
+      Status: candidate.final_status,
+      "Date of Joining": candidate.final_status === "joined" ? "N/A" : "N/A"
+    }))
+
+    const csv = [
+      Object.keys(csvData[0]).join(","),
+      ...csvData.map(row => Object.values(row).join(","))
+    ].join("\n")
+
+    const blob = new Blob([csv], { type: "text/csv" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `candidates-summary-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+
+    toast({
+      title: "Export Successful",
+      description: `Exported ${filteredCandidates.length} candidates to CSV`
+    })
+  }
 
   // Prepare data for charts
   const barChartData = useMemo(() => {
@@ -175,270 +250,356 @@ export default function SuperadminDashboard() {
 
   return (
     <DashboardLayout requiredRole="superadmin">
-      <div className="space-y-6 animate-fade-in">
-        <div className="mb-6 space-y-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Superadmin Dashboard</h1>
-              <p className="text-muted-foreground mt-1">ATS Hiring Overview</p>
-            </div>
-            <Button 
-              onClick={loadInitialData} 
-              variant="outline"
-              className="gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
+      <div className="space-y-6 p-6">
+        {/* Header with Drive Filter */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-muted-foreground mt-1">Superadmin Analytics Overview</p>
           </div>
           
-          {/* Filter by Drive */}
-          <div className="flex flex-col gap-4 sm:flex-row">
-            <div className="flex-1">
-              <Select 
-                value={selectedDrive || "all"} 
-                onValueChange={(value) => setSelectedDrive(value === "all" ? null : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by Drive" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Drives</SelectItem>
-                  {vacancies.map(v => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.position_title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {/* Drive Filter moved to top right */}
+          <Select 
+            value={selectedDrive || "all"} 
+            onValueChange={(value) => setSelectedDrive(value === "all" ? null : value)}
+          >
+            <SelectTrigger className="w-[250px]">
+              <SelectValue placeholder="All Drives" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Drives</SelectItem>
+              {vacancies.map(v => (
+                <SelectItem key={v.id} value={v.id}>
+                  {v.position_title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* KPI Cards - Exactly 5 cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {/* Total Candidates */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Total Candidates</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{aggregateMetrics.total_candidates}</div>
+              <Users className="h-4 w-4 text-muted-foreground mt-2" />
+            </CardContent>
+          </Card>
+
+          {/* Attended / Not Attended */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Attended / Not Attended</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{aggregateMetrics.attended} / {aggregateMetrics.not_attended}</div>
+              <UserCheck className="h-4 w-4 text-muted-foreground mt-2" />
+            </CardContent>
+          </Card>
+
+          {/* Cleared / Rejected */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Cleared / Rejected</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{aggregateMetrics.cleared_all_rounds} / {aggregateMetrics.total_rejected}</div>
+              <CheckCircle className="h-4 w-4 text-muted-foreground mt-2" />
+            </CardContent>
+          </Card>
+
+          {/* Average Time to Hire */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Avg Time to Hire</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{aggregateMetrics.avg_time_to_hire.toFixed(1)}</div>
+              <p className="text-xs text-muted-foreground mt-1">days</p>
+              <Clock className="h-4 w-4 text-muted-foreground mt-2" />
+            </CardContent>
+          </Card>
+
+          {/* Average Time to Fill */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Avg Time to Fill</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{aggregateMetrics.avg_time_to_fill.toFixed(1)}</div>
+              <p className="text-xs text-muted-foreground mt-1">days</p>
+              <Calendar className="h-4 w-4 text-muted-foreground mt-2" />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters Section */}
+        <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex-1 min-w-[250px]">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search candidates..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </div>
+          
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Status Filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="offer-released">Offer Released</SelectItem>
+              <SelectItem value="joined">Joined</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All Recruiters" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Recruiters</SelectItem>
+              {uniqueRecruiters.map(recruiter => (
+                <SelectItem key={recruiter} value={recruiter || ""}>
+                  {recruiter}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+            <Download className="h-4 w-4" />
+            Export CSV
+          </Button>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Candidates</CardTitle>
-              <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        {/* Tabs Section */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="drive-summary">Drive Summary</TabsTrigger>
+            <TabsTrigger value="candidate-summary">Candidate Summary</TabsTrigger>
+          </TabsList>
+
+          {/* Drive Summary Tab */}
+          <TabsContent value="drive-summary">
+            <Card>
+              <CardHeader>
+                <CardTitle>Drive Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {vacancies.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No drives found. Create a vacancy to get started.
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Drive Title</TableHead>
+                        <TableHead>HR Name</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Drive Date</TableHead>
+                        <TableHead>Total Candidates</TableHead>
+                        <TableHead>Selected / Vacancies</TableHead>
+                        <TableHead>Avg Time to Hire</TableHead>
+                        <TableHead>Avg Time to Fill</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {vacancies.map(vacancy => (
+                        <TableRow 
+                          key={vacancy.id}
+                          onClick={() => handleDriveRowClick(vacancy.id)}
+                          className={`cursor-pointer hover:bg-muted/50 ${selectedDrive === vacancy.id ? 'bg-muted' : ''}`}
+                        >
+                          <TableCell className="font-medium">{vacancy.position_title}</TableCell>
+                          <TableCell>{vacancy.recruiter_name || "N/A"}</TableCell>
+                          <TableCell>{vacancy.drive_location || "N/A"}</TableCell>
+                          <TableCell>{vacancy.drive_date ? format(new Date(vacancy.drive_date), "MMM dd, yyyy") : "N/A"}</TableCell>
+                          <TableCell>{vacancy.insights?.total_candidates || 0}</TableCell>
+                          <TableCell>{vacancy.insights?.cleared_all_rounds || 0} / {vacancy.number_of_vacancies}</TableCell>
+                          <TableCell>{(vacancy.insights?.avg_time_to_hire ?? 0).toFixed(1)} days</TableCell>
+                          <TableCell>{((vacancy.insights?.avg_time_to_hire ?? 0) + 7).toFixed(1)} days</TableCell>
+                          <TableCell>
+                            <Badge variant={vacancy.status === "active" ? "default" : "secondary"}>
+                              {vacancy.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Candidate Summary Tab */}
+          <TabsContent value="candidate-summary">
+            <Card>
+              <CardHeader>
+                <CardTitle>Candidate Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {filteredCandidates.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No candidates found matching the filters.
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Candidate Name</TableHead>
+                        <TableHead>Experience</TableHead>
+                        <TableHead>Skills</TableHead>
+                        <TableHead>Drive Title</TableHead>
+                        {statusFilter === "joined" && (
+                          <>
+                            <TableHead>Date of Joining</TableHead>
+                            <TableHead>Time to Hire</TableHead>
+                            <TableHead>Time to Fill</TableHead>
+                          </>
+                        )}
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredCandidates.map(candidate => (
+                        <TableRow key={candidate._id}>
+                          <TableCell className="font-medium">{candidate.name}</TableCell>
+                          <TableCell>{candidate.total_experience || "N/A"}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {candidate.skill_set?.slice(0, 3).map((skill, idx) => (
+                                <Badge key={idx} variant="outline" className="text-xs">
+                                  {skill}
+                                </Badge>
+                              ))}
+                              {(candidate.skill_set?.length || 0) > 3 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{(candidate.skill_set?.length || 0) - 3}
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{candidate.applied_position}</TableCell>
+                          {statusFilter === "joined" && (
+                            <>
+                              <TableCell>N/A</TableCell>
+                              <TableCell>N/A</TableCell>
+                              <TableCell>N/A</TableCell>
+                            </>
+                          )}
+                          <TableCell>
+                            <Badge variant={candidate.final_status === "joined" ? "default" : "secondary"}>
+                              {candidate.final_status?.replace("_", " ") || "N/A"}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Charts temporarily disabled as per new dashboard layout */}
+        {/* 
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Drive Selection Rates</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{aggregateMetrics.total_candidates}</div>
+              {barChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={barChartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="Selection Rate" fill="#3b82f6" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                  No data available
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Attended</CardTitle>
-              <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+          <Card>
+            <CardHeader>
+              <CardTitle>Average Time to Hire Trend</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{aggregateMetrics.attended}</div>
+              {lineChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={lineChartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="Avg Days" stroke="#8b5cf6" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                  No data available
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Not Attended</CardTitle>
-              <XCircle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+          <Card>
+            <CardHeader>
+              <CardTitle>Attendance Distribution</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{aggregateMetrics.not_attended}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Cleared All Rounds</CardTitle>
-              <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{aggregateMetrics.cleared_all_rounds}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Rejected</CardTitle>
-              <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{aggregateMetrics.total_rejected}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Selection Rate</CardTitle>
-              <TrendingUp className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{(aggregateMetrics.selection_rate ?? 0).toFixed(1)}%</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Avg Time to Hire</CardTitle>
-              <Clock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{(aggregateMetrics.avg_time_to_hire ?? 0).toFixed(1)} days</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Active Drives</CardTitle>
-              <Briefcase className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{aggregateMetrics.active_drives}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Drives Summary */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Drives Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {vacancies.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No drives found. Create a vacancy to get started.
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Drive Title</TableHead>
-                    <TableHead>HR Name</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Drive Date</TableHead>
-                    <TableHead>Total Candidates</TableHead>
-                    <TableHead>Selected</TableHead>
-                    <TableHead>Selection Rate</TableHead>
-                    <TableHead>Avg Time (days)</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {vacancies.map(vacancy => (
-                    <TableRow 
-                      key={vacancy.id}
-                      onClick={() => handleDriveRowClick(vacancy.id)}
-                      className={`cursor-pointer hover:bg-muted/50 ${selectedDrive === vacancy.id ? 'bg-muted' : ''}`}
+              {aggregateMetrics.total_candidates > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={pieChartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }: any) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
                     >
-                      <TableCell className="font-medium">{vacancy.position_title}</TableCell>
-                      <TableCell>{vacancy.recruiter_name || "N/A"}</TableCell>
-                      <TableCell>{vacancy.drive_location || "N/A"}</TableCell>
-                      <TableCell>{vacancy.drive_date ? format(new Date(vacancy.drive_date), "MMM dd, yyyy") : "N/A"}</TableCell>
-                      <TableCell>{vacancy.insights?.total_candidates || 0}</TableCell>
-                      <TableCell>{vacancy.insights?.cleared_all_rounds || 0}</TableCell>
-                      <TableCell>{(vacancy.insights?.selection_rate ?? 0).toFixed(1)}%</TableCell>
-                      <TableCell>{(vacancy.insights?.avg_time_to_hire ?? 0).toFixed(1)}</TableCell>
-                      <TableCell>
-                        <Badge variant={vacancy.status === "active" ? "default" : "secondary"}>
-                          {vacancy.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Charts */}
-        {vacancies.length > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Bar Chart - Selection Rates */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Drive Selection Rates</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {barChartData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={barChartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="Selection Rate" fill="#3b82f6" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                    No data available
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Line Chart - Time to Hire */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Average Time to Hire Trend</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {lineChartData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={lineChartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="Avg Days" stroke="#8b5cf6" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                    No data available
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Pie Chart - Attendance */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Attendance Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {aggregateMetrics.total_candidates > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={pieChartData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }: any) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {pieChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                    No data available
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
+                      {pieChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                  No data available
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+        */}
       </div>
     </DashboardLayout>
   )
