@@ -46,11 +46,11 @@ interface DriveInsightsResponse {
 
 // Interface for joined candidates
 export interface JoinedCandidate {
-  candidate_name: string;
-  experience: string;
-  skills: string[];
-  drive_title: string;
-  date_of_joining?: string;
+  name: string;
+  total_experience: string;
+  skill_set: string[];
+  recruiter_name: string;
+  joined_date?: string;
   time_to_hire?: number;
   time_to_fill?: number;
   status: 'offer_released' | 'joined';
@@ -139,7 +139,13 @@ export async function fetchJoinedCandidates(
       return await response.blob();
     }
 
-    const data: JoinedCandidate[] = await response.json();
+    const responseData = await response.json();
+    console.log('Joined candidates API response:', responseData);
+    
+    // Extract joined_candidates array from response
+    const data: JoinedCandidate[] = responseData.joined_candidates || [];
+    console.log('Extracted joined candidates:', data);
+    
     return data;
   } catch (error) {
     console.error('Error fetching joined candidates:', error);

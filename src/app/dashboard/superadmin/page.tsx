@@ -81,6 +81,8 @@ export default function SuperadminDashboard() {
             statusFilter === 'all' ? undefined : statusFilter as 'offer_released' | 'joined'
           );
           
+          console.log('Loaded joined candidates data:', joinedCandidatesData);
+          
           // Ensure we got an array back (not a Blob for export)
           if (Array.isArray(joinedCandidatesData)) {
             setJoinedCandidates(joinedCandidatesData);
@@ -183,11 +185,13 @@ export default function SuperadminDashboard() {
       return [];
     }
     
+    console.log('Filtering joined candidates:', joinedCandidates);
+    
     return joinedCandidates.filter(candidate => {
       const matchesSearch = searchQuery === "" || 
-        candidate.candidate_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        candidate.skills?.some((skill: string) => skill.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        candidate.drive_title.toLowerCase().includes(searchQuery.toLowerCase())
+        candidate.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        candidate.skill_set?.some((skill: string) => skill.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        candidate.recruiter_name?.toLowerCase().includes(searchQuery.toLowerCase())
 
       return matchesSearch
     })
@@ -463,7 +467,7 @@ export default function SuperadminDashboard() {
                         <TableHead>Candidate Name</TableHead>
                         <TableHead>Experience</TableHead>
                         <TableHead>Skills</TableHead>
-                        <TableHead>Drive Title</TableHead>
+                        <TableHead>Recruiter</TableHead>
                         {statusFilter === "joined" && (
                           <>
                             <TableHead>Date of Joining</TableHead>
@@ -477,26 +481,26 @@ export default function SuperadminDashboard() {
                     <TableBody>
                       {filteredJoinedCandidates.map((candidate, idx) => (
                         <TableRow key={idx}>
-                          <TableCell className="font-medium">{candidate.candidate_name}</TableCell>
-                          <TableCell>{candidate.experience || "N/A"}</TableCell>
+                          <TableCell className="font-medium">{candidate.name}</TableCell>
+                          <TableCell>{candidate.total_experience || "N/A"}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
-                              {candidate.skills?.slice(0, 3).map((skill: string, skillIdx: number) => (
+                              {candidate.skill_set?.slice(0, 3).map((skill: string, skillIdx: number) => (
                                 <Badge key={skillIdx} variant="outline" className="text-xs">
                                   {skill}
                                 </Badge>
                               ))}
-                              {(candidate.skills?.length || 0) > 3 && (
+                              {(candidate.skill_set?.length || 0) > 3 && (
                                 <Badge variant="outline" className="text-xs">
-                                  +{(candidate.skills?.length || 0) - 3}
+                                  +{(candidate.skill_set?.length || 0) - 3}
                                 </Badge>
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>{candidate.drive_title}</TableCell>
+                          <TableCell>{candidate.recruiter_name || "N/A"}</TableCell>
                           {statusFilter === "joined" && (
                             <>
-                              <TableCell>{candidate.date_of_joining || "N/A"}</TableCell>
+                              <TableCell>{candidate.joined_date || "N/A"}</TableCell>
                               <TableCell>{candidate.time_to_hire ? `${candidate.time_to_hire} days` : "N/A"}</TableCell>
                               <TableCell>{candidate.time_to_fill ? `${candidate.time_to_fill} days` : "N/A"}</TableCell>
                             </>
