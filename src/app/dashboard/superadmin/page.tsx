@@ -12,9 +12,10 @@ import { fetchVacancies } from "@/lib/vacancy-api"
 import { fetchDriveInsights, fetchJoinedCandidates, type DriveInsights, type JoinedCandidate } from "@/lib/analytics-api"
 import { fetchAssignedCandidates, fetchUnassignedCandidates, type BackendCandidate } from "@/lib/candidates-api"
 import { type Vacancy } from "@/lib/schema-data"
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts"
 import { Users, UserCheck, Clock, TrendingUp, CheckCircle, XCircle, Briefcase, RefreshCw, Search, Download, Calendar } from "lucide-react"
 import { format } from "date-fns"
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 
 interface AggregateMetrics {
   total_candidates: number
@@ -190,8 +191,7 @@ export default function SuperadminDashboard() {
     return joinedCandidates.filter(candidate => {
       const matchesSearch = searchQuery === "" || 
         candidate.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        candidate.skill_set?.some((skill: string) => skill.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        candidate.recruiter_name?.toLowerCase().includes(searchQuery.toLowerCase())
+        candidate.skill_set?.some((skill: string) => skill.toLowerCase().includes(searchQuery.toLowerCase()))
 
       return matchesSearch
     })
@@ -461,59 +461,66 @@ export default function SuperadminDashboard() {
                     No candidates found matching the filters.
                   </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Candidate Name</TableHead>
-                        <TableHead>Experience</TableHead>
-                        <TableHead>Skills</TableHead>
-                        <TableHead>Recruiter</TableHead>
-                        {statusFilter === "joined" && (
-                          <>
-                            <TableHead>Date of Joining</TableHead>
-                            <TableHead>Time to Hire</TableHead>
-                            <TableHead>Time to Fill</TableHead>
-                          </>
-                        )}
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredJoinedCandidates.map((candidate, idx) => (
-                        <TableRow key={idx}>
-                          <TableCell className="font-medium">{candidate.name}</TableCell>
-                          <TableCell>{candidate.total_experience || "N/A"}</TableCell>
-                          <TableCell>
-                            <div className="flex flex-wrap gap-1">
-                              {candidate.skill_set?.slice(0, 3).map((skill: string, skillIdx: number) => (
-                                <Badge key={skillIdx} variant="outline" className="text-xs">
-                                  {skill}
-                                </Badge>
-                              ))}
-                              {(candidate.skill_set?.length || 0) > 3 && (
-                                <Badge variant="outline" className="text-xs">
-                                  +{(candidate.skill_set?.length || 0) - 3}
-                                </Badge>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>{candidate.recruiter_name || "N/A"}</TableCell>
+                  <TooltipProvider>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Candidate Name</TableHead>
+                          <TableHead>Experience</TableHead>
+                          <TableHead>Skills</TableHead>
                           {statusFilter === "joined" && (
                             <>
-                              <TableCell>{candidate.joined_date || "N/A"}</TableCell>
-                              <TableCell>{candidate.time_to_hire ? `${candidate.time_to_hire} days` : "N/A"}</TableCell>
-                              <TableCell>{candidate.time_to_fill ? `${candidate.time_to_fill} days` : "N/A"}</TableCell>
+                              <TableHead>Date of Joining</TableHead>
+                              <TableHead>Time to Hire</TableHead>
+                              <TableHead>Time to Fill</TableHead>
                             </>
                           )}
-                          <TableCell>
-                            <Badge variant={candidate.status === "joined" ? "default" : "secondary"}>
-                              {candidate.status?.replace("_", " ") || "N/A"}
-                            </Badge>
-                          </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredJoinedCandidates.map((candidate, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell className="font-medium">{candidate.name}</TableCell>
+                            <TableCell>{candidate.total_experience || "N/A"}</TableCell>
+                            <TableCell>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex flex-wrap gap-1 cursor-help">
+                                    {candidate.skill_set?.slice(0, 3).map((skill: string, skillIdx: number) => (
+                                      <Badge key={skillIdx} variant="outline" className="text-xs">
+                                        {skill}
+                                      </Badge>
+                                    ))}
+                                    {(candidate.skill_set?.length || 0) > 3 && (
+                                      <Badge variant="outline" className="text-xs">
+                                        +{(candidate.skill_set?.length || 0) - 3}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <div className="flex flex-wrap gap-1">
+                                    {candidate.skill_set?.map((skill: string, skillIdx: number) => (
+                                      <Badge key={skillIdx} variant="outline" className="text-xs">
+                                        {skill}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TableCell>
+                            {statusFilter === "joined" && (
+                              <>
+                                <TableCell>{candidate.joined_date || "N/A"}</TableCell>
+                                <TableCell>{candidate.time_to_hire ? `${candidate.time_to_hire} days` : "N/A"}</TableCell>
+                                <TableCell>{candidate.time_to_fill ? `${candidate.time_to_fill} days` : "N/A"}</TableCell>
+                              </>
+                            )}
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TooltipProvider>
                 )}
               </CardContent>
             </Card>
