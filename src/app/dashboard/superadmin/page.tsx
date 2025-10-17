@@ -340,8 +340,7 @@ export default function SuperadminDashboard() {
               <Clock className="h-5 w-5 text-amber-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{aggregateMetrics.avg_time_to_hire.toFixed(1)}</div>
-              <p className="text-xs text-muted-foreground mt-1">days</p>
+              <div className="text-3xl font-bold whitespace-nowrap">{aggregateMetrics.avg_time_to_hire.toFixed(1)} <span className="text-xs text-muted-foreground">days</span></div>
             </CardContent>
           </Card>
 
@@ -352,8 +351,7 @@ export default function SuperadminDashboard() {
               <Calendar className="h-5 w-5 text-rose-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{aggregateMetrics.avg_time_to_fill.toFixed(1)}</div>
-              <p className="text-xs text-muted-foreground mt-1">days</p>
+              <div className="text-3xl font-bold whitespace-nowrap">{aggregateMetrics.avg_time_to_fill.toFixed(1)} <span className="text-xs text-muted-foreground">days</span></div>
             </CardContent>
           </Card>
         </div>
