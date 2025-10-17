@@ -280,59 +280,49 @@ export default function SuperadminDashboard() {
         {/* KPI Cards - Exactly 5 cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {/* Total Candidates */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Total Candidates</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Card className="relative">
+            <CardContent className="pt-6">
+              <Users className="absolute top-4 right-4 h-5 w-5 text-blue-500" />
+              <div className="text-xs font-medium text-muted-foreground mb-2">Total Candidates</div>
               <div className="text-3xl font-bold">{aggregateMetrics.total_candidates}</div>
-              <Users className="h-4 w-4 text-muted-foreground mt-2" />
             </CardContent>
           </Card>
 
           {/* Attended / Not Attended */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Attended / Not Attended</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Card className="relative">
+            <CardContent className="pt-6">
+              <UserCheck className="absolute top-4 right-4 h-5 w-5 text-emerald-500" />
+              <div className="text-xs font-medium text-muted-foreground mb-2">Attended / Not Attended</div>
               <div className="text-3xl font-bold">{aggregateMetrics.attended} / {aggregateMetrics.not_attended}</div>
-              <UserCheck className="h-4 w-4 text-muted-foreground mt-2" />
             </CardContent>
           </Card>
 
           {/* Cleared / Rejected */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Cleared / Rejected</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Card className="relative">
+            <CardContent className="pt-6">
+              <CheckCircle className="absolute top-4 right-4 h-5 w-5 text-violet-500" />
+              <div className="text-xs font-medium text-muted-foreground mb-2">Cleared / Rejected</div>
               <div className="text-3xl font-bold">{aggregateMetrics.cleared_all_rounds} / {aggregateMetrics.total_rejected}</div>
-              <CheckCircle className="h-4 w-4 text-muted-foreground mt-2" />
             </CardContent>
           </Card>
 
           {/* Average Time to Hire */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Avg Time to Hire</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Card className="relative">
+            <CardContent className="pt-6">
+              <Clock className="absolute top-4 right-4 h-5 w-5 text-amber-500" />
+              <div className="text-xs font-medium text-muted-foreground mb-2">Avg Time to Hire</div>
               <div className="text-3xl font-bold">{aggregateMetrics.avg_time_to_hire.toFixed(1)}</div>
               <p className="text-xs text-muted-foreground mt-1">days</p>
-              <Clock className="h-4 w-4 text-muted-foreground mt-2" />
             </CardContent>
           </Card>
 
           {/* Average Time to Fill */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Avg Time to Fill</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Card className="relative">
+            <CardContent className="pt-6">
+              <Calendar className="absolute top-4 right-4 h-5 w-5 text-rose-500" />
+              <div className="text-xs font-medium text-muted-foreground mb-2">Avg Time to Fill</div>
               <div className="text-3xl font-bold">{aggregateMetrics.avg_time_to_fill.toFixed(1)}</div>
               <p className="text-xs text-muted-foreground mt-1">days</p>
-              <Calendar className="h-4 w-4 text-muted-foreground mt-2" />
             </CardContent>
           </Card>
         </div>
@@ -383,8 +373,8 @@ export default function SuperadminDashboard() {
         </div>
 
         {/* Tabs Section */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="w-full grid grid-cols-2">
             <TabsTrigger value="drive-summary">Drive Summary</TabsTrigger>
             <TabsTrigger value="candidate-summary">Candidate Summary</TabsTrigger>
           </TabsList>
@@ -392,10 +382,7 @@ export default function SuperadminDashboard() {
           {/* Drive Summary Tab */}
           <TabsContent value="drive-summary">
             <Card>
-              <CardHeader>
-                <CardTitle>Drive Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 {vacancies.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     No drives found. Create a vacancy to get started.
@@ -447,10 +434,7 @@ export default function SuperadminDashboard() {
           {/* Candidate Summary Tab */}
           <TabsContent value="candidate-summary">
             <Card>
-              <CardHeader>
-                <CardTitle>Candidate Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 {filteredCandidates.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     No candidates found matching the filters.
