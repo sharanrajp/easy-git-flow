@@ -79,12 +79,22 @@ export default function SuperadminDashboard() {
         try {
           const joinedCandidatesData = await fetchJoinedCandidates(
             statusFilter === 'all' ? undefined : statusFilter as 'offer_released' | 'joined'
-          ) as JoinedCandidate[];
-          setJoinedCandidates(joinedCandidatesData)
+          );
+          
+          // Ensure we got an array back (not a Blob for export)
+          if (Array.isArray(joinedCandidatesData)) {
+            setJoinedCandidates(joinedCandidatesData);
+          } else {
+            console.error('Unexpected response type from fetchJoinedCandidates:', typeof joinedCandidatesData);
+            setJoinedCandidates([]);
+          }
         } catch (error) {
-          console.error("Failed to fetch joined candidates:", error)
-          setJoinedCandidates([])
+          console.error("Failed to fetch joined candidates:", error);
+          setJoinedCandidates([]);
         }
+      } else {
+        // Reset joined candidates when not on candidate summary tab
+        setJoinedCandidates([]);
       }
     } catch (error) {
       console.error("Failed to load dashboard data:", error)
@@ -167,6 +177,12 @@ export default function SuperadminDashboard() {
 
   // Filter joined candidates based on search
   const filteredJoinedCandidates = useMemo(() => {
+    // Safety check: ensure joinedCandidates is an array
+    if (!Array.isArray(joinedCandidates)) {
+      console.error('joinedCandidates is not an array:', joinedCandidates);
+      return [];
+    }
+    
     return joinedCandidates.filter(candidate => {
       const matchesSearch = searchQuery === "" || 
         candidate.candidate_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
