@@ -15,7 +15,7 @@ import { type Vacancy } from "@/lib/schema-data"
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts"
 import { Users, UserCheck, Clock, TrendingUp, CheckCircle, XCircle, Briefcase, RefreshCw, Search, Download, Calendar } from "lucide-react"
 import { format } from "date-fns"
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
+import { SkillsDisplay } from "@/components/ui/skills-display"
 
 interface AggregateMetrics {
   total_candidates: number
@@ -301,47 +301,57 @@ export default function SuperadminDashboard() {
         {/* KPI Cards - Exactly 5 cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {/* Total Candidates */}
-          <Card className="relative">
-            <CardContent className="pt-6">
-              <Users className="absolute top-4 right-4 h-5 w-5 text-blue-500" />
-              <div className="text-xs font-medium text-muted-foreground mb-2">Total Candidates</div>
+          <Card>
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Total Candidates</CardTitle>
+              <Users className="h-5 w-5 text-blue-500" />
+            </CardHeader>
+            <CardContent>
               <div className="text-3xl font-bold">{aggregateMetrics.total_candidates}</div>
             </CardContent>
           </Card>
 
           {/* Attended / Not Attended */}
-          <Card className="relative">
-            <CardContent className="pt-6">
-              <UserCheck className="absolute top-4 right-4 h-5 w-5 text-emerald-500" />
-              <div className="text-xs font-medium text-muted-foreground mb-2">Attended / Not Attended</div>
+          <Card>
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Attended / Not Attended</CardTitle>
+              <UserCheck className="h-5 w-5 text-emerald-500" />
+            </CardHeader>
+            <CardContent>
               <div className="text-3xl font-bold">{aggregateMetrics.attended} / {aggregateMetrics.not_attended}</div>
             </CardContent>
           </Card>
 
           {/* Cleared / Rejected */}
-          <Card className="relative">
-            <CardContent className="pt-6">
-              <CheckCircle className="absolute top-4 right-4 h-5 w-5 text-violet-500" />
-              <div className="text-xs font-medium text-muted-foreground mb-2">Cleared / Rejected</div>
+          <Card>
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Cleared / Rejected</CardTitle>
+              <CheckCircle className="h-5 w-5 text-violet-500" />
+            </CardHeader>
+            <CardContent>
               <div className="text-3xl font-bold">{aggregateMetrics.cleared_all_rounds} / {aggregateMetrics.total_rejected || 0}</div>
             </CardContent>
           </Card>
 
           {/* Average Time to Hire */}
-          <Card className="relative">
-            <CardContent className="pt-6">
-              <Clock className="absolute top-4 right-4 h-5 w-5 text-amber-500" />
-              <div className="text-xs font-medium text-muted-foreground mb-2">Avg Time to Hire</div>
+          <Card>
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Avg Time to Hire</CardTitle>
+              <Clock className="h-5 w-5 text-amber-500" />
+            </CardHeader>
+            <CardContent>
               <div className="text-3xl font-bold">{aggregateMetrics.avg_time_to_hire.toFixed(1)}</div>
               <p className="text-xs text-muted-foreground mt-1">days</p>
             </CardContent>
           </Card>
 
           {/* Average Time to Fill */}
-          <Card className="relative">
-            <CardContent className="pt-6">
-              <Calendar className="absolute top-4 right-4 h-5 w-5 text-rose-500" />
-              <div className="text-xs font-medium text-muted-foreground mb-2">Avg Time to Fill</div>
+          <Card>
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Avg Time to Fill</CardTitle>
+              <Calendar className="h-5 w-5 text-rose-500" />
+            </CardHeader>
+            <CardContent>
               <div className="text-3xl font-bold">{aggregateMetrics.avg_time_to_fill.toFixed(1)}</div>
               <p className="text-xs text-muted-foreground mt-1">days</p>
             </CardContent>
@@ -455,72 +465,46 @@ export default function SuperadminDashboard() {
           {/* Candidate Summary Tab */}
           <TabsContent value="candidate-summary">
             <Card>
-              <CardContent className="pt-6">
+              <CardContent className="p-0">
                 {filteredJoinedCandidates.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     No candidates found matching the filters.
                   </div>
                 ) : (
-                  <TooltipProvider>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Candidate Name</TableHead>
-                          <TableHead>Experience</TableHead>
-                          <TableHead>Skills</TableHead>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Candidate Name</TableHead>
+                        <TableHead>Experience</TableHead>
+                        <TableHead>Skills</TableHead>
+                        {statusFilter === "joined" && (
+                          <>
+                            <TableHead>Date of Joining</TableHead>
+                            <TableHead>Time to Hire</TableHead>
+                            <TableHead>Time to Fill</TableHead>
+                          </>
+                        )}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredJoinedCandidates.map((candidate, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell className="font-medium">{candidate.name}</TableCell>
+                          <TableCell>{candidate.total_experience || "N/A"}</TableCell>
+                          <TableCell>
+                            <SkillsDisplay skills={candidate.skill_set || []} maxVisible={3} />
+                          </TableCell>
                           {statusFilter === "joined" && (
                             <>
-                              <TableHead>Date of Joining</TableHead>
-                              <TableHead>Time to Hire</TableHead>
-                              <TableHead>Time to Fill</TableHead>
+                              <TableCell>{candidate.joined_date || "N/A"}</TableCell>
+                              <TableCell>{candidate.time_to_hire ? `${candidate.time_to_hire} days` : "N/A"}</TableCell>
+                              <TableCell>{candidate.time_to_fill ? `${candidate.time_to_fill} days` : "N/A"}</TableCell>
                             </>
                           )}
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredJoinedCandidates.map((candidate, idx) => (
-                          <TableRow key={idx}>
-                            <TableCell className="font-medium">{candidate.name}</TableCell>
-                            <TableCell>{candidate.total_experience || "N/A"}</TableCell>
-                            <TableCell>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className="flex flex-wrap gap-1 cursor-help">
-                                    {candidate.skill_set?.slice(0, 3).map((skill: string, skillIdx: number) => (
-                                      <Badge key={skillIdx} variant="outline" className="text-xs">
-                                        {skill}
-                                      </Badge>
-                                    ))}
-                                    {(candidate.skill_set?.length || 0) > 3 && (
-                                      <Badge variant="outline" className="text-xs">
-                                        +{(candidate.skill_set?.length || 0) - 3}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-xs">
-                                  <div className="flex flex-wrap gap-1">
-                                    {candidate.skill_set?.map((skill: string, skillIdx: number) => (
-                                      <Badge key={skillIdx} variant="outline" className="text-xs">
-                                        {skill}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TableCell>
-                            {statusFilter === "joined" && (
-                              <>
-                                <TableCell>{candidate.joined_date || "N/A"}</TableCell>
-                                <TableCell>{candidate.time_to_hire ? `${candidate.time_to_hire} days` : "N/A"}</TableCell>
-                                <TableCell>{candidate.time_to_fill ? `${candidate.time_to_fill} days` : "N/A"}</TableCell>
-                              </>
-                            )}
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TooltipProvider>
+                      ))}
+                    </TableBody>
+                  </Table>
                 )}
               </CardContent>
             </Card>
