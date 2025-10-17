@@ -272,6 +272,31 @@ export default function SuperadminDashboard() {
   return (
     <DashboardLayout requiredRole="superadmin">
       <div className="space-y-6 p-6">
+        {/* Header with Drive Filter */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-muted-foreground mt-1">Superadmin Analytics Overview</p>
+          </div>
+          
+          {/* Drive Filter moved to top right */}
+          <Select 
+            value={selectedDrive || "all"} 
+            onValueChange={(value) => setSelectedDrive(value === "all" ? null : value)}
+          >
+            <SelectTrigger className="w-[250px]">
+              <SelectValue placeholder="All Drives" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Drives</SelectItem>
+              {vacancies.map(v => (
+                <SelectItem key={v.id} value={v.id}>
+                  {v.position_title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* KPI Cards - Exactly 5 cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -437,48 +462,50 @@ export default function SuperadminDashboard() {
 
           {/* Candidate Summary Tab */}
           <TabsContent value="candidate-summary">
-            <div data-slot="card-content" className="px-6 pt-6">
-              {filteredJoinedCandidates.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No candidates found matching the filters.
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Candidate Name</TableHead>
-                      <TableHead>Experience</TableHead>
-                      <TableHead>Skills</TableHead>
-                      {statusFilter === "joined" && (
-                        <>
-                          <TableHead>Date of Joining</TableHead>
-                          <TableHead>Time to Hire</TableHead>
-                          <TableHead>Time to Fill</TableHead>
-                        </>
-                      )}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredJoinedCandidates.map((candidate, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell className="font-medium">{candidate.name}</TableCell>
-                        <TableCell>{candidate.total_experience || "N/A"}</TableCell>
-                        <TableCell>
-                          <SkillsDisplay skills={candidate.skill_set || []} maxVisible={3} />
-                        </TableCell>
+            <Card>
+              <CardContent className="p-0">
+                {filteredJoinedCandidates.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No candidates found matching the filters.
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Candidate Name</TableHead>
+                        <TableHead>Experience</TableHead>
+                        <TableHead>Skills</TableHead>
                         {statusFilter === "joined" && (
                           <>
-                            <TableCell>{candidate.joined_date || "N/A"}</TableCell>
-                            <TableCell>{candidate.time_to_hire ? `${candidate.time_to_hire} days` : "N/A"}</TableCell>
-                            <TableCell>{candidate.time_to_fill ? `${candidate.time_to_fill} days` : "N/A"}</TableCell>
+                            <TableHead>Date of Joining</TableHead>
+                            <TableHead>Time to Hire</TableHead>
+                            <TableHead>Time to Fill</TableHead>
                           </>
                         )}
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </div>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredJoinedCandidates.map((candidate, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell className="font-medium">{candidate.name}</TableCell>
+                          <TableCell>{candidate.total_experience || "N/A"}</TableCell>
+                          <TableCell>
+                            <SkillsDisplay skills={candidate.skill_set || []} maxVisible={3} />
+                          </TableCell>
+                          {statusFilter === "joined" && (
+                            <>
+                              <TableCell>{candidate.joined_date || "N/A"}</TableCell>
+                              <TableCell>{candidate.time_to_hire ? `${candidate.time_to_hire} days` : "N/A"}</TableCell>
+                              <TableCell>{candidate.time_to_fill ? `${candidate.time_to_fill} days` : "N/A"}</TableCell>
+                            </>
+                          )}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 
