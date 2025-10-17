@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 import { fetchVacancies } from "@/lib/vacancy-api"
-import { fetchDriveInsights, type DriveInsights } from "@/lib/analytics-api"
+import { fetchDriveInsights, fetchJoinedCandidates, type DriveInsights, type JoinedCandidate } from "@/lib/analytics-api"
 import { fetchAssignedCandidates, fetchUnassignedCandidates, type BackendCandidate } from "@/lib/candidates-api"
 import { type Vacancy } from "@/lib/schema-data"
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
@@ -36,6 +36,7 @@ export default function SuperadminDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [vacancies, setVacancies] = useState<VacancyWithInsights[]>([])
   const [candidates, setCandidates] = useState<BackendCandidate[]>([])
+  const [joinedCandidates, setJoinedCandidates] = useState<JoinedCandidate[]>([])
   const [selectedDrive, setSelectedDrive] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -46,7 +47,7 @@ export default function SuperadminDashboard() {
   // Auto-refresh on mount, filter changes, and tab changes
   useEffect(() => {
     loadInitialData()
-  }, [selectedDrive, activeTab])
+  }, [selectedDrive, activeTab, statusFilter])
 
   const loadInitialData = async () => {
     try {
@@ -73,12 +74,18 @@ export default function SuperadminDashboard() {
       
       setVacancies(vacanciesWithInsights)
 
-      // Fetch all candidates for Candidate Summary tab
-      const [assignedCandidates, unassignedCandidates] = await Promise.all([
-        fetchAssignedCandidates(),
-        fetchUnassignedCandidates()
-      ])
-      setCandidates([...assignedCandidates, ...unassignedCandidates])
+      // Fetch joined candidates for Candidate Summary tab
+      if (activeTab === 'candidate-summary') {
+        try {
+          const joinedCandidatesData = await fetchJoinedCandidates(
+            statusFilter === 'all' ? undefined : statusFilter as 'offer_released' | 'joined'
+          ) as JoinedCandidate[];
+          setJoinedCandidates(joinedCandidatesData)
+        } catch (error) {
+          console.error("Failed to fetch joined candidates:", error)
+          setJoinedCandidates([])
+        }
+      }
     } catch (error) {
       console.error("Failed to load dashboard data:", error)
       toast({
@@ -158,51 +165,45 @@ export default function SuperadminDashboard() {
     return Array.from(new Set(recruiters))
   }, [vacancies])
 
-  // Filter candidates based on search and status
-  const filteredCandidates = useMemo(() => {
-    return candidates.filter(candidate => {
+  // Filter joined candidates based on search
+  const filteredJoinedCandidates = useMemo(() => {
+    return joinedCandidates.filter(candidate => {
       const matchesSearch = searchQuery === "" || 
-        candidate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        candidate.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        candidate.skill_set?.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()))
-      
-      const matchesStatus = statusFilter === "all" || 
-        (statusFilter === "offer-released" && candidate.final_status === "offer_released") ||
-        (statusFilter === "joined" && candidate.final_status === "joined")
+        candidate.candidate_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        candidate.skills?.some((skill: string) => skill.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        candidate.drive_title.toLowerCase().includes(searchQuery.toLowerCase())
 
-      return matchesSearch && matchesStatus
+      return matchesSearch
     })
-  }, [candidates, searchQuery, statusFilter])
+  }, [joinedCandidates, searchQuery])
 
-  // Export candidates to CSV
-  const handleExportCSV = () => {
-    const csvData = filteredCandidates.map(candidate => ({
-      Name: candidate.name,
-      Email: candidate.email,
-      Experience: candidate.total_experience || "N/A",
-      Skills: candidate.skill_set?.join(", ") || "N/A",
-      Position: candidate.applied_position,
-      Status: candidate.final_status,
-      "Date of Joining": candidate.final_status === "joined" ? "N/A" : "N/A"
-    }))
+  // Export candidates to CSV using API endpoint
+  const handleExportCSV = async () => {
+    try {
+      const blob = await fetchJoinedCandidates(
+        statusFilter === 'all' ? undefined : statusFilter as 'offer_released' | 'joined',
+        true
+      ) as Blob;
 
-    const csv = [
-      Object.keys(csvData[0]).join(","),
-      ...csvData.map(row => Object.values(row).join(","))
-    ].join("\n")
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `candidates-summary-${new Date().toISOString().split('T')[0]}.csv`
+      a.click()
+      URL.revokeObjectURL(url)
 
-    const blob = new Blob([csv], { type: "text/csv" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `candidates-summary-${new Date().toISOString().split('T')[0]}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
-
-    toast({
-      title: "Export Successful",
-      description: `Exported ${filteredCandidates.length} candidates to CSV`
-    })
+      toast({
+        title: "Export Successful",
+        description: `Exported candidates to CSV`
+      })
+    } catch (error) {
+      console.error("Failed to export CSV:", error)
+      toast({
+        title: "Export Failed",
+        description: "Failed to export candidates to CSV",
+        variant: "destructive"
+      })
+    }
   }
 
   // Prepare data for charts
@@ -302,7 +303,7 @@ export default function SuperadminDashboard() {
             <CardContent className="pt-6">
               <CheckCircle className="absolute top-4 right-4 h-5 w-5 text-violet-500" />
               <div className="text-xs font-medium text-muted-foreground mb-2">Cleared / Rejected</div>
-              <div className="text-3xl font-bold">{aggregateMetrics.cleared_all_rounds} / {aggregateMetrics.total_rejected}</div>
+              <div className="text-3xl font-bold">{aggregateMetrics.cleared_all_rounds} / {aggregateMetrics.total_rejected || 0}</div>
             </CardContent>
           </Card>
 
@@ -435,7 +436,7 @@ export default function SuperadminDashboard() {
           <TabsContent value="candidate-summary">
             <Card>
               <CardContent className="pt-6">
-                {filteredCandidates.length === 0 ? (
+                {filteredJoinedCandidates.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     No candidates found matching the filters.
                   </div>
@@ -458,35 +459,35 @@ export default function SuperadminDashboard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredCandidates.map(candidate => (
-                        <TableRow key={candidate._id}>
-                          <TableCell className="font-medium">{candidate.name}</TableCell>
-                          <TableCell>{candidate.total_experience || "N/A"}</TableCell>
+                      {filteredJoinedCandidates.map((candidate, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell className="font-medium">{candidate.candidate_name}</TableCell>
+                          <TableCell>{candidate.experience || "N/A"}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
-                              {candidate.skill_set?.slice(0, 3).map((skill, idx) => (
-                                <Badge key={idx} variant="outline" className="text-xs">
+                              {candidate.skills?.slice(0, 3).map((skill: string, skillIdx: number) => (
+                                <Badge key={skillIdx} variant="outline" className="text-xs">
                                   {skill}
                                 </Badge>
                               ))}
-                              {(candidate.skill_set?.length || 0) > 3 && (
+                              {(candidate.skills?.length || 0) > 3 && (
                                 <Badge variant="outline" className="text-xs">
-                                  +{(candidate.skill_set?.length || 0) - 3}
+                                  +{(candidate.skills?.length || 0) - 3}
                                 </Badge>
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>{candidate.applied_position}</TableCell>
+                          <TableCell>{candidate.drive_title}</TableCell>
                           {statusFilter === "joined" && (
                             <>
-                              <TableCell>N/A</TableCell>
-                              <TableCell>N/A</TableCell>
-                              <TableCell>N/A</TableCell>
+                              <TableCell>{candidate.date_of_joining || "N/A"}</TableCell>
+                              <TableCell>{candidate.time_to_hire ? `${candidate.time_to_hire} days` : "N/A"}</TableCell>
+                              <TableCell>{candidate.time_to_fill ? `${candidate.time_to_fill} days` : "N/A"}</TableCell>
                             </>
                           )}
                           <TableCell>
-                            <Badge variant={candidate.final_status === "joined" ? "default" : "secondary"}>
-                              {candidate.final_status?.replace("_", " ") || "N/A"}
+                            <Badge variant={candidate.status === "joined" ? "default" : "secondary"}>
+                              {candidate.status?.replace("_", " ") || "N/A"}
                             </Badge>
                           </TableCell>
                         </TableRow>
