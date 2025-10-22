@@ -408,8 +408,101 @@ export default function SuperadminDashboard() {
             <TabsTrigger value="candidate-summary">Candidate Summary</TabsTrigger>
           </TabsList>
 
+        {/* Drive Summary Tab */}
+        <TabsContent value="drive-summary">
+          {vacancies.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No drives found. Create a vacancy to get started.
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Drive Title</TableHead>
+                  <TableHead>HR Name</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Drive Date</TableHead>
+                  <TableHead>Total Candidates</TableHead>
+                  <TableHead>Selected / Vacancies</TableHead>
+                  <TableHead>Avg Time to Hire</TableHead>
+                  <TableHead>Avg Time to Fill</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {vacancies.map(vacancy => (
+                  <TableRow 
+                    key={vacancy.id}
+                    onClick={() => handleDriveRowClick(vacancy.id)}
+                    className={`cursor-pointer hover:bg-muted/50 ${selectedDrive === vacancy.id ? 'bg-muted' : ''}`}
+                  >
+                    <TableCell className="font-medium">{vacancy.position_title}</TableCell>
+                    <TableCell>{vacancy.recruiter_name || "N/A"}</TableCell>
+                    <TableCell>{vacancy.drive_location || "N/A"}</TableCell>
+                    <TableCell>{vacancy.drive_date ? format(new Date(vacancy.drive_date), "MMM dd, yyyy") : "N/A"}</TableCell>
+                    <TableCell>{vacancy.insights?.total_candidates || 0}</TableCell>
+                    <TableCell>{vacancy.insights?.cleared_all_rounds || 0} / {vacancy.number_of_vacancies}</TableCell>
+                    <TableCell>{(vacancy.insights?.avg_time_to_hire ?? 0).toFixed(1)} days</TableCell>
+                    <TableCell>{((vacancy.insights?.avg_time_to_hire ?? 0) + 7).toFixed(1)} days</TableCell>
+                    <TableCell>
+                      <Badge variant={vacancy.status === "active" ? "default" : "secondary"}>
+                        {vacancy.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </TabsContent>
+
+        {/* Candidate Summary Tab */}
+        <TabsContent value="candidate-summary">
+          {filteredJoinedCandidates.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No candidates found matching the filters.
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Candidate Name</TableHead>
+                  <TableHead>Experience</TableHead>
+                  <TableHead>Skills</TableHead>
+                  {statusFilter === "joined" && (
+                    <>
+                      <TableHead>Date of Joining</TableHead>
+                      <TableHead>Time to Hire</TableHead>
+                      <TableHead>Time to Fill</TableHead>
+                    </>
+                  )}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredJoinedCandidates.map((candidate, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="font-medium">{candidate.name}</TableCell>
+                    <TableCell>{candidate.total_experience || "N/A"}</TableCell>
+                    <TableCell>
+                      <SkillsDisplay skills={candidate.skill_set || []} maxVisible={3} />
+                    </TableCell>
+                    {statusFilter === "joined" && (
+                      <>
+                        <TableCell>{candidate.joined_date || "N/A"}</TableCell>
+                        <TableCell>{candidate.time_to_hire ? `${candidate.time_to_hire} days` : "N/A"}</TableCell>
+                        <TableCell>{candidate.time_to_fill ? `${candidate.time_to_fill} days` : "N/A"}</TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </TabsContent>
+
+
           {/* Drive Summary Tab */}
-          <TabsContent value="drive-summary">
+          {/* <TabsContent value="drive-summary">
             <Card>
               <CardContent className="pt-6">
                 {vacancies.length === 0 ? (
@@ -458,10 +551,10 @@ export default function SuperadminDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
 
           {/* Candidate Summary Tab */}
-          <TabsContent value="candidate-summary">
+          {/* <TabsContent value="candidate-summary">
             <Card>
               <CardContent className="p-0">
                 {filteredJoinedCandidates.length === 0 ? (
@@ -506,7 +599,7 @@ export default function SuperadminDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent>*/}
         </Tabs>
 
         {/* Charts temporarily disabled as per new dashboard layout */}
