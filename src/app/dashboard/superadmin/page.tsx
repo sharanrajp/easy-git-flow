@@ -38,6 +38,7 @@ export default function SuperadminDashboard() {
   const [vacancies, setVacancies] = useState<VacancyWithInsights[]>([])
   const [candidates, setCandidates] = useState<BackendCandidate[]>([])
   const [joinedCandidates, setJoinedCandidates] = useState<JoinedCandidate[]>([])
+  const [driveInsights, setDriveInsights] = useState<DriveInsights | null>(null)
   const [vacancyFilter, setVacancyFilter] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [recruiterFilter, setRecruiterFilter] = useState<string>("all")
@@ -60,20 +61,21 @@ export default function SuperadminDashboard() {
       // Fetch all vacancies (superadmin-accessible endpoint)
       const vacanciesData = await fetchVacancies()
       
-      // Fetch insights with filters
+      // Fetch insights with all filters (vacancy, month_year, recruiter)
       try {
         const insights = await fetchDriveInsights(
           vacancyFilter !== 'all' ? vacancyFilter : undefined,
-          monthYearFilter
+          monthYearFilter,
+          recruiterFilter !== 'all' ? recruiterFilter : undefined
         );
         
-        // Attach insights to the corresponding vacancy
+        // Store insights for metrics display
+        setDriveInsights(insights);
+        
+        // Attach insights to the corresponding vacancy for the table
         const vacanciesWithInsights = vacanciesData.map(vacancy => {
           if (vacancyFilter !== 'all' && vacancy.id === vacancyFilter) {
             return { ...vacancy, insights };
-          } else if (vacancyFilter === 'all') {
-            // For "all", we'll have aggregated insights, but we still need individual vacancy data
-            return { ...vacancy, insights: null };
           }
           return { ...vacancy, insights: null };
         });
@@ -81,6 +83,7 @@ export default function SuperadminDashboard() {
         setVacancies(vacanciesWithInsights);
       } catch (error) {
         console.error('Failed to fetch insights:', error);
+        setDriveInsights(null);
         setVacancies(vacanciesData.map(v => ({ ...v, insights: null })));
       }
 
@@ -120,19 +123,17 @@ export default function SuperadminDashboard() {
 
   // Calculate aggregate metrics from API response
   const aggregateMetrics = useMemo((): AggregateMetrics => {
-    // Find the vacancy with insights (will be the filtered one or aggregated)
-    const vacancyWithInsights = vacancies.find(v => v.insights);
-    
-    if (vacancyWithInsights?.insights) {
+    // Use driveInsights from API (respects all filters)
+    if (driveInsights) {
       return {
-        total_candidates: vacancyWithInsights.insights.total_candidates,
-        attended: vacancyWithInsights.insights.attended,
-        not_attended: vacancyWithInsights.insights.not_attended,
-        cleared_all_rounds: vacancyWithInsights.insights.cleared_all_rounds,
-        total_rejected: vacancyWithInsights.insights.rejected_count,
+        total_candidates: driveInsights.total_candidates,
+        attended: driveInsights.attended,
+        not_attended: driveInsights.not_attended,
+        cleared_all_rounds: driveInsights.cleared_all_rounds,
+        total_rejected: driveInsights.rejected_count,
         selection_rate: 0, // Not displayed
-        avg_time_to_hire: vacancyWithInsights.insights.avg_time_to_hire,
-        avg_time_to_fill: vacancyWithInsights.insights.avg_time_to_fill,
+        avg_time_to_hire: driveInsights.avg_time_to_hire,
+        avg_time_to_fill: driveInsights.avg_time_to_fill,
         active_drives: vacancies.filter(v => v.status === "active").length
       };
     }
@@ -148,7 +149,7 @@ export default function SuperadminDashboard() {
       avg_time_to_fill: 0,
       active_drives: 0
     };
-  }, [vacancies])
+  }, [driveInsights, vacancies])
 
   // Get unique recruiters for filter
   const uniqueRecruiters = useMemo(() => {

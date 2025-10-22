@@ -58,7 +58,7 @@ export interface JoinedCandidate {
 }
 
 // Fetch drive insights for a specific vacancy
-export async function fetchDriveInsights(vacancyId?: string, monthYear?: string): Promise<DriveInsights> {
+export async function fetchDriveInsights(vacancyId?: string, monthYear?: string, recruiter?: string): Promise<DriveInsights> {
   const token = getToken();
   
   if (!token) {
@@ -72,6 +72,9 @@ export async function fetchDriveInsights(vacancyId?: string, monthYear?: string)
     }
     if (monthYear) {
       params.append('month_year', monthYear);
+    }
+    if (recruiter) {
+      params.append('recruiter', recruiter);
     }
     const url = `${API_BASE_URL}/analytics/drive-insights${params.toString() ? '?' + params.toString() : ''}`;
     const response = await fetch(url, {
