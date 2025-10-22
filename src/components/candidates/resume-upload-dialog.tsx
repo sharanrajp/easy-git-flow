@@ -302,7 +302,7 @@ export function ResumeUploadDialog({ open, onClose, onSuccess }: ResumeUploadDia
           )}
 
           {/* Tips */}
-          <Alert>
+          {/* <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               <div className="text-sm space-y-1">
@@ -315,7 +315,7 @@ export function ResumeUploadDialog({ open, onClose, onSuccess }: ResumeUploadDia
                 </ul>
               </div>
             </AlertDescription>
-          </Alert>
+          </Alert> */}
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-2">
