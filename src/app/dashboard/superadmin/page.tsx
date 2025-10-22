@@ -61,40 +61,42 @@ export default function SuperadminDashboard() {
       // Fetch all vacancies (superadmin-accessible endpoint)
       const vacanciesData = await fetchVacancies()
       
-      // Fetch insights with all filters (vacancy, month_year, recruiter)
+      // Fetch overall insights for aggregate metrics (top cards)
       try {
-        const insights = await fetchDriveInsights(
+        const overallInsights = await fetchDriveInsights(
           vacancyFilter !== 'all' ? vacancyFilter : undefined,
           monthYearFilter,
           recruiterFilter !== 'all' ? recruiterFilter : undefined
         );
         
-        // Store insights for metrics display
-        setDriveInsights(insights);
-        
-        // Attach insights to vacancies based on filter mode
-        let vacanciesWithInsights: VacancyWithInsights[];
-        
-        if (vacancyFilter === 'all') {
-          // For "all" filter: Apply overall metrics to all vacancies
-          vacanciesWithInsights = vacanciesData.map(vacancy => ({
-            ...vacancy,
-            insights
-          }));
-        } else {
-          // For specific vacancy: Only attach insights to the selected vacancy
-          vacanciesWithInsights = vacanciesData.map(vacancy => {
-            if (vacancy.id === vacancyFilter) {
-              return { ...vacancy, insights };
+        // Store overall insights for metrics display
+        setDriveInsights(overallInsights);
+      } catch (error) {
+        console.error('Failed to fetch overall insights:', error);
+        setDriveInsights(null);
+      }
+      
+      // Fetch individual insights for each vacancy with current filters
+      try {
+        const vacanciesWithInsights: VacancyWithInsights[] = await Promise.all(
+          vacanciesData.map(async (vacancy) => {
+            try {
+              const vacancyInsights = await fetchDriveInsights(
+                vacancy.id,
+                monthYearFilter,
+                recruiterFilter !== 'all' ? recruiterFilter : undefined
+              );
+              return { ...vacancy, insights: vacancyInsights };
+            } catch (error) {
+              console.error(`Error fetching insights for vacancy ${vacancy.id}:`, error);
+              return { ...vacancy, insights: null };
             }
-            return { ...vacancy, insights: null };
-          });
-        }
+          })
+        );
         
         setVacancies(vacanciesWithInsights);
       } catch (error) {
-        console.error('Failed to fetch insights:', error);
-        setDriveInsights(null);
+        console.error('Failed to fetch vacancy insights:', error);
         setVacancies(vacanciesData.map(v => ({ ...v, insights: null })));
       }
 
