@@ -45,10 +45,6 @@ export default function SuperadminDashboard() {
   
   // Drive Summary table filters
   const [driveRecruiterFilter, setDriveRecruiterFilter] = useState<string>("all")
-  const [driveMonthYearFilter, setDriveMonthYearFilter] = useState<string>(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  })
   
   // Candidate Summary tab filters
   const [candidateVacancyFilter, setCandidateVacancyFilter] = useState<string>("all")
@@ -65,7 +61,7 @@ export default function SuperadminDashboard() {
   // Auto-refresh on mount, filter changes, and tab changes
   useEffect(() => {
     loadInitialData()
-  }, [kpiVacancyFilter, driveRecruiterFilter, driveMonthYearFilter, candidateVacancyFilter, candidateRecruiterFilter, candidateMonthYearFilter, activeTab])
+  }, [kpiVacancyFilter, driveRecruiterFilter, candidateVacancyFilter, candidateRecruiterFilter, candidateMonthYearFilter, activeTab])
 
   const loadInitialData = async () => {
     try {
@@ -97,7 +93,7 @@ export default function SuperadminDashboard() {
               try {
                 const vacancyInsights = await fetchDriveInsights(
                   vacancy.id,
-                  driveMonthYearFilter,
+                  undefined,
                   driveRecruiterFilter !== 'all' ? driveRecruiterFilter : undefined
                 );
                 return { ...vacancy, insights: vacancyInsights };
@@ -215,11 +211,10 @@ export default function SuperadminDashboard() {
   const handleClearFilters = () => {
     setKpiVacancyFilter("all")
     setDriveRecruiterFilter("all")
-    const now = new Date();
-    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    setDriveMonthYearFilter(currentMonth)
     setCandidateVacancyFilter("all")
     setCandidateRecruiterFilter("all")
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     setCandidateMonthYearFilter(currentMonth)
     setSearchQuery("")
   }
@@ -397,7 +392,7 @@ export default function SuperadminDashboard() {
 
         {/* Drive Summary Tab */}
         <TabsContent value="drive-summary" className="space-y-4">
-          {/* Drive Summary Filters (Recruiter and Month/Year) */}
+          {/* Drive Summary Filters (Recruiter only) */}
           <div className="flex justify-end gap-3">
             <Select value={driveRecruiterFilter} onValueChange={setDriveRecruiterFilter}>
               <SelectTrigger className="w-48">
@@ -410,21 +405,6 @@ export default function SuperadminDashboard() {
                     {recruiter}
                   </SelectItem>
                 ))}
-              </SelectContent>
-            </Select>
-            
-            <Select value={driveMonthYearFilter} onValueChange={setDriveMonthYearFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Select Month" />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 12 }, (_, i) => {
-                  const date = new Date();
-                  date.setMonth(date.getMonth() - i);
-                  const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                  const label = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-                  return <SelectItem key={value} value={value}>{label}</SelectItem>;
-                })}
               </SelectContent>
             </Select>
           </div>
