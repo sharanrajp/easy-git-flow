@@ -72,13 +72,24 @@ export default function SuperadminDashboard() {
         // Store insights for metrics display
         setDriveInsights(insights);
         
-        // Attach insights to the corresponding vacancy for the table
-        const vacanciesWithInsights = vacanciesData.map(vacancy => {
-          if (vacancyFilter !== 'all' && vacancy.id === vacancyFilter) {
-            return { ...vacancy, insights };
-          }
-          return { ...vacancy, insights: null };
-        });
+        // Attach insights to vacancies based on filter mode
+        let vacanciesWithInsights: VacancyWithInsights[];
+        
+        if (vacancyFilter === 'all') {
+          // For "all" filter: Apply overall metrics to all vacancies
+          vacanciesWithInsights = vacanciesData.map(vacancy => ({
+            ...vacancy,
+            insights
+          }));
+        } else {
+          // For specific vacancy: Only attach insights to the selected vacancy
+          vacanciesWithInsights = vacanciesData.map(vacancy => {
+            if (vacancy.id === vacancyFilter) {
+              return { ...vacancy, insights };
+            }
+            return { ...vacancy, insights: null };
+          });
+        }
         
         setVacancies(vacanciesWithInsights);
       } catch (error) {
@@ -417,8 +428,13 @@ export default function SuperadminDashboard() {
                     <TableCell>{vacancy.recruiter_name || "N/A"}</TableCell>
                     <TableCell>{vacancy.drive_location || "N/A"}</TableCell>
                     <TableCell>{vacancy.drive_date ? format(new Date(vacancy.drive_date), "MMM dd, yyyy") : "N/A"}</TableCell>
-                    <TableCell>{vacancy.insights?.total_candidates || 0}</TableCell>
-                    <TableCell>{vacancy.insights?.joined_per_vacancy || `${vacancy.insights?.cleared_all_rounds || 0} / ${vacancy.number_of_vacancies}`}</TableCell>
+                    <TableCell>
+                      {vacancy.insights?.total_candidates ?? '-'}
+                    </TableCell>
+                    <TableCell>
+                      {vacancy.insights?.joined_per_vacancy ?? 
+                        `${vacancy.insights?.joined_count ?? 0} / ${vacancy.number_of_vacancies}`}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={vacancy.status === "active" ? "default" : "secondary"}>
                         {vacancy.status}
