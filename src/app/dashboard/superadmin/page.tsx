@@ -38,17 +38,20 @@ export default function SuperadminDashboard() {
   const [vacancies, setVacancies] = useState<VacancyWithInsights[]>([])
   const [candidates, setCandidates] = useState<BackendCandidate[]>([])
   const [joinedCandidates, setJoinedCandidates] = useState<JoinedCandidate[]>([])
-  const [selectedDrive, setSelectedDrive] = useState<string | null>(null)
+  const [vacancyFilter, setVacancyFilter] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
   const [recruiterFilter, setRecruiterFilter] = useState<string>("all")
+  const [monthYearFilter, setMonthYearFilter] = useState<string>(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  })
   const [activeTab, setActiveTab] = useState("drive-summary")
   const { toast } = useToast()
 
   // Auto-refresh on mount, filter changes, and tab changes
   useEffect(() => {
     loadInitialData()
-  }, [selectedDrive, activeTab, statusFilter])
+  }, [vacancyFilter, recruiterFilter, monthYearFilter, activeTab])
 
   const loadInitialData = async () => {
     try {
@@ -57,30 +60,34 @@ export default function SuperadminDashboard() {
       // Fetch all vacancies (superadmin-accessible endpoint)
       const vacanciesData = await fetchVacancies()
       
-      // Fetch insights for each vacancy
-      const vacanciesWithInsights = await Promise.all(
-        vacanciesData.map(async (vacancy) => {
-          try {
-            const insights = await fetchDriveInsights(vacancy.id)
-            return { ...vacancy, insights }
-          } catch (error) {
-            console.error(`Failed to fetch insights for vacancy ${vacancy.id}:`, error)
-            return {
-              ...vacancy,
-              insights: null
-            }
+      // Fetch insights with filters
+      try {
+        const insights = await fetchDriveInsights(
+          vacancyFilter !== 'all' ? vacancyFilter : undefined,
+          monthYearFilter
+        );
+        
+        // Attach insights to the corresponding vacancy
+        const vacanciesWithInsights = vacanciesData.map(vacancy => {
+          if (vacancyFilter !== 'all' && vacancy.id === vacancyFilter) {
+            return { ...vacancy, insights };
+          } else if (vacancyFilter === 'all') {
+            // For "all", we'll have aggregated insights, but we still need individual vacancy data
+            return { ...vacancy, insights: null };
           }
-        })
-      )
-      
-      setVacancies(vacanciesWithInsights)
+          return { ...vacancy, insights: null };
+        });
+        
+        setVacancies(vacanciesWithInsights);
+      } catch (error) {
+        console.error('Failed to fetch insights:', error);
+        setVacancies(vacanciesData.map(v => ({ ...v, insights: null })));
+      }
 
       // Fetch joined candidates for Candidate Summary tab
       if (activeTab === 'candidate-summary') {
         try {
-          const joinedCandidatesData = await fetchJoinedCandidates(
-            statusFilter === 'all' ? undefined : statusFilter as 'offer_released' | 'joined'
-          );
+          const joinedCandidatesData = await fetchJoinedCandidates();
           
           console.log('Loaded joined candidates data:', joinedCandidatesData);
           
@@ -111,44 +118,26 @@ export default function SuperadminDashboard() {
     }
   }
 
-  // Calculate aggregate metrics based on selected filters
+  // Calculate aggregate metrics from API response
   const aggregateMetrics = useMemo((): AggregateMetrics => {
-    let filteredVacancies = vacancies
-
-    // If a specific drive is selected, show only that drive's metrics
-    if (selectedDrive) {
-      const selectedVacancy = filteredVacancies.find(v => v.id === selectedDrive)
-      if (selectedVacancy?.insights) {
-        return {
-          total_candidates: selectedVacancy.insights.total_candidates,
-          attended: selectedVacancy.insights.attended,
-          not_attended: selectedVacancy.insights.not_attended,
-          cleared_all_rounds: selectedVacancy.insights.cleared_all_rounds,
-          total_rejected: selectedVacancy.insights.total_rejected,
-          selection_rate: selectedVacancy.insights.selection_rate,
-          avg_time_to_hire: selectedVacancy.insights.avg_time_to_hire,
-          avg_time_to_fill: selectedVacancy.insights.avg_time_to_hire + 7, // Placeholder
-          active_drives: 1
-        }
-      }
+    // Find the vacancy with insights (will be the filtered one or aggregated)
+    const vacancyWithInsights = vacancies.find(v => v.insights);
+    
+    if (vacancyWithInsights?.insights) {
+      return {
+        total_candidates: vacancyWithInsights.insights.total_candidates,
+        attended: vacancyWithInsights.insights.attended,
+        not_attended: vacancyWithInsights.insights.not_attended,
+        cleared_all_rounds: vacancyWithInsights.insights.cleared_all_rounds,
+        total_rejected: vacancyWithInsights.insights.rejected_count,
+        selection_rate: 0, // Not displayed
+        avg_time_to_hire: vacancyWithInsights.insights.avg_time_to_hire,
+        avg_time_to_fill: vacancyWithInsights.insights.avg_time_to_fill,
+        active_drives: vacancies.filter(v => v.status === "active").length
+      };
     }
 
-    // Aggregate metrics across all vacancies
-    const metrics = filteredVacancies.reduce((acc, vacancy) => {
-      if (!vacancy.insights) return acc
-      
-      return {
-        total_candidates: acc.total_candidates + vacancy.insights.total_candidates,
-        attended: acc.attended + vacancy.insights.attended,
-        not_attended: acc.not_attended + vacancy.insights.not_attended,
-        cleared_all_rounds: acc.cleared_all_rounds + vacancy.insights.cleared_all_rounds,
-        total_rejected: acc.total_rejected + vacancy.insights.total_rejected,
-        selection_rate: 0, // Will calculate below
-        avg_time_to_hire: 0, // Will calculate below
-        avg_time_to_fill: 0, // Will calculate below
-        active_drives: acc.active_drives + (vacancy.status === "active" ? 1 : 0)
-      }
-    }, {
+    return {
       total_candidates: 0,
       attended: 0,
       not_attended: 0,
@@ -158,19 +147,8 @@ export default function SuperadminDashboard() {
       avg_time_to_hire: 0,
       avg_time_to_fill: 0,
       active_drives: 0
-    })
-
-    // Calculate average selection rate, time to hire, and time to fill
-    const vacanciesWithInsights = filteredVacancies.filter(v => v.insights)
-    if (vacanciesWithInsights.length > 0) {
-      metrics.selection_rate = vacanciesWithInsights.reduce((sum, v) => sum + (v.insights?.selection_rate || 0), 0) / vacanciesWithInsights.length
-      metrics.avg_time_to_hire = vacanciesWithInsights.reduce((sum, v) => sum + (v.insights?.avg_time_to_hire || 0), 0) / vacanciesWithInsights.length
-      // Time to fill is approximated as time from vacancy creation to first selection
-      metrics.avg_time_to_fill = metrics.avg_time_to_hire + 7 // Placeholder: add 7 days for posting/sourcing
-    }
-
-    return metrics
-  }, [vacancies, selectedDrive])
+    };
+  }, [vacancies])
 
   // Get unique recruiters for filter
   const uniqueRecruiters = useMemo(() => {
@@ -200,10 +178,7 @@ export default function SuperadminDashboard() {
   // Export candidates to CSV using API endpoint
   const handleExportCSV = async () => {
     try {
-      const blob = await fetchJoinedCandidates(
-        statusFilter === 'all' ? undefined : statusFilter as 'offer_released' | 'joined',
-        true
-      ) as Blob;
+      const blob = await fetchJoinedCandidates(true) as Blob;
 
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
@@ -226,13 +201,14 @@ export default function SuperadminDashboard() {
     }
   }
 
-  // Prepare data for charts
+  // Prepare data for charts (commented out - not currently used)
+  /*
   const barChartData = useMemo(() => {
     return vacancies
       .filter(v => v.insights)
       .map(v => ({
         name: v.position_title.length > 20 ? v.position_title.substring(0, 20) + '...' : v.position_title,
-        "Selection Rate": v.insights?.selection_rate || 0
+        "Selection Rate": 0
       }))
   }, [vacancies])
 
@@ -254,9 +230,10 @@ export default function SuperadminDashboard() {
   }, [aggregateMetrics])
 
   const COLORS = ['#10b981', '#f59e0b']
+  */
 
   const handleDriveRowClick = (vacancyId: string) => {
-    setSelectedDrive(selectedDrive === vacancyId ? null : vacancyId)
+    // Removed - no longer needed
   }
 
   if (isLoading) {
@@ -272,30 +249,56 @@ export default function SuperadminDashboard() {
   return (
     <DashboardLayout requiredRole="superadmin">
       <div className="space-y-6 p-6">
-        {/* Header with Drive Filter */}
+        {/* Header with Filters */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">Superadmin Analytics Overview</p>
+            <h1 className="text-3xl font-bold text-foreground">Superadmin Dashboard</h1>
+            <p className="text-muted-foreground mt-1">Comprehensive analytics and insights</p>
           </div>
           
-          {/* Drive Filter moved to top right */}
-          <Select 
-            value={selectedDrive || "all"} 
-            onValueChange={(value) => setSelectedDrive(value === "all" ? null : value)}
-          >
-            <SelectTrigger className="w-[250px]">
-              <SelectValue placeholder="All Drives" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Drives</SelectItem>
-              {vacancies.map(v => (
-                <SelectItem key={v.id} value={v.id}>
-                  {v.position_title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Filters */}
+          <div className="flex gap-3">
+            <Select value={vacancyFilter} onValueChange={setVacancyFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Select Vacancy" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Vacancies</SelectItem>
+                {vacancies.map(v => (
+                  <SelectItem key={v.id} value={v.id}>{v.position_title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Select Recruiter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Recruiters</SelectItem>
+                {uniqueRecruiters.map(recruiter => (
+                  <SelectItem key={recruiter} value={recruiter || ""}>
+                    {recruiter}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={monthYearFilter} onValueChange={setMonthYearFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Select Month" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 12 }, (_, i) => {
+                  const date = new Date();
+                  date.setMonth(date.getMonth() - i);
+                  const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                  const label = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                  return <SelectItem key={value} value={value}>{label}</SelectItem>;
+                })}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* KPI Cards - Exactly 5 cards */}
@@ -356,50 +359,27 @@ export default function SuperadminDashboard() {
           </Card>
         </div>
 
-        {/* Filters Section */}
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex-1 min-w-[250px]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search candidates..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+        {/* Search and Export Section (for Candidate Summary tab only) */}
+        {activeTab === 'candidate-summary' && (
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex-1 min-w-[250px]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search candidates..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
+
+            <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+              <Download className="h-4 w-4" />
+              Export CSV
+            </Button>
           </div>
-          
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Status Filter" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="offer-released">Offer Released</SelectItem>
-              <SelectItem value="joined">Joined</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All Recruiters" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Recruiters</SelectItem>
-              {uniqueRecruiters.map(recruiter => (
-                <SelectItem key={recruiter} value={recruiter || ""}>
-                  {recruiter}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Button onClick={handleExportCSV} variant="outline" className="gap-2">
-            <Download className="h-4 w-4" />
-            Export CSV
-          </Button>
-        </div>
+        )}
 
         {/* Tabs Section */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -410,7 +390,7 @@ export default function SuperadminDashboard() {
 
         {/* Drive Summary Tab */}
         <TabsContent value="drive-summary">
-          {vacancies.length === 0 ? (
+          {vacancies.filter(v => recruiterFilter === 'all' || v.recruiter_name === recruiterFilter).length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No drives found. Create a vacancy to get started.
             </div>
@@ -423,27 +403,21 @@ export default function SuperadminDashboard() {
                   <TableHead>Location</TableHead>
                   <TableHead>Drive Date</TableHead>
                   <TableHead>Total Candidates</TableHead>
-                  <TableHead>Selected / Vacancies</TableHead>
-                  <TableHead>Avg Time to Hire</TableHead>
-                  <TableHead>Avg Time to Fill</TableHead>
+                  <TableHead>Joined / Vacancies</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {vacancies.map(vacancy => (
+                {vacancies.filter(v => recruiterFilter === 'all' || v.recruiter_name === recruiterFilter).map(vacancy => (
                   <TableRow 
                     key={vacancy.id}
-                    onClick={() => handleDriveRowClick(vacancy.id)}
-                    className={`cursor-pointer hover:bg-muted/50 ${selectedDrive === vacancy.id ? 'bg-muted' : ''}`}
                   >
                     <TableCell className="font-medium">{vacancy.position_title}</TableCell>
                     <TableCell>{vacancy.recruiter_name || "N/A"}</TableCell>
                     <TableCell>{vacancy.drive_location || "N/A"}</TableCell>
                     <TableCell>{vacancy.drive_date ? format(new Date(vacancy.drive_date), "MMM dd, yyyy") : "N/A"}</TableCell>
                     <TableCell>{vacancy.insights?.total_candidates || 0}</TableCell>
-                    <TableCell>{vacancy.insights?.cleared_all_rounds || 0} / {vacancy.number_of_vacancies}</TableCell>
-                    <TableCell>{(vacancy.insights?.avg_time_to_hire ?? 0).toFixed(1)} days</TableCell>
-                    <TableCell>{((vacancy.insights?.avg_time_to_hire ?? 0) + 7).toFixed(1)} days</TableCell>
+                    <TableCell>{vacancy.insights?.joined_per_vacancy || `${vacancy.insights?.cleared_all_rounds || 0} / ${vacancy.number_of_vacancies}`}</TableCell>
                     <TableCell>
                       <Badge variant={vacancy.status === "active" ? "default" : "secondary"}>
                         {vacancy.status}
@@ -469,30 +443,44 @@ export default function SuperadminDashboard() {
                   <TableHead>Candidate Name</TableHead>
                   <TableHead>Experience</TableHead>
                   <TableHead>Skills</TableHead>
-                  {statusFilter === "joined" && (
-                    <>
-                      <TableHead>Date of Joining</TableHead>
-                      <TableHead>Time to Hire</TableHead>
-                      <TableHead>Time to Fill</TableHead>
-                    </>
-                  )}
+                  <TableHead>Recruiter</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date of Joining</TableHead>
+                  <TableHead>Time to Hire</TableHead>
+                  <TableHead>Time to Fill</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredJoinedCandidates.map((candidate, idx) => (
-                  <TableRow key={idx}>
+                {filteredJoinedCandidates.filter(c => c.status === 'joined').map((candidate, idx) => (
+                  <TableRow key={`joined-${idx}`}>
                     <TableCell className="font-medium">{candidate.name}</TableCell>
-                    <TableCell>{candidate.total_experience || "N/A"}</TableCell>
+                    <TableCell>{candidate.total_experience || "-"}</TableCell>
                     <TableCell>
                       <SkillsDisplay skills={candidate.skill_set || []} maxVisible={3} />
                     </TableCell>
-                    {statusFilter === "joined" && (
-                      <>
-                        <TableCell>{candidate.joined_date || "N/A"}</TableCell>
-                        <TableCell>{candidate.time_to_hire ? `${candidate.time_to_hire} days` : "N/A"}</TableCell>
-                        <TableCell>{candidate.time_to_fill ? `${candidate.time_to_fill} days` : "N/A"}</TableCell>
-                      </>
-                    )}
+                    <TableCell>{candidate.recruiter_name || "-"}</TableCell>
+                    <TableCell>
+                      <Badge variant="default">Joined</Badge>
+                    </TableCell>
+                    <TableCell>{candidate.joined_date ? format(new Date(candidate.joined_date), "MMM dd, yyyy") : "-"}</TableCell>
+                    <TableCell>{candidate.time_to_hire ? `${candidate.time_to_hire} days` : "-"}</TableCell>
+                    <TableCell>{candidate.time_to_fill ? `${candidate.time_to_fill} days` : "-"}</TableCell>
+                  </TableRow>
+                ))}
+                {filteredJoinedCandidates.filter(c => c.status === 'offer_released').map((candidate, idx) => (
+                  <TableRow key={`offer-${idx}`}>
+                    <TableCell className="font-medium">{candidate.name}</TableCell>
+                    <TableCell>{candidate.total_experience || "-"}</TableCell>
+                    <TableCell>
+                      <SkillsDisplay skills={candidate.skill_set || []} maxVisible={3} />
+                    </TableCell>
+                    <TableCell>{candidate.recruiter_name || "-"}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">Offer Released</Badge>
+                    </TableCell>
+                    <TableCell>-</TableCell>
+                    <TableCell>-</TableCell>
+                    <TableCell>-</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

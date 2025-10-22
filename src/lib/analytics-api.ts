@@ -8,12 +8,11 @@ export interface DriveInsights {
   attended: number;
   not_attended: number;
   cleared_all_rounds: number;
-  rejected_r1: number;
-  rejected_r2: number;
-  rejected_r3: number;
-  total_rejected: number;
-  selection_rate: number;
+  rejected_count: number;
+  joined_count: number;
+  joined_per_vacancy: string;
   avg_time_to_hire: number;
+  avg_time_to_fill: number;
 }
 
 // API Response interface (nested structure from backend)
@@ -57,7 +56,7 @@ export interface JoinedCandidate {
 }
 
 // Fetch drive insights for a specific vacancy
-export async function fetchDriveInsights(vacancyId: string): Promise<DriveInsights> {
+export async function fetchDriveInsights(vacancyId?: string, monthYear?: string): Promise<DriveInsights> {
   const token = getToken();
   
   if (!token) {
@@ -65,7 +64,15 @@ export async function fetchDriveInsights(vacancyId: string): Promise<DriveInsigh
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/analytics/drive-insights?vacancy_id=${vacancyId}`, {
+    const params = new URLSearchParams();
+    if (vacancyId) {
+      params.append('vacancy_id', vacancyId);
+    }
+    if (monthYear) {
+      params.append('month_year', monthYear);
+    }
+    const url = `${API_BASE_URL}/analytics/drive-insights${params.toString() ? '?' + params.toString() : ''}`;
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -81,17 +88,16 @@ export async function fetchDriveInsights(vacancyId: string): Promise<DriveInsigh
     
     // Transform API response to flat DriveInsights structure
     const transformedData: DriveInsights = {
-      vacancy_id: vacancyId,
+      vacancy_id: vacancyId || '',
       total_candidates: apiData.metrics.total_candidates,
       attended: apiData.metrics.attended,
       not_attended: apiData.metrics.not_attended,
       cleared_all_rounds: apiData.metrics.cleared_all_rounds,
-      rejected_r1: apiData.metrics.rejected_r1 || 0,
-      rejected_r2: apiData.metrics.rejected_r2 || 0,
-      rejected_r3: 0, // Not provided in API, defaulting to 0
-      total_rejected: apiData.metrics.rejected_count || (apiData.metrics.rejected_r1 || 0) + (apiData.metrics.rejected_r2 || 0),
-      selection_rate: apiData.insights.selection_rate,
+      rejected_count: apiData.metrics.rejected_count || 0,
+      joined_count: apiData.metrics.cleared_all_rounds, // Using cleared_all_rounds as joined
+      joined_per_vacancy: `${apiData.metrics.cleared_all_rounds} / ${apiData.vacancy_info.number_of_vacancies}`,
       avg_time_to_hire: apiData.insights.average_time_to_hire_days,
+      avg_time_to_fill: apiData.insights.average_time_to_fill_days || 0,
     };
     
     return transformedData;
@@ -103,7 +109,6 @@ export async function fetchDriveInsights(vacancyId: string): Promise<DriveInsigh
 
 // Fetch joined candidates with filters
 export async function fetchJoinedCandidates(
-  status?: 'offer_released' | 'joined' | 'all',
   exportData: boolean = false
 ): Promise<JoinedCandidate[] | Blob> {
   const token = getToken();
@@ -114,9 +119,6 @@ export async function fetchJoinedCandidates(
 
   try {
     const params = new URLSearchParams();
-    if (status && status !== 'all') {
-      params.append('status', status);
-    }
     if (exportData) {
       params.append('export', 'true');
     }
