@@ -451,7 +451,7 @@ export default function SuperadminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredJoinedCandidates.filter(c => c.status === 'joined').map((candidate, idx) => (
+                {filteredJoinedCandidates.filter(c => c.final_status === 'joined').map((candidate, idx) => (
                   <TableRow key={`joined-${idx}`}>
                     <TableCell className="font-medium">{candidate.name}</TableCell>
                     <TableCell>{candidate.total_experience || "-"}</TableCell>
@@ -467,7 +467,7 @@ export default function SuperadminDashboard() {
                     <TableCell>{candidate.time_to_fill ? `${candidate.time_to_fill} days` : "-"}</TableCell>
                   </TableRow>
                 ))}
-                {filteredJoinedCandidates.filter(c => c.status === 'offer_released').map((candidate, idx) => (
+                {filteredJoinedCandidates.filter(c => c.final_status === 'offerReleased').map((candidate, idx) => (
                   <TableRow key={`offer-${idx}`}>
                     <TableCell className="font-medium">{candidate.name}</TableCell>
                     <TableCell>{candidate.total_experience || "-"}</TableCell>

@@ -49,10 +49,12 @@ export interface JoinedCandidate {
   total_experience: string;
   skill_set: string[];
   recruiter_name: string;
+  applied_position: string;
+  final_status: 'offerReleased' | 'joined';
   joined_date?: string;
+  offer_released_date?: string;
   time_to_hire?: number;
   time_to_fill?: number;
-  status: 'offer_released' | 'joined';
 }
 
 // Fetch drive insights for a specific vacancy
@@ -144,8 +146,8 @@ export async function fetchJoinedCandidates(
     const responseData = await response.json();
     console.log('Joined candidates API response:', responseData);
     
-    // Extract joined_candidates array from response
-    const data: JoinedCandidate[] = responseData.joined_candidates || [];
+    // Extract candidates array from response
+    const data: JoinedCandidate[] = responseData.candidates || [];
     console.log('Extracted joined candidates:', data);
     
     return data;
