@@ -114,7 +114,10 @@ export async function fetchDriveInsights(vacancyId?: string, monthYear?: string,
 
 // Fetch joined candidates with filters
 export async function fetchJoinedCandidates(
-  exportData: boolean = false
+  exportData: boolean = false,
+  vacancyId?: string,
+  monthYear?: string,
+  recruiter?: string
 ): Promise<JoinedCandidate[] | Blob> {
   const token = getToken();
   
@@ -126,6 +129,15 @@ export async function fetchJoinedCandidates(
     const params = new URLSearchParams();
     if (exportData) {
       params.append('export', 'true');
+    }
+    if (vacancyId) {
+      params.append('vacancy_id', vacancyId);
+    }
+    if (monthYear) {
+      params.append('month_year', monthYear);
+    }
+    if (recruiter) {
+      params.append('recruiter', recruiter);
     }
 
     const url = `${API_BASE_URL}/analytics/joined-candidates${params.toString() ? '?' + params.toString() : ''}`;

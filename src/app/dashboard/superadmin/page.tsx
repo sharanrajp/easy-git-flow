@@ -39,20 +39,33 @@ export default function SuperadminDashboard() {
   const [candidates, setCandidates] = useState<BackendCandidate[]>([])
   const [joinedCandidates, setJoinedCandidates] = useState<JoinedCandidate[]>([])
   const [driveInsights, setDriveInsights] = useState<DriveInsights | null>(null)
-  const [vacancyFilter, setVacancyFilter] = useState<string>("all")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [recruiterFilter, setRecruiterFilter] = useState<string>("all")
-  const [monthYearFilter, setMonthYearFilter] = useState<string>(() => {
+  
+  // KPI Card filters (vacancy only)
+  const [kpiVacancyFilter, setKpiVacancyFilter] = useState<string>("all")
+  
+  // Drive Summary table filters
+  const [driveRecruiterFilter, setDriveRecruiterFilter] = useState<string>("all")
+  const [driveMonthYearFilter, setDriveMonthYearFilter] = useState<string>(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   })
+  
+  // Candidate Summary tab filters
+  const [candidateVacancyFilter, setCandidateVacancyFilter] = useState<string>("all")
+  const [candidateRecruiterFilter, setCandidateRecruiterFilter] = useState<string>("all")
+  const [candidateMonthYearFilter, setCandidateMonthYearFilter] = useState<string>(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  })
+  
+  const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("drive-summary")
   const { toast } = useToast()
 
   // Auto-refresh on mount, filter changes, and tab changes
   useEffect(() => {
     loadInitialData()
-  }, [vacancyFilter, recruiterFilter, monthYearFilter, activeTab])
+  }, [kpiVacancyFilter, driveRecruiterFilter, driveMonthYearFilter, candidateVacancyFilter, candidateRecruiterFilter, candidateMonthYearFilter, activeTab])
 
   const loadInitialData = async () => {
     try {
@@ -61,49 +74,58 @@ export default function SuperadminDashboard() {
       // Fetch all vacancies (superadmin-accessible endpoint)
       const vacanciesData = await fetchVacancies()
       
-      // Fetch overall insights for aggregate metrics (top cards)
+      // Fetch KPI insights (only vacancy filter applies, no recruiter/month filters)
       try {
-        const overallInsights = await fetchDriveInsights(
-          vacancyFilter !== 'all' ? vacancyFilter : undefined,
-          monthYearFilter,
-          recruiterFilter !== 'all' ? recruiterFilter : undefined
+        const kpiInsights = await fetchDriveInsights(
+          kpiVacancyFilter !== 'all' ? kpiVacancyFilter : undefined,
+          undefined, // No month/year filter for KPI
+          undefined  // No recruiter filter for KPI
         );
         
-        // Store overall insights for metrics display
-        setDriveInsights(overallInsights);
+        // Store insights for KPI metrics display
+        setDriveInsights(kpiInsights);
       } catch (error) {
-        console.error('Failed to fetch overall insights:', error);
+        console.error('Failed to fetch KPI insights:', error);
         setDriveInsights(null);
       }
       
-      // Fetch individual insights for each vacancy with current filters
-      try {
-        const vacanciesWithInsights: VacancyWithInsights[] = await Promise.all(
-          vacanciesData.map(async (vacancy) => {
-            try {
-              const vacancyInsights = await fetchDriveInsights(
-                vacancy.id,
-                monthYearFilter,
-                recruiterFilter !== 'all' ? recruiterFilter : undefined
-              );
-              return { ...vacancy, insights: vacancyInsights };
-            } catch (error) {
-              console.error(`Error fetching insights for vacancy ${vacancy.id}:`, error);
-              return { ...vacancy, insights: null };
-            }
-          })
-        );
-        
-        setVacancies(vacanciesWithInsights);
-      } catch (error) {
-        console.error('Failed to fetch vacancy insights:', error);
+      // Fetch individual insights for Drive Summary table (with recruiter and month/year filters)
+      if (activeTab === 'drive-summary') {
+        try {
+          const vacanciesWithInsights: VacancyWithInsights[] = await Promise.all(
+            vacanciesData.map(async (vacancy) => {
+              try {
+                const vacancyInsights = await fetchDriveInsights(
+                  vacancy.id,
+                  driveMonthYearFilter,
+                  driveRecruiterFilter !== 'all' ? driveRecruiterFilter : undefined
+                );
+                return { ...vacancy, insights: vacancyInsights };
+              } catch (error) {
+                console.error(`Error fetching insights for vacancy ${vacancy.id}:`, error);
+                return { ...vacancy, insights: null };
+              }
+            })
+          );
+          
+          setVacancies(vacanciesWithInsights);
+        } catch (error) {
+          console.error('Failed to fetch vacancy insights:', error);
+          setVacancies(vacanciesData.map(v => ({ ...v, insights: null })));
+        }
+      } else {
         setVacancies(vacanciesData.map(v => ({ ...v, insights: null })));
       }
 
       // Fetch joined candidates for Candidate Summary tab
       if (activeTab === 'candidate-summary') {
         try {
-          const joinedCandidatesData = await fetchJoinedCandidates();
+          const joinedCandidatesData = await fetchJoinedCandidates(
+            false,
+            candidateVacancyFilter !== 'all' ? candidateVacancyFilter : undefined,
+            candidateMonthYearFilter,
+            candidateRecruiterFilter !== 'all' ? candidateRecruiterFilter : undefined
+          );
           
           console.log('Loaded joined candidates data:', joinedCandidatesData);
           
@@ -170,7 +192,7 @@ export default function SuperadminDashboard() {
     return Array.from(new Set(recruiters))
   }, [vacancies])
 
-  // Filter joined candidates based on search
+  // Filter joined candidates based on search (filters already applied in API call)
   const filteredJoinedCandidates = useMemo(() => {
     // Safety check: ensure joinedCandidates is an array
     if (!Array.isArray(joinedCandidates)) {
@@ -189,10 +211,28 @@ export default function SuperadminDashboard() {
     })
   }, [joinedCandidates, searchQuery])
 
+  // Clear all filters
+  const handleClearFilters = () => {
+    setKpiVacancyFilter("all")
+    setDriveRecruiterFilter("all")
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    setDriveMonthYearFilter(currentMonth)
+    setCandidateVacancyFilter("all")
+    setCandidateRecruiterFilter("all")
+    setCandidateMonthYearFilter(currentMonth)
+    setSearchQuery("")
+  }
+
   // Export candidates to CSV using API endpoint
   const handleExportCSV = async () => {
     try {
-      const blob = await fetchJoinedCandidates(true) as Blob;
+      const blob = await fetchJoinedCandidates(
+        true,
+        candidateVacancyFilter !== 'all' ? candidateVacancyFilter : undefined,
+        candidateMonthYearFilter,
+        candidateRecruiterFilter !== 'all' ? candidateRecruiterFilter : undefined
+      ) as Blob;
 
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
@@ -263,16 +303,16 @@ export default function SuperadminDashboard() {
   return (
     <DashboardLayout requiredRole="superadmin">
       <div className="space-y-6 p-6">
-        {/* Header with Filters */}
+        {/* Header with KPI Vacancy Filter and Clear Filters Button */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Superadmin Dashboard</h1>
             <p className="text-muted-foreground mt-1">Comprehensive analytics and insights</p>
           </div>
           
-          {/* Filters */}
+          {/* KPI Filter (Vacancy only) */}
           <div className="flex gap-3">
-            <Select value={vacancyFilter} onValueChange={setVacancyFilter}>
+            <Select value={kpiVacancyFilter} onValueChange={setKpiVacancyFilter}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Select Vacancy" />
               </SelectTrigger>
@@ -284,34 +324,9 @@ export default function SuperadminDashboard() {
               </SelectContent>
             </Select>
             
-            <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Select Recruiter" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Recruiters</SelectItem>
-                {uniqueRecruiters.map(recruiter => (
-                  <SelectItem key={recruiter} value={recruiter || ""}>
-                    {recruiter}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Select value={monthYearFilter} onValueChange={setMonthYearFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Select Month" />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 12 }, (_, i) => {
-                  const date = new Date();
-                  date.setMonth(date.getMonth() - i);
-                  const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                  const label = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-                  return <SelectItem key={value} value={value}>{label}</SelectItem>;
-                })}
-              </SelectContent>
-            </Select>
+            <Button onClick={handleClearFilters} variant="outline">
+              Clear Filters
+            </Button>
           </div>
         </div>
 
@@ -373,28 +388,6 @@ export default function SuperadminDashboard() {
           </Card>
         </div>
 
-        {/* Search and Export Section (for Candidate Summary tab only) */}
-        {activeTab === 'candidate-summary' && (
-          <div className="flex flex-wrap gap-4 items-center">
-            <div className="flex-1 min-w-[250px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search candidates..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <Button onClick={handleExportCSV} variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export CSV
-            </Button>
-          </div>
-        )}
-
         {/* Tabs Section */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full grid grid-cols-2">
@@ -403,8 +396,40 @@ export default function SuperadminDashboard() {
           </TabsList>
 
         {/* Drive Summary Tab */}
-        <TabsContent value="drive-summary">
-          {vacancies.filter(v => recruiterFilter === 'all' || v.recruiter_name === recruiterFilter).length === 0 ? (
+        <TabsContent value="drive-summary" className="space-y-4">
+          {/* Drive Summary Filters (Recruiter and Month/Year) */}
+          <div className="flex justify-end gap-3">
+            <Select value={driveRecruiterFilter} onValueChange={setDriveRecruiterFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Select Recruiter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Recruiters</SelectItem>
+                {uniqueRecruiters.map(recruiter => (
+                  <SelectItem key={recruiter} value={recruiter || ""}>
+                    {recruiter}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={driveMonthYearFilter} onValueChange={setDriveMonthYearFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Select Month" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 12 }, (_, i) => {
+                  const date = new Date();
+                  date.setMonth(date.getMonth() - i);
+                  const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                  const label = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                  return <SelectItem key={value} value={value}>{label}</SelectItem>;
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {vacancies.filter(v => driveRecruiterFilter === 'all' || v.recruiter_name === driveRecruiterFilter).length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No drives found. Create a vacancy to get started.
             </div>
@@ -422,7 +447,7 @@ export default function SuperadminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {vacancies.filter(v => recruiterFilter === 'all' || v.recruiter_name === recruiterFilter).map(vacancy => (
+                {vacancies.filter(v => driveRecruiterFilter === 'all' || v.recruiter_name === driveRecruiterFilter).map(vacancy => (
                   <TableRow 
                     key={vacancy.id}
                   >
@@ -450,7 +475,70 @@ export default function SuperadminDashboard() {
         </TabsContent>
 
         {/* Candidate Summary Tab */}
-        <TabsContent value="candidate-summary">
+        <TabsContent value="candidate-summary" className="space-y-4">
+          {/* Candidate Summary Filters (Vacancy, Month/Year, Recruiter) */}
+          <div className="flex flex-wrap gap-3 items-center justify-between">
+            <div className="flex gap-3">
+              <Select value={candidateVacancyFilter} onValueChange={setCandidateVacancyFilter}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Select Vacancy" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Vacancies</SelectItem>
+                  {vacancies.map(v => (
+                    <SelectItem key={v.id} value={v.id}>{v.position_title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={candidateMonthYearFilter} onValueChange={setCandidateMonthYearFilter}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Select Month" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 12 }, (_, i) => {
+                    const date = new Date();
+                    date.setMonth(date.getMonth() - i);
+                    const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    const label = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                    return <SelectItem key={value} value={value}>{label}</SelectItem>;
+                  })}
+                </SelectContent>
+              </Select>
+              
+              <Select value={candidateRecruiterFilter} onValueChange={setCandidateRecruiterFilter}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Select Recruiter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Recruiters</SelectItem>
+                  {uniqueRecruiters.map(recruiter => (
+                    <SelectItem key={recruiter} value={recruiter || ""}>
+                      {recruiter}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex gap-3 items-center">
+              <div className="relative min-w-[250px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search candidates..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+                <Download className="h-4 w-4" />
+                Export CSV
+              </Button>
+            </div>
+          </div>
+
           {filteredJoinedCandidates.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No candidates found matching the filters.
