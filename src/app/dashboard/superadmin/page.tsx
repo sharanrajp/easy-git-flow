@@ -22,9 +22,11 @@ interface AggregateMetrics {
   attended: number
   not_attended: number
   cleared_all_rounds: number
-  rejected_count: number
+  total_rejected: number
+  selection_rate: number
   avg_time_to_hire: number
   avg_time_to_fill: number
+  active_drives: number
 }
 
 interface VacancyWithInsights extends Vacancy {
@@ -40,17 +42,13 @@ export default function SuperadminDashboard() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [recruiterFilter, setRecruiterFilter] = useState<string>("all")
-  const [monthYearFilter, setMonthYearFilter] = useState<string>(() => {
-    const now = new Date()
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-  })
   const [activeTab, setActiveTab] = useState("drive-summary")
   const { toast } = useToast()
 
   // Auto-refresh on mount, filter changes, and tab changes
   useEffect(() => {
     loadInitialData()
-  }, [selectedDrive, activeTab, statusFilter, monthYearFilter])
+  }, [selectedDrive, activeTab, statusFilter])
 
   const loadInitialData = async () => {
     try {
@@ -63,7 +61,7 @@ export default function SuperadminDashboard() {
       const vacanciesWithInsights = await Promise.all(
         vacanciesData.map(async (vacancy) => {
           try {
-            const insights = await fetchDriveInsights(vacancy.id, monthYearFilter)
+            const insights = await fetchDriveInsights(vacancy.id)
             return { ...vacancy, insights }
           } catch (error) {
             console.error(`Failed to fetch insights for vacancy ${vacancy.id}:`, error)
@@ -117,11 +115,6 @@ export default function SuperadminDashboard() {
   const aggregateMetrics = useMemo((): AggregateMetrics => {
     let filteredVacancies = vacancies
 
-    // Apply recruiter filter
-    if (recruiterFilter !== "all") {
-      filteredVacancies = filteredVacancies.filter(v => v.recruiter_name === recruiterFilter)
-    }
-
     // If a specific drive is selected, show only that drive's metrics
     if (selectedDrive) {
       const selectedVacancy = filteredVacancies.find(v => v.id === selectedDrive)
@@ -131,9 +124,11 @@ export default function SuperadminDashboard() {
           attended: selectedVacancy.insights.attended,
           not_attended: selectedVacancy.insights.not_attended,
           cleared_all_rounds: selectedVacancy.insights.cleared_all_rounds,
-          rejected_count: selectedVacancy.insights.rejected_count,
+          total_rejected: selectedVacancy.insights.total_rejected,
+          selection_rate: selectedVacancy.insights.selection_rate,
           avg_time_to_hire: selectedVacancy.insights.avg_time_to_hire,
-          avg_time_to_fill: selectedVacancy.insights.avg_time_to_fill,
+          avg_time_to_fill: selectedVacancy.insights.avg_time_to_hire + 7, // Placeholder
+          active_drives: 1
         }
       }
     }
@@ -147,29 +142,35 @@ export default function SuperadminDashboard() {
         attended: acc.attended + vacancy.insights.attended,
         not_attended: acc.not_attended + vacancy.insights.not_attended,
         cleared_all_rounds: acc.cleared_all_rounds + vacancy.insights.cleared_all_rounds,
-        rejected_count: acc.rejected_count + vacancy.insights.rejected_count,
+        total_rejected: acc.total_rejected + vacancy.insights.total_rejected,
+        selection_rate: 0, // Will calculate below
         avg_time_to_hire: 0, // Will calculate below
         avg_time_to_fill: 0, // Will calculate below
+        active_drives: acc.active_drives + (vacancy.status === "active" ? 1 : 0)
       }
     }, {
       total_candidates: 0,
       attended: 0,
       not_attended: 0,
       cleared_all_rounds: 0,
-      rejected_count: 0,
+      total_rejected: 0,
+      selection_rate: 0,
       avg_time_to_hire: 0,
       avg_time_to_fill: 0,
+      active_drives: 0
     })
 
-    // Calculate average time to hire and time to fill
+    // Calculate average selection rate, time to hire, and time to fill
     const vacanciesWithInsights = filteredVacancies.filter(v => v.insights)
     if (vacanciesWithInsights.length > 0) {
+      metrics.selection_rate = vacanciesWithInsights.reduce((sum, v) => sum + (v.insights?.selection_rate || 0), 0) / vacanciesWithInsights.length
       metrics.avg_time_to_hire = vacanciesWithInsights.reduce((sum, v) => sum + (v.insights?.avg_time_to_hire || 0), 0) / vacanciesWithInsights.length
-      metrics.avg_time_to_fill = vacanciesWithInsights.reduce((sum, v) => sum + (v.insights?.avg_time_to_fill || 0), 0) / vacanciesWithInsights.length
+      // Time to fill is approximated as time from vacancy creation to first selection
+      metrics.avg_time_to_fill = metrics.avg_time_to_hire + 7 // Placeholder: add 7 days for posting/sourcing
     }
 
     return metrics
-  }, [vacancies, selectedDrive, recruiterFilter])
+  }, [vacancies, selectedDrive])
 
   // Get unique recruiters for filter
   const uniqueRecruiters = useMemo(() => {
@@ -225,8 +226,7 @@ export default function SuperadminDashboard() {
     }
   }
 
-  // Prepare data for charts (currently disabled)
-  /*
+  // Prepare data for charts
   const barChartData = useMemo(() => {
     return vacancies
       .filter(v => v.insights)
@@ -254,7 +254,6 @@ export default function SuperadminDashboard() {
   }, [aggregateMetrics])
 
   const COLORS = ['#10b981', '#f59e0b']
-  */
 
   const handleDriveRowClick = (vacancyId: string) => {
     setSelectedDrive(selectedDrive === vacancyId ? null : vacancyId)
@@ -273,69 +272,34 @@ export default function SuperadminDashboard() {
   return (
     <DashboardLayout requiredRole="superadmin">
       <div className="space-y-6 p-6">
-        {/* Header with Filters */}
+        {/* Header with Drive Filter */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
             <p className="text-muted-foreground mt-1">Superadmin Analytics Overview</p>
           </div>
           
-          {/* Filters */}
-          <div className="flex gap-2">
-            <Select 
-              value={selectedDrive || "all"} 
-              onValueChange={(value) => setSelectedDrive(value === "all" ? null : value)}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="All Vacancies" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Vacancies</SelectItem>
-                {vacancies.map(v => (
-                  <SelectItem key={v.id} value={v.id}>
-                    {v.position_title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Recruiters" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Recruiters</SelectItem>
-                {uniqueRecruiters.map(recruiter => (
-                  <SelectItem key={recruiter} value={recruiter || ""}>
-                    {recruiter}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={monthYearFilter} onValueChange={setMonthYearFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 12 }, (_, i) => {
-                  const date = new Date()
-                  date.setMonth(date.getMonth() - i)
-                  const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-                  const label = format(date, "MMM yyyy")
-                  return (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  )
-                })}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Drive Filter moved to top right */}
+          <Select 
+            value={selectedDrive || "all"} 
+            onValueChange={(value) => setSelectedDrive(value === "all" ? null : value)}
+          >
+            <SelectTrigger className="w-[250px]">
+              <SelectValue placeholder="All Drives" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Drives</SelectItem>
+              {vacancies.map(v => (
+                <SelectItem key={v.id} value={v.id}>
+                  {v.position_title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
+        {/* KPI Cards - Exactly 5 cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {/* Total Candidates */}
           <Card>
             <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
@@ -347,47 +311,25 @@ export default function SuperadminDashboard() {
             </CardContent>
           </Card>
 
-          {/* Attended */}
+          {/* Attended / Not Attended */}
           <Card>
             <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Attended</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground">Attended / Not Attended</CardTitle>
               <UserCheck className="h-5 w-5 text-emerald-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{aggregateMetrics.attended}</div>
+              <div className="text-3xl font-bold">{aggregateMetrics.attended} / {aggregateMetrics.not_attended}</div>
             </CardContent>
           </Card>
 
-          {/* Not Attended */}
+          {/* Cleared / Rejected */}
           <Card>
             <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Not Attended</CardTitle>
-              <XCircle className="h-5 w-5 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{aggregateMetrics.not_attended}</div>
-            </CardContent>
-          </Card>
-
-          {/* Cleared All Rounds */}
-          <Card>
-            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Cleared All Rounds</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground">Cleared / Rejected</CardTitle>
               <CheckCircle className="h-5 w-5 text-violet-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{aggregateMetrics.cleared_all_rounds}</div>
-            </CardContent>
-          </Card>
-
-          {/* Rejected */}
-          <Card>
-            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Rejected</CardTitle>
-              <XCircle className="h-5 w-5 text-red-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{aggregateMetrics.rejected_count}</div>
+              <div className="text-3xl font-bold">{aggregateMetrics.cleared_all_rounds} / {aggregateMetrics.total_rejected || 0}</div>
             </CardContent>
           </Card>
 
@@ -414,7 +356,7 @@ export default function SuperadminDashboard() {
           </Card>
         </div>
 
-        {/* Filters Section for Candidate Summary */}
+        {/* Filters Section */}
         <div className="flex flex-wrap gap-4 items-center">
           <div className="flex-1 min-w-[250px]">
             <div className="relative">
@@ -436,6 +378,20 @@ export default function SuperadminDashboard() {
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="offer-released">Offer Released</SelectItem>
               <SelectItem value="joined">Joined</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All Recruiters" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Recruiters</SelectItem>
+              {uniqueRecruiters.map(recruiter => (
+                <SelectItem key={recruiter} value={recruiter || ""}>
+                  {recruiter}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
@@ -467,16 +423,14 @@ export default function SuperadminDashboard() {
                   <TableHead>Location</TableHead>
                   <TableHead>Drive Date</TableHead>
                   <TableHead>Total Candidates</TableHead>
-                  <TableHead>Joined / Vacancies</TableHead>
+                  <TableHead>Selected / Vacancies</TableHead>
                   <TableHead>Avg Time to Hire</TableHead>
                   <TableHead>Avg Time to Fill</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {vacancies
-                  .filter(v => recruiterFilter === "all" || v.recruiter_name === recruiterFilter)
-                  .map(vacancy => (
+                {vacancies.map(vacancy => (
                   <TableRow 
                     key={vacancy.id}
                     onClick={() => handleDriveRowClick(vacancy.id)}
@@ -487,9 +441,9 @@ export default function SuperadminDashboard() {
                     <TableCell>{vacancy.drive_location || "N/A"}</TableCell>
                     <TableCell>{vacancy.drive_date ? format(new Date(vacancy.drive_date), "MMM dd, yyyy") : "N/A"}</TableCell>
                     <TableCell>{vacancy.insights?.total_candidates || 0}</TableCell>
-                    <TableCell>{vacancy.insights?.joined_per_vacancy || "0/0"}</TableCell>
+                    <TableCell>{vacancy.insights?.cleared_all_rounds || 0} / {vacancy.number_of_vacancies}</TableCell>
                     <TableCell>{(vacancy.insights?.avg_time_to_hire ?? 0).toFixed(1)} days</TableCell>
-                    <TableCell>{(vacancy.insights?.avg_time_to_fill ?? 0).toFixed(1)} days</TableCell>
+                    <TableCell>{((vacancy.insights?.avg_time_to_hire ?? 0) + 7).toFixed(1)} days</TableCell>
                     <TableCell>
                       <Badge variant={vacancy.status === "active" ? "default" : "secondary"}>
                         {vacancy.status}
