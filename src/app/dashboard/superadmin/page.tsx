@@ -383,16 +383,8 @@ export default function SuperadminDashboard() {
           </Card>
         </div>
 
-        {/* Tabs Section */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full grid grid-cols-2">
-            <TabsTrigger value="drive-summary">Drive Summary</TabsTrigger>
-            <TabsTrigger value="candidate-summary">Candidate Summary</TabsTrigger>
-          </TabsList>
-
-        {/* Drive Summary Tab */}
-        <TabsContent value="drive-summary" className="space-y-4">
-          {/* Drive Summary Filters (Recruiter only) */}
+        {/* Filters Section - shown based on active tab */}
+        {activeTab === "drive-summary" && (
           <div className="flex justify-end gap-3">
             <Select value={driveRecruiterFilter} onValueChange={setDriveRecruiterFilter}>
               <SelectTrigger className="w-48">
@@ -408,55 +400,9 @@ export default function SuperadminDashboard() {
               </SelectContent>
             </Select>
           </div>
+        )}
 
-          {vacancies.filter(v => driveRecruiterFilter === 'all' || v.recruiter_name === driveRecruiterFilter).length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No drives found. Create a vacancy to get started.
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Drive Title</TableHead>
-                  <TableHead>HR Name</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Drive Date</TableHead>
-                  <TableHead>Total Candidates</TableHead>
-                  <TableHead>Joined / Vacancies</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {vacancies.filter(v => driveRecruiterFilter === 'all' || v.recruiter_name === driveRecruiterFilter).map(vacancy => (
-                  <TableRow 
-                    key={vacancy.id}
-                  >
-                    <TableCell className="font-medium">{vacancy.position_title}</TableCell>
-                    <TableCell>{vacancy.recruiter_name || "N/A"}</TableCell>
-                    <TableCell>{vacancy.drive_location || "N/A"}</TableCell>
-                    <TableCell>{vacancy.drive_date ? format(new Date(vacancy.drive_date), "MMM dd, yyyy") : "N/A"}</TableCell>
-                    <TableCell>
-                      {vacancy.insights?.total_candidates ?? '-'}
-                    </TableCell>
-                    <TableCell>
-                      {vacancy.insights?.joined_per_vacancy ?? 
-                        `${vacancy.insights?.joined_count ?? 0} / ${vacancy.number_of_vacancies}`}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={vacancy.status === "active" ? "default" : "secondary"}>
-                        {vacancy.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </TabsContent>
-
-        {/* Candidate Summary Tab */}
-        <TabsContent value="candidate-summary" className="space-y-4">
-          {/* Candidate Summary Filters (Vacancy, Month/Year, Recruiter) */}
+        {activeTab === "candidate-summary" && (
           <div className="flex flex-wrap gap-3 items-center justify-between">
             <div className="flex gap-3">
               <Select value={candidateVacancyFilter} onValueChange={setCandidateVacancyFilter}>
@@ -518,6 +464,65 @@ export default function SuperadminDashboard() {
               </Button>
             </div>
           </div>
+        )}
+
+        {/* Tabs Section */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="w-full grid grid-cols-2">
+            <TabsTrigger value="drive-summary">Drive Summary</TabsTrigger>
+            <TabsTrigger value="candidate-summary">Candidate Summary</TabsTrigger>
+          </TabsList>
+
+        {/* Drive Summary Tab */}
+        <TabsContent value="drive-summary" className="space-y-4">
+
+          {vacancies.filter(v => driveRecruiterFilter === 'all' || v.recruiter_name === driveRecruiterFilter).length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No drives found. Create a vacancy to get started.
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Drive Title</TableHead>
+                  <TableHead>HR Name</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Drive Date</TableHead>
+                  <TableHead>Total Candidates</TableHead>
+                  <TableHead>Joined / Vacancies</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {vacancies.filter(v => driveRecruiterFilter === 'all' || v.recruiter_name === driveRecruiterFilter).map(vacancy => (
+                  <TableRow 
+                    key={vacancy.id}
+                  >
+                    <TableCell className="font-medium">{vacancy.position_title}</TableCell>
+                    <TableCell>{vacancy.recruiter_name || "N/A"}</TableCell>
+                    <TableCell>{vacancy.drive_location || "N/A"}</TableCell>
+                    <TableCell>{vacancy.drive_date ? format(new Date(vacancy.drive_date), "MMM dd, yyyy") : "N/A"}</TableCell>
+                    <TableCell>
+                      {vacancy.insights?.total_candidates ?? '-'}
+                    </TableCell>
+                    <TableCell>
+                      {vacancy.insights?.joined_per_vacancy ?? 
+                        `${vacancy.insights?.joined_count ?? 0} / ${vacancy.number_of_vacancies}`}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={vacancy.status === "active" ? "default" : "secondary"}>
+                        {vacancy.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </TabsContent>
+
+        {/* Candidate Summary Tab */}
+        <TabsContent value="candidate-summary" className="space-y-4">
 
           {filteredJoinedCandidates.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
