@@ -30,71 +30,29 @@ function CustomDropdown({
     } as React.ChangeEvent<HTMLSelectElement>
   }
 
-  const handlePrevious = () => {
-    const currentIndex = options?.findIndex((option) => option.value === value) ?? -1
-    if (currentIndex > 0 && options) {
-      onChange?.(createChangeEvent(options[currentIndex - 1].value))
-    }
-  }
-
-  const handleNext = () => {
-    const currentIndex = options?.findIndex((option) => option.value === value) ?? -1
-    if (currentIndex < (options?.length ?? 0) - 1 && options) {
-      onChange?.(createChangeEvent(options[currentIndex + 1].value))
-    }
-  }
-
   const handleSelectChange = (v: string) => {
     onChange?.(createChangeEvent(Number(v)))
   }
 
-  const currentIndex = options?.findIndex((option) => option.value === value) ?? -1
-  const isFirstOption = currentIndex === 0
-  const isLastOption = currentIndex === (options?.length ?? 0) - 1
-
   return (
-    <div className={cn('flex items-center gap-1', className)}>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7 p-0"
-        onClick={handlePrevious}
-        disabled={isFirstOption}
-        type="button"
-      >
-        <ChevronLeftIcon className="h-4 w-4" />
-      </Button>
-      
-      <Select
-        value={value?.toString()}
-        onValueChange={handleSelectChange}
-      >
-        <SelectTrigger className="h-8 w-[110px]">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent className="max-h-[200px]">
-          {options?.map((option) => (
-            <SelectItem
-              key={option.value}
-              value={option.value.toString()}
-            >
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7 p-0"
-        onClick={handleNext}
-        disabled={isLastOption}
-        type="button"
-      >
-        <ChevronRightIcon className="h-4 w-4" />
-      </Button>
-    </div>
+    <Select
+      value={value?.toString()}
+      onValueChange={handleSelectChange}
+    >
+      <SelectTrigger className={cn("h-8 w-[110px]", className)}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className="max-h-[200px]">
+        {options?.map((option) => (
+          <SelectItem
+            key={option.value}
+            value={option.value.toString()}
+          >
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }
 

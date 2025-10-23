@@ -34,72 +34,31 @@ function CustomDropdown(props: DropdownProps) {
     setOpen(false)
   }
 
-  const handlePrevious = () => {
-    const currentIndex = options?.findIndex((option) => option.value === value) ?? -1
-    if (currentIndex > 0 && options) {
-      onChange?.(createChangeEvent(options[currentIndex - 1].value))
-    }
-  }
-
-  const handleNext = () => {
-    const currentIndex = options?.findIndex((option) => option.value === value) ?? -1
-    if (currentIndex < (options?.length ?? 0) - 1 && options) {
-      onChange?.(createChangeEvent(options[currentIndex + 1].value))
-    }
-  }
-
-  const currentIndex = options?.findIndex((option) => option.value === value) ?? -1
-  const isFirstOption = currentIndex === 0
-  const isLastOption = currentIndex === (options?.length ?? 0) - 1
   const selected = options?.find((opt) => opt.value === value)
 
   return (
-    <div className="flex items-center gap-1">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7 p-0 hover:bg-accent/50 transition-colors"
-        onClick={handlePrevious}
-        disabled={isFirstOption}
-        type="button"
+    <Select open={open} onOpenChange={setOpen} value={value?.toString()} onValueChange={handleChange}>
+      <SelectTrigger className="w-[90px] h-8 text-sm font-medium">
+        <SelectValue>{selected?.label}</SelectValue>
+      </SelectTrigger>
+      <SelectContent 
+        position="popper" 
+        side="bottom" 
+        align="center" 
+        className="max-h-[200px] z-[9999] pointer-events-auto"
+        sideOffset={4}
       >
-        <ChevronLeftIcon className="h-4 w-4" />
-      </Button>
-      
-      <Select open={open} onOpenChange={setOpen} value={value?.toString()} onValueChange={handleChange}>
-        <SelectTrigger className="w-[90px] h-8 text-sm font-medium">
-          <SelectValue>{selected?.label}</SelectValue>
-        </SelectTrigger>
-        <SelectContent 
-          position="popper" 
-          side="bottom" 
-          align="center" 
-          className="max-h-[200px] z-[9999] pointer-events-auto"
-          sideOffset={4}
-        >
-          {options?.map((option) => (
-            <SelectItem 
-              key={option.value} 
-              value={option.value.toString()}
-              className="text-sm cursor-pointer"
-            >
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7 p-0 hover:bg-accent/50 transition-colors"
-        onClick={handleNext}
-        disabled={isLastOption}
-        type="button"
-      >
-        <ChevronRightIcon className="h-4 w-4" />
-      </Button>
-    </div>
+        {options?.map((option) => (
+          <SelectItem 
+            key={option.value} 
+            value={option.value.toString()}
+            className="text-sm cursor-pointer"
+          >
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }
 
