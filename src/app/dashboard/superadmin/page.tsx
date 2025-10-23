@@ -301,8 +301,8 @@ export default function SuperadminDashboard() {
         {/* Header with KPI Vacancy Filter and Clear Filters Button */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Superadmin Dashboard</h1>
-            <p className="text-muted-foreground mt-1">Comprehensive analytics and insights</p>
+            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-muted-foreground mt-1">Superadmin Analytics Overview</p>
           </div>
           
           {/* KPI Filter (Vacancy only) */}
