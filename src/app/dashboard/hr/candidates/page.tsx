@@ -3278,7 +3278,7 @@ export default function CandidatesPage() {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent 
-                    className="w-auto p-0 relative border-2 border-primary/20" 
+                    className="w-auto p-0 overflow-hidden border-2 border-primary/20" 
                     align="start"
                     onInteractOutside={(e) => {
                       e.preventDefault()
@@ -3287,13 +3287,13 @@ export default function CandidatesPage() {
                     }}
                     onEscapeKeyDown={(e) => e.preventDefault()}
                   >
-                    <div className="p-3 bg-muted/30 border-b flex items-center justify-between">
-                      <span className="text-sm font-medium">Select Date</span>
+                    <div className="px-4 py-3 bg-muted/50 border-b flex items-center justify-between">
+                      <span className="text-sm font-semibold">Select Date</span>
                       <Button
                         variant="destructive"
                         size="icon"
                         className={cn(
-                          "h-7 w-7 rounded-full shadow-lg",
+                          "h-7 w-7 rounded-full shadow-lg flex-shrink-0",
                           shouldBlinkClose && "animate-[blink_0.6s_ease-in-out]"
                         )}
                         onClick={(e) => {
@@ -3305,18 +3305,20 @@ export default function CandidatesPage() {
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
-                    <CalendarComponent
-                      mode="single"
-                      selected={statusChangeDate}
-                      onSelect={(date) => {
-                        setStatusChangeDate(date)
-                        setIsCalendarOpen(false)
-                        setShouldBlinkClose(false)
-                      }}
-                      initialFocus
-                      captionLayout="dropdown"
-                      className="pointer-events-auto"
-                    />
+                    <div className="p-3">
+                      <CalendarComponent
+                        mode="single"
+                        selected={statusChangeDate}
+                        onSelect={(date) => {
+                          setStatusChangeDate(date)
+                          setIsCalendarOpen(false)
+                          setShouldBlinkClose(false)
+                        }}
+                        initialFocus
+                        captionLayout="dropdown"
+                        className="pointer-events-auto"
+                      />
+                    </div>
                   </PopoverContent>
                 </Popover>
               </div>
