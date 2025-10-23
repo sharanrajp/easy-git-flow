@@ -141,8 +141,6 @@ export default function CandidatesPage() {
   const [statusChangeCandidateId, setStatusChangeCandidateId] = useState<string | null>(null)
   const [statusChangeType, setStatusChangeType] = useState<"offerReleased" | "joined" | null>(null)
   const [statusChangeDate, setStatusChangeDate] = useState<Date | undefined>(undefined)
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
-  const [shouldBlinkClose, setShouldBlinkClose] = useState(false)
 
   // Helper function to get next round
   const getNextRound = (currentRound: string): string => {
@@ -159,18 +157,6 @@ export default function CandidatesPage() {
     const user = getCurrentUser()
     setCurrentUser(user)
   }, [])
-
-  // Block scrolling when calendar is open
-  useEffect(() => {
-    if (isCalendarOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
-    }
-    return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [isCalendarOpen])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -3255,16 +3241,7 @@ export default function CandidatesPage() {
             </DialogHeader>
             <div className="py-6">
               <div className="space-y-4">
-                <Popover 
-                  open={isCalendarOpen} 
-                  onOpenChange={(open) => {
-                    setIsCalendarOpen(open)
-                    if (!open) {
-                      setShouldBlinkClose(false)
-                    }
-                  }}
-                  modal={true}
-                >
+                <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
@@ -3277,48 +3254,15 @@ export default function CandidatesPage() {
                       {statusChangeDate ? format(statusChangeDate, "dd MMM yyyy") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent 
-                    className="w-auto p-0 overflow-hidden border-2 border-primary/20" 
-                    align="start"
-                    onInteractOutside={(e) => {
-                      e.preventDefault()
-                      setShouldBlinkClose(true)
-                      setTimeout(() => setShouldBlinkClose(false), 600)
-                    }}
-                    onEscapeKeyDown={(e) => e.preventDefault()}
-                  >
-                    <div className="px-4 py-3 bg-muted/50 border-b flex items-center justify-between">
-                      <span className="text-sm font-semibold">Select Date</span>
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className={cn(
-                          "h-7 w-7 rounded-full shadow-lg flex-shrink-0",
-                          shouldBlinkClose && "animate-[blink_0.6s_ease-in-out]"
-                        )}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setIsCalendarOpen(false)
-                          setShouldBlinkClose(false)
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="p-3">
-                      <CalendarComponent
-                        mode="single"
-                        selected={statusChangeDate}
-                        onSelect={(date) => {
-                          setStatusChangeDate(date)
-                          setIsCalendarOpen(false)
-                          setShouldBlinkClose(false)
-                        }}
-                        initialFocus
-                        captionLayout="dropdown"
-                        className="pointer-events-auto"
-                      />
-                    </div>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={statusChangeDate}
+                      onSelect={setStatusChangeDate}
+                      initialFocus
+                      captionLayout="dropdown"
+                      className="pointer-events-auto"
+                    />
                   </PopoverContent>
                 </Popover>
               </div>
@@ -3331,8 +3275,6 @@ export default function CandidatesPage() {
                   setStatusChangeDate(undefined)
                   setStatusChangeCandidateId(null)
                   setStatusChangeType(null)
-                  setIsCalendarOpen(false)
-                  setShouldBlinkClose(false)
                 }}
               >
                 Cancel
