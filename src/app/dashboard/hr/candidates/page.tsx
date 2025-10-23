@@ -3273,12 +3273,18 @@ export default function CandidatesPage() {
                       setTimeout(() => setShouldBlinkClose(false), 600)
                     }}
                   >
-                    <div className="relative">
+                    <div className="relative pt-10 pb-2 px-2">
                       <Button
                         variant="ghost"
                         size="icon"
+                        style={{
+                          position: 'absolute',
+                          top: '4px',
+                          right: '4px',
+                          zIndex: 9999,
+                        }}
                         className={cn(
-                          "absolute top-2 right-2 z-[100] h-8 w-8 rounded-full bg-background border hover:bg-destructive/10 shadow-md",
+                          "h-8 w-8 rounded-full bg-background border hover:bg-destructive/10 shadow-md",
                           shouldBlinkClose && "animate-[blink_0.6s_ease-in-out]"
                         )}
                         onClick={() => setIsCalendarOpen(false)}
