@@ -2892,20 +2892,24 @@ export default function CandidatesPage() {
         </Dialog>
 
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Edit Candidate</DialogTitle>
-              <DialogDescription>Update candidate information and save changes.</DialogDescription>
-            </DialogHeader>
-            {selectedCandidate && (
-              <CandidateForm
-                candidate={selectedCandidate}
-                onSubmit={handleEditCandidate}
-                onCancel={handleEditCancelForm}
-                onFormChange={setEditFormHasChanges}
-                submitButtonText="Update Changes"
-              />
-            )}
+          <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
+            <div className="px-6 pt-6 pb-4 border-b border-border">
+              <DialogHeader>
+                <DialogTitle>Edit Candidate</DialogTitle>
+                <DialogDescription>Update candidate information and save changes.</DialogDescription>
+              </DialogHeader>
+            </div>
+            <div className="overflow-y-auto px-6 flex-1">
+              {selectedCandidate && (
+                <CandidateForm
+                  candidate={selectedCandidate}
+                  onSubmit={handleEditCandidate}
+                  onCancel={handleEditCancelForm}
+                  onFormChange={setEditFormHasChanges}
+                  submitButtonText="Update Changes"
+                />
+              )}
+            </div>
           </DialogContent>
         </Dialog>
 

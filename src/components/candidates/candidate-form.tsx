@@ -530,7 +530,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
                     {offerReleasedDate ? format(offerReleasedDate, "dd-MM-yyyy") : <span>-</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-[100]" align="start" side="bottom" avoidCollisions={true} collisionPadding={8}>
+                <PopoverContent className="w-auto p-0" align="start">
                   <CalendarComponent
                     mode="single"
                     selected={offerReleasedDate}
@@ -562,7 +562,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
                     {joinedDate ? format(joinedDate, "dd-MM-yyyy") : <span>-</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-[100]" align="start" side="bottom" avoidCollisions={true} collisionPadding={8}>
+                <PopoverContent className="w-auto p-0" align="start">
                   <CalendarComponent
                     mode="single"
                     selected={joinedDate}
