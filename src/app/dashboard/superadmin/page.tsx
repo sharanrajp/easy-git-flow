@@ -16,6 +16,7 @@ import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Cart
 import { Users, UserCheck, Clock, TrendingUp, CheckCircle, XCircle, Briefcase, RefreshCw, Search, Download, Calendar, X } from "lucide-react"
 import { format } from "date-fns"
 import { SkillsDisplay } from "@/components/ui/skills-display"
+import { Pagination } from "@/components/ui/pagination"
 
 interface AggregateMetrics {
   total_candidates: number
@@ -57,6 +58,17 @@ export default function SuperadminDashboard() {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("drive-summary")
   const { toast } = useToast()
+
+  // Pagination states
+  const [driveSummaryCurrentPage, setDriveSummaryCurrentPage] = useState(1)
+  const [candidateSummaryCurrentPage, setCandidateSummaryCurrentPage] = useState(1)
+  const itemsPerPage = 15
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setDriveSummaryCurrentPage(1)
+    setCandidateSummaryCurrentPage(1)
+  }, [driveRecruiterFilter, candidateVacancyFilter, candidateRecruiterFilter, candidateMonthYearFilter, searchQuery])
 
   // Auto-refresh on mount, filter changes, and tab changes
   useEffect(() => {
@@ -188,6 +200,11 @@ export default function SuperadminDashboard() {
     return Array.from(new Set(recruiters))
   }, [vacancies])
 
+  // Filter vacancies for Drive Summary (filters already applied)
+  const filteredDriveSummaryVacancies = useMemo(() => {
+    return vacancies.filter(v => driveRecruiterFilter === 'all' || v.recruiter_name === driveRecruiterFilter)
+  }, [vacancies, driveRecruiterFilter])
+
   // Filter joined candidates based on search (filters already applied in API call)
   const filteredJoinedCandidates = useMemo(() => {
     // Safety check: ensure joinedCandidates is an array
@@ -206,6 +223,24 @@ export default function SuperadminDashboard() {
       return matchesSearch
     })
   }, [joinedCandidates, searchQuery])
+
+  // Paginated data for Drive Summary
+  const paginatedDriveSummaryVacancies = useMemo(() => {
+    const startIndex = (driveSummaryCurrentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredDriveSummaryVacancies.slice(startIndex, endIndex)
+  }, [filteredDriveSummaryVacancies, driveSummaryCurrentPage, itemsPerPage])
+
+  // Paginated data for Candidate Summary
+  const paginatedCandidateSummary = useMemo(() => {
+    const startIndex = (candidateSummaryCurrentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredJoinedCandidates.slice(startIndex, endIndex)
+  }, [filteredJoinedCandidates, candidateSummaryCurrentPage, itemsPerPage])
+
+  // Calculate total pages
+  const driveSummaryTotalPages = Math.ceil(filteredDriveSummaryVacancies.length / itemsPerPage)
+  const candidateSummaryTotalPages = Math.ceil(filteredJoinedCandidates.length / itemsPerPage)
 
   // Clear all filters
   const handleClearFilters = () => {
@@ -483,48 +518,58 @@ export default function SuperadminDashboard() {
         {/* Drive Summary Tab */}
         <TabsContent value="drive-summary" className="space-y-4">
 
-          {vacancies.filter(v => driveRecruiterFilter === 'all' || v.recruiter_name === driveRecruiterFilter).length === 0 ? (
+          {filteredDriveSummaryVacancies.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No drives found. Create a vacancy to get started.
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Drive Title</TableHead>
-                  <TableHead>HR Name</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Drive Date</TableHead>
-                  <TableHead>Total Candidates</TableHead>
-                  <TableHead>Joined / Vacancies</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {vacancies.filter(v => driveRecruiterFilter === 'all' || v.recruiter_name === driveRecruiterFilter).map(vacancy => (
-                  <TableRow 
-                    key={vacancy.id}
-                  >
-                    <TableCell className="font-medium">{vacancy.position_title}</TableCell>
-                    <TableCell>{vacancy.recruiter_name || "N/A"}</TableCell>
-                    <TableCell>{vacancy.drive_location || "N/A"}</TableCell>
-                    <TableCell>{vacancy.drive_date ? format(new Date(vacancy.drive_date), "MMM dd, yyyy") : "N/A"}</TableCell>
-                    <TableCell>
-                      {vacancy.insights?.total_candidates ?? '-'}
-                    </TableCell>
-                    <TableCell>
-                      {vacancy.insights?.joined_per_vacancy ?? 
-                        `${vacancy.insights?.joined_count ?? 0} / ${vacancy.number_of_vacancies}`}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={vacancy.status === "active" ? "default" : "secondary"}>
-                        {vacancy.status}
-                      </Badge>
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Drive Title</TableHead>
+                    <TableHead>HR Name</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Drive Date</TableHead>
+                    <TableHead>Total Candidates</TableHead>
+                    <TableHead>Joined / Vacancies</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {paginatedDriveSummaryVacancies.map(vacancy => (
+                    <TableRow 
+                      key={vacancy.id}
+                    >
+                      <TableCell className="font-medium">{vacancy.position_title}</TableCell>
+                      <TableCell>{vacancy.recruiter_name || "N/A"}</TableCell>
+                      <TableCell>{vacancy.drive_location || "N/A"}</TableCell>
+                      <TableCell>{vacancy.drive_date ? format(new Date(vacancy.drive_date), "MMM dd, yyyy") : "N/A"}</TableCell>
+                      <TableCell>
+                        {vacancy.insights?.total_candidates ?? '-'}
+                      </TableCell>
+                      <TableCell>
+                        {vacancy.insights?.joined_per_vacancy ?? 
+                          `${vacancy.insights?.joined_count ?? 0} / ${vacancy.number_of_vacancies}`}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={vacancy.status === "active" ? "default" : "secondary"}>
+                          {vacancy.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              
+              <div className="flex justify-center pt-4">
+                <Pagination
+                  currentPage={driveSummaryCurrentPage}
+                  totalPages={driveSummaryTotalPages}
+                  onPageChange={setDriveSummaryCurrentPage}
+                />
+              </div>
+            </>
           )}
         </TabsContent>
 
@@ -536,54 +581,64 @@ export default function SuperadminDashboard() {
               No candidates found matching the filters.
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Candidate Name</TableHead>
-                  <TableHead>Experience</TableHead>
-                  <TableHead>Skills</TableHead>
-                  <TableHead>Recruiter</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date of Joining</TableHead>
-                  <TableHead>Time to Hire</TableHead>
-                  <TableHead>Time to Fill</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredJoinedCandidates.filter(c => c.final_status === 'joined').map((candidate, idx) => (
-                  <TableRow key={`joined-${idx}`}>
-                    <TableCell className="font-medium">{candidate.name}</TableCell>
-                    <TableCell>{candidate.total_experience || "-"}</TableCell>
-                    <TableCell>
-                      <SkillsDisplay skills={candidate.skill_set || []} maxVisible={3} />
-                    </TableCell>
-                    <TableCell>{candidate.recruiter_name || "-"}</TableCell>
-                    <TableCell>
-                      <Badge variant="default">Joined</Badge>
-                    </TableCell>
-                    <TableCell>{candidate.joined_date ? format(new Date(candidate.joined_date), "MMM dd, yyyy") : "-"}</TableCell>
-                    <TableCell>{candidate.time_to_hire ? `${candidate.time_to_hire} days` : "-"}</TableCell>
-                    <TableCell>{candidate.time_to_fill ? `${candidate.time_to_fill} days` : "-"}</TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Candidate Name</TableHead>
+                    <TableHead>Experience</TableHead>
+                    <TableHead>Skills</TableHead>
+                    <TableHead>Recruiter</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Date of Joining</TableHead>
+                    <TableHead>Time to Hire</TableHead>
+                    <TableHead>Time to Fill</TableHead>
                   </TableRow>
-                ))}
-                {filteredJoinedCandidates.filter(c => c.final_status === 'offerReleased').map((candidate, idx) => (
-                  <TableRow key={`offer-${idx}`}>
-                    <TableCell className="font-medium">{candidate.name}</TableCell>
-                    <TableCell>{candidate.total_experience || "-"}</TableCell>
-                    <TableCell>
-                      <SkillsDisplay skills={candidate.skill_set || []} maxVisible={3} />
-                    </TableCell>
-                    <TableCell>{candidate.recruiter_name || "-"}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">Offer Released</Badge>
-                    </TableCell>
-                    <TableCell>-</TableCell>
-                    <TableCell>-</TableCell>
-                    <TableCell>-</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {paginatedCandidateSummary.filter(c => c.final_status === 'joined').map((candidate, idx) => (
+                    <TableRow key={`joined-${idx}`}>
+                      <TableCell className="font-medium">{candidate.name}</TableCell>
+                      <TableCell>{candidate.total_experience || "-"}</TableCell>
+                      <TableCell>
+                        <SkillsDisplay skills={candidate.skill_set || []} maxVisible={3} />
+                      </TableCell>
+                      <TableCell>{candidate.recruiter_name || "-"}</TableCell>
+                      <TableCell>
+                        <Badge variant="default">Joined</Badge>
+                      </TableCell>
+                      <TableCell>{candidate.joined_date ? format(new Date(candidate.joined_date), "MMM dd, yyyy") : "-"}</TableCell>
+                      <TableCell>{candidate.time_to_hire ? `${candidate.time_to_hire} days` : "-"}</TableCell>
+                      <TableCell>{candidate.time_to_fill ? `${candidate.time_to_fill} days` : "-"}</TableCell>
+                    </TableRow>
+                  ))}
+                  {paginatedCandidateSummary.filter(c => c.final_status === 'offerReleased').map((candidate, idx) => (
+                    <TableRow key={`offer-${idx}`}>
+                      <TableCell className="font-medium">{candidate.name}</TableCell>
+                      <TableCell>{candidate.total_experience || "-"}</TableCell>
+                      <TableCell>
+                        <SkillsDisplay skills={candidate.skill_set || []} maxVisible={3} />
+                      </TableCell>
+                      <TableCell>{candidate.recruiter_name || "-"}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">Offer Released</Badge>
+                      </TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>-</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              
+              <div className="flex justify-center pt-4">
+                <Pagination
+                  currentPage={candidateSummaryCurrentPage}
+                  totalPages={candidateSummaryTotalPages}
+                  onPageChange={setCandidateSummaryCurrentPage}
+                />
+              </div>
+            </>
           )}
         </TabsContent>
 
