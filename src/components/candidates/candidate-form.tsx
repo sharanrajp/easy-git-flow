@@ -120,6 +120,14 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     }
   }, [])
 
+  // Helper to convert local date to UTC midnight without timezone shift
+  const dateToUTCString = (date: Date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}T00:00:00.000Z`
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -136,11 +144,11 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
       return
     }
     
-    // Convert dates to ISO 8601 format before submitting
+    // Convert dates to ISO 8601 format without timezone shift
     const submitData = {
       ...formData,
-      offer_released_date: offerReleasedDate ? offerReleasedDate.toISOString() : formData.offer_released_date,
-      joined_date: joinedDate ? joinedDate.toISOString() : formData.joined_date,
+      offer_released_date: offerReleasedDate ? dateToUTCString(offerReleasedDate) : formData.offer_released_date,
+      joined_date: joinedDate ? dateToUTCString(joinedDate) : formData.joined_date,
     }
     
     onSubmit(submitData as Partial<Candidate>)
