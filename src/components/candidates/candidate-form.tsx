@@ -7,8 +7,12 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { X, FileText } from "lucide-react"
+import { X, FileText, CalendarIcon } from "lucide-react"
 import type { Candidate } from "@/lib/schema-data"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { format, parse } from "date-fns"
+import { cn } from "@/lib/utils"
 
 interface CandidateFormProps {
   candidate?: Candidate
@@ -41,6 +45,16 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     return `${years} Year(s) ${months} Month(s)`
   }
 
+  // Convert ISO 8601 date to Date object
+  const parseISODate = (isoDate: string | undefined) => {
+    if (!isoDate) return undefined
+    try {
+      return new Date(isoDate)
+    } catch {
+      return undefined
+    }
+  }
+
   const [formData, setFormData] = useState({
     name: candidate?.name || "",
     email: candidate?.email || "",
@@ -59,7 +73,16 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     skill_set: (candidate as any)?.skill_set || (candidate as any)?.skills || [],
     resume: null as File | null,
     recruiter_name: candidate?.recruiter_name || "",
+    offer_released_date: (candidate as any)?.offer_released_date || "",
+    joined_date: (candidate as any)?.joined_date || "",
   })
+
+  const [offerReleasedDate, setOfferReleasedDate] = useState<Date | undefined>(
+    parseISODate((candidate as any)?.offer_released_date)
+  )
+  const [joinedDate, setJoinedDate] = useState<Date | undefined>(
+    parseISODate((candidate as any)?.joined_date)
+  )
 
   const [newSkill, setNewSkill] = useState("")
   const [initialFormData] = useState(formData)
@@ -113,7 +136,14 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
       return
     }
     
-    onSubmit(formData as Partial<Candidate>)
+    // Convert dates to ISO 8601 format before submitting
+    const submitData = {
+      ...formData,
+      offer_released_date: offerReleasedDate ? offerReleasedDate.toISOString() : formData.offer_released_date,
+      joined_date: joinedDate ? joinedDate.toISOString() : formData.joined_date,
+    }
+    
+    onSubmit(submitData as Partial<Candidate>)
   }
 
   const addSkill = () => {
@@ -472,6 +502,75 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           ))}
         </div>
       </div>
+
+      {/* Date Fields for Offer Released and Joined - Only show if candidate has these dates */}
+      {(formData.offer_released_date || formData.joined_date) && (
+        <div className="grid grid-cols-2 gap-6 pt-4 border-t border-border">
+          {formData.offer_released_date && (
+            <div className="space-y-2">
+              <Label htmlFor="offer_released_date">Offer Released Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !offerReleasedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {offerReleasedDate ? format(offerReleasedDate, "dd-MM-yyyy") : <span>-</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={offerReleasedDate}
+                    onSelect={setOfferReleasedDate}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              <p className="text-xs text-muted-foreground">
+                Select offer released date from calendar
+              </p>
+            </div>
+          )}
+
+          {formData.joined_date && (
+            <div className="space-y-2">
+              <Label htmlFor="joined_date">Joined Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !joinedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {joinedDate ? format(joinedDate, "dd-MM-yyyy") : <span>-</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={joinedDate}
+                    onSelect={setJoinedDate}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              <p className="text-xs text-muted-foreground">
+                Select joined date from calendar
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex justify-end space-x-3 pt-4 border-t border-border">
         <Button 
