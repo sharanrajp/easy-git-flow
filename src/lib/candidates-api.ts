@@ -32,6 +32,8 @@ export interface BackendCandidate {
   other_source?: string;
   vacancyId?: string;
   resume_link?: string;
+  offer_released_date?: string;
+  joined_date?: string;
   previous_rounds?: Array<{
     round: string;
     status: string;

@@ -58,7 +58,7 @@ import { saveInterviewSession, type InterviewSession } from "@/lib/interview-dat
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, fetchPanelistsForCandidate, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
-import { formatDate } from "@/lib/utils"
+import { formatDate, toUTCDateString } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { API_BASE_URL } from "@/lib/api-config"
 import { getToken } from "@/lib/auth"
@@ -1558,11 +1558,9 @@ export default function CandidatesPage() {
     const previousAssigned = [...assignedCandidates]
     const previousCandidates = [...candidates]
 
-    // Format date as UTC start-of-day to avoid timezone shift
-    const year = statusChangeDate.getFullYear()
-    const month = String(statusChangeDate.getMonth() + 1).padStart(2, '0')
-    const day = String(statusChangeDate.getDate()).padStart(2, '0')
-    const formattedDate = `${year}-${month}-${day}T00:00:00Z`
+    // Format date as UTC datetime with proper format: "YYYY-MM-DDT00:00:00.000Z"
+    // Use utility function to ensure consistent format
+    const formattedDate = toUTCDateString(statusChangeDate)
 
     // Determine the payload based on status type
     const payload: any = {
@@ -3241,30 +3239,61 @@ export default function CandidatesPage() {
             </DialogHeader>
             <div className="py-6">
               <div className="space-y-4">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal h-12 text-base",
-                        !statusChangeDate && "text-muted-foreground"
-                      )}
-                    >
-                      <Calendar className="mr-3 h-5 w-5" />
-                      {statusChangeDate ? format(statusChangeDate, "dd MMM yyyy") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={statusChangeDate}
-                      onSelect={setStatusChangeDate}
-                      initialFocus
-                      captionLayout="dropdown"
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
+                {/* Manual Date Input */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Enter Date (DD/MM/YYYY)
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="DD/MM/YYYY"
+                    value={statusChangeDate ? format(statusChangeDate, "dd/MM/yyyy") : ""}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      // Parse DD/MM/YYYY format
+                      const match = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+                      if (match) {
+                        const [, day, month, year] = match
+                        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+                        if (!isNaN(date.getTime())) {
+                          setStatusChangeDate(date)
+                        }
+                      }
+                    }}
+                    className="w-full"
+                  />
+                </div>
+                
+                {/* Calendar Picker */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Or Pick from Calendar
+                  </label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal h-12 text-base",
+                          !statusChangeDate && "text-muted-foreground"
+                        )}
+                      >
+                        <Calendar className="mr-3 h-5 w-5" />
+                        {statusChangeDate ? format(statusChangeDate, "dd MMM yyyy") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={statusChangeDate}
+                        onSelect={setStatusChangeDate}
+                        initialFocus
+                        captionLayout="dropdown"
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             </div>
             <div className="flex justify-end gap-3">
