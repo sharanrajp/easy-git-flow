@@ -3230,7 +3230,7 @@ export default function CandidatesPage() {
 
         {/* Status Change Dialog for Offer Released/Joined */}
         <Dialog open={isStatusChangeDialogOpen} onOpenChange={setIsStatusChangeDialogOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md overflow-hidden">
             <DialogHeader>
               <DialogTitle>
                 {statusChangeType === "offerReleased" ? "Offer Released Date" : "Joining Date"}
@@ -3239,7 +3239,7 @@ export default function CandidatesPage() {
                 Please select the {statusChangeType === "offerReleased" ? "offer release" : "joining"} date for this candidate.
               </DialogDescription>
             </DialogHeader>
-            <div className="py-6">
+            <div className="py-6 overflow-y-auto max-h-[60vh]">
               <div className="space-y-4">
                 <Popover modal={true}>
                   <PopoverTrigger asChild>
