@@ -517,7 +517,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           {formData.offer_released_date && (
             <div className="space-y-2">
               <Label htmlFor="offer_released_date">Offer Released Date</Label>
-              <Popover modal={false}>
+              <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -530,7 +530,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
                     {offerReleasedDate ? format(offerReleasedDate, "dd-MM-yyyy") : <span>-</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent container={null} className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0" align="start">
                   <CalendarComponent
                     mode="single"
                     selected={offerReleasedDate}
@@ -549,7 +549,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           {formData.joined_date && (
             <div className="space-y-2">
               <Label htmlFor="joined_date">Joined Date</Label>
-              <Popover modal={false}>
+              <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -562,7 +562,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
                     {joinedDate ? format(joinedDate, "dd-MM-yyyy") : <span>-</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent container={null} className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0" align="start">
                   <CalendarComponent
                     mode="single"
                     selected={joinedDate}
