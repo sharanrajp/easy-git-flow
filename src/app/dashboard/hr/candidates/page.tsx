@@ -647,8 +647,14 @@ export default function CandidatesPage() {
       // Get the candidate ID (_id for backend candidates)
       const candidateId = (selectedCandidate as any)._id || selectedCandidate.id
       
+      // Extract resume file if present
+      const resumeFile = (candidateData as any).resume as File | null
+      
+      // Remove resume from candidateData to avoid sending it in JSON
+      const { resume, ...dataWithoutResume } = candidateData as any
+      
       // Update in backend using PUT method
-      await updateCandidate(candidateId, candidateData as Partial<BackendCandidate>)
+      await updateCandidate(candidateId, dataWithoutResume as Partial<BackendCandidate>, resumeFile || undefined)
       
       setIsEditOpen(false)
       setSelectedCandidate(null)

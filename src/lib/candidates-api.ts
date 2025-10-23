@@ -415,7 +415,7 @@ export async function fetchPanelistAssignedCandidates(): Promise<PanelistCandida
 }
 
 // Update candidate by ID
-export async function updateCandidate(candidateId: string, candidateData: Partial<BackendCandidate>): Promise<BackendCandidate> {
+export async function updateCandidate(candidateId: string, candidateData: Partial<BackendCandidate>, resumeFile?: File): Promise<BackendCandidate> {
   const token = getToken();
   
   if (!token) {
@@ -423,13 +423,20 @@ export async function updateCandidate(candidateId: string, candidateData: Partia
   }
 
   try {
+    const formData = new FormData();
+    formData.append("candidate_data", JSON.stringify(candidateData));
+    
+    // Append resume file if provided
+    if (resumeFile) {
+      formData.append("resume", resumeFile);
+    }
+    
     const response = await fetch(`${API_BASE_URL}/candidates/${candidateId}`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify(candidateData),
+      body: formData,
     });
 
     if (!response.ok) {
