@@ -141,6 +141,8 @@ export default function CandidatesPage() {
   const [statusChangeCandidateId, setStatusChangeCandidateId] = useState<string | null>(null)
   const [statusChangeType, setStatusChangeType] = useState<"offerReleased" | "joined" | null>(null)
   const [statusChangeDate, setStatusChangeDate] = useState<Date | undefined>(undefined)
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [shouldBlinkClose, setShouldBlinkClose] = useState(false)
 
   // Helper function to get next round
   const getNextRound = (currentRound: string): string => {
@@ -3241,7 +3243,15 @@ export default function CandidatesPage() {
             </DialogHeader>
             <div className="py-6">
               <div className="space-y-4">
-                <Popover>
+                <Popover 
+                  open={isCalendarOpen} 
+                  onOpenChange={(open) => {
+                    setIsCalendarOpen(open)
+                    if (!open) {
+                      setShouldBlinkClose(false)
+                    }
+                  }}
+                >
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
@@ -3254,15 +3264,40 @@ export default function CandidatesPage() {
                       {statusChangeDate ? format(statusChangeDate, "dd MMM yyyy") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={statusChangeDate}
-                      onSelect={setStatusChangeDate}
-                      initialFocus
-                      captionLayout="dropdown"
-                      className="pointer-events-auto"
-                    />
+                  <PopoverContent 
+                    className="w-auto p-0" 
+                    align="start"
+                    onInteractOutside={(e) => {
+                      e.preventDefault()
+                      setShouldBlinkClose(true)
+                      setTimeout(() => setShouldBlinkClose(false), 600)
+                    }}
+                  >
+                    <div className="relative">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                          "absolute top-2 right-2 z-10 h-8 w-8 rounded-full hover:bg-destructive/10",
+                          shouldBlinkClose && "animate-[blink_0.6s_ease-in-out]"
+                        )}
+                        onClick={() => setIsCalendarOpen(false)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                      <CalendarComponent
+                        mode="single"
+                        selected={statusChangeDate}
+                        onSelect={(date) => {
+                          setStatusChangeDate(date)
+                          setIsCalendarOpen(false)
+                          setShouldBlinkClose(false)
+                        }}
+                        initialFocus
+                        captionLayout="dropdown"
+                        className="pointer-events-auto"
+                      />
+                    </div>
                   </PopoverContent>
                 </Popover>
               </div>
@@ -3275,6 +3310,8 @@ export default function CandidatesPage() {
                   setStatusChangeDate(undefined)
                   setStatusChangeCandidateId(null)
                   setStatusChangeType(null)
+                  setIsCalendarOpen(false)
+                  setShouldBlinkClose(false)
                 }}
               >
                 Cancel

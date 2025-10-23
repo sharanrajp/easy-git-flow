@@ -130,6 +130,16 @@ const config: Config = {
             backgroundPosition: "1000px 0"
           }
         },
+        "blink": {
+          "0%, 100%": { 
+            backgroundColor: "transparent",
+            transform: "scale(1)",
+          },
+          "50%": { 
+            backgroundColor: "hsl(var(--destructive) / 0.15)",
+            transform: "scale(1.1)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -139,6 +149,7 @@ const config: Config = {
         "slide-up": "slide-up 0.3s ease-out",
         "slide-down": "slide-down 0.3s ease-out",
         "shimmer": "shimmer 2s infinite linear",
+        "blink": "blink 0.6s ease-in-out",
       },
     },
   },
