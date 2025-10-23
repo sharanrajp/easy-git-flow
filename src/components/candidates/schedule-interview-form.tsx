@@ -62,8 +62,11 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (selectedPanelist && selectedDate && selectedTime) {
-      // Combine date and time
-      const dateTimeString = `${selectedDate.toISOString().split('T')[0]}T${selectedTime}`
+      // Combine date and time using local date components
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const dateTimeString = `${year}-${month}-${day}T${selectedTime}`;
       onSubmit({
         panelist: selectedPanelist,
         dateTime: dateTimeString,
@@ -153,7 +156,7 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
               <CalendarComponent
                 mode="single"
                 selected={selectedDate}
-                onSelect={setSelectedDate}
+                onSelect={(date) => setSelectedDate(date)}
                 initialFocus
               />
             </PopoverContent>

@@ -473,7 +473,16 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                         <CalendarComponent
                           mode="single"
                           selected={formData.drive_date ? new Date(formData.drive_date) : undefined}
-                          onSelect={(date) => setFormData({ ...formData, drive_date: date ? date.toISOString().split('T')[0] : '' })}
+                          onSelect={(date) => {
+                            if (date) {
+                              const year = date.getFullYear();
+                              const month = String(date.getMonth() + 1).padStart(2, '0');
+                              const day = String(date.getDate()).padStart(2, '0');
+                              setFormData({ ...formData, drive_date: `${year}-${month}-${day}` });
+                            } else {
+                              setFormData({ ...formData, drive_date: '' });
+                            }
+                          }}
                           initialFocus
                         />
                       </PopoverContent>
