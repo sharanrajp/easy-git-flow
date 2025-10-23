@@ -80,6 +80,8 @@ export interface Candidate {
   skill_set?: string[] // alias for skills
   resume?: string
   created_at: string
+  offer_released_date?: string
+  joined_date?: string
   recruiter_name?: string
   status:
     | "unassigned"

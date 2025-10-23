@@ -50,6 +50,8 @@ export interface BackendCandidate {
   expected_ctc?: number
   willing_to_relocate?: boolean
   resume_link?: string
+  offer_released_date?: string
+  joined_date?: string
   previous_rounds?: Array<{
     round?: string
     status?: string
@@ -214,6 +216,14 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                     <div>
                       <label className="text-sm font-medium text-gray-500">Applied Date</label>
                       <p>{candidate.created_at ? formatDate(candidate.created_at) : "N/A"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Offer Released Date</label>
+                      <p>{candidate.offer_released_date ? formatDate(candidate.offer_released_date) : "-"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Joined Date</label>
+                      <p>{candidate.joined_date ? formatDate(candidate.joined_date) : "-"}</p>
                     </div>
                   </div>
                   
