@@ -258,3 +258,10 @@ table thead.sticky tr {
   background: hsl(var(--background)) !important;
   opacity: 0.8;
 }
+
+/* When today is also the selected date, show as filled circle */
+.react-calendar__tile--active.react-calendar__tile--now {
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border: none !important;
+}
