@@ -10,9 +10,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { X, Upload, Search, UserPlus, UserMinus, Loader2 } from "lucide-react"
+import { X, Upload, Search, UserPlus, UserMinus, Loader2, CalendarIcon } from "lucide-react"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import type { Vacancy } from "@/lib/schema-data"
 import { getAllUsers } from "@/lib/auth"
+import { formatDate } from "@/lib/utils"
 
 interface VacancyFormProps {
   vacancy?: Vacancy
@@ -455,14 +458,26 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="drive_date">Drive Date *</Label>
-                    <Input
-                      id="drive_date"
-                      type="date"
-                      value={formData.drive_date}
-                      onChange={(e) => setFormData({ ...formData, drive_date: e.target.value })}
-                      required
-                    />
+                    <Label>Drive Date *</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal"
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formData.drive_date ? formatDate(formData.drive_date) : "Select date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={formData.drive_date ? new Date(formData.drive_date) : undefined}
+                          onSelect={(date) => setFormData({ ...formData, drive_date: date ? date.toISOString().split('T')[0] : '' })}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="drive_location">Drive Location *</Label>

@@ -8,9 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Loader2 } from "lucide-react"
+import { Loader2, CalendarIcon } from "lucide-react"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import type { Candidate } from "@/lib/schema-data"
 import { getAllUsers } from "@/lib/auth"
+import { formatDate } from "@/lib/utils"
 
 interface ScheduleInterviewFormProps {
   candidate: Candidate
@@ -20,7 +23,8 @@ interface ScheduleInterviewFormProps {
 
 export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: ScheduleInterviewFormProps) {
   const [selectedPanelist, setSelectedPanelist] = useState("")
-  const [dateTime, setDateTime] = useState("")
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
+  const [selectedTime, setSelectedTime] = useState("")
   const [panelists, setPanelists] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -57,10 +61,12 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (selectedPanelist && dateTime) {
+    if (selectedPanelist && selectedDate && selectedTime) {
+      // Combine date and time
+      const dateTimeString = `${selectedDate.toISOString().split('T')[0]}T${selectedTime}`
       onSubmit({
         panelist: selectedPanelist,
-        dateTime,
+        dateTime: dateTimeString,
       })
     }
   }
@@ -132,13 +138,35 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="dateTime">Interview Date & Time *</Label>
+          <Label>Interview Date *</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {selectedDate ? formatDate(selectedDate) : "Select date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="time">Interview Time *</Label>
           <Input
-            id="dateTime"
-            type="datetime-local"
-            value={dateTime}
-            onChange={(e) => setDateTime(e.target.value)}
-            min={new Date().toISOString().slice(0, 16)}
+            id="time"
+            type="time"
+            value={selectedTime}
+            onChange={(e) => setSelectedTime(e.target.value)}
             required
           />
         </div>
@@ -147,7 +175,7 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={!selectedPanelist || !dateTime || isLoading}>
+          <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={!selectedPanelist || !selectedDate || !selectedTime || isLoading}>
             Assign {nextRound} Interview
           </Button>
         </div>
