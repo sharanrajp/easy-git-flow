@@ -853,10 +853,9 @@ export default function PanelistDashboard() {
                               <TableCell>
                                 {candidate.resume_link ? (
                                   <Button
-                                    variant="ghost"
+                                    variant="outline"
                                     size="sm"
                                     onClick={() => candidate.resume_link && handleViewResume(candidate.resume_link, candidate.name)}
-                                    className="p-0 h-auto text-blue-600 hover:text-blue-800"
                                   >
                                     <FileText className="h-4 w-4 mr-1" />
                                     View Resume
