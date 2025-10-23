@@ -62,13 +62,13 @@ export default function SuperadminDashboard() {
   // Pagination states
   const [driveSummaryCurrentPage, setDriveSummaryCurrentPage] = useState(1)
   const [candidateSummaryCurrentPage, setCandidateSummaryCurrentPage] = useState(1)
-  const itemsPerPage = 15
+  const [pageSize, setPageSize] = useState(15)
 
   // Reset pagination when filters change
   useEffect(() => {
     setDriveSummaryCurrentPage(1)
     setCandidateSummaryCurrentPage(1)
-  }, [driveRecruiterFilter, candidateVacancyFilter, candidateRecruiterFilter, candidateMonthYearFilter, searchQuery])
+  }, [driveRecruiterFilter, candidateVacancyFilter, candidateRecruiterFilter, candidateMonthYearFilter, searchQuery, pageSize])
 
   // Auto-refresh on mount, filter changes, and tab changes
   useEffect(() => {
@@ -226,21 +226,21 @@ export default function SuperadminDashboard() {
 
   // Paginated data for Drive Summary
   const paginatedDriveSummaryVacancies = useMemo(() => {
-    const startIndex = (driveSummaryCurrentPage - 1) * itemsPerPage
-    const endIndex = startIndex + itemsPerPage
+    const startIndex = (driveSummaryCurrentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
     return filteredDriveSummaryVacancies.slice(startIndex, endIndex)
-  }, [filteredDriveSummaryVacancies, driveSummaryCurrentPage, itemsPerPage])
+  }, [filteredDriveSummaryVacancies, driveSummaryCurrentPage, pageSize])
 
   // Paginated data for Candidate Summary
   const paginatedCandidateSummary = useMemo(() => {
-    const startIndex = (candidateSummaryCurrentPage - 1) * itemsPerPage
-    const endIndex = startIndex + itemsPerPage
+    const startIndex = (candidateSummaryCurrentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
     return filteredJoinedCandidates.slice(startIndex, endIndex)
-  }, [filteredJoinedCandidates, candidateSummaryCurrentPage, itemsPerPage])
+  }, [filteredJoinedCandidates, candidateSummaryCurrentPage, pageSize])
 
   // Calculate total pages
-  const driveSummaryTotalPages = Math.ceil(filteredDriveSummaryVacancies.length / itemsPerPage)
-  const candidateSummaryTotalPages = Math.ceil(filteredJoinedCandidates.length / itemsPerPage)
+  const driveSummaryTotalPages = Math.ceil(filteredDriveSummaryVacancies.length / pageSize)
+  const candidateSummaryTotalPages = Math.ceil(filteredJoinedCandidates.length / pageSize)
 
   // Clear all filters
   const handleClearFilters = () => {
@@ -562,7 +562,20 @@ export default function SuperadminDashboard() {
                 </TableBody>
               </Table>
               
-              <div className="flex justify-center pt-4">
+              <div className="flex items-center justify-between pt-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Items per page:</span>
+                  <Select value={pageSize.toString()} onValueChange={(value) => setPageSize(Number(value))}>
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="15">15</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Pagination
                   currentPage={driveSummaryCurrentPage}
                   totalPages={driveSummaryTotalPages}
@@ -631,7 +644,20 @@ export default function SuperadminDashboard() {
                 </TableBody>
               </Table>
               
-              <div className="flex justify-center pt-4">
+              <div className="flex items-center justify-between pt-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Items per page:</span>
+                  <Select value={pageSize.toString()} onValueChange={(value) => setPageSize(Number(value))}>
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="15">15</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Pagination
                   currentPage={candidateSummaryCurrentPage}
                   totalPages={candidateSummaryTotalPages}
