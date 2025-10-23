@@ -41,6 +41,8 @@ export function ResumeDialog({ isOpen, onClose, resumeUrl, candidateName }: Resu
               style={{ minHeight: '75vh' }}
               onLoad={() => setIsLoading(false)}
               title={`Resume for ${candidateName || 'candidate'}`}
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-downloads"
+              allow="fullscreen"
             />
           </ScrollArea>
         </div>
