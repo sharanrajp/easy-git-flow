@@ -3265,7 +3265,7 @@ export default function CandidatesPage() {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent 
-                    className="w-auto p-0 relative" 
+                    className="w-auto p-0" 
                     align="start"
                     onInteractOutside={(e) => {
                       e.preventDefault()
@@ -3273,29 +3273,31 @@ export default function CandidatesPage() {
                       setTimeout(() => setShouldBlinkClose(false), 600)
                     }}
                   >
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={cn(
-                        "absolute top-2 right-2 z-50 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm hover:bg-destructive/10 border shadow-sm",
-                        shouldBlinkClose && "animate-[blink_0.6s_ease-in-out]"
-                      )}
-                      onClick={() => setIsCalendarOpen(false)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                    <CalendarComponent
-                      mode="single"
-                      selected={statusChangeDate}
-                      onSelect={(date) => {
-                        setStatusChangeDate(date)
-                        setIsCalendarOpen(false)
-                        setShouldBlinkClose(false)
-                      }}
-                      initialFocus
-                      captionLayout="dropdown"
-                      className="pointer-events-auto"
-                    />
+                    <div className="relative">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                          "absolute top-2 right-2 z-[100] h-8 w-8 rounded-full bg-background border hover:bg-destructive/10 shadow-md",
+                          shouldBlinkClose && "animate-[blink_0.6s_ease-in-out]"
+                        )}
+                        onClick={() => setIsCalendarOpen(false)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                      <CalendarComponent
+                        mode="single"
+                        selected={statusChangeDate}
+                        onSelect={(date) => {
+                          setStatusChangeDate(date)
+                          setIsCalendarOpen(false)
+                          setShouldBlinkClose(false)
+                        }}
+                        initialFocus
+                        captionLayout="dropdown"
+                        className="pointer-events-auto"
+                      />
+                    </div>
                   </PopoverContent>
                 </Popover>
               </div>
