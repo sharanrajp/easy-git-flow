@@ -517,7 +517,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           {formData.offer_released_date && (
             <div className="space-y-2">
               <Label htmlFor="offer_released_date">Offer Released Date</Label>
-              <Popover>
+              <Popover modal={false}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -549,7 +549,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           {formData.joined_date && (
             <div className="space-y-2">
               <Label htmlFor="joined_date">Joined Date</Label>
-              <Popover>
+              <Popover modal={false}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
