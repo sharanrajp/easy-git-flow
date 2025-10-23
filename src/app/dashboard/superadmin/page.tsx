@@ -13,7 +13,7 @@ import { fetchDriveInsights, fetchJoinedCandidates, type DriveInsights, type Joi
 import { fetchAssignedCandidates, fetchUnassignedCandidates, type BackendCandidate } from "@/lib/candidates-api"
 import { type Vacancy } from "@/lib/schema-data"
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts"
-import { Users, UserCheck, Clock, TrendingUp, CheckCircle, XCircle, Briefcase, RefreshCw, Search, Download, Calendar } from "lucide-react"
+import { Users, UserCheck, Clock, TrendingUp, CheckCircle, XCircle, Briefcase, RefreshCw, Search, Download, Calendar, X } from "lucide-react"
 import { format } from "date-fns"
 import { SkillsDisplay } from "@/components/ui/skills-display"
 
@@ -404,14 +404,23 @@ export default function SuperadminDashboard() {
 
         {activeTab === "candidate-summary" && (
           <div className="flex flex-wrap gap-3 items-center justify-between">
-            <div className="relative min-w-[250px]">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search candidates..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 pr-10"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
 
             <div className="flex gap-3 items-center">
