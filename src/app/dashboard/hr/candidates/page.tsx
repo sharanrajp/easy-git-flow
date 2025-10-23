@@ -3241,7 +3241,7 @@ export default function CandidatesPage() {
             </DialogHeader>
             <div className="py-6">
               <div className="space-y-4">
-                <Popover>
+                <Popover modal={true}>
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
