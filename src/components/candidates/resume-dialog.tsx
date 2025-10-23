@@ -4,8 +4,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Loader2, ChevronLeft, ChevronRight } from "lucide-react"
 import { Document, Page, pdfjs } from 'react-pdf'
 import { Button } from "@/components/ui/button"
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css'
-import 'react-pdf/dist/esm/Page/TextLayer.css'
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
