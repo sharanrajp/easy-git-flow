@@ -15,6 +15,9 @@ export function ResumeDialog({ isOpen, onClose, resumeUrl, candidateName }: Resu
 
   if (!resumeUrl) return null
 
+  // Use Google Docs Viewer to bypass Chrome blocking
+  const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(resumeUrl)}&embedded=true`
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
@@ -36,7 +39,7 @@ export function ResumeDialog({ isOpen, onClose, resumeUrl, candidateName }: Resu
           
           <ScrollArea className="h-full w-full">
             <iframe
-              src={resumeUrl}
+              src={viewerUrl}
               className="w-full h-full border-0"
               style={{ minHeight: '75vh' }}
               onLoad={() => setIsLoading(false)}
