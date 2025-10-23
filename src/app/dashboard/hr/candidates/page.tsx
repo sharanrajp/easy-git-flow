@@ -160,6 +160,18 @@ export default function CandidatesPage() {
     setCurrentUser(user)
   }, [])
 
+  // Block scrolling when calendar is open
+  useEffect(() => {
+    if (isCalendarOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isCalendarOpen])
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now())
@@ -3251,6 +3263,7 @@ export default function CandidatesPage() {
                       setShouldBlinkClose(false)
                     }
                   }}
+                  modal={true}
                 >
                   <PopoverTrigger asChild>
                     <Button
@@ -3265,14 +3278,33 @@ export default function CandidatesPage() {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent 
-                    className="w-auto p-0 relative" 
+                    className="w-auto p-0 relative border-2 border-primary/20" 
                     align="start"
                     onInteractOutside={(e) => {
                       e.preventDefault()
                       setShouldBlinkClose(true)
                       setTimeout(() => setShouldBlinkClose(false), 600)
                     }}
+                    onEscapeKeyDown={(e) => e.preventDefault()}
                   >
+                    <div className="p-3 bg-muted/30 border-b flex items-center justify-between">
+                      <span className="text-sm font-medium">Select Date</span>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className={cn(
+                          "h-7 w-7 rounded-full shadow-lg",
+                          shouldBlinkClose && "animate-[blink_0.6s_ease-in-out]"
+                        )}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setIsCalendarOpen(false)
+                          setShouldBlinkClose(false)
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
                     <CalendarComponent
                       mode="single"
                       selected={statusChangeDate}
@@ -3285,28 +3317,6 @@ export default function CandidatesPage() {
                       captionLayout="dropdown"
                       className="pointer-events-auto"
                     />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      style={{
-                        position: 'absolute',
-                        top: '8px',
-                        right: '8px',
-                        zIndex: 99999,
-                        backgroundColor: 'white',
-                        border: '1px solid #e5e7eb',
-                      }}
-                      className={cn(
-                        "h-8 w-8 rounded-full hover:bg-destructive/10 shadow-lg",
-                        shouldBlinkClose && "animate-[blink_0.6s_ease-in-out]"
-                      )}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setIsCalendarOpen(false)
-                      }}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
                   </PopoverContent>
                 </Popover>
               </div>
