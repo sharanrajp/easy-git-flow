@@ -22,14 +22,10 @@ function CustomDropdown(props: DropdownProps) {
   const { options, value, onChange } = props
   const [open, setOpen] = React.useState(false)
 
-  const createChangeEvent = (newValue: number): React.ChangeEvent<HTMLSelectElement> => {
-    return {
-      target: { value: String(newValue) },
-    } as React.ChangeEvent<HTMLSelectElement>
-  }
-
   const handleChange = (newValue: string) => {
-    const changeEvent = createChangeEvent(Number(newValue))
+    const changeEvent = {
+      target: { value: newValue },
+    } as React.ChangeEvent<HTMLSelectElement>
     onChange?.(changeEvent)
     setOpen(false)
   }

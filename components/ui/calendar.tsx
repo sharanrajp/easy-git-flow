@@ -6,55 +6,10 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from 'lucide-react'
-import { DayButton, DayPicker, getDefaultClassNames, type DropdownProps } from 'react-day-picker'
+import { DayButton, DayPicker, getDefaultClassNames } from 'react-day-picker'
 
 import { cn } from '@/lib/utils'
 import { Button, buttonVariants } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-
-function CustomDropdown({
-  value,
-  options,
-  onChange,
-  className,
-}: DropdownProps) {
-  const createChangeEvent = (newValue: number): React.ChangeEvent<HTMLSelectElement> => {
-    return {
-      target: { value: String(newValue) },
-    } as React.ChangeEvent<HTMLSelectElement>
-  }
-
-  const handleSelectChange = (v: string) => {
-    onChange?.(createChangeEvent(Number(v)))
-  }
-
-  return (
-    <Select
-      value={value?.toString()}
-      onValueChange={handleSelectChange}
-    >
-      <SelectTrigger className={cn("h-8 w-[110px]", className)}>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent className="max-h-[200px]">
-        {options?.map((option) => (
-          <SelectItem
-            key={option.value}
-            value={option.value.toString()}
-          >
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  )
-}
 
 function Calendar({
   className,
@@ -200,7 +155,6 @@ function Calendar({
             <ChevronDownIcon className={cn('size-4', className)} {...props} />
           )
         },
-        Dropdown: CustomDropdown,
         DayButton: CalendarDayButton,
         WeekNumber: ({ children, ...props }) => {
           return (
