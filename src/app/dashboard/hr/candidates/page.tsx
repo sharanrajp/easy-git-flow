@@ -1483,15 +1483,6 @@ export default function CandidatesPage() {
   }
 
   const handleChangeStatus = async (candidateId: string, newStatus: string) => {
-    // If status is offerReleased or joined, show date picker dialog
-    if (newStatus === "offerReleased" || newStatus === "joined") {
-      setStatusChangeCandidateId(candidateId)
-      setStatusChangeType(newStatus as "offerReleased" | "joined")
-      setStatusChangeDate(undefined)
-      setIsStatusChangeDialogOpen(true)
-      return
-    }
-
     // Store previous state for rollback
     const previousUnassigned = [...unassignedCandidates]
     const previousAssigned = [...assignedCandidates]
@@ -2313,37 +2304,66 @@ export default function CandidatesPage() {
                                     <Badge className={getStatusColor(candidate.final_status || "selected")}>
                                       <div className="flex items-center gap-1">
                                         {formatStatusLabel(candidate.final_status || "selected")}
-                                        {candidate.final_status !== "rejected" && <ChevronDown className="h-3 w-3" />}
+                                        {!["rejected", "joined", "candidateDeclined"].includes(candidate.final_status || "") && <ChevronDown className="h-3 w-3" />}
                                       </div>
                                     </Badge>
                                   </Button>
                                 </DropdownMenuTrigger>
-                                {candidate.final_status !== "rejected" &&
+                                {!["rejected", "joined", "candidateDeclined"].includes(candidate.final_status || "") &&
                                 <DropdownMenuContent>
-                                  {/* Status progression: selected → hired → offerReleased → joined */}
-                                  {/* Allow only forward progression, not backward */}
+                                  {/* Forward-only status transitions based on R3 status */}
                                   {(() => {
                                     const currentStatus = candidate.final_status || "selected"
-                                    const statusOrder = ["selected", "hired", "offerReleased", "joined"]
-                                    const currentIndex = statusOrder.indexOf(currentStatus)
                                     
-                                    return (
-                                      <>
-                                        {currentIndex < statusOrder.indexOf("hired") && (
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
-                                        )}
-                                        {currentIndex < statusOrder.indexOf("offerReleased") && (
+                                    // For R3 = Selected: Offer Released → Hired → Joined → Candidate Declined
+                                    if (currentStatus === "selected") {
+                                      return (
+                                        <>
                                           <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
-                                        )}
-                                        {currentIndex < statusOrder.indexOf("joined") && (
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
                                           <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
-                                        )}
-                                        {/* Allow alternate paths at any point */}
-                                        <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "on-hold")}>On Hold</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "rejected")}>Rejected</DropdownMenuItem>
-                                      </>
-                                    )
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
+                                        </>
+                                      )
+                                    }
+                                    
+                                    // For R3 = On-Hold: Selected → Rejected → Offer Released → Hired → Joined → Candidate Declined
+                                    if (currentStatus === "on-hold") {
+                                      return (
+                                        <>
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "selected")}>Selected</DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "rejected")}>Rejected</DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
+                                        </>
+                                      )
+                                    }
+                                    
+                                    // For Offer Released: can go to Hired, Joined, or Candidate Declined (forward only)
+                                    if (currentStatus === "offerReleased") {
+                                      return (
+                                        <>
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
+                                        </>
+                                      )
+                                    }
+                                    
+                                    // For Hired: can only go to Joined or Candidate Declined (forward only)
+                                    if (currentStatus === "hired") {
+                                      return (
+                                        <>
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
+                                        </>
+                                      )
+                                    }
+                                    
+                                    // For Joined or Candidate Declined or Rejected: no further status changes allowed
+                                    return null
                                   })()}
                                 </DropdownMenuContent>
                                 }
