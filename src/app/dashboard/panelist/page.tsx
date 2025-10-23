@@ -58,6 +58,7 @@ import { useToast } from "@/hooks/use-toast"
 import { AssignedCandidateDetails } from "../../../components/candidates/assigned-candidate-details"
 import { Cancel } from "@radix-ui/react-alert-dialog"
 import { ResumeDialog } from "../../../components/candidates/resume-dialog"
+import { SkillsDisplay } from "@/components/ui/skills-display"
 
 export default function PanelistDashboard() {
   const [interviewSessions, setInterviewSessions] = useState<InterviewSession[]>([])
@@ -834,9 +835,10 @@ export default function PanelistDashboard() {
                               <TableCell>{candidate.email}</TableCell>
                               <TableCell>{candidate.applied_position || "N/A"}</TableCell>
                               <TableCell>
-                                <div className="max-w-xs truncate" title={Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}>
-                                  {Array.isArray(candidate.skill_set) ? candidate.skill_set.join(", ") : candidate.skill_set}
-                                </div>
+                                <SkillsDisplay 
+                                  skills={Array.isArray(candidate.skill_set) ? candidate.skill_set : []} 
+                                  maxVisible={2}
+                                />
                               </TableCell>
                               <TableCell>
                                 {candidate.total_experience} years
