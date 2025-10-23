@@ -404,7 +404,17 @@ export default function SuperadminDashboard() {
 
         {activeTab === "candidate-summary" && (
           <div className="flex flex-wrap gap-3 items-center justify-between">
-            <div className="flex gap-3">
+            <div className="relative min-w-[250px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search candidates..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            <div className="flex gap-3 items-center">
               <Select value={candidateVacancyFilter} onValueChange={setCandidateVacancyFilter}>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="Select Vacancy" />
@@ -445,18 +455,6 @@ export default function SuperadminDashboard() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="flex gap-3 items-center">
-              <div className="relative min-w-[250px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search candidates..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
 
               <Button onClick={handleExportCSV} variant="outline" className="gap-2">
                 <Download className="h-4 w-4" />
