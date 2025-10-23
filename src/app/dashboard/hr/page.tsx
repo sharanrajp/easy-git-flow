@@ -1,110 +1,114 @@
 // @ts-nocheck
 
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Users, UserCheck, Clock, CheckCircle, TrendingUp, Calendar, ThumbsUp, Filter } from "lucide-react"
-import { useState, useEffect, useMemo } from "react"
-import { calculateHRMetrics, type HRDashboardMetrics } from "@/lib/dashboard-api"
-import { useToast } from "@/hooks/use-toast"
-import { fetchVacancies } from "@/lib/vacancy-api"
-import { getAllUsers, type User } from "@/lib/auth"
-import type { Vacancy } from "@/lib/schema-data"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, fetchOngoingInterviews, type BackendCandidate } from "@/lib/candidates-api"
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Users, UserCheck, Clock, CheckCircle, TrendingUp, Calendar, ThumbsUp, Filter } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { calculateHRMetrics, type HRDashboardMetrics } from "@/lib/dashboard-api";
+import { useToast } from "@/hooks/use-toast";
+import { fetchVacancies } from "@/lib/vacancy-api";
+import { getAllUsers, type User } from "@/lib/auth";
+import type { Vacancy } from "@/lib/schema-data";
+import {
+  fetchUnassignedCandidates,
+  fetchAssignedCandidates,
+  fetchOngoingInterviews,
+  type BackendCandidate,
+} from "@/lib/candidates-api";
 
 export default function HRDashboard() {
-  const [isLoading, setIsLoading] = useState(true)
-  const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   // Independent filters for each section
-  const [candidateFilter, setCandidateFilter] = useState("day")
-  const [candidateVacancyFilter, setCandidateVacancyFilter] = useState("all")
-  const [pipelineVacancyFilter, setPipelineVacancyFilter] = useState("all")
-  const [performanceRecruiterFilter, setPerformanceRecruiterFilter] = useState("all")
-  
-  const [vacancies, setVacancies] = useState<Vacancy[]>([])
-  const [hrUsers, setHrUsers] = useState<User[]>([])
-  
+  const [candidateFilter, setCandidateFilter] = useState("day");
+  const [candidateVacancyFilter, setCandidateVacancyFilter] = useState("all");
+  const [pipelineVacancyFilter, setPipelineVacancyFilter] = useState("all");
+  const [performanceRecruiterFilter, setPerformanceRecruiterFilter] = useState("all");
+
+  const [vacancies, setVacancies] = useState<Vacancy[]>([]);
+  const [hrUsers, setHrUsers] = useState<User[]>([]);
+
   // Store all fetched data
-  const [unassignedCandidates, setUnassignedCandidates] = useState<BackendCandidate[]>([])
-  const [assignedCandidates, setAssignedCandidates] = useState<BackendCandidate[]>([])
-  const [ongoingInterviews, setOngoingInterviews] = useState<any[]>([])
-  
+  const [unassignedCandidates, setUnassignedCandidates] = useState<BackendCandidate[]>([]);
+  const [assignedCandidates, setAssignedCandidates] = useState<BackendCandidate[]>([]);
+  const [ongoingInterviews, setOngoingInterviews] = useState<any[]>([]);
+
   // Calculate metrics for Candidate Overview section
   const candidateMetrics = useMemo(() => {
-    if (unassignedCandidates.length === 0 && assignedCandidates.length === 0) return null
-    
+    if (unassignedCandidates.length === 0 && assignedCandidates.length === 0) return null;
+
     const filters = {
       vacancy: candidateVacancyFilter !== "all" ? candidateVacancyFilter : undefined,
-    }
-    
-    return calculateHRMetrics(unassignedCandidates, assignedCandidates, ongoingInterviews, filters, vacancies)
-  }, [unassignedCandidates, assignedCandidates, ongoingInterviews, candidateVacancyFilter, vacancies])
+    };
+
+    return calculateHRMetrics(unassignedCandidates, assignedCandidates, ongoingInterviews, filters, vacancies);
+  }, [unassignedCandidates, assignedCandidates, ongoingInterviews, candidateVacancyFilter, vacancies]);
 
   // Calculate metrics for Interview Pipeline with vacancy filter
   const pipelineMetrics = useMemo(() => {
-    if (unassignedCandidates.length === 0 && assignedCandidates.length === 0) return null
-    
+    if (unassignedCandidates.length === 0 && assignedCandidates.length === 0) return null;
+
     const filters = {
       vacancy: pipelineVacancyFilter !== "all" ? pipelineVacancyFilter : undefined,
-    }
-    
-    return calculateHRMetrics(unassignedCandidates, assignedCandidates, ongoingInterviews, filters, vacancies)
-  }, [unassignedCandidates, assignedCandidates, ongoingInterviews, pipelineVacancyFilter, vacancies])
+    };
+
+    return calculateHRMetrics(unassignedCandidates, assignedCandidates, ongoingInterviews, filters, vacancies);
+  }, [unassignedCandidates, assignedCandidates, ongoingInterviews, pipelineVacancyFilter, vacancies]);
 
   // Calculate metrics for Performance & Hiring section
   const performanceMetrics = useMemo(() => {
-    if (unassignedCandidates.length === 0 && assignedCandidates.length === 0) return null
-    
+    if (unassignedCandidates.length === 0 && assignedCandidates.length === 0) return null;
+
     const filters = {
       recruiter: performanceRecruiterFilter !== "all" ? performanceRecruiterFilter : undefined,
-    }
-    
-    return calculateHRMetrics(unassignedCandidates, assignedCandidates, ongoingInterviews, filters, vacancies)
-  }, [unassignedCandidates, assignedCandidates, ongoingInterviews, performanceRecruiterFilter, vacancies])
+    };
+
+    return calculateHRMetrics(unassignedCandidates, assignedCandidates, ongoingInterviews, filters, vacancies);
+  }, [unassignedCandidates, assignedCandidates, ongoingInterviews, performanceRecruiterFilter, vacancies]);
 
   useEffect(() => {
-    loadInitialData()
-  }, [])
+    loadInitialData();
+  }, []);
 
   useEffect(() => {
     // Listen for updates from other components
     const handleDataUpdate = () => {
-      loadInitialData()
-    }
+      loadInitialData();
+    };
 
-    window.addEventListener('dashboardUpdate', handleDataUpdate)
-    return () => window.removeEventListener('dashboardUpdate', handleDataUpdate)
-  }, [])
+    window.addEventListener("dashboardUpdate", handleDataUpdate);
+    return () => window.removeEventListener("dashboardUpdate", handleDataUpdate);
+  }, []);
 
   const loadInitialData = async () => {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const [fetchedVacancies, fetchedUsers, fetchedUnassigned, fetchedAssigned, fetchedOngoing] = await Promise.all([
         fetchVacancies(),
         getAllUsers(),
         fetchUnassignedCandidates(),
         fetchAssignedCandidates(),
-        fetchOngoingInterviews()
-      ])
-      
-      setVacancies(fetchedVacancies || [])
-      setHrUsers(fetchedUsers.filter(user => user.role === 'hr') || [])
-      setUnassignedCandidates(fetchedUnassigned || [])
-      setAssignedCandidates(fetchedAssigned || [])
-      setOngoingInterviews(fetchedOngoing || [])
+        fetchOngoingInterviews(),
+      ]);
+
+      setVacancies(fetchedVacancies || []);
+      setHrUsers(fetchedUsers.filter((user) => user.role === "hr") || []);
+      setUnassignedCandidates(fetchedUnassigned || []);
+      setAssignedCandidates(fetchedAssigned || []);
+      setOngoingInterviews(fetchedOngoing || []);
     } catch (error) {
-      console.error('Error loading initial data:', error)
+      console.error("Error loading initial data:", error);
       toast({
         title: "Error",
         description: "Failed to load dashboard data",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
-
+  };
 
   const MetricCard = ({
     title,
@@ -115,13 +119,13 @@ export default function HRDashboard() {
     color = "blue",
     filterValue,
   }: {
-    title: string
-    value: string | number
-    description?: string
-    icon: any
-    trend?: { value: number; label: string }
-    color?: "blue" | "green" | "orange" | "red" | "gray"
-    filterValue?: string
+    title: string;
+    value: string | number;
+    description?: string;
+    icon: any;
+    trend?: { value: number; label: string };
+    color?: "blue" | "green" | "orange" | "red" | "gray";
+    filterValue?: string;
   }) => {
     const colorClasses = {
       blue: "from-blue-500 to-blue-600",
@@ -129,7 +133,7 @@ export default function HRDashboard() {
       orange: "from-orange-500 to-orange-600",
       red: "from-red-500 to-red-600",
       gray: "from-gray-500 to-gray-600",
-    }
+    };
 
     return (
       <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 animate-slide-up">
@@ -155,8 +159,8 @@ export default function HRDashboard() {
           </div>
         </CardContent>
       </Card>
-    )
-  }
+    );
+  };
 
   if (isLoading) {
     return (
@@ -168,7 +172,7 @@ export default function HRDashboard() {
           </div>
         </div>
       </DashboardLayout>
-    )
+    );
   }
 
   return (
@@ -209,7 +213,7 @@ export default function HRDashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Roles</SelectItem>
-                  {vacancies.map(vacancy => (
+                  {vacancies.map((vacancy) => (
                     <SelectItem key={vacancy.id} value={vacancy.id}>
                       {vacancy.position_title}
                     </SelectItem>
@@ -301,7 +305,7 @@ export default function HRDashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Roles</SelectItem>
-                  {vacancies.map(vacancy => (
+                  {vacancies.map((vacancy) => (
                     <SelectItem key={vacancy.id} value={vacancy.id}>
                       {vacancy.position_title}
                     </SelectItem>
@@ -312,21 +316,21 @@ export default function HRDashboard() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <MetricCard
-              title="Ongoing r1"
+              title="Ongoing R1"
               value={pipelineMetrics?.ongoing_r1 || 0}
               description="Technical Screen in progress"
               icon={Users}
               color="blue"
             />
             <MetricCard
-              title="Ongoing r2"
+              title="Ongoing R2"
               value={pipelineMetrics?.ongoing_r2 || 0}
               description="Technical + Behavioral in progress"
               icon={Users}
               color="orange"
             />
             <MetricCard
-              title="Ongoing r3"
+              title="Ongoing R3"
               value={pipelineMetrics?.ongoing_r3 || 0}
               description="Manager Interview in progress"
               icon={Users}
@@ -350,7 +354,7 @@ export default function HRDashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Recruiters</SelectItem>
-                  {hrUsers.map(user => (
+                  {hrUsers.map((user) => (
                     <SelectItem key={user._id} value={user.name}>
                       {user.name}
                     </SelectItem>
@@ -394,5 +398,5 @@ export default function HRDashboard() {
         </div>
       </div>
     </DashboardLayout>
-  )
+  );
 }
