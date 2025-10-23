@@ -409,7 +409,7 @@ export default function PanelistDashboard() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
 
-  const handleViewResume = (resumeUrl: string, candidateName: string) => {
+  const handleViewResume = (resumeUrl: string | null, candidateName: string) => {
     setSelectedResumeUrl(resumeUrl)
     setSelectedCandidateName(candidateName)
     setIsResumeOpen(true)
@@ -755,7 +755,7 @@ export default function PanelistDashboard() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => candidate.resume_link && handleViewResume(candidate.resume_link, candidate.name)}
+                            onClick={() => handleViewResume(candidate.resume_link || null, candidate.name)}
                             className="flex-1"
                           >
                             <FileText className="h-4 w-4 mr-2" />
@@ -851,18 +851,14 @@ export default function PanelistDashboard() {
                                 )}
                               </TableCell>
                               <TableCell>
-                                {candidate.resume_link ? (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => candidate.resume_link && handleViewResume(candidate.resume_link, candidate.name)}
-                                  >
-                                    <FileText className="h-4 w-4 mr-1" />
-                                    View Resume
-                                  </Button>
-                                ) : (
-                                  <span className="text-muted-foreground text-sm">Resume Not Found</span>
-                                )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleViewResume(candidate.resume_link || null, candidate.name)}
+                                >
+                                  <FileText className="h-4 w-4 mr-1" />
+                                  View Resume
+                                </Button>
                               </TableCell>
                               <TableCell>
                                 <Button
