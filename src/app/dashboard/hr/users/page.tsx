@@ -506,6 +506,14 @@ export default function UsersPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => {
+                              if (user.role === "superadmin") {
+                                toast({
+                                  title: "Action Not Allowed",
+                                  description: "Superadmin cannot be edited or deleted.",
+                                  variant: "destructive",
+                                })
+                                return
+                              }
                               setSelectedUser(user)
                               setIsEditOpen(true)
                             }}
@@ -516,7 +524,17 @@ export default function UsersPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setDeleteUser(user)}
+                            onClick={() => {
+                              if (user.role === "superadmin") {
+                                toast({
+                                  title: "Action Not Allowed",
+                                  description: "Superadmin cannot be edited or deleted.",
+                                  variant: "destructive",
+                                })
+                                return
+                              }
+                              setDeleteUser(user)
+                            }}
                             className="cursor-pointer"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -567,6 +585,14 @@ export default function UsersPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
                               onClick={() => {
+                                if (user.role === "superadmin") {
+                                  toast({
+                                    title: "Action Not Allowed",
+                                    description: "Superadmin cannot be edited or deleted.",
+                                    variant: "destructive",
+                                  })
+                                  return
+                                }
                                 setSelectedUser(user)
                                 setIsEditOpen(true)
                               }}
@@ -575,7 +601,17 @@ export default function UsersPage() {
                               <Edit className="h-4 w-4 mr-2" />
                               Edit User
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setDeleteUser(user)} className="text-red-600 cursor-pointer">
+                            <DropdownMenuItem onClick={() => {
+                              if (user.role === "superadmin") {
+                                toast({
+                                  title: "Action Not Allowed",
+                                  description: "Superadmin cannot be edited or deleted.",
+                                  variant: "destructive",
+                                })
+                                return
+                              }
+                              setDeleteUser(user)
+                            }} className="text-red-600 cursor-pointer">
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete User
                             </DropdownMenuItem>
