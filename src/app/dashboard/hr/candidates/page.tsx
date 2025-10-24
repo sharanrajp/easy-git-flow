@@ -1515,26 +1515,36 @@ export default function CandidatesPage() {
     const previousAssigned = [...assignedCandidates]
     const previousCandidates = [...candidates]
     
+    // Prepare payload with status and corresponding date
+    const payload: any = { final_status: newStatus }
+    
+    // Add date in ISO 8601 format when changing to offerReleased or joined
+    if (newStatus === "offerReleased") {
+      payload.offer_released_date = toUTCDateString(new Date())
+    } else if (newStatus === "joined") {
+      payload.joined_date = toUTCDateString(new Date())
+    }
+    
     // Optimistically update UI immediately
     setUnassignedCandidates((prev) =>
       prev.map((c) =>
-        c._id === candidateId ? { ...c, final_status: newStatus } : c
+        c._id === candidateId ? { ...c, ...payload } : c
       )
     )
     setAssignedCandidates((prev) =>
       prev.map((c) =>
-        c._id === candidateId ? { ...c, final_status: newStatus } : c
+        c._id === candidateId ? { ...c, ...payload } : c
       )
     )
     setCandidates((prev) =>
       prev.map((c) =>
-        c.id === candidateId || c._id === candidateId ? { ...c, final_status: newStatus, status: newStatus } : c
+        c.id === candidateId || c._id === candidateId ? { ...c, ...payload, status: newStatus } : c
       )
     )
     
     // Process backend update asynchronously
     try {
-      await updateCandidate(candidateId, { final_status: newStatus })
+      await updateCandidate(candidateId, payload)
       
       // Silently refresh data in background to ensure sync
       Promise.all([
