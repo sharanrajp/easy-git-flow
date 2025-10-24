@@ -166,8 +166,49 @@ export default function PanelistDashboard() {
     setIsDetailsOpen(true)
   }
 
+  // Get the round(s) taken by the current panelist
+  const getPanelistRounds = (candidate: PanelistCandidate) => {
+    if (!candidate.previous_rounds || !currentUser?.name) return []
+    
+    return candidate.previous_rounds
+      .filter((round: any) => round.panel_name === currentUser.name)
+      .map((round: any) => round.round)
+  }
+
+  // Filter candidate feedback to show only relevant rounds for the panelist
+  const filterCandidateFeedbackForPanelist = (candidate: PanelistCandidate) => {
+    if (!candidate.previous_rounds || !currentUser?.name) return candidate
+    
+    const panelistRounds = candidate.previous_rounds
+      .filter((round: any) => round.panel_name === currentUser.name)
+    
+    if (panelistRounds.length === 0) return candidate
+    
+    // Find the round numbers taken by the panelist
+    const panelistRoundNumbers = panelistRounds.map((r: any) => r.round)
+    
+    // Get the earliest round number the panelist took
+    const roundOrder = ['r1', 'r2', 'r3', 'r4', 'r5']
+    const earliestPanelistRoundIndex = Math.min(
+      ...panelistRoundNumbers.map(r => roundOrder.indexOf(r.toLowerCase()))
+    )
+    
+    // Filter to show only rounds up to and including the panelist's rounds
+    const filteredRounds = candidate.previous_rounds.filter((round: any) => {
+      const roundIndex = roundOrder.indexOf(round.round?.toLowerCase() || '')
+      return roundIndex <= earliestPanelistRoundIndex || 
+             panelistRoundNumbers.includes(round.round)
+    })
+    
+    return {
+      ...candidate,
+      previous_rounds: filteredRounds
+    }
+  }
+
   const handleViewCandidateFeedback = (candidate: PanelistCandidate) => {
-    setViewingCandidate(candidate)
+    const filteredCandidate = filterCandidateFeedbackForPanelist(candidate)
+    setViewingCandidate(filteredCandidate)
     setShowCandidateFeedback(true)
   }
 
@@ -826,7 +867,9 @@ export default function PanelistDashboard() {
                             </TableCell>
                           </TableRow>
                         ) : (
-                          completedCandidateInterviews.map((candidate) => (
+                          completedCandidateInterviews.map((candidate) => {
+                            const panelistRounds = getPanelistRounds(candidate)
+                            return (
                             <TableRow key={candidate._id}>
                               <TableCell className="font-medium">
                                 {candidate.register_number}
@@ -844,10 +887,14 @@ export default function PanelistDashboard() {
                                 {candidate.total_experience} years
                               </TableCell>
                               <TableCell>
-                                {candidate.last_interview_round ? (
-                                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                    {candidate.last_interview_round}
-                                  </Badge>
+                                {panelistRounds.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1">
+                                    {panelistRounds.map((round, idx) => (
+                                      <Badge key={idx} variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                        {round.toUpperCase()}
+                                      </Badge>
+                                    ))}
+                                  </div>
                                 ) : (
                                   <span className="text-muted-foreground">N/A</span>
                                 )}
@@ -884,7 +931,7 @@ export default function PanelistDashboard() {
                                 </Button>
                               </TableCell>
                             </TableRow>
-                          ))
+                          )})
                         )}
                       </TableBody>
                     </Table>
