@@ -45,7 +45,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const submitData: Partial<User> = {
+    const submitData: any = {
       ...formData,
       panelist_type: formData.role === "panelist" ? formData.panelist_type : undefined,
       // Only include skill_set and available_rounds for panelists
@@ -58,6 +58,11 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
           : undefined,
       // Only include current_status for panelists
       current_status: formData.role === "panelist" ? formData.current_status : undefined,
+    }
+
+    // Only include password if it's been filled in
+    if (!formData.password) {
+      delete submitData.password
     }
 
     onSubmit(submitData)
@@ -128,18 +133,16 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
         />
       </div>
 
-      {!user && (
-        <div className="space-y-2">
-          <Label htmlFor="password">Password *</Label>
-          <PasswordInput
-            id="password"
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            required
-            placeholder="Enter password"
-          />
-        </div>
-      )}
+      <div className="space-y-2">
+        <Label htmlFor="password">{user ? "New Password (optional)" : "Password *"}</Label>
+        <PasswordInput
+          id="password"
+          value={formData.password}
+          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          required={!user}
+          placeholder={user ? "Leave blank to keep current password" : "Enter password"}
+        />
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="role">Role *</Label>
