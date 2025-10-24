@@ -907,66 +907,77 @@ export default function CandidatesPage() {
   // Handle backend candidate check-in/check-out
   const handleBackendCheckIn = async (candidate: BackendCandidate, checked: boolean) => {
     setCheckingInCandidate(candidate._id)
+    
+    // Optimistically update UI immediately
+    setUnassignedCandidates(prev => {
+      if (checked) {
+        // Move checked-in candidate to the top
+        return prev.map(c => c._id === candidate._id ? { ...c, checked_in: true } : c)
+      } else {
+        // Just update the checked_in status for check-out
+        return prev.map(c => 
+          c._id === candidate._id 
+            ? { ...c, checked_in: false }
+            : c
+        )
+      }
+    })
+    
+    // Show success toast immediately
+    toast({
+      title: "Success",
+      description: `${candidate.name} has been ${checked ? 'checked in' : 'checked out'} successfully.`,
+    })
+    
+    // Clear loading state immediately
+    setCheckingInCandidate(null)
+    
+    // Make API call in background
     try {
       await updateCandidateCheckIn(candidate._id, checked)
-      
-      // Update local state and reorder if checking in
-      setUnassignedCandidates(prev => {
-        if (checked) {
-          // Move checked-in candidate to the top
-          return prev.map(c => c._id === candidate._id ? { ...c, checked_in: true } : c)
-        } else {
-          // Just update the checked_in status for check-out
-          return prev.map(c => 
-            c._id === candidate._id 
-              ? { ...c, checked_in: false }
-              : c
-          )
-        }
-      })
-      
-      // Notify dashboards to refresh
       window.dispatchEvent(new Event('dashboardUpdate'))
-      
-      toast({
-        title: "Success",
-        description: `${candidate.name} has been ${checked ? 'checked in' : 'checked out'} successfully.`,
-      })
     } catch (error) {
       console.error('Error updating candidate check-in status:', error)
+      
+      // Revert optimistic update on error
+      setUnassignedCandidates(prev => 
+        prev.map(c => 
+          c._id === candidate._id 
+            ? { ...c, checked_in: !checked }
+            : c
+        )
+      )
+      
       toast({
         title: "Error",
         description: `Failed to ${checked ? 'check in' : 'check out'} candidate. Please try again.`,
         variant: "destructive",
       })
-    } finally {
-      setCheckingInCandidate(null)
     }
   }
 
   // Handle assign panel button click
   const handleAssignPanel = async (candidate: BackendCandidate) => {
-    console.log('handleAssignPanel called for candidate:', candidate) // Debug log
-    setSelectedCandidateForPanel(candidate)
-    setLoadingPanels(true)
+    // Check if candidate has vacancyId
+    if (!candidate.vacancyId) {
+      toast({
+        title: "Error",
+        description: "Candidate has no vacancy ID. Cannot fetch panelists.",
+        variant: "destructive",
+      })
+      return
+    }
     
+    // Open dialog immediately with loading state
+    setSelectedCandidateForPanel(candidate)
+    setAvailablePanels([])
+    setLoadingPanels(true)
+    setIsPanelDialogOpen(true)
+    
+    // Fetch panelists in background
     try {
-      // Check if candidate has vacancyId
-      if (!candidate.vacancyId) {
-        toast({
-          title: "Error",
-          description: "Candidate has no vacancy ID. Cannot fetch panelists.",
-          variant: "destructive",
-        })
-        setLoadingPanels(false)
-        return
-      }
-
-      // Use the new API endpoint with candidateId and vacancyId from the candidate object
       const panelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
-      console.log('Fetched panelists in handleAssignPanel:', panelists) // Debug log
       setAvailablePanels(panelists)
-      setIsPanelDialogOpen(true)
     } catch (error) {
       console.error('Error fetching available panelists:', error)
       toast({
@@ -974,6 +985,7 @@ export default function CandidatesPage() {
         description: "Failed to load available panelists. Please try again.",
         variant: "destructive",
       })
+      setIsPanelDialogOpen(false)
     } finally {
       setLoadingPanels(false)
     }
