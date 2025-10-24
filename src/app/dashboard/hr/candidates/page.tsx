@@ -233,7 +233,13 @@ export default function CandidatesPage() {
 
   // Auto-refresh candidates when feedback is submitted
   useEffect(() => {
+    let isRefreshing = false
+    
     const handleFeedbackUpdate = async () => {
+      // Prevent multiple simultaneous refreshes
+      if (isRefreshing) return
+      isRefreshing = true
+      
       try {
         const [unassignedData, assignedData] = await Promise.all([
           fetchUnassignedCandidates(),
@@ -244,16 +250,16 @@ export default function CandidatesPage() {
         setAssignedCandidates(assignedData)
       } catch (error) {
         console.error('Failed to refresh candidates:', error)
+      } finally {
+        isRefreshing = false
       }
     }
 
-    // Listen for feedback submission events
+    // Listen for feedback submission events only
     window.addEventListener('interview-sessions:update', handleFeedbackUpdate)
-    window.addEventListener('candidateUpdated', handleFeedbackUpdate)
     
     return () => {
       window.removeEventListener('interview-sessions:update', handleFeedbackUpdate)
-      window.removeEventListener('candidateUpdated', handleFeedbackUpdate)
     }
   }, [])
 
