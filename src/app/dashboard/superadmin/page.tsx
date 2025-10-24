@@ -566,7 +566,7 @@ export default function SuperadminDashboard() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Items per page:</span>
                   <Select value={pageSize.toString()} onValueChange={(value) => setPageSize(Number(value))}>
-                    <SelectTrigger className="h-10 w-20" size="sm">
+                    <SelectTrigger className="h-10 w-20 border-2 border-transparent bg-white shadow-xs [background:linear-gradient(white,white)_padding-box,var(--gradient-vuedata)_border-box] [background-clip:padding-box,border-box] text-[#0A6ED1] hover:bg-blue-50" size="sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -648,7 +648,7 @@ export default function SuperadminDashboard() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Items per page:</span>
                   <Select value={pageSize.toString()} onValueChange={(value) => setPageSize(Number(value))}>
-                    <SelectTrigger className="h-10 w-20" size="sm">
+                    <SelectTrigger className="h-10 w-20 border-2 border-transparent bg-white shadow-xs [background:linear-gradient(white,white)_padding-box,var(--gradient-vuedata)_border-box] [background-clip:padding-box,border-box] text-[#0A6ED1] hover:bg-blue-50" size="sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
