@@ -906,22 +906,17 @@ export default function CandidatesPage() {
 
   // Handle backend candidate check-in/check-out
   const handleBackendCheckIn = async (candidate: BackendCandidate, checked: boolean) => {
-    setCheckingInCandidate(candidate._id)
+    const candidateId = candidate._id
+    setCheckingInCandidate(candidateId)
     
     // Optimistically update UI immediately
-    setUnassignedCandidates(prev => {
-      if (checked) {
-        // Move checked-in candidate to the top
-        return prev.map(c => c._id === candidate._id ? { ...c, checked_in: true } : c)
-      } else {
-        // Just update the checked_in status for check-out
-        return prev.map(c => 
-          c._id === candidate._id 
-            ? { ...c, checked_in: false }
-            : c
-        )
-      }
-    })
+    setUnassignedCandidates(prev => 
+      prev.map(c => 
+        c._id === candidateId 
+          ? { ...c, checked_in: checked }
+          : c
+      )
+    )
     
     // Show success toast immediately
     toast({
@@ -932,17 +927,17 @@ export default function CandidatesPage() {
     // Clear loading state immediately
     setCheckingInCandidate(null)
     
-    // Make API call in background
+    // Make API call in background without triggering full refresh
     try {
-      await updateCandidateCheckIn(candidate._id, checked)
-      window.dispatchEvent(new Event('dashboardUpdate'))
+      await updateCandidateCheckIn(candidateId, checked)
+      // Don't dispatch dashboardUpdate event to avoid unnecessary re-fetches
     } catch (error) {
       console.error('Error updating candidate check-in status:', error)
       
       // Revert optimistic update on error
       setUnassignedCandidates(prev => 
         prev.map(c => 
-          c._id === candidate._id 
+          c._id === candidateId 
             ? { ...c, checked_in: !checked }
             : c
         )
@@ -1065,18 +1060,21 @@ export default function CandidatesPage() {
       return
     }
     
+    // Open dialog immediately with loading state
+    setSelectedCandidateForPanel(candidate)
+    setAvailablePanels([])
+    setLoadingPanels(true)
+    setIsPanelDialogOpen(true)
+    
+    // Fetch panels in background
     try {
-      setLoadingPanels(true)
       let panels = []
       if(candidate.final_status === "selected" && candidate.last_interview_round === "r2"){
         panels = (await getAllUsers() || []).filter((user) => user.role === "panelist" && user.panelist_type === "manager" && user.current_status === "free")
       } else {
-        // Use the new API endpoint with candidateId and vacancyId from the candidate object
         panels = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
       }
       setAvailablePanels(panels)
-      setSelectedCandidateForPanel(candidate)
-      setIsPanelDialogOpen(true)
     } catch (error) {
       console.error('Error fetching panels for next round:', error)
       toast({
@@ -1084,6 +1082,7 @@ export default function CandidatesPage() {
         title: "Error",
         description: `Failed to fetch available panels for ${nextRound}. Please try again.`,
       })
+      setIsPanelDialogOpen(false)
     } finally {
       setLoadingPanels(false)
     }
