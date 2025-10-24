@@ -981,10 +981,6 @@ export default function CandidatesPage() {
 
   // Handle panel assignment
   const handlePanelAssignment = async (panelId: string) => {
-    console.log('handlePanelAssignment called with panelId:', panelId) // Debug log
-    console.log('selectedCandidateForPanel:', selectedCandidateForPanel) // Debug log
-    console.log('currentUser:', currentUser) // Debug log
-    
     if (!selectedCandidateForPanel) return
     
     if (!currentUser?._id) {
@@ -997,35 +993,39 @@ export default function CandidatesPage() {
     }
     
     setAssigningCandidate(selectedCandidateForPanel._id)
+    
     try {
-      console.log('About to call assignCandidateToPanel with:', {
-        candidateId: selectedCandidateForPanel._id,
-        panelId,
-        round: 'r1',
-        assignedBy: currentUser._id
-      }) // Debug log
-      
+      // Make the assignment API call
       await assignCandidateToPanel(selectedCandidateForPanel._id, panelId, 'r1', currentUser._id)
       
-      // Refresh panels to show updated status
-      const updatedPanels = await fetchAvailablePanels()
-      setAvailablePanels(updatedPanels)
+      // Optimistically update UI - move candidate from unassigned to assigned immediately
+      const candidateToMove = selectedCandidateForPanel
+      setUnassignedCandidates(prev => prev.filter(c => c._id !== candidateToMove._id))
+      setAssignedCandidates(prev => [candidateToMove, ...prev])
       
-      // Refresh candidate lists to move candidate from unassigned to assigned
-      const [updatedUnassigned, updatedAssigned] = await Promise.all([
-        fetchUnassignedCandidates(),
-        fetchAssignedCandidates()
-      ])
-      setUnassignedCandidates(updatedUnassigned)
-      setAssignedCandidates(updatedAssigned)
-      
-      // Notify dashboards to refresh
-      window.dispatchEvent(new Event('dashboardUpdate'))
-      
+      // Show success toast immediately
       toast({
         title: "Success",
         description: `${selectedCandidateForPanel.name} has been assigned to the panel successfully.`,
       })
+      
+      // Close dialog immediately to unblock UI
+      setIsPanelDialogOpen(false)
+      setSelectedCandidateForPanel(null)
+      setAvailablePanels([])
+      
+      // Refresh data in background without blocking
+      Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates()
+      ]).then(([updatedUnassigned, updatedAssigned]) => {
+        setUnassignedCandidates(updatedUnassigned)
+        setAssignedCandidates(updatedAssigned)
+        window.dispatchEvent(new Event('dashboardUpdate'))
+      }).catch(error => {
+        console.error('Background refresh failed:', error)
+      })
+      
     } catch (error) {
       console.error('Error assigning candidate to panel:', error)
       toast({
@@ -1085,6 +1085,10 @@ export default function CandidatesPage() {
     
     try {
       const round = assignmentRound || "r1"
+      const candidateName = selectedCandidateForPanel.name
+      const roundText = assignmentRound ? ` for ${round}` : ""
+      
+      // Make the assignment API call
       await assignCandidateToPanel(
         selectedCandidateForPanel._id, 
         panelId, 
@@ -1092,30 +1096,30 @@ export default function CandidatesPage() {
         currentUser.name
       )
       
-      // Refresh both candidate lists and ongoing interviews
-      const [unassignedData, assignedData, interviewsData] = await Promise.all([
-        fetchUnassignedCandidates(),
-        fetchAssignedCandidates(),
-        fetchOngoingInterviews()
-      ])
+      // Show success toast immediately
+      toast({
+        title: "Candidate Mapped Successfully",
+        description: `${candidateName} has been mapped${roundText}.`,
+      })
       
-      setUnassignedCandidates(unassignedData)
-      setAssignedCandidates(assignedData)
-      setOngoingInterviews(interviewsData)
-      
-      // Notify dashboards to refresh
-      window.dispatchEvent(new Event('dashboardUpdate'))
-      
-      // Close the dialog and reset states
+      // Close the dialog immediately to unblock UI
       setIsPanelDialogOpen(false)
       setSelectedCandidateForPanel(null)
       setAvailablePanels([])
       setAssignmentRound("")
       
-      const roundText = assignmentRound ? ` for ${round}` : ""
-      toast({
-        title: "Candidate Mapped Successfully",
-        description: `${selectedCandidateForPanel.name} has been mapped${roundText}.`,
+      // Refresh data in background without blocking
+      Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates(),
+        fetchOngoingInterviews()
+      ]).then(([unassignedData, assignedData, interviewsData]) => {
+        setUnassignedCandidates(unassignedData)
+        setAssignedCandidates(assignedData)
+        setOngoingInterviews(interviewsData)
+        window.dispatchEvent(new Event('dashboardUpdate'))
+      }).catch(error => {
+        console.error('Background refresh failed:', error)
       })
       
     } catch (error) {
