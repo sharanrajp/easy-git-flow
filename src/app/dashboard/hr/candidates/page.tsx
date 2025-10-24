@@ -1510,6 +1510,15 @@ export default function CandidatesPage() {
   }
 
   const handleChangeStatus = async (candidateId: string, newStatus: string) => {
+    // If status is offerReleased or joined, open date dialog
+    if (newStatus === "offerReleased" || newStatus === "joined") {
+      setStatusChangeCandidateId(candidateId)
+      setStatusChangeType(newStatus as "offerReleased" | "joined")
+      setStatusChangeDate(undefined)
+      setIsStatusChangeDialogOpen(true)
+      return
+    }
+
     // Store previous state for rollback
     const previousUnassigned = [...unassignedCandidates]
     const previousAssigned = [...assignedCandidates]
