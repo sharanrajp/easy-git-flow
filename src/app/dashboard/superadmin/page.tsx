@@ -75,44 +75,6 @@ export default function SuperadminDashboard() {
     loadInitialData()
   }, [kpiVacancyFilter, driveRecruiterFilter, candidateVacancyFilter, candidateRecruiterFilter, candidateMonthYearFilter, activeTab])
 
-  // Real-time auto-refresh with intelligent polling
-  useEffect(() => {
-    let pollInterval: NodeJS.Timeout
-
-    const startPolling = () => {
-      // Poll every 10 seconds for insights updates
-      pollInterval = setInterval(() => {
-        // Refresh data silently in the background
-        loadInitialData()
-      }, 10000) // 10 second polling for dashboard metrics
-    }
-
-    const stopPolling = () => {
-      if (pollInterval) {
-        clearInterval(pollInterval)
-      }
-    }
-
-    // Handle visibility change - pause when tab is hidden, resume when visible
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        stopPolling()
-      } else {
-        // Immediately refresh when tab becomes visible
-        loadInitialData()
-        startPolling()
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    startPolling()
-
-    return () => {
-      stopPolling()
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, []) // Empty deps - runs once on mount, cleanup on unmount
-
   const loadInitialData = async () => {
     try {
       setIsLoading(true)
