@@ -225,6 +225,32 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                       <label className="text-sm font-medium text-gray-500">Joined Date</label>
                       <p>{candidate.joined_date ? formatDate(candidate.joined_date) : "-"}</p>
                     </div>
+                    {candidate.final_status === "joined" && (
+                      <>
+                        <div>
+                          <label className="text-sm font-medium text-gray-500">Time to Hire</label>
+                          <p>
+                            {candidate.created_at && candidate.joined_date
+                              ? `${Math.ceil(
+                                  (new Date(candidate.joined_date).getTime() - new Date(candidate.created_at).getTime()) /
+                                    (1000 * 60 * 60 * 24)
+                                )} days`
+                              : "-"}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-500">Time to Fill</label>
+                          <p>
+                            {candidate.created_at && candidate.offer_released_date
+                              ? `${Math.ceil(
+                                  (new Date(candidate.offer_released_date).getTime() - new Date(candidate.created_at).getTime()) /
+                                    (1000 * 60 * 60 * 24)
+                                )} days`
+                              : "-"}
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </div>
                   
                   <div>
