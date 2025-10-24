@@ -172,7 +172,7 @@ export default function UsersPage() {
     try {
       const response = await makeAuthenticatedRequest(`${API_BASE_URL}/admin/add-user`, {
         method: "POST",
-        body: JSON.stringify({...userData, password : "user123", current_status: "free"})
+        body: JSON.stringify({...userData, current_status: "free"})
       })
       const result = await response.json();
       if (response.ok) {

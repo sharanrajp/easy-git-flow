@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
@@ -19,6 +20,7 @@ interface UserFormProps {
 interface FormData {
   name: string
   email: string
+  password: string
   role: User["role"]
   panelist_type?: User["panelist_type"]
   skill_set: string[]
@@ -30,6 +32,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
   const [formData, setFormData] = useState<FormData>({
     name: user?.name || "",
     email: user?.email || "",
+    password: "",
     role: user?.role || ("panelist" as const),
     panelist_type: user?.panelist_type || ("panel_member" as const),
     skill_set: user?.skill_set || [],
@@ -124,6 +127,19 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
           required
         />
       </div>
+
+      {!user && (
+        <div className="space-y-2">
+          <Label htmlFor="password">Password *</Label>
+          <PasswordInput
+            id="password"
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            required
+            placeholder="Enter password"
+          />
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="role">Role *</Label>
