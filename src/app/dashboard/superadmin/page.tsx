@@ -333,7 +333,7 @@ export default function SuperadminDashboard() {
   return (
     <DashboardLayout requiredRole="superadmin">
       <div className="space-y-6 p-6">
-        {/* Header with KPI Vacancy Filter and Clear Filters Button */}
+        {/* Header with KPI Vacancy Filter */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
@@ -353,10 +353,6 @@ export default function SuperadminDashboard() {
                 ))}
               </SelectContent>
             </Select>
-            
-            <Button onClick={handleClearFilters} variant="outline">
-              Clear Filters
-            </Button>
           </div>
         </div>
 
@@ -503,6 +499,10 @@ export default function SuperadminDashboard() {
               <Button onClick={handleExportCSV} variant="outline" className="gap-2">
                 <Download className="h-4 w-4" />
                 Export CSV
+              </Button>
+
+              <Button onClick={handleClearFilters} variant="outline">
+                Clear Filters
               </Button>
             </div>
           </div>
