@@ -242,10 +242,20 @@ export default function SuperadminDashboard() {
   const driveSummaryTotalPages = Math.ceil(filteredDriveSummaryVacancies.length / pageSize)
   const candidateSummaryTotalPages = Math.ceil(filteredJoinedCandidates.length / pageSize)
 
-  // Clear all filters
+  // Clear all filters (not used anymore - kept for reference)
   const handleClearFilters = () => {
     setKpiVacancyFilter("all")
     setDriveRecruiterFilter("all")
+    setCandidateVacancyFilter("all")
+    setCandidateRecruiterFilter("all")
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    setCandidateMonthYearFilter(currentMonth)
+    setSearchQuery("")
+  }
+
+  // Clear only Candidate Summary filters
+  const handleClearCandidateFilters = () => {
     setCandidateVacancyFilter("all")
     setCandidateRecruiterFilter("all")
     const now = new Date();
@@ -496,7 +506,7 @@ export default function SuperadminDashboard() {
                 </SelectContent>
               </Select>
 
-              <Button onClick={handleClearFilters} variant="outline">
+              <Button onClick={handleClearCandidateFilters} variant="outline">
                 Clear Filters
               </Button>
 
