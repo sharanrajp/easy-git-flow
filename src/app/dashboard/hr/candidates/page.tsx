@@ -2406,34 +2406,6 @@ export default function CandidatesPage() {
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                {candidate.final_status === "joined" && (
-                                  <div className="flex flex-col gap-1 text-xs ml-2">
-                                    <div className="flex items-center gap-1">
-                                      <span className="font-medium text-muted-foreground">Time to Hire:</span>
-                                      <span className="font-semibold">
-                                        {(() => {
-                                          if (!candidate.joined_date || !candidate.created_at) return "-"
-                                          const createdDate = new Date(candidate.created_at)
-                                          const joinedDate = new Date(candidate.joined_date)
-                                          const diffDays = Math.floor((joinedDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24))
-                                          return `${diffDays} days`
-                                        })()}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <span className="font-medium text-muted-foreground">Time to Fill:</span>
-                                      <span className="font-semibold">
-                                        {(() => {
-                                          if (!candidate.offer_released_date || !candidate.created_at) return "-"
-                                          const createdDate = new Date(candidate.created_at)
-                                          const offerDate = new Date(candidate.offer_released_date)
-                                          const diffDays = Math.floor((offerDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24))
-                                          return `${diffDays} days`
-                                        })()}
-                                      </span>
-                                    </div>
-                                  </div>
-                                )}
                                 <Button
                                   variant="ghost"
                                   size="icon"
