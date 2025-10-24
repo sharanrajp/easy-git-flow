@@ -566,7 +566,7 @@ export default function SuperadminDashboard() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Items per page:</span>
                   <Select value={pageSize.toString()} onValueChange={(value) => setPageSize(Number(value))}>
-                    <SelectTrigger className="w-20">
+                    <SelectTrigger className="h-10 w-20" size="sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -648,7 +648,7 @@ export default function SuperadminDashboard() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Items per page:</span>
                   <Select value={pageSize.toString()} onValueChange={(value) => setPageSize(Number(value))}>
-                    <SelectTrigger className="w-20">
+                    <SelectTrigger className="h-10 w-20" size="sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
