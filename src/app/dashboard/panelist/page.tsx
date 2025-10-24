@@ -98,13 +98,6 @@ export default function PanelistDashboard() {
     return user
   }, [])
 
-  useEffect(() => {
-    const user = loadCurrentUser()
-    if (user) {
-      loadCandidates()
-    }
-  }, [])
-
   const loadCandidates = useCallback(async () => {
     try {
       setIsCandidatesLoading(true)
@@ -121,6 +114,60 @@ export default function PanelistDashboard() {
       setIsCandidatesLoading(false)
     }
   }, [toast])
+
+  useEffect(() => {
+    const user = loadCurrentUser()
+    if (user) {
+      loadCandidates()
+    }
+  }, [])
+
+  // Real-time auto-refresh with intelligent polling
+  useEffect(() => {
+    if (!currentUser) return
+
+    let pollInterval: NodeJS.Timeout
+
+    const startPolling = () => {
+      // Poll every 5 seconds for new assignments
+      pollInterval = setInterval(() => {
+        // Don't refresh if any dialog is open to keep forms stable
+        const isAnyDialogOpen = showFeedbackDialog || showViewFeedback || 
+                                showCandidateFeedback || showScheduledFeedback || 
+                                isDetailsOpen || isResumeOpen || isScreeningDialogOpen
+        
+        if (!isAnyDialogOpen) {
+          loadCandidates()
+        }
+      }, 5000) // 5 second polling
+    }
+
+    const stopPolling = () => {
+      if (pollInterval) {
+        clearInterval(pollInterval)
+      }
+    }
+
+    // Handle visibility change - pause when tab is hidden, resume when visible
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopPolling()
+      } else {
+        // Immediately refresh when tab becomes visible
+        loadCandidates()
+        startPolling()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    startPolling()
+
+    return () => {
+      stopPolling()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [currentUser, showFeedbackDialog, showViewFeedback, showCandidateFeedback, 
+      showScheduledFeedback, isDetailsOpen, isResumeOpen, isScreeningDialogOpen, loadCandidates])
 
   // Check if candidate has completed feedback for current round
   const hasFeedbackCompleted = (candidate: any) => {
