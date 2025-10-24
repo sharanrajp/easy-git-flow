@@ -75,15 +75,6 @@ export default function SuperadminDashboard() {
     loadInitialData()
   }, [kpiVacancyFilter, driveRecruiterFilter, candidateVacancyFilter, candidateRecruiterFilter, candidateMonthYearFilter, activeTab])
 
-  // Auto-refresh data every 60 seconds
-  useEffect(() => {
-    const refreshInterval = setInterval(() => {
-      loadInitialData()
-    }, 60000) // 60 seconds
-
-    return () => clearInterval(refreshInterval)
-  }, [kpiVacancyFilter, driveRecruiterFilter, candidateVacancyFilter, candidateRecruiterFilter, candidateMonthYearFilter, activeTab])
-
   const loadInitialData = async () => {
     try {
       setIsLoading(true)

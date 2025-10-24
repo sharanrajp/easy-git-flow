@@ -122,15 +122,6 @@ export default function PanelistDashboard() {
     }
   }, [toast])
 
-  // Auto-refresh candidates every 30 seconds
-  useEffect(() => {
-    const refreshInterval = setInterval(() => {
-      loadCandidates()
-    }, 30000) // 30 seconds
-
-    return () => clearInterval(refreshInterval)
-  }, [loadCandidates])
-
   // Check if candidate has completed feedback for current round
   const hasFeedbackCompleted = (candidate: any) => {
     const currentPanelistName = currentUser?.name
