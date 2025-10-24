@@ -496,13 +496,13 @@ export default function SuperadminDashboard() {
                 </SelectContent>
               </Select>
 
+              <Button onClick={handleClearFilters} variant="outline">
+                Clear Filters
+              </Button>
+
               <Button onClick={handleExportCSV} variant="outline" className="gap-2">
                 <Download className="h-4 w-4" />
                 Export CSV
-              </Button>
-
-              <Button onClick={handleClearFilters} variant="outline">
-                Clear Filters
               </Button>
             </div>
           </div>
