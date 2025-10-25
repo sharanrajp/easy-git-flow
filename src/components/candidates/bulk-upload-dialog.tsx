@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
-import { Download, FileText, CheckCircle, AlertCircle } from "lucide-react"
+import { Download, FileText, CheckCircle, AlertCircle, FileSearch } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -12,10 +12,30 @@ import { makeAuthenticatedRequest } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { fetchVacancies } from "../../lib/vacancy-api"
 import type { Vacancy } from "../../lib/schema-data"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 
 interface BulkUploadDialogProps {
   onSubmit: (candidates: any[]) => void
   onCancel: () => void
+}
+
+interface SkippedCandidate {
+  name: string
+  email?: string
+  reason: string
+  row_number?: number
+}
+
+interface ExistingCandidate {
+  name: string
+  email?: string
+  applied_position: string
+  interview_status: string
+  last_interview_round: string
+  last_interview_date?: string
+  phone_number?: string
 }
 
 interface UploadResponse {
@@ -24,6 +44,8 @@ interface UploadResponse {
   applied_position: string
   source: string
   recruiter_name: string
+  skipped?: SkippedCandidate[]
+  existing_candidates?: ExistingCandidate[]
 }
 
 interface UploadError {
@@ -45,6 +67,9 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
   const [loadingVacancies, setLoadingVacancies] = useState(true)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [interviewType, setInterviewType] = useState("walk-in")
+  const [skippedCandidates, setSkippedCandidates] = useState<SkippedCandidate[]>([])
+  const [existingCandidates, setExistingCandidates] = useState<ExistingCandidate[]>([])
+  const [showLogs, setShowLogs] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load active vacancies on component mount
@@ -199,10 +224,22 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
 
       const successData: UploadResponse = await response.json()
       
-      // Show success message
+      // Store skipped and existing candidates data
+      if (successData.skipped && successData.skipped.length > 0) {
+        setSkippedCandidates(successData.skipped)
+      }
+      if (successData.existing_candidates && successData.existing_candidates.length > 0) {
+        setExistingCandidates(successData.existing_candidates)
+      }
+      
+      // Show success message with logs info
+      const logsInfo = successData.skipped?.length || successData.existing_candidates?.length 
+        ? ` (${(successData.skipped?.length || 0) + (successData.existing_candidates?.length || 0)} entries in logs)`
+        : ''
+      
       toast({
         title: "Upload successful",
-        description: `${successData.candidates_count} candidates uploaded successfully for ${successData.applied_position} via ${successData.source}. Recruiter: ${successData.recruiter_name}`,
+        description: `${successData.candidates_count} candidates uploaded successfully for ${successData.applied_position} via ${successData.source}. Recruiter: ${successData.recruiter_name}${logsInfo}`,
       })
 
       setResults({ 
@@ -261,24 +298,38 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
   }
 
   return (
-    <div className="space-y-4">
-      {/* Template Download */}
-      <div className="flex items-center justify-between p-3 bg-primary/5 border border-primary/10 rounded-md">
-        <div className="flex items-center gap-2">
-          <FileText className="h-3.5 w-3.5 text-primary" />
-          <div>
-            <p className="text-xs font-medium text-primary">Need a template?</p>
-            <p className="text-[10px] text-primary/70">Download our sample CSV template to get started</p>
-          </div>
-        </div>
-        <Button variant="outline" size="sm" onClick={downloadTemplate} className="text-[10px] h-7 px-2">
-          <Download className="h-2.5 w-2.5 mr-1" />
-          Download Template
-        </Button>
-      </div>
+    <Tabs defaultValue="upload" value={showLogs ? "logs" : "upload"} onValueChange={(value) => setShowLogs(value === "logs")} className="space-y-4">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="upload">Upload</TabsTrigger>
+        <TabsTrigger value="logs" className="relative">
+          <FileSearch className="h-3.5 w-3.5 mr-1.5" />
+          Logs
+          {(skippedCandidates.length > 0 || existingCandidates.length > 0) && (
+            <Badge variant="destructive" className="ml-2 h-5 px-1.5 text-[10px]">
+              {skippedCandidates.length + existingCandidates.length}
+            </Badge>
+          )}
+        </TabsTrigger>
+      </TabsList>
 
-      {/* Form Fields */}
-      <div className="space-y-3">
+      <TabsContent value="upload" className="space-y-4 mt-4">
+        {/* Template Download */}
+        <div className="flex items-center justify-between p-3 bg-primary/5 border border-primary/10 rounded-md">
+          <div className="flex items-center gap-2">
+            <FileText className="h-3.5 w-3.5 text-primary" />
+            <div>
+              <p className="text-xs font-medium text-primary">Need a template?</p>
+              <p className="text-[10px] text-primary/70">Download our sample CSV template to get started</p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={downloadTemplate} className="text-[10px] h-7 px-2">
+            <Download className="h-2.5 w-2.5 mr-1" />
+            Download Template
+          </Button>
+        </div>
+
+        {/* Form Fields */}
+        <div className="space-y-3">
         {/* First row: Applied Position + Source */}
         <div className="flex space-x-3">
           {/* Applied Position */}
@@ -355,89 +406,181 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
             onChange={handleFileSelect}
             className="text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 smooth-transition"
           />
-        </div>
-      </div>
-
-      {/* Validation Errors */}
-      {validationErrors.length > 0 && (
-        <Alert variant="destructive" className="py-2">
-          <AlertCircle className="h-3.5 w-3.5" />
-          <AlertDescription>
-            <div className="space-y-1">
-              <p className="text-xs font-medium">Please fix the following errors:</p>
-              <div className="text-xs space-y-0.5">
-                {validationErrors.map((error, index) => (
-                  <p key={index}>• {error}</p>
-                ))}
-              </div>
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {file && (
-        <div className="p-2.5 bg-success/10 border border-success/20 rounded-md animate-fade-in">
-          <div className="flex items-center gap-2">
-            <FileText className="h-3.5 w-3.5 text-success" />
-            <span className="text-xs font-medium text-success">{file.name}</span>
-            <span className="text-xs text-success/80">({(file.size / 1024).toFixed(1)} KB)</span>
           </div>
         </div>
-      )}
 
-      {/* Processing Progress */}
-      {isProcessing && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium">Processing file...</span>
-            <span className="text-xs text-muted-foreground">{Math.round(progress)}%</span>
-          </div>
-          <Progress value={progress} className="w-full h-1.5" />
-        </div>
-      )}
-
-      {/* Results */}
-      {results && (
-        <div className="space-y-2">
-          {results.success > 0 && (
-            <Alert className="py-2">
-              <CheckCircle className="h-3.5 w-3.5" />
-              <AlertDescription className="text-xs">Successfully processed {results.success} candidates</AlertDescription>
-            </Alert>
-          )}
-
-          {results.errors.length > 0 && (
-            <Alert variant="destructive" className="py-2">
-              <AlertCircle className="h-3.5 w-3.5" />
-              <AlertDescription>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium">{results.errors.length} errors found:</p>
-                  <div className="text-xs space-y-0.5 max-h-20 overflow-hidden">
-                    {results.errors.slice(0, 3).map((error, index) => (
-                      <p key={index}>• {error}</p>
-                    ))}
-                    {results.errors.length > 3 && <p>• ... and {results.errors.length - 3} more errors</p>}
-                  </div>
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
+          <Alert variant="destructive" className="py-2">
+            <AlertCircle className="h-3.5 w-3.5" />
+            <AlertDescription>
+              <div className="space-y-1">
+                <p className="text-xs font-medium">Please fix the following errors:</p>
+                <div className="text-xs space-y-0.5">
+                  {validationErrors.map((error, index) => (
+                    <p key={index}>• {error}</p>
+                  ))}
                 </div>
-              </AlertDescription>
-            </Alert>
-          )}
-        </div>
-      )}
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
-      <div className="flex justify-end gap-3 pt-2">
-        <Button variant="outline" onClick={onCancel} size="sm" className="text-xs">
-          Cancel
-        </Button>
-        <Button 
-          onClick={processFile} 
-          disabled={!file || isProcessing || !appliedPosition || !source || (source === 'other' && !otherSource.trim())} 
-          size="sm"
-          className="gradient-primary text-white hover:scale-105 smooth-transition shadow-elegant hover:shadow-glow text-xs"
-        >
-          {isProcessing ? "Uploading..." : "Upload Candidates"}
-        </Button>
-      </div>
-    </div>
+        {file && (
+          <div className="p-2.5 bg-success/10 border border-success/20 rounded-md animate-fade-in">
+            <div className="flex items-center gap-2">
+              <FileText className="h-3.5 w-3.5 text-success" />
+              <span className="text-xs font-medium text-success">{file.name}</span>
+              <span className="text-xs text-success/80">({(file.size / 1024).toFixed(1)} KB)</span>
+            </div>
+          </div>
+        )}
+
+        {/* Processing Progress */}
+        {isProcessing && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium">Processing file...</span>
+              <span className="text-xs text-muted-foreground">{Math.round(progress)}%</span>
+            </div>
+            <Progress value={progress} className="w-full h-1.5" />
+          </div>
+        )}
+
+        {/* Results */}
+        {results && (
+          <div className="space-y-2">
+            {results.success > 0 && (
+              <Alert className="py-2">
+                <CheckCircle className="h-3.5 w-3.5" />
+                <AlertDescription className="text-xs">Successfully processed {results.success} candidates</AlertDescription>
+              </Alert>
+            )}
+
+            {results.errors.length > 0 && (
+              <Alert variant="destructive" className="py-2">
+                <AlertCircle className="h-3.5 w-3.5" />
+                <AlertDescription>
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium">{results.errors.length} errors found:</p>
+                    <div className="text-xs space-y-0.5 max-h-20 overflow-hidden">
+                      {results.errors.slice(0, 3).map((error, index) => (
+                        <p key={index}>• {error}</p>
+                      ))}
+                      {results.errors.length > 3 && <p>• ... and {results.errors.length - 3} more errors</p>}
+                    </div>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        )}
+
+        <div className="flex justify-end gap-3 pt-2">
+          <Button variant="outline" onClick={onCancel} size="sm" className="text-xs">
+            Cancel
+          </Button>
+          <Button 
+            onClick={processFile} 
+            disabled={!file || isProcessing || !appliedPosition || !source || (source === 'other' && !otherSource.trim())} 
+            size="sm"
+            className="gradient-primary text-white hover:scale-105 smooth-transition shadow-elegant hover:shadow-glow text-xs"
+          >
+            {isProcessing ? "Uploading..." : "Upload Candidates"}
+          </Button>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="logs" className="space-y-4 mt-4">
+        {(skippedCandidates.length === 0 && existingCandidates.length === 0) ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <FileSearch className="h-12 w-12 mx-auto mb-3 opacity-30" />
+            <p className="text-sm font-medium">No logs available</p>
+            <p className="text-xs mt-1">Upload candidates to see skipped entries and existing candidates</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Skipped Candidates */}
+            {skippedCandidates.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                  <h3 className="text-sm font-semibold">Skipped Candidates ({skippedCandidates.length})</h3>
+                </div>
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs">Row</TableHead>
+                        <TableHead className="text-xs">Name</TableHead>
+                        <TableHead className="text-xs">Email</TableHead>
+                        <TableHead className="text-xs">Reason</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {skippedCandidates.map((candidate, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="text-xs">{candidate.row_number || index + 1}</TableCell>
+                          <TableCell className="text-xs font-medium">{candidate.name}</TableCell>
+                          <TableCell className="text-xs">{candidate.email || '-'}</TableCell>
+                          <TableCell className="text-xs text-destructive">{candidate.reason}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
+
+            {/* Existing Candidates */}
+            {existingCandidates.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-warning" />
+                  <h3 className="text-sm font-semibold">Existing Candidates ({existingCandidates.length})</h3>
+                </div>
+                <p className="text-xs text-muted-foreground">These candidates have already attended previous rounds</p>
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs">Name</TableHead>
+                        <TableHead className="text-xs">Email</TableHead>
+                        <TableHead className="text-xs">Phone</TableHead>
+                        <TableHead className="text-xs">Position</TableHead>
+                        <TableHead className="text-xs">Status</TableHead>
+                        <TableHead className="text-xs">Round</TableHead>
+                        <TableHead className="text-xs">Date</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {existingCandidates.map((candidate, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="text-xs font-medium">{candidate.name}</TableCell>
+                          <TableCell className="text-xs">{candidate.email || '-'}</TableCell>
+                          <TableCell className="text-xs">{candidate.phone_number || '-'}</TableCell>
+                          <TableCell className="text-xs">{candidate.applied_position}</TableCell>
+                          <TableCell className="text-xs">
+                            <Badge variant="outline" className="text-[10px]">{candidate.interview_status}</Badge>
+                          </TableCell>
+                          <TableCell className="text-xs">{candidate.last_interview_round}</TableCell>
+                          <TableCell className="text-xs">{candidate.last_interview_date || '-'}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-2">
+              <Button variant="outline" onClick={onCancel} size="sm" className="text-xs">
+                Close
+              </Button>
+            </div>
+          </div>
+        )}
+      </TabsContent>
+    </Tabs>
   )
 }

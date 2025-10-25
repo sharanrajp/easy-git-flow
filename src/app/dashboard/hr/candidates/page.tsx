@@ -1789,7 +1789,7 @@ export default function CandidatesPage() {
               onClick={handleViewInterviews}
             >
               <List className="h-4 w-4 mr-2" />
-              View Scheduled Interviews
+              On-going Interviews
             </Button>
             <Button 
               variant="outline" 
