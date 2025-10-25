@@ -88,6 +88,8 @@ export default function PanelistDashboard() {
   const [selectedCandidateName, setSelectedCandidateName] = useState<string>("")
   const [isScreeningDialogOpen, setIsScreeningDialogOpen] = useState(false)
   const [selectedScreeningCandidate, setSelectedScreeningCandidate] = useState<PanelistCandidate | null>(null)
+  const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false)
+  const [viewDetailsCandidate, setViewDetailsCandidate] = useState<PanelistCandidate | null>(null)
 
   const itemsPerPage = 5
   const { toast } = useToast()
@@ -462,6 +464,11 @@ export default function PanelistDashboard() {
     setIsScreeningDialogOpen(true)
   }
 
+  const handleViewCandidateDetails = (candidate: PanelistCandidate) => {
+    setViewDetailsCandidate(candidate)
+    setIsViewDetailsOpen(true)
+  }
+
   const handleViewFeedback = (session: InterviewSession) => {
     setViewingFeedbackSession(session)
     setShowViewFeedback(true)
@@ -710,16 +717,20 @@ export default function PanelistDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {scheduledInterviews.map((candidate) => {
                   const canStartInterview = currentUser?.role === "panelist" && 
-                                           currentUser?.privileges?.status === "interview-assigned"
+                                           currentUser?.privileges?.status === "interview-assigned" &&
+                                           candidate.interview_type !== "virtual"
                   const canEndInterview = currentUser?.role === "panelist" && 
                                          currentUser?.privileges?.status === "in_interview"
+                  const isVirtual = candidate.interview_type === "virtual"
+                  const isR1 = candidate.last_interview_round?.toLowerCase() === "r1"
+                  const meetingLink = (candidate as any).meeting_link
                   
                   return (
                     <Card
                       key={candidate._id}
                       className="w-full h-full p-6 hover:shadow-lg transition-shadow relative"
                     >
-                      {/* Top Section with Name + Start/End Interview Button */}
+                      {/* Top Section with Name + Action Button */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="space-y-1">
                           <CardTitle className="text-2xl font-bold">{candidate.name}</CardTitle>
@@ -737,90 +748,66 @@ export default function PanelistDashboard() {
                         </div>
 
                         {/* Interview Action Button in Top Right */}
-                        {canStartInterview && (
+                        {isVirtual && meetingLink ? (
                           <Button
-                            onClick={() => handleStartInterview(candidate._id)}
-                            disabled={isUpdatingStatus}
+                            onClick={() => window.open(meetingLink, '_blank')}
                             size="sm"
-                            className="bg-green-600 hover:bg-green-700"
+                            className="bg-purple-600 hover:bg-purple-700"
                           >
-                            <Play className="h-4 w-4 mr-1" />
-                            Start Interview
+                            <ExternalLink className="h-4 w-4 mr-1" />
+                            Join Teams
                           </Button>
-                        )}
-                        {canEndInterview && (
-                          <Button
-                            onClick={() => handleEndInterview(candidate)}
-                            disabled={isUpdatingStatus}
-                            size="sm"
-                            className="bg-red-600 hover:bg-red-700"
-                          >
-                            <Pause className="h-4 w-4 mr-1" />
-                            End Interview with Feedback
-                          </Button>
+                        ) : (
+                          <>
+                            {canStartInterview && (
+                              <Button
+                                onClick={() => handleStartInterview(candidate._id)}
+                                disabled={isUpdatingStatus}
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                <Play className="h-4 w-4 mr-1" />
+                                Start Interview
+                              </Button>
+                            )}
+                            {canEndInterview && (
+                              <Button
+                                onClick={() => handleEndInterview(candidate)}
+                                disabled={isUpdatingStatus}
+                                size="sm"
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                <Pause className="h-4 w-4 mr-1" />
+                                End Interview with Feedback
+                              </Button>
+                            )}
+                          </>
                         )}
                       </div>
 
                       <CardContent className="space-y-6">
-                        {/* Candidate Details */}
-                        <div className="flex gap-10 text-sm flex-wrap">
-                          {/* Email */}
-                          <div className="flex items-center gap-2 text-muted-foreground min-w-[150px]">
-                            <Mail className="h-4 w-4" />
-                            <span className="truncate">{candidate.email}</span>
-                          </div>
-
-                          {/* Experience */}
-                          <div className="flex items-center gap-2 text-muted-foreground min-w-[130px]">
-                            <Briefcase className="h-4 w-4" />
-                            <span>{candidate.total_experience} years experience</span>
-                          </div>
-
-                          {/* Skills */}
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Star className="h-4 w-4" />
-                            <div className="flex flex-wrap gap-1">
-                              {Array.isArray(candidate.skill_set)
-                                ? candidate.skill_set.map((skill, idx) => (
-                                    <Badge key={idx} variant="secondary" className="text-xs">
-                                      {skill}
-                                    </Badge>
-                                  ))
-                                : <span>{candidate.skill_set}</span>
-                              }
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Resume + Feedback + Screening Buttons */}
-                        <div className="flex gap-2">
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 flex-wrap">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleViewResume(candidate.resume_link || null, candidate.name)}
-                            className="flex-1"
-                          >
-                            <FileText className="h-4 w-4 mr-2" />
-                            Resume
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewCandidateFeedback(candidate)}
+                            onClick={() => handleViewCandidateDetails(candidate)}
                             className="flex-1"
                           >
                             <Eye className="h-4 w-4 mr-2" />
-                            View Feedback
+                            View Details
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewScreening(candidate)}
-                            className="flex-1"
-                          >
-                            <FileSearch className="h-4 w-4 mr-2" />
-                            View Screening Result
-                          </Button>
+                          {!isR1 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewCandidateFeedback(candidate)}
+                              className="flex-1"
+                            >
+                              <FileText className="h-4 w-4 mr-2" />
+                              View Feedback
+                            </Button>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -995,9 +982,164 @@ export default function PanelistDashboard() {
           />
         )}
 
+        {/* View Candidate Details Dialog */}
+        <Dialog open={isViewDetailsOpen} onOpenChange={setIsViewDetailsOpen}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Candidate Details</DialogTitle>
+            </DialogHeader>
+            {viewDetailsCandidate && (
+              <div className="space-y-6">
+                {/* Basic Information */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Name</p>
+                    <p className="text-base">{viewDetailsCandidate.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Register Number</p>
+                    <p className="text-base font-mono">{viewDetailsCandidate.register_number}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Email</p>
+                    <p className="text-base">{viewDetailsCandidate.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Phone</p>
+                    <p className="text-base">{viewDetailsCandidate.phone_number || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Applied Position</p>
+                    <p className="text-base">{viewDetailsCandidate.applied_position || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Experience</p>
+                    <p className="text-base">{viewDetailsCandidate.total_experience} years</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Notice Period</p>
+                    <p className="text-base">{viewDetailsCandidate.notice_period || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Willing to Relocate</p>
+                    <p className="text-base">{viewDetailsCandidate.willing_to_relocate ? "Yes" : "No"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Interview Type</p>
+                    <p className="text-base capitalize">{viewDetailsCandidate.interview_type || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Current Round</p>
+                    <p className="text-base">{viewDetailsCandidate.last_interview_round || "N/A"}</p>
+                  </div>
+                </div>
+
+                {/* Skills */}
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Skills</p>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.isArray(viewDetailsCandidate.skill_set) && viewDetailsCandidate.skill_set.map((skill, idx) => (
+                      <Badge key={idx} variant="secondary">{skill}</Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Resume Summary */}
+                {(viewDetailsCandidate as any).resume_summary && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Resume Summary</p>
+                    <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                      {(viewDetailsCandidate as any).resume_summary}
+                    </p>
+                  </div>
+                )}
+
+                {/* Job Match */}
+                {(viewDetailsCandidate as any).job_match && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Job Match Analysis</p>
+                    <div className="space-y-3 bg-muted p-3 rounded-md">
+                      <div>
+                        <p className="text-sm font-medium">Match Percentage</p>
+                        <p className="text-lg font-bold text-primary">{(viewDetailsCandidate as any).job_match.match_percentage}%</p>
+                      </div>
+                      {(viewDetailsCandidate as any).job_match.strengths && (viewDetailsCandidate as any).job_match.strengths.length > 0 && (
+                        <div>
+                          <p className="text-sm font-medium mb-1">Strengths</p>
+                          <ul className="list-disc list-inside text-sm space-y-1">
+                            {(viewDetailsCandidate as any).job_match.strengths.map((strength: string, idx: number) => (
+                              <li key={idx}>{strength}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {(viewDetailsCandidate as any).job_match.gaps && (viewDetailsCandidate as any).job_match.gaps.length > 0 && (
+                        <div>
+                          <p className="text-sm font-medium mb-1">Gaps</p>
+                          <ul className="list-disc list-inside text-sm space-y-1">
+                            {(viewDetailsCandidate as any).job_match.gaps.map((gap: string, idx: number) => (
+                              <li key={idx}>{gap}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Previous Rounds */}
+                {viewDetailsCandidate.previous_rounds && viewDetailsCandidate.previous_rounds.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Previous Rounds</p>
+                    <div className="space-y-2">
+                      {viewDetailsCandidate.previous_rounds.map((round, idx) => (
+                        <div key={idx} className="bg-muted p-3 rounded-md">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <p className="font-medium">{round.round?.toUpperCase()}</p>
+                              <p className="text-sm text-muted-foreground">{round.panel_name}</p>
+                            </div>
+                            <Badge variant={round.status === "selected" ? "default" : "secondary"}>
+                              {round.status}
+                            </Badge>
+                          </div>
+                          {round.feedback_submitted && (
+                            <div className="space-y-1 text-sm">
+                              <p><span className="font-medium">Rating:</span> {round.rating}/5</p>
+                              {round.feedback && <p><span className="font-medium">Feedback:</span> {round.feedback}</p>}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Resume Button */}
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleViewResume(viewDetailsCandidate.resume_link || null, viewDetailsCandidate.name)}
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    View Resume
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleViewScreening(viewDetailsCandidate)}
+                  >
+                    <FileSearch className="h-4 w-4 mr-2" />
+                    Screening Result
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Enhanced Scheduled Feedback Dialog */}
         {selectedScheduledCandidate && (
-          <ScheduledFeedbackDialog 
+          <ScheduledFeedbackDialog
             isOpen={showScheduledFeedback}
             onClose={handleScheduledFeedbackClose}
             candidate={selectedScheduledCandidate}

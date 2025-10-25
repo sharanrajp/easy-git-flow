@@ -68,6 +68,10 @@ export interface PanelistCandidate {
     match_percentage: number;
   };
   resume_summary?: string;
+  scheduled_date?: string;
+  scheduled_time?: string;
+  meeting_link?: string;
+  panel_members?: string[];
   previous_rounds: Array<{
     round: string;
     status: string;
