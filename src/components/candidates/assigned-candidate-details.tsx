@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ResumeDialog } from "./resume-dialog"
 import { useState } from "react"
-import { FileSearch, CheckCircle, X } from "lucide-react"
+import { FileSearch, CheckCircle, X, Star } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 // Local formatDate function since it's not exported from utils
 function formatDate(dateString: string | Date): string {
@@ -337,33 +338,45 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                           {/* Feedback Text */}
                           {round.feedback && (
                             <div className="mb-4">
-                              <p className="text-sm text-gray-600 mb-1">Feedback:</p>
+                              <p className="text-sm font-medium text-gray-700 mb-1">Feedback:</p>
                               <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-lg">
                                 <p className="text-gray-700 italic">"{round.feedback}"</p>
                               </div>
                             </div>
                           )}
 
-                          {/* Technical Skills Ratings */}
-                          <div className="bg-white p-4 rounded-lg border border-gray-200">
-                            <h4 className="text-sm font-semibold text-gray-700 mb-3">Technical Skills Assessment</h4>
-                            <div className="space-y-1">
-                              <StarRating rating={round.communication} label="Communication" />
-                              <StarRating rating={round.problem_solving} label="Problem Solving" />
-                              <StarRating rating={round.logical_thinking} label="Logical Thinking" />
-                              <StarRating rating={round.code_quality} label="Code Quality" />
-                              <StarRating rating={round.technical_knowledge} label="Technical Knowledge" />
-                            </div>
-                          </div>
-
-                          {/* Additional Info */}
-                          <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t">
-                            <span>
+                          {/* View Rating Button */}
+                          <div className="flex items-center justify-between pt-2">
+                            <span className="text-xs text-gray-500">
                               Feedback Status: {round.feedback_submitted ? "✅ Submitted" : "❌ Pending"}
                             </span>
-                            {round.rating && (
-                              <span>Overall Rating: {round.rating}</span>
-                            )}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-2 hover:bg-blue-50 hover:border-blue-300 transition-all"
+                                >
+                                  <Star className="h-4 w-4" />
+                                  View Rating
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="left" className="w-80 p-4">
+                                <div className="space-y-3">
+                                  <h4 className="text-sm font-semibold text-gray-900 mb-3 border-b pb-2">Technical Skills Assessment</h4>
+                                  <StarRating rating={round.communication} label="Communication" />
+                                  <StarRating rating={round.problem_solving} label="Problem Solving" />
+                                  <StarRating rating={round.logical_thinking} label="Logical Thinking" />
+                                  <StarRating rating={round.code_quality} label="Code Quality" />
+                                  <StarRating rating={round.technical_knowledge} label="Technical Knowledge" />
+                                  {round.rating && (
+                                    <div className="pt-2 border-t mt-3">
+                                      <span className="text-xs font-medium text-gray-600">Overall Rating: {round.rating}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
                           </div>
                         </div>
                       ))}
