@@ -1712,6 +1712,11 @@ export default function CandidatesPage() {
     if (!virtualScheduleCandidate) return
 
     try {
+      // Get panel member names for display
+      const allUsers = await getAllUsers()
+      const selectedPanelists = allUsers.filter(u => data.panelMembers.includes(u._id))
+      const panelNames = selectedPanelists.map(p => p.name).join(", ")
+
       const scheduleData = {
         scheduled_date: data.date.toISOString().split('T')[0],
         scheduled_time: data.time,
@@ -1722,7 +1727,9 @@ export default function CandidatesPage() {
         ...(!isVirtualReschedule && { 
           status: 'assigned',
           last_interview_round: 'r1',
-          final_status: 'scheduled'
+          final_status: 'scheduled',
+          panel_name: panelNames,
+          assignedPanelist: panelNames,
         }),
       }
 
