@@ -34,6 +34,7 @@ export interface BackendCandidate {
   resume_link?: string;
   offer_released_date?: string;
   joined_date?: string;
+  interview_type?: "walk-in" | "virtual";
   previous_rounds?: Array<{
     round: string;
     status: string;

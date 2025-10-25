@@ -97,6 +97,7 @@ export default function CandidatesPage() {
   const [candidateToSchedule, setCandidateToSchedule] = useState<Candidate | null>(null)
   const [panelistSearch, setPanelistSearch] = useState("")
   const [currentTime, setCurrentTime] = useState(Date.now())
+  const [mainTab, setMainTab] = useState<"walk-in" | "virtual">("walk-in")
   const [activeTab, setActiveTab] = useState("unassigned")
   const [unassignedCandidates, setUnassignedCandidates] = useState<BackendCandidate[]>([])
   const [assignedCandidates, setAssignedCandidates] = useState<BackendCandidate[]>([])
@@ -268,7 +269,7 @@ export default function CandidatesPage() {
     setUnassignedCurrentPage(1)
     setAssignedCurrentPage(1)
     setCompletedCurrentPage(1)
-  }, [searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter, interviewTypeFilter])
+  }, [searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter, interviewTypeFilter, mainTab])
 
   // Clear all filters
   const handleClearFilters = () => {
@@ -289,6 +290,9 @@ export default function CandidatesPage() {
         (candidate.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (candidate.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (candidate.applied_position || "").toLowerCase().includes(searchTerm.toLowerCase())
+
+      const matchesInterviewType = 
+        (candidate as any).interview_type?.toLowerCase() === mainTab
 
       const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
       const matchesStatus = statusFilter === "all" || (candidate.final_status || "").toLowerCase() === statusFilter.toLowerCase()
@@ -337,6 +341,7 @@ export default function CandidatesPage() {
 
       return (
         matchesSearch &&
+        matchesInterviewType &&
         matchesJob &&
         matchesStatus &&
         matchesExperience &&
@@ -415,7 +420,7 @@ export default function CandidatesPage() {
   // Apply filters to backend candidates with memoization
   const filteredUnassignedCandidates = useMemo(() => {
     return filterBackendCandidates(unassignedCandidates)
-  }, [unassignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
+  }, [unassignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter, mainTab])
   
   // Separate completed candidates from assigned candidates
   const filteredCompletedCandidates = useMemo(() => {
@@ -423,7 +428,7 @@ export default function CandidatesPage() {
       (c) => (c.last_interview_round === "r3" && ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "") || c.final_status === "rejected")
     )
     return filterBackendCandidates(completedList)
-  }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
+  }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter, mainTab])
 
   // Filter assigned candidates to exclude completed ones
   const filteredAssignedCandidates = useMemo(() => {
@@ -431,7 +436,7 @@ export default function CandidatesPage() {
       (c) => !(c.last_interview_round === "r3" && ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "") || c.final_status === "rejected")
     )
     return filterBackendCandidates(nonCompletedAssigned)
-  }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter])
+  }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter, mainTab])
 
   // Paginated data
   const paginatedUnassignedCandidates = useMemo(() => {
@@ -1856,21 +1861,31 @@ export default function CandidatesPage() {
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto">
-        <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="flex-1 flex flex-col overflow-hidden">
-          <div>
-          <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
-            <TabsTrigger value="unassigned">
-              Unassigned ({loadingUnassigned ? "..." : filteredUnassignedCandidates.length})
-            </TabsTrigger>
-            <TabsTrigger value="assigned">
-              Assigned ({loadingAssigned ? "..." : filteredAssignedCandidates.length})
-            </TabsTrigger>
-            <TabsTrigger value="completed">
-              Completed ({loadingAssigned ? "..." : filteredCompletedCandidates.length})
-            </TabsTrigger>
-          </TabsList>
-          </div>
-          <div className="flex-1 overflow-hidden">
+        {/* Main Tabs: Walk-in / Virtual */}
+        <div className="space-y-4">
+          <Tabs defaultValue="walk-in" value={mainTab} onValueChange={(val) => setMainTab(val as "walk-in" | "virtual")} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="walk-in">Walk-in</TabsTrigger>
+              <TabsTrigger value="virtual">Virtual</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          
+          {/* Sub-tabs for Unassigned/Assigned/Completed - filtered by main tab */}
+          <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="flex-1 flex flex-col overflow-hidden">
+            <div>
+              <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
+                <TabsTrigger value="unassigned">
+                  Unassigned ({loadingUnassigned ? "..." : filteredUnassignedCandidates.length})
+                </TabsTrigger>
+                <TabsTrigger value="assigned">
+                  Assigned ({loadingAssigned ? "..." : filteredAssignedCandidates.length})
+                </TabsTrigger>
+                <TabsTrigger value="completed">
+                  Completed ({loadingAssigned ? "..." : filteredCompletedCandidates.length})
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            <div className="flex-1 overflow-hidden">
             <TabsContent value="unassigned" className="mt-0 h-full overflow-auto">
             {loadingUnassigned ? (
               <Card>
@@ -2458,6 +2473,7 @@ export default function CandidatesPage() {
           </TabsContent>
           </div>
         </Tabs>
+        </div>
       </div>
 
       <div className="p-2 pb-0 border-t flex-shrink-0">
