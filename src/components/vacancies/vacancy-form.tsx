@@ -38,8 +38,10 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     hiring_manager_name: vacancy?.hiring_manager_name || "",
     recruiter_name: vacancy?.recruiter_name || "",
     number_of_vacancies: vacancy?.number_of_vacancies || 1,
-    experienceFrom: vacancy?.experience_range?.split("-")[0]?.trim() || "",
-    experienceTo: vacancy?.experience_range?.split("-")[1]?.replace(/[^\d]/g, "") || "",
+    experience_range: vacancy?.experience_range || "",
+    position_approved_by: vacancy?.position_approved_by || "",
+    category: vacancy?.category || "",
+    plan: vacancy?.plan || "",
     skills_required: vacancy?.skills_required || [],
     job_desc: vacancy?.job_desc || "",
     about_position: vacancy?.about_position || "",
@@ -97,12 +99,12 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
 
     const submitData: Partial<Vacancy> = {
       ...formData,
-      experience_range: `${formData.experienceFrom}-${formData.experienceTo} years`,
+      experience_range: formData.experience_range,
       interview_type: "Walk-In", // Only Walk-In interviews for this version
-      walkInDetails: {
+      walkInDetails: formData.drive_date || formData.drive_location ? {
         date: formData.drive_date,
         location: formData.drive_location,
-      },
+      } : undefined,
     }
 
     onSubmit(submitData)
@@ -121,8 +123,10 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       hiring_manager_name: vacancy?.hiring_manager_name || "",
       recruiter_name: vacancy?.recruiter_name || "",
       number_of_vacancies: vacancy?.number_of_vacancies || 1,
-      experienceFrom: vacancy?.experience_range?.split("-")[0]?.trim() || "",
-      experienceTo: vacancy?.experience_range?.split("-")[1]?.trim() || "",
+      experience_range: vacancy?.experience_range || "",
+      position_approved_by: vacancy?.position_approved_by || "",
+      category: vacancy?.category || "",
+      plan: vacancy?.plan || "",
       skills_required: vacancy?.skills_required || [],
       job_desc: vacancy?.job_desc || "",
       about_position: vacancy?.about_position || "",
@@ -180,20 +184,16 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       formData.priority &&
       formData.city &&
       formData.hiring_manager_name &&
-      formData.assignedPanelists &&
       formData.recruiter_name &&
       formData.number_of_vacancies &&
-      formData.experienceFrom &&
-      formData.experienceTo &&
-      formData.drive_date &&
-      formData.drive_location &&
+      formData.experience_range &&
       formData.job_desc.trim() &&
       formData.about_position.trim() // Make about position required
     )
   }
 
   const canSubmit = () => {
-    return canProceedToStep2() && formData.assignedPanelists.length >= 1 // Minimum 1 panelist required
+    return canProceedToStep2() // Panelist selection is no longer mandatory
   }
 
   const progress = currentStep === 1 ? 50 : 100
@@ -242,13 +242,16 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="replacement">Replacement</SelectItem>
+                      <SelectItem value="Backup Offer">Backup Offer</SelectItem>
+                      <SelectItem value="New">New</SelectItem>
+                      <SelectItem value="Reopened">Reopened</SelectItem>
+                      <SelectItem value="Replacement">Replacement</SelectItem>
+                      <SelectItem value="Attrition">Attrition</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="job_type">Job Type *</Label>
+                  <Label htmlFor="job_type">Employment Type *</Label>
                   <Select
                     value={formData.job_type}
                     onValueChange={(value: any) => setFormData({ ...formData, job_type: value })}
@@ -324,13 +327,19 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="city">City *</Label>
-                  <Input
-                    id="city"
+                  <Label htmlFor="city">Location *</Label>
+                  <Select
                     value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    required
-                  />
+                    onValueChange={(value: any) => setFormData({ ...formData, city: value })}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Chennai">Chennai</SelectItem>
+                      <SelectItem value="Chennai/Remote">Chennai/Remote</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="number_of_vacancies">Number of Vacancies *</Label>
@@ -365,6 +374,25 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   </Select>
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value: any) => setFormData({ ...formData, category: value })}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Growth Opportunity">Growth Opportunity</SelectItem>
+                      <SelectItem value="Attrition/Backup">Attrition/Backup</SelectItem>
+                      <SelectItem value="Proactive Hiring">Proactive Hiring</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
                   <Label htmlFor="projectClientName">Project/Client Name</Label>
                   <Input
                     id="projectClientName"
@@ -372,33 +400,43 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                     onChange={(e) => setFormData({ ...formData, projectClientName: e.target.value })}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="position_approved_by">Position Approved By</Label>
+                  <Input
+                    id="position_approved_by"
+                    value={formData.position_approved_by}
+                    onChange={(e) => setFormData({ ...formData, position_approved_by: e.target.value })}
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="experienceFrom">Experience From (years) *</Label>
-                  <Input
-                    id="experienceFrom"
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    value={formData.experienceFrom}
-                    onChange={(e) => setFormData({ ...formData, experienceFrom: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="experienceTo">Experience To (years) *</Label>
-                  <Input
-                    id="experienceTo"
-                    type="number"
-                    min="0"
-                    placeholder="5"
-                    value={formData.experienceTo}
-                    onChange={(e) => setFormData({ ...formData, experienceTo: e.target.value })}
-                    required
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="experience_range">Experience *</Label>
+                <Input
+                  id="experience_range"
+                  list="experience-presets"
+                  placeholder="Select or type experience range"
+                  value={formData.experience_range}
+                  onChange={(e) => setFormData({ ...formData, experience_range: e.target.value })}
+                  required
+                />
+                <datalist id="experience-presets">
+                  <option value="0-1 exp" />
+                  <option value="1-2 exp" />
+                  <option value="2-3 exp" />
+                  <option value="4-5 exp" />
+                  <option value="5+ exp" />
+                </datalist>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="plan">Plan</Label>
+                <Input
+                  id="plan"
+                  placeholder="Enter plan details"
+                  value={formData.plan}
+                  onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
+                />
               </div>
 
               <div className="space-y-2">
@@ -458,7 +496,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Drive Date *</Label>
+                    <Label>Drive Date</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -489,13 +527,12 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                     </Popover>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="drive_location">Drive Location *</Label>
+                    <Label htmlFor="drive_location">Drive Location</Label>
                     <Input
                       id="drive_location"
                       placeholder="Enter interview location"
                       value={formData.drive_location}
                       onChange={(e) => setFormData({ ...formData, drive_location: e.target.value })}
-                      required
                     />
                   </div>
                 </div>
@@ -509,7 +546,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
             <CardHeader>
               <CardTitle>Select Panelists</CardTitle>
               <CardDescription>
-                Choose panelists and managers for this vacancy from all users. Selected:{" "}
+                Choose panelists and managers for this vacancy from all users (optional). Selected:{" "}
                 {formData.assignedPanelists.length}
               </CardDescription>
             </CardHeader>

@@ -57,6 +57,9 @@ export interface Vacancy {
   projectClientName?: string
   city?: string
   about_position?: string
+  position_approved_by?: string
+  category?: string
+  plan?: string
 }
 
 export interface Candidate {
