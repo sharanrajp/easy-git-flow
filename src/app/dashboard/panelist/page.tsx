@@ -9,6 +9,7 @@ import { Popover, PopoverContent } from "@/components/ui/popover"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
+import { Pagination } from "@/components/ui/pagination"
 import {
   Calendar,
   Clock,
@@ -90,6 +91,7 @@ export default function PanelistDashboard() {
   const [selectedScreeningCandidate, setSelectedScreeningCandidate] = useState<PanelistCandidate | null>(null)
   const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false)
   const [viewDetailsCandidate, setViewDetailsCandidate] = useState<PanelistCandidate | null>(null)
+  const [completedCurrentPage, setCompletedCurrentPage] = useState(1)
 
   const itemsPerPage = 5
   const { toast } = useToast()
@@ -153,6 +155,15 @@ export default function PanelistDashboard() {
 
   const scheduledInterviews = filteredCandidates.filter(candidate => !hasFeedbackCompleted(candidate))
   const completedCandidateInterviews = filteredCandidates.filter(candidate => hasFeedbackCompleted(candidate))
+
+  // Pagination for completed interviews
+  const paginatedCompletedInterviews = useMemo(() => {
+    const startIndex = (completedCurrentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return completedCandidateInterviews.slice(startIndex, endIndex)
+  }, [completedCandidateInterviews, completedCurrentPage, itemsPerPage])
+
+  const completedTotalPages = Math.ceil(completedCandidateInterviews.length / itemsPerPage)
 
   const getPreviousRoundsText = (rounds: PanelistCandidate['previous_rounds']) => {
     if (!rounds || rounds.length === 0) return "No Previous Rounds"
@@ -563,10 +574,6 @@ export default function PanelistDashboard() {
 
   const panelistStatus = getPanelistStatus()
 
-  const totalPages = Math.ceil(completedInterviews.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedCompletedInterviews = completedInterviews.slice(startIndex, startIndex + itemsPerPage)
-
   const MetricCard = ({
     title,
     value,
@@ -851,7 +858,7 @@ export default function PanelistDashboard() {
                             </TableCell>
                           </TableRow>
                         ) : (
-                          completedCandidateInterviews.map((candidate) => {
+                          paginatedCompletedInterviews.map((candidate) => {
                             const panelistRounds = getPanelistRounds(candidate)
                             return (
                             <TableRow key={candidate._id}>
@@ -910,6 +917,17 @@ export default function PanelistDashboard() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Pagination */}
+              {completedCandidateInterviews.length > 0 && (
+                <div className="flex justify-center">
+                  <Pagination
+                    currentPage={completedCurrentPage}
+                    totalPages={completedTotalPages}
+                    onPageChange={setCompletedCurrentPage}
+                  />
+                </div>
+              )}
           </div>
         </div>
 
