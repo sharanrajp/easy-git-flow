@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { X, Upload, Search, UserPlus, UserMinus, Loader2, CalendarIcon } from "lucide-react"
+import { X, Upload, Search, UserPlus, UserMinus, Loader2, CalendarIcon, Check, ChevronsUpDown } from "lucide-react"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import type { Vacancy } from "@/lib/schema-data"
@@ -44,7 +44,6 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     plan: vacancy?.plan || "",
     skills_required: vacancy?.skills_required || [],
     job_desc: vacancy?.job_desc || "",
-    about_position: vacancy?.about_position || "",
     drive_date: vacancy?.walkInDetails?.date || "",
     drive_location: vacancy?.walkInDetails?.location || "",
     assignedPanelists: vacancy?.assignedPanelists || [],
@@ -52,6 +51,8 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
 
   const [newSkill, setNewSkill] = useState("")
   const [panelistSearch, setPanelistSearch] = useState("")
+  const [skillSearchOpen, setSkillSearchOpen] = useState(false)
+  const [skillSearch, setSkillSearch] = useState("")
   const [allUsers, setAllUsers] = useState<any[]>([])
   const [hrUsers, setHrUsers] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -129,7 +130,6 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       plan: vacancy?.plan || "",
       skills_required: vacancy?.skills_required || [],
       job_desc: vacancy?.job_desc || "",
-      about_position: vacancy?.about_position || "",
       drive_date: vacancy?.walkInDetails?.date || "",
       drive_location: vacancy?.walkInDetails?.location || "",
       assignedPanelists: vacancy?.assignedPanelists || [],
@@ -137,6 +137,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     setCurrentStep(1)
     setNewSkill("")
     setPanelistSearch("")
+    setSkillSearch("")
 
     // Close the dialog by triggering parent component
     if (typeof window !== "undefined") {
@@ -145,13 +146,12 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     }
   }
 
-  const addSkill = () => {
-    if (newSkill.trim() && !formData.skills_required.includes(newSkill.trim())) {
+  const addSkill = (skill: string) => {
+    if (skill.trim() && !formData.skills_required.includes(skill.trim())) {
       setFormData({
         ...formData,
-        skills_required: [...formData.skills_required, newSkill.trim()],
+        skills_required: [...formData.skills_required, skill.trim()],
       })
-      setNewSkill("")
     }
   }
 
@@ -161,6 +161,55 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       skills_required: formData.skills_required.filter((s) => s !== skill),
     })
   }
+
+  const toggleSkill = (skill: string) => {
+    if (formData.skills_required.includes(skill)) {
+      removeSkill(skill)
+    } else {
+      addSkill(skill)
+    }
+  }
+
+  // Predefined skills list
+  const availableSkills = [
+    "Python",
+    "Java",
+    "SQL",
+    "JavaScript",
+    "TypeScript",
+    "React",
+    "Angular",
+    "Vue.js",
+    "Node.js",
+    "Cloud Computing",
+    "AWS",
+    "Azure",
+    "DevOps",
+    "Docker",
+    "Kubernetes",
+    "Data Analysis",
+    "Machine Learning",
+    "Artificial Intelligence",
+    "UX/UI Design",
+    "Communication",
+    "Leadership",
+    "Project Management",
+    "Agile",
+    "Scrum",
+    "HTML",
+    "CSS",
+    "REST API",
+    "GraphQL",
+    "MongoDB",
+    "PostgreSQL",
+    "MySQL",
+    "Git",
+    "CI/CD",
+  ]
+
+  const filteredSkills = availableSkills.filter(
+    (skill) => skill.toLowerCase().includes(skillSearch.toLowerCase())
+  )
 
   const handlePanelistChange = (panelistId: string, checked: boolean) => {
     if (checked) {
@@ -187,8 +236,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       formData.recruiter_name &&
       formData.number_of_vacancies &&
       formData.experience_range &&
-      formData.job_desc.trim() &&
-      formData.about_position.trim() // Make about position required
+      formData.job_desc.trim()
     )
   }
 
@@ -441,17 +489,72 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
 
               <div className="space-y-2">
                 <Label>Skills Required</Label>
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Add a skill"
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
-                  />
-                  <Button type="button" onClick={addSkill}>
-                    Add
-                  </Button>
-                </div>
+                <Popover open={skillSearchOpen} onOpenChange={setSkillSearchOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={skillSearchOpen}
+                      className="w-full justify-between"
+                      type="button"
+                    >
+                      Select skills...
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <div className="flex flex-col">
+                      <div className="flex items-center border-b px-3">
+                        <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                        <Input
+                          placeholder="Search or add custom skill..."
+                          value={skillSearch}
+                          onChange={(e) => setSkillSearch(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && skillSearch.trim()) {
+                              e.preventDefault()
+                              addSkill(skillSearch)
+                              setSkillSearch("")
+                            }
+                          }}
+                          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                        />
+                      </div>
+                      <div className="max-h-60 overflow-y-auto p-1">
+                        {skillSearch && !availableSkills.some(s => s.toLowerCase() === skillSearch.toLowerCase()) && (
+                          <div
+                            className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                            onClick={() => {
+                              addSkill(skillSearch)
+                              setSkillSearch("")
+                            }}
+                          >
+                            <div className="flex items-center flex-1">
+                              <span className="font-medium">Add "{skillSearch}"</span>
+                            </div>
+                          </div>
+                        )}
+                        {filteredSkills.map((skill) => (
+                          <div
+                            key={skill}
+                            className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                            onClick={() => toggleSkill(skill)}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${
+                                formData.skills_required.includes(skill) ? "opacity-100" : "opacity-0"
+                              }`}
+                            />
+                            {skill}
+                          </div>
+                        ))}
+                        {filteredSkills.length === 0 && !skillSearch && (
+                          <div className="px-2 py-1.5 text-sm text-muted-foreground">No skills found</div>
+                        )}
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {formData.skills_required.map((skill) => (
                     <Badge key={skill} variant="secondary" className="flex items-center gap-1 pr-1">
@@ -476,18 +579,6 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   placeholder="Enter job description, responsibilities, and requirements..."
                   value={formData.job_desc || ""}
                   onChange={(e) => setFormData({ ...formData, job_desc: e.target.value })}
-                  rows={4}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="about_position">About Position *</Label>
-                <Textarea
-                  id="about_position"
-                  placeholder="Describe the position, responsibilities, and requirements..."
-                  value={formData.about_position}
-                  onChange={(e) => setFormData({ ...formData, about_position: e.target.value })}
                   rows={4}
                   required
                 />

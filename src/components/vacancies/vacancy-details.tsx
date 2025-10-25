@@ -158,16 +158,6 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                 </div>
             </div>
           )}
-          {vacancy.about_position && (
-            <div className="mt-6 pt-6 border-t">
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3 block">
-                About Position
-              </label>
-                <div className="bg-gray-50 p-4 rounded-lg max-h-40 overflow-y-auto">
-                  <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{vacancy.about_position}</p>
-                </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 

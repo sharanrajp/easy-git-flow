@@ -19,7 +19,6 @@ interface BackendVacancy {
   drive_location: string;
   created_at: string;
   job_desc?: string;
-  about_position?: string;
   // Optional fields that might not be in backend
   location?: string;
   assignedPanelists?: string[];
@@ -44,7 +43,6 @@ interface VacancyCreateRequest {
   drive_location: string;
   job_desc?: string;
   request_type?:string;
-  about_position?: string;
   assignedPanelists?: string[];
   city?: string;
   projectClientName?: string;
@@ -75,7 +73,6 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
     // Default values for missing fields
     location: backendVacancy.location || "",
     job_desc: backendVacancy.job_desc || "",
-    about_position: backendVacancy.about_position || "",
     assignedPanelists: Array.isArray(backendVacancy.assignedPanelists) ? backendVacancy.assignedPanelists : [],
     city: backendVacancy.city || "",
     projectClientName: backendVacancy.projectClientName || "",
@@ -101,7 +98,6 @@ function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyC
     drive_date: new Date(frontendVacancy.walkInDetails?.date || "").toISOString() || "",
     drive_location: frontendVacancy.walkInDetails?.location || "",
     job_desc: frontendVacancy.job_desc || "",
-    about_position: frontendVacancy.about_position || "",
     request_type: frontendVacancy.request_type || "new",
     city: frontendVacancy.city || "",
     projectClientName: frontendVacancy.projectClientName || "",

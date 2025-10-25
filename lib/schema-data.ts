@@ -56,7 +56,6 @@ export interface Vacancy {
   request_type?: string
   projectClientName?: string
   city?: string
-  about_position?: string
   position_approved_by?: string
   category?: string
   plan?: string

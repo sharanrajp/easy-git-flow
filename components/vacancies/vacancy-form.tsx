@@ -34,7 +34,6 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
     experienceTo: vacancy?.experience_range?.split("-")[1]?.replace(/[^\d]/g, "") || "",
     skills_required: vacancy?.skills_required || [],
     job_desc: vacancy?.job_desc || "",
-    about_position: vacancy?.about_position || "",
     drive_date: vacancy?.walkInDetails?.date || vacancy?.drive_date || "",
     drive_location: vacancy?.walkInDetails?.location || vacancy?.drive_location || "",
     assignedPanelists: vacancy?.assignedPanelists || [],
@@ -343,17 +342,6 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
                   placeholder="Describe the role, responsibilities, and requirements..."
                   rows={8}
                   required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="about_position">About Position (Optional)</Label>
-                <Textarea
-                  id="about_position"
-                  value={formData.about_position}
-                  onChange={(e) => handleInputChange("about_position", e.target.value)}
-                  placeholder="Additional details about the position..."
-                  rows={4}
                 />
               </div>
             </CardContent>
