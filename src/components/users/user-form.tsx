@@ -22,7 +22,6 @@ interface FormData {
   email: string
   password: string
   role: User["role"]
-  panelist_type?: User["panelist_type"]
   skill_set: string[]
   available_rounds: string[]
   current_status?: User["current_status"]
@@ -33,8 +32,7 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     name: user?.name || "",
     email: user?.email || "",
     password: "",
-    role: user?.role || ("panelist" as const),
-    panelist_type: user?.panelist_type || ("panel_member" as const),
+    role: user?.role || ("panel_member" as const),
     skill_set: user?.skill_set || [],
     available_rounds: user?.available_rounds || [],
     current_status: user?.current_status || ("free" as const),
@@ -47,17 +45,12 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
 
     const submitData: any = {
       ...formData,
-      panelist_type: formData.role === "panelist" ? formData.panelist_type : undefined,
-      // Only include skill_set and available_rounds for panelists
-      skill_set: formData.role === "panelist" ? formData.skill_set : undefined,
-      available_rounds:
-        formData.role === "panelist"
-          ? formData.panelist_type === "manager"
-            ? ["r3"]
-            : formData.available_rounds
-          : undefined,
-      // Only include current_status for panelists
-      current_status: formData.role === "panelist" ? formData.current_status : undefined,
+      // Only include skill_set and available_rounds for panel members and TPM/TEM
+      skill_set: (formData.role === "panel_member" || formData.role === "tpm_tem") ? formData.skill_set : undefined,
+      available_rounds: formData.role === "tpm_tem" ? ["r3"] : 
+                        formData.role === "panel_member" ? formData.available_rounds : undefined,
+      // Only include current_status for panel members and TPM/TEM
+      current_status: (formData.role === "panel_member" || formData.role === "tpm_tem") ? formData.current_status : undefined,
     }
 
     // Only include password if it's been filled in
@@ -103,10 +96,10 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
     setFormData({
       ...formData,
       role,
-      panelist_type: role === "panelist" ? "panel_member" : undefined,
-      skill_set: role === "panelist" ? formData.skill_set : [],
-      available_rounds: role === "panelist" ? formData.available_rounds : [],
-      current_status: role === "panelist" ? "free" : undefined,
+      skill_set: (role === "panel_member" || role === "tpm_tem") ? formData.skill_set : [],
+      available_rounds: role === "tpm_tem" ? ["r3"] : 
+                        role === "panel_member" ? formData.available_rounds : [],
+      current_status: (role === "panel_member" || role === "tpm_tem") ? "free" : undefined,
     })
   }
 
@@ -151,39 +144,18 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="hr">HR Admin</SelectItem>
-            <SelectItem value="panelist">Panelist</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="hr">HR</SelectItem>
+            <SelectItem value="recruiter">Recruiter</SelectItem>
+            <SelectItem value="tpm_tem">TPM/TEM</SelectItem>
+            <SelectItem value="panel_member">Panel Member</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {formData.role === "panelist" && (
-        <div className="space-y-2">
-          <Label htmlFor="panelist_type">Panelist Type *</Label>
-          <Select
-            value={formData.panelist_type || "panel_member"}
-            onValueChange={(value: "panel_member" | "manager") =>
-              setFormData({
-                ...formData,
-                panelist_type: value,
-                available_rounds: value === "manager" ? ["r3"] : formData.available_rounds,
-              })
-            }
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="panel_member">Panelist (Panel Member)</SelectItem>
-              <SelectItem value="manager">Panelist (Manager)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      {formData.role === "panelist" && (
+      {(formData.role === "panel_member" || formData.role === "tpm_tem") && (
         <>
-          {formData.panelist_type === "panel_member" && (
+          {formData.role === "panel_member" && (
             <div className="space-y-2">
               <Label>Interview Rounds Handled</Label>
               <div className="space-y-2">
@@ -207,10 +179,10 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
             </div>
           )}
 
-          {formData.panelist_type === "manager" && (
+          {formData.role === "tpm_tem" && (
             <div className="p-4 bg-purple-50 rounded-lg">
               <p className="text-sm text-purple-800">
-                <strong>Panelist Manager:</strong> Automatically assigned to final round (r3) interviews and approvals.
+                <strong>TPM/TEM:</strong> Oversees technical pipeline, coordinates with hiring team, and handles R3 (final) interviews. Automatically assigned to Round 3.
               </p>
             </div>
           )}
@@ -247,11 +219,26 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
         </>
       )}
 
+      {formData.role === "admin" && (
+        <div className="p-4 bg-red-50 rounded-lg">
+          <p className="text-sm text-red-800">
+            <strong>Admin:</strong> Full system access to manage users, roles, jobs, and workflows.
+          </p>
+        </div>
+      )}
+
       {formData.role === "hr" && (
+        <div className="p-4 bg-blue-50 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>HR:</strong> Manages job openings, candidate pipeline, offers, and onboarding. Can assign candidates and schedule interviews.
+          </p>
+        </div>
+      )}
+
+      {formData.role === "recruiter" && (
         <div className="p-4 bg-green-50 rounded-lg">
           <p className="text-sm text-green-800">
-            <strong>HR Admin Role:</strong> Full access to manage vacancies, candidates, users, and offers. Can oversee
-            the entire recruitment process.
+            <strong>Recruiter:</strong> Sources candidates, screens resumes, schedules interviews, and manages assigned candidates.
           </p>
         </div>
       )}

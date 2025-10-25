@@ -625,15 +625,15 @@ export default function PanelistDashboard() {
   }
 
   return (
-    <DashboardLayout requiredRole="panelist">
+    <DashboardLayout requiredRole="panel_member">
       <div className="space-y-6 pt-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {currentUser?.panelist_type === "manager" ? "Manager Dashboard" : "Panelist Dashboard"}
+              {currentUser?.role === "tpm_tem" ? "Manager Dashboard" : "Panelist Dashboard"}
             </h1>
             <p className="text-gray-600">
-              {currentUser?.panelist_type === "manager"
+              {currentUser?.role === "tpm_tem"
                 ? "Manage your team and oversee interview processes."
                 : "Welcome back! Here's your interview schedule and performance."}
             </p>

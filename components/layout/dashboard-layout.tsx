@@ -29,17 +29,14 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
       // Redirect to appropriate dashboard
       switch (storedUser.role) {
         case "hr":
+        case "admin":
+        case "recruiter":
           navigate("/dashboard/hr")
           break
-        case "panelist":
+        case "panel_member":
+        case "tpm_tem":
           navigate("/dashboard/panelist")
           break
-      case "manager":
-        navigate("/dashboard/manager")
-        break
-      case "superadmin":
-        navigate("/dashboard/superadmin")
-        break
       default:
         navigate("/login")
         break
@@ -63,7 +60,7 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
     return null
   }
 
-  if (user.role === "panelist") {
+  if (user.role === "panel_member" || user.role === "tpm_tem") {
     return (
       <div className="flex flex-col min-h-screen bg-background animate-fade-in">
         <Header user={user} />

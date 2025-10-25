@@ -53,7 +53,7 @@ export function VirtualScheduleInterviewDialog({
     const fetchPanelists = async () => {
       try {
         const users = await getAllUsers()
-        setPanelists(users.filter((user: User) => user.role === "panelist"))
+        setPanelists(users.filter((user: User) => user.role === "panel_member" || user.role === "tpm_tem"))
       } catch (error) {
         console.error("Failed to fetch panelists:", error)
         setPanelists([])

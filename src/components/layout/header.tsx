@@ -35,17 +35,18 @@ const navigationItems = {
     { name: "Users", href: "/dashboard/hr/users", icon: Users },
     { name: "Vacancies", href: "/dashboard/hr/vacancies", icon: Briefcase },
   ],
-  panelist: [
+  recruiter: [
+    { name: "Dashboard", href: "/dashboard/hr", icon: LayoutDashboard },
+    { name: "Candidates", href: "/dashboard/hr/candidates", icon: UserCheck },
+    { name: "Vacancies", href: "/dashboard/hr/vacancies", icon: Briefcase },
+  ],
+  panel_member: [
     { name: "Dashboard", href: "/dashboard/panelist", icon: LayoutDashboard },
     { name: "Candidates", href: "/dashboard/panelist/candidates", icon: UserCheck },
   ],
-  manager: [
-    { name: "Dashboard", href: "/dashboard/manager", icon: LayoutDashboard },
-    { name: "Candidates", href: "/dashboard/manager/candidates", icon: UserCheck },
-    { name: "Offers", href: "/dashboard/manager/offers", icon: Briefcase },
-  ],
-  superadmin: [
-    // { name: "Dashboard", href: "/dashboard/superadmin", icon: LayoutDashboard },
+  tpm_tem: [
+    { name: "Dashboard", href: "/dashboard/panelist", icon: LayoutDashboard },
+    { name: "Candidates", href: "/dashboard/panelist/candidates", icon: UserCheck },
   ],
 }
 
@@ -114,7 +115,7 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
           </div>
           
           {/* Navigation Items */}
-          {user.role !== "panelist" && (
+          {user.role !== "panel_member" && user.role !== "tpm_tem" && (
             <nav className="hidden md:flex items-center space-x-2">
               {items.map((item) => {
                 const Icon = item.icon
@@ -142,8 +143,8 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* Mobile Navigation Menu for non-panelist users */}
-          {user.role !== "panelist" && (
+          {/* Mobile Navigation Menu for non-panel users */}
+          {user.role !== "panel_member" && user.role !== "tpm_tem" && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="md:hidden px-4 py-3 rounded-xl hover:bg-accent/50">
@@ -192,8 +193,8 @@ export function Header({ user, onUserUpdate }: HeaderProps) {
             </div>
           </div>
 
-          {/* Status Badge with Popover for Panelists */}
-          {user.role !== "hr" && user.role !== "admin" && user.role !== "superadmin" && (
+          {/* Status Badge with Popover for Panel Members and TPM/TEM */}
+          {(user.role === "panel_member" || user.role === "tpm_tem" || user.role === "recruiter") && (
             <Popover>
               <PopoverTrigger asChild>
                 <Button 

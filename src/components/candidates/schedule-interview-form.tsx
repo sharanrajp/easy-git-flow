@@ -33,7 +33,7 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
       setIsLoading(true)
       try {
         const users = await getAllUsers()
-        setPanelists(users.filter((user) => user.role === "panelist" && user.current_status === "free"))
+        setPanelists(users.filter((user) => (user.role === "panel_member" || user.role === "tpm_tem") && user.current_status === "free"))
       } catch (error) {
         console.error("Failed to fetch panelists:", error)
         setPanelists([])

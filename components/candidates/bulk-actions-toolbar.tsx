@@ -22,7 +22,7 @@ export function BulkActionsToolbar({ selectedCount, onBulkAction }: BulkActionsT
     const fetchPanelists = async () => {
       try {
         const users = await getAllUsers()
-        setPanelists(users.filter((user: User) => user.role === "panelist" && user.current_status === "free"))
+        setPanelists(users.filter((user: User) => (user.role === "panel_member" || user.role === "tpm_tem") && user.current_status === "free"))
       } catch (error) {
         console.error("Failed to fetch panelists:", error)
         setPanelists([])

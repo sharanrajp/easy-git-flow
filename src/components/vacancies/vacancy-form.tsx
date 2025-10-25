@@ -64,7 +64,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       try {
         const users = await getAllUsers()
         setAllUsers(users)
-        setManagers(users.filter((user) => user.panelist_type === "manager"))
+        setManagers(users.filter((user) => user.role === "tpm_tem"))
         setHrUsers(users.filter((user) => user.role === "hr"))
       } catch (error) {
         console.error("Failed to fetch users:", error)

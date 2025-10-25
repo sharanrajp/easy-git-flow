@@ -341,7 +341,7 @@ export default function SuperadminDashboard() {
   }
 
   return (
-    <DashboardLayout requiredRole="superadmin">
+    <DashboardLayout requiredRole="admin">
       <div className="space-y-6 p-6">
         {/* Header with KPI Vacancy Filter */}
         <div className="flex items-center justify-between">

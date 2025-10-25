@@ -145,7 +145,7 @@ export default function PanelistCandidatesPage() {
   }
 
   return (
-    <DashboardLayout requiredRole="panelist">
+    <DashboardLayout requiredRole="panel_member">
       <div className="space-y-6">
         {/* Search */}
         <div className="relative max-w-md">

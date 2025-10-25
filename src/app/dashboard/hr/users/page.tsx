@@ -64,16 +64,7 @@ export default function UsersPage() {
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.role.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesRole = (() => {
-      if (roleFilter === "all") return true
-      if (roleFilter === "manager") {
-        return (user.role === "panelist" && user.panelist_type === "manager")
-      }
-      if (roleFilter === "panelist") {
-        return ((user.role === "panelist" && user.panelist_type !== "manager") && user.role !== "hr")
-      }
-      return user.role === roleFilter
-    })()
+    const matchesRole = roleFilter === "all" || user.role === roleFilter
     const matchesStatus = statusFilter === "all" || user.current_status === statusFilter
 
     return matchesSearch && matchesRole && matchesStatus
@@ -273,12 +264,18 @@ export default function UsersPage() {
     fetchUsers() // Refresh the list
   }
 
-  const getRoleColor = (role: string, panelist_type?: string) => {
+  const getRoleColor = (role: string) => {
     switch (role) {
+      case "admin":
+        return "bg-red-100 text-red-800"
       case "hr":
         return "bg-blue-100 text-blue-800"
-      case "panelist":
-        return panelist_type === "manager" ? "bg-purple-100 text-purple-800" : "bg-green-100 text-green-800"
+      case "recruiter":
+        return "bg-green-100 text-green-800"
+      case "tpm_tem":
+        return "bg-purple-100 text-purple-800"
+      case "panel_member":
+        return "bg-yellow-100 text-yellow-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -301,14 +298,18 @@ export default function UsersPage() {
     }
   }
 
-  const formatRole = (role: string, panelist_type?: string) => {
+  const formatRole = (role: string) => {
     switch (role) {
+      case "admin":
+        return "Admin"
       case "hr":
-        return "HR Admin"
-      case "panelist":
-        return panelist_type === "manager" ? "Panelist (Manager)" : "Panelist (Panel Member)"
-      case "manager":
-        return "Manager"
+        return "HR"
+      case "recruiter":
+        return "Recruiter"
+      case "tpm_tem":
+        return "TPM/TEM"
+      case "panel_member":
+        return "Panel Member"
       default:
         return role
     }
@@ -372,14 +373,16 @@ export default function UsersPage() {
             )}
             <div className="flex flex-wrap gap-2">
               <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-40">
                   <SelectValue placeholder="Role" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="hr">HR Admin</SelectItem>
-                  <SelectItem value="panelist">Panelist</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="hr">HR</SelectItem>
+                  <SelectItem value="recruiter">Recruiter</SelectItem>
+                  <SelectItem value="tpm_tem">TPM/TEM</SelectItem>
+                  <SelectItem value="panel_member">Panel Member</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>

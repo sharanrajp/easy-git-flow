@@ -36,24 +36,14 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
       switch (storedUser.role) {
         case "hr":
         case "admin":
+        case "recruiter":
           navigate("/dashboard/hr")
           break
-        case "panelist":
+        case "panel_member":
+        case "tpm_tem":
           navigate("/dashboard/panelist")
           break
-        case "manager":
-          navigate("/dashboard/manager")
-          break
-        case "superadmin":
-          navigate("/dashboard/superadmin")
-          break
       }
-      return
-    }
-
-    // Prevent superadmin from accessing HR-only pages
-    if (storedUser.role === "superadmin" && requiredRole === "hr") {
-      navigate("/dashboard/superadmin")
       return
     }
 
@@ -86,7 +76,7 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
     return null
   }
 
-  if (user.role === "panelist") {
+  if (user.role === "panel_member" || user.role === "tpm_tem") {
     return (
       <div className="flex flex-col min-h-screen bg-background">
         <Header user={user} onUserUpdate={handleUserUpdate} />
