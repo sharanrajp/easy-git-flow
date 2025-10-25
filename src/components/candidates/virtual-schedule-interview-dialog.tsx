@@ -80,7 +80,7 @@ export function VirtualScheduleInterviewDialog({
       }
       setRescheduleReason("")
     }
-  }, [open, existingSchedule])
+  }, [open])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
