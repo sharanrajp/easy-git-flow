@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { X, Upload, Search, UserPlus, UserMinus, Loader2, CalendarIcon, Check, ChevronsUpDown } from "lucide-react"
+import { X, Upload, Search, UserPlus, UserMinus, Loader2, CalendarIcon, Check, ChevronsUpDown, XCircle } from "lucide-react"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import type { Vacancy } from "@/lib/schema-data"
@@ -519,6 +519,16 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                           }}
                           className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                         />
+                        {skillSearch && (
+                          <button
+                            type="button"
+                            onClick={() => setSkillSearch("")}
+                            className="ml-2 hover:bg-accent rounded-sm p-1 transition-colors"
+                            aria-label="Clear search"
+                          >
+                            <XCircle className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                          </button>
+                        )}
                       </div>
                       <div className="max-h-60 overflow-y-auto p-1">
                         {skillSearch && !availableSkills.some(s => s.toLowerCase() === skillSearch.toLowerCase()) && (
