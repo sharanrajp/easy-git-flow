@@ -120,4 +120,10 @@ export interface Candidate {
     decision: "selected" | "rejected"
     submittedAt: string
   }>
+  // Virtual interview scheduling fields
+  scheduled_date?: string
+  scheduled_time?: string
+  meeting_link?: string
+  panel_members?: string[]
+  reschedule_reason?: string
 }

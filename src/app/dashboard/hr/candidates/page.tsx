@@ -63,7 +63,7 @@ import { useToast } from "@/hooks/use-toast"
 import { API_BASE_URL } from "@/lib/api-config"
 import { getToken } from "@/lib/auth"
 import { Switch } from "@/components/ui/switch"
-import { SkillsDisplay } from "@/components/ui/skills-display"
+import { VirtualScheduleInterviewDialog } from "@/components/candidates/virtual-schedule-interview-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 
@@ -127,6 +127,11 @@ export default function CandidatesPage() {
   const [loadingInterviews, setLoadingInterviews] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [isScreening, setIsScreening] = useState(false)
+  
+  // Virtual interview scheduling states
+  const [isVirtualScheduleDialogOpen, setIsVirtualScheduleDialogOpen] = useState(false)
+  const [virtualScheduleCandidate, setVirtualScheduleCandidate] = useState<BackendCandidate | null>(null)
+  const [isVirtualReschedule, setIsVirtualReschedule] = useState(false)
   
   // Search states for dialogs
   const [panelSearchTerm, setPanelSearchTerm] = useState("")
@@ -1663,6 +1668,67 @@ export default function CandidatesPage() {
     }
   }
 
+  // Virtual interview scheduling handlers
+  const handleVirtualScheduleInterview = (candidate: BackendCandidate) => {
+    setVirtualScheduleCandidate(candidate)
+    setIsVirtualReschedule(false)
+    setIsVirtualScheduleDialogOpen(true)
+  }
+
+  const handleVirtualRescheduleInterview = (candidate: BackendCandidate) => {
+    setVirtualScheduleCandidate(candidate)
+    setIsVirtualReschedule(true)
+    setIsVirtualScheduleDialogOpen(true)
+  }
+
+  const handleVirtualScheduleSubmit = async (data: {
+    date: Date
+    time: string
+    meetingLink: string
+    panelMembers: string[]
+    rescheduleReason?: string
+  }) => {
+    if (!virtualScheduleCandidate) return
+
+    try {
+      const scheduleData = {
+        scheduled_date: data.date.toISOString().split('T')[0],
+        scheduled_time: data.time,
+        meeting_link: data.meetingLink,
+        panel_members: data.panelMembers,
+        ...(data.rescheduleReason && { reschedule_reason: data.rescheduleReason }),
+      }
+
+      // Update candidate with schedule data
+      await updateCandidate(virtualScheduleCandidate._id, scheduleData)
+
+      // Refresh candidate lists
+      const [unassignedData, assignedData] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates()
+      ])
+      setUnassignedCandidates(unassignedData)
+      setAssignedCandidates(assignedData)
+
+      toast({
+        title: "Success",
+        description: isVirtualReschedule 
+          ? "Interview rescheduled successfully" 
+          : "Interview scheduled successfully",
+      })
+
+      setIsVirtualScheduleDialogOpen(false)
+      setVirtualScheduleCandidate(null)
+    } catch (error) {
+      console.error('Error scheduling interview:', error)
+      toast({
+        title: "Error",
+        description: "Failed to schedule interview. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
   return (
     <DashboardLayout requiredRole="hr">
       <div className="flex-col h-full pt-1">
@@ -1922,9 +1988,10 @@ export default function CandidatesPage() {
                         <TableHead>Skills</TableHead>
                         <TableHead>Source</TableHead>
                         <TableHead>Applied Date</TableHead>
-                        <TableHead>Wait Time</TableHead>
+                        {mainTab === "walk-in" && <TableHead>Wait Time</TableHead>}
                         <TableHead>Status</TableHead>
-                        <TableHead>Check-In</TableHead>
+                        {mainTab === "walk-in" && <TableHead>Check-In</TableHead>}
+                        {mainTab === "virtual" && <TableHead>Schedule Info</TableHead>}
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -1955,11 +2022,13 @@ export default function CandidatesPage() {
                               : candidate.source || "Not specified"}
                           </TableCell>
                           <TableCell>{new Date(candidate.created_at).toLocaleDateString()}</TableCell>
-                          <TableCell>
-                            <span className={candidate.checked_in ? "font-medium text-orange-600" : "text-gray-500"}>
-                              {formatBackendWaitTime(candidate.wait_duration_minutes)}
-                            </span>
-                          </TableCell>
+                          {mainTab === "walk-in" && (
+                            <TableCell>
+                              <span className={candidate.checked_in ? "font-medium text-orange-600" : "text-gray-500"}>
+                                {formatBackendWaitTime(candidate.wait_duration_minutes)}
+                              </span>
+                            </TableCell>
+                          )}
                           <TableCell>
                             <Badge className="bg-gray-100 text-gray-800">
                               <div className="flex items-center gap-1">
@@ -1968,13 +2037,43 @@ export default function CandidatesPage() {
                               </div>
                             </Badge>
                           </TableCell>
-                          <TableCell>
-                            <Switch
-                              checked={candidate.checked_in || false}
-                              disabled={checkingInCandidate === candidate._id}
-                              onCheckedChange={(checked) => handleBackendCheckIn(candidate, checked as boolean)}
-                            />
-                          </TableCell>
+                          {mainTab === "walk-in" && (
+                            <TableCell>
+                              <Switch
+                                checked={candidate.checked_in || false}
+                                disabled={checkingInCandidate === candidate._id}
+                                onCheckedChange={(checked) => handleBackendCheckIn(candidate, checked as boolean)}
+                              />
+                            </TableCell>
+                          )}
+                          {mainTab === "virtual" && (
+                            <TableCell>
+                              {(candidate as any).scheduled_date ? (
+                                <div className="space-y-1 text-sm">
+                                  <div className="flex items-center gap-1 text-green-700">
+                                    <Calendar className="h-3 w-3" />
+                                    <span>{new Date((candidate as any).scheduled_date).toLocaleDateString()}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1 text-blue-700">
+                                    <Clock className="h-3 w-3" />
+                                    <span>{(candidate as any).scheduled_time}</span>
+                                  </div>
+                                  {(candidate as any).meeting_link && (
+                                    <a
+                                      href={(candidate as any).meeting_link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs text-blue-600 hover:underline"
+                                    >
+                                      Meeting Link
+                                    </a>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-gray-400 text-sm">Not scheduled</span>
+                              )}
+                            </TableCell>
+                          )}
                           <TableCell>
                             <div className="flex items-center space-x-2">
                               <Button
@@ -2004,7 +2103,7 @@ export default function CandidatesPage() {
                               >
                                 <Trash2 className="h-4 w-4 text-red-600" />
                               </Button>
-                              {candidate.checked_in && (
+                              {mainTab === "walk-in" && candidate.checked_in && (
                                 <Button
                                   size="sm"
                                   className="
@@ -2021,6 +2120,26 @@ export default function CandidatesPage() {
                                 >
                                 Assign Panel
                                 </Button>
+                              )}
+                              {mainTab === "virtual" && (
+                                (candidate as any).scheduled_date ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-blue-600 hover:bg-blue-50"
+                                    onClick={() => handleVirtualRescheduleInterview(candidate)}
+                                  >
+                                    Reschedule
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                    onClick={() => handleVirtualScheduleInterview(candidate)}
+                                  >
+                                    Schedule Interview
+                                  </Button>
+                                )
                               )}
                             </div>
                           </TableCell>
@@ -3364,6 +3483,29 @@ export default function CandidatesPage() {
             </div>
           </DialogContent>
         </Dialog>
+        
+        {/* Virtual Schedule Interview Dialog */}
+        <VirtualScheduleInterviewDialog
+          open={isVirtualScheduleDialogOpen}
+          onClose={() => {
+            setIsVirtualScheduleDialogOpen(false)
+            setVirtualScheduleCandidate(null)
+            setIsVirtualReschedule(false)
+          }}
+          candidate={virtualScheduleCandidate}
+          isReschedule={isVirtualReschedule}
+          existingSchedule={
+            virtualScheduleCandidate && (virtualScheduleCandidate as any).scheduled_date
+              ? {
+                  date: (virtualScheduleCandidate as any).scheduled_date,
+                  time: (virtualScheduleCandidate as any).scheduled_time,
+                  meetingLink: (virtualScheduleCandidate as any).meeting_link,
+                  panelMembers: (virtualScheduleCandidate as any).panel_members || [],
+                }
+              : undefined
+          }
+          onSubmit={handleVirtualScheduleSubmit}
+        />
       </div>
     </DashboardLayout>
   )
