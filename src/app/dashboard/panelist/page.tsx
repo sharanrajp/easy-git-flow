@@ -836,20 +836,17 @@ export default function PanelistDashboard() {
                         <TableRow>
                           <TableHead>Reg. No.</TableHead>
                           <TableHead>Name</TableHead>
-                          <TableHead>Email</TableHead>
                           <TableHead>Position</TableHead>
                           <TableHead>Skill Set</TableHead>
                           <TableHead>Experience</TableHead>
                           <TableHead>Interview Round</TableHead>
-                          <TableHead>Resume</TableHead>
-                          <TableHead>Screening</TableHead>
-                          <TableHead>Action</TableHead>
+                          <TableHead>Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {completedCandidateInterviews.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                               No completed interviews found
                             </TableCell>
                           </TableRow>
@@ -862,7 +859,6 @@ export default function PanelistDashboard() {
                                 {candidate.register_number}
                               </TableCell>
                               <TableCell>{candidate.name}</TableCell>
-                              <TableCell>{candidate.email}</TableCell>
                               <TableCell>{candidate.applied_position || "N/A"}</TableCell>
                               <TableCell>
                                 <SkillsDisplay 
@@ -887,35 +883,24 @@ export default function PanelistDashboard() {
                                 )}
                               </TableCell>
                               <TableCell>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleViewResume(candidate.resume_link || null, candidate.name)}
-                                >
-                                  <FileText className="h-4 w-4 mr-1" />
-                                  View Resume
-                                </Button>
-                              </TableCell>
-                              <TableCell>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleViewScreening(candidate)}
-                                  className="p-0 h-auto text-purple-600 hover:text-purple-800"
-                                >
-                                  <FileSearch className="h-4 w-4 mr-1" />
-                                  View
-                                </Button>
-                              </TableCell>
-                              <TableCell>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleViewCandidateFeedback(candidate)}
-                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                >
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  View Feedback
-                                </Button>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleViewCandidateDetails(candidate)}
+                                  >
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    View Details
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleViewCandidateFeedback(candidate)}
+                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                  >
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    View Feedback
+                                  </Button>
+                                </div>
                               </TableCell>
                             </TableRow>
                           )})
