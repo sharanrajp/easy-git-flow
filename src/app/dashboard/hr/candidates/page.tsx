@@ -429,18 +429,38 @@ export default function CandidatesPage() {
   }, [unassignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter, mainTab])
   
   // Separate completed candidates from assigned candidates
+  // Completed: R3 with any final status, OR rejected in any round, OR (R2 on-hold should stay in Assigned)
   const filteredCompletedCandidates = useMemo(() => {
-    const completedList = assignedCandidates.filter(
-      (c) => (c.last_interview_round === "r3" && ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "") || c.final_status === "rejected")
-    )
+    const completedList = assignedCandidates.filter((c) => {
+      const isR3 = c.last_interview_round === "r3"
+      const isRejected = c.final_status === "rejected"
+      const isR3Selected = isR3 && c.final_status === "selected"
+      const isR3OnHold = isR3 && c.final_status === "on-hold"
+      
+      // Move to completed if:
+      // 1. Rejected in any round
+      // 2. R3 + selected
+      // 3. R3 + on-hold
+      // 4. Final statuses like hired, joined, offerReleased, candidateDeclined
+      return isRejected || isR3Selected || isR3OnHold || 
+        (isR3 && ["hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || ""))
+    })
     return filterBackendCandidates(completedList)
   }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter, mainTab])
 
   // Filter assigned candidates to exclude completed ones
+  // R2 on-hold should remain in Assigned
   const filteredAssignedCandidates = useMemo(() => {
-    const nonCompletedAssigned = assignedCandidates.filter(
-      (c) => !(c.last_interview_round === "r3" && ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "") || c.final_status === "rejected")
-    )
+    const nonCompletedAssigned = assignedCandidates.filter((c) => {
+      const isR3 = c.last_interview_round === "r3"
+      const isRejected = c.final_status === "rejected"
+      const isR3Selected = isR3 && c.final_status === "selected"
+      const isR3OnHold = isR3 && c.final_status === "on-hold"
+      const isFinalStatus = isR3 && ["hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "")
+      
+      // Keep in assigned if NOT completed
+      return !(isRejected || isR3Selected || isR3OnHold || isFinalStatus)
+    })
     return filterBackendCandidates(nonCompletedAssigned)
   }, [assignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter, mainTab])
 
@@ -1698,6 +1718,12 @@ export default function CandidatesPage() {
         meeting_link: data.meetingLink,
         panel_members: data.panelMembers,
         ...(data.rescheduleReason && { reschedule_reason: data.rescheduleReason }),
+        // Move to assigned tab after scheduling (unless rescheduling)
+        ...(!isVirtualReschedule && { 
+          status: 'assigned',
+          last_interview_round: 'r1',
+          final_status: 'scheduled'
+        }),
       }
 
       // Update candidate with schedule data
@@ -1720,6 +1746,7 @@ export default function CandidatesPage() {
 
       setIsVirtualScheduleDialogOpen(false)
       setVirtualScheduleCandidate(null)
+      setIsVirtualReschedule(false)
     } catch (error) {
       console.error('Error scheduling interview:', error)
       toast({
@@ -2200,7 +2227,7 @@ export default function CandidatesPage() {
                         <TableHead>Skills</TableHead>
                         <TableHead>Experience</TableHead>
                         <TableHead>Round</TableHead>
-                        <TableHead>Panelist</TableHead>
+                        <TableHead>{mainTab === "virtual" ? "Schedule Info" : "Panelist"}</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
@@ -2281,7 +2308,32 @@ export default function CandidatesPage() {
                             </TableCell>
                             <TableCell>{candidate.total_experience || "N/A"}</TableCell>
                             <TableCell>{candidate.last_interview_round}</TableCell>
-                            <TableCell>{candidate.panel_name}</TableCell>
+                            <TableCell>
+                              {mainTab === "virtual" && (candidate as any).scheduled_date ? (
+                                <div className="space-y-1 text-sm">
+                                  <div className="flex items-center gap-1 text-green-700">
+                                    <Calendar className="h-3 w-3" />
+                                    <span>{new Date((candidate as any).scheduled_date).toLocaleDateString()}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1 text-blue-700">
+                                    <Clock className="h-3 w-3" />
+                                    <span>{(candidate as any).scheduled_time}</span>
+                                  </div>
+                                  {(candidate as any).meeting_link && (
+                                    <a 
+                                      href={(candidate as any).meeting_link} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:underline text-xs"
+                                    >
+                                      Join Meeting
+                                    </a>
+                                  )}
+                                </div>
+                              ) : (
+                                candidate.panel_name || "N/A"
+                              )}
+                            </TableCell>
                             <TableCell>
                               <Badge className={getStatusColor(candidate.final_status || "assigned")}>
                                 <div className="flex items-center gap-1">
@@ -2318,7 +2370,8 @@ export default function CandidatesPage() {
                                 >
                                   <Trash2 className="h-4 w-4 text-red-600" />
                                 </Button>
-                                {["selected", "on-hold"].includes(candidate.final_status) && (candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && (
+                                {/* For walk-in: show Map Assign for selected/on-hold in R1/R2 */}
+                                {mainTab === "walk-in" && ["selected", "on-hold"].includes(candidate.final_status) && (candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && (
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -2327,6 +2380,27 @@ export default function CandidatesPage() {
                                   >
                                     Map Assign
                                   </Button>
+                                )}
+                                {/* For virtual: show Schedule Interview only for Selected status */}
+                                {mainTab === "virtual" && candidate.final_status === "selected" && (
+                                  (candidate as any).scheduled_date ? (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="text-blue-600 hover:bg-blue-50"
+                                      onClick={() => handleVirtualRescheduleInterview(candidate)}
+                                    >
+                                      Reschedule
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      size="sm"
+                                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                                      onClick={() => handleVirtualScheduleInterview(candidate)}
+                                    >
+                                      Schedule Interview
+                                    </Button>
+                                  )
                                 )}
                               </div>
                             </TableCell>
