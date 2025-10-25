@@ -1723,18 +1723,21 @@ export default function CandidatesPage() {
         meeting_link: data.meetingLink,
         panel_members: data.panelMembers,
         ...(data.rescheduleReason && { reschedule_reason: data.rescheduleReason }),
-        // Move to assigned tab after scheduling (unless rescheduling)
-        ...(!isVirtualReschedule && { 
-          status: 'assigned',
-          last_interview_round: 'r1',
-          final_status: 'scheduled',
-          panel_name: panelNames,
-          assignedPanelist: panelNames,
-        }),
       }
 
       // Update candidate with schedule data
       await updateCandidate(virtualScheduleCandidate._id, scheduleData)
+
+      // For virtual interviews, assign to panel using first panelist as panel_id
+      // This creates the assignment record needed for backend to recognize as "assigned"
+      if (!isVirtualReschedule && data.panelMembers.length > 0 && currentUser) {
+        await assignCandidateToPanel(
+          virtualScheduleCandidate._id,
+          data.panelMembers[0], // Use first panelist as panel_id
+          'r1',
+          currentUser.name || currentUser.email
+        )
+      }
 
       // Refresh candidate lists
       const [unassignedData, assignedData] = await Promise.all([
