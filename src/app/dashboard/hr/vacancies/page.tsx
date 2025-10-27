@@ -315,7 +315,7 @@ export default function VacanciesPage() {
           <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Positions</h1>
-            <p className="text-gray-600">Manage job openings and track applications</p>
+            <p className="text-gray-600">View and manage all positions created in the system</p>
           </div>
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <DialogTrigger asChild>
