@@ -309,19 +309,19 @@ export default function VacanciesPage() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Vacancies</h1>
-              <p className="text-gray-600">Manage job openings and track applications</p>
+              <h1 className="text-2xl font-bold text-gray-900">positions</h1>
+              <p className="text-gray-600">View and manage all positions created in the system</p>
             </div>
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-blue-600 hover:bg-blue-700">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Vacancy
+                  Add Position
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Create New Vacancy</DialogTitle>
+                  <DialogTitle>Create New Position</DialogTitle>
                 </DialogHeader>
                 <VacancyForm onSubmit={handleCreateVacancy} />
               </DialogContent>
@@ -347,7 +347,7 @@ export default function VacanciesPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search vacancies by title or location..."
+                  placeholder="Search positions by title or location..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 pr-8"
@@ -682,7 +682,7 @@ export default function VacanciesPage() {
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Edit Vacancy</DialogTitle>
+              <DialogTitle>Edit Position</DialogTitle>
             </DialogHeader>
             {selectedVacancy && (
               <VacancyForm vacancy={selectedVacancy} onSubmit={handleEditVacancy} />

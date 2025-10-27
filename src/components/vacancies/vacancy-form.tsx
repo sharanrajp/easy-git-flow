@@ -256,7 +256,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
           </div>
           <Progress value={progress} className="h-2" />
           <div className="flex justify-between text-xs text-gray-500">
-            <span className={currentStep === 1 ? "font-medium text-blue-600" : ""}>Vacancy Details</span>
+            <span className={currentStep === 1 ? "font-medium text-blue-600" : ""}>Position Details</span>
             <span className={currentStep === 2 ? "font-medium text-blue-600" : ""}>Select Panelists</span>
           </div>
         </div>
@@ -266,7 +266,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
         {(currentStep === 1 || vacancy) && (
           <Card>
             <CardHeader>
-              <CardTitle>Vacancy Details</CardTitle>
+              <CardTitle>Position Details</CardTitle>
               <CardDescription>Fill in the basic information about the position</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -390,7 +390,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="number_of_vacancies">Number of Vacancies *</Label>
+                  <Label htmlFor="number_of_vacancies">Number of Openings *</Label>
                   <Input
                     id="number_of_vacancies"
                     type="number"
@@ -478,10 +478,10 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="plan">Plan</Label>
+                <Label htmlFor="plan">Reason for Hiring</Label>
                 <Input
                   id="plan"
-                  placeholder="Enter plan details"
+                  placeholder="Enter the reason for opening this position"
                   value={formData.plan}
                   onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
                 />
@@ -647,7 +647,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
             <CardHeader>
               <CardTitle>Select Panelists</CardTitle>
               <CardDescription>
-                Choose panelists and managers for this vacancy from all users (optional). Selected:{" "}
+                Choose panelists for this position (optional). Selected:{" "}
                 {formData.assignedPanelists.length}
               </CardDescription>
             </CardHeader>
@@ -780,7 +780,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               </Button>
             ) : (
               <Button type="submit" disabled={!canSubmit()} className="bg-blue-600 hover:bg-blue-700">
-                Create Vacancy
+                Save Position
               </Button>
             )}
           </div>
