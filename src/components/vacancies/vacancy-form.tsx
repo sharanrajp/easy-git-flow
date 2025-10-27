@@ -772,7 +772,11 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
             ) : currentStep === 1 ? (
               <Button
                 type="button"
-                onClick={() => setCurrentStep(2)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setCurrentStep(2)
+                }}
                 disabled={!canProceedToStep2()}
                 className="bg-blue-600 hover:bg-blue-700"
               >
