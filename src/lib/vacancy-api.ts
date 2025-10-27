@@ -146,7 +146,7 @@ export async function fetchVacancies(): Promise<Position[]> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/Position/get_all_vacancies`, {
+    const response = await fetch(`${API_BASE_URL}/position/get_all_vacancies`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -177,7 +177,7 @@ export async function addVacancy(vacancyData: Partial<Position>): Promise<Positi
   const backendData = transformFrontendToBackend(vacancyData);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/Position/add`, {
+    const response = await fetch(`${API_BASE_URL}/position/add`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
