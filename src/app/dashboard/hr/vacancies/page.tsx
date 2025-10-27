@@ -1,17 +1,22 @@
 // @ts-nocheck
 
-import { useState, useEffect, useCallback } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useState, useEffect, useCallback } from "react";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Plus,
   Search,
@@ -25,41 +30,41 @@ import {
   Users,
   ChevronDown,
   X,
-} from "lucide-react"
-import { type Vacancy } from "@/lib/schema-data"
-import { getAllUsers } from "@/lib/auth"
-import { fetchVacancies, addVacancy } from "@/lib/vacancy-api"
-import { makeAuthenticatedRequest } from "@/lib/auth"
-import { API_BASE_URL } from "@/lib/api-config"
-import { VacancyForm } from "@/components/vacancies/vacancy-form"
-import { VacancyDetails } from "@/components/vacancies/vacancy-details"
-import { PanelistSelector } from "@/components/vacancies/panelist-selector"
-import { formatDate } from "@/lib/utils"
-import { Pagination } from "@/components/ui/pagination"
+} from "lucide-react";
+import { type Vacancy } from "@/lib/schema-data";
+import { getAllUsers } from "@/lib/auth";
+import { fetchVacancies, addVacancy } from "@/lib/vacancy-api";
+import { makeAuthenticatedRequest } from "@/lib/auth";
+import { API_BASE_URL } from "@/lib/api-config";
+import { VacancyForm } from "@/components/vacancies/vacancy-form";
+import { VacancyDetails } from "@/components/vacancies/vacancy-details";
+import { PanelistSelector } from "@/components/vacancies/panelist-selector";
+import { formatDate } from "@/lib/utils";
+import { Pagination } from "@/components/ui/pagination";
 
 export default function VacanciesPage() {
-  const [vacancies, setVacancies] = useState<Vacancy[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [vacancies, setVacancies] = useState<Vacancy[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [priorityFilter, setPriorityFilter] = useState("all")
-  const [recruiterFilter, setRecruiterFilter] = useState("all")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("list")
-  const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null)
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
-  const [isPanelistEditOpen, setIsPanelistEditOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [recruiterFilter, setRecruiterFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isPanelistEditOpen, setIsPanelistEditOpen] = useState(false);
   const [candidateCounts, setCandidateCounts] = useState<
     Record<string, { applications: number; shortlisted: number; interviewed: number; joined: number }>
-  >({})
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 15
+  >({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   const getCandidateCountsForVacancy = useCallback((vacancyTitle: string) => {
-    return { applications: 0, shortlisted: 0, interviewed: 0, joined: 0 }
+    return { applications: 0, shortlisted: 0, interviewed: 0, joined: 0 };
     // Note: Candidate counts should now be fetched from API
 
     return {
@@ -68,238 +73,238 @@ export default function VacanciesPage() {
       interviewed: vacancyCandidates.filter((c: any) => c.status === "interviewed" || c.status === "in_interview")
         .length,
       joined: vacancyCandidates.filter((c: any) => c.status === "hired" || c.status === "joined").length,
-    }
-  }, [])
+    };
+  }, []);
 
   // Load vacancies from API on component mount
   useEffect(() => {
     const loadVacancies = async () => {
       try {
-        setLoading(true)
-        setError(null)
-        const fetchedVacancies = await fetchVacancies()
-        setVacancies(fetchedVacancies)
+        setLoading(true);
+        setError(null);
+        const fetchedVacancies = await fetchVacancies();
+        setVacancies(fetchedVacancies);
       } catch (err) {
-        console.error('Failed to load vacancies:', err)
-        setError(err instanceof Error ? err.message : 'Failed to load vacancies')
+        console.error("Failed to load vacancies:", err);
+        setError(err instanceof Error ? err.message : "Failed to load vacancies");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadVacancies()
-  }, [])
+    loadVacancies();
+  }, []);
 
   useEffect(() => {
     const updateCandidateCounts = () => {
-      if (typeof window === "undefined") return
+      if (typeof window === "undefined") return;
 
       const newCounts: Record<
         string,
         { applications: number; shortlisted: number; interviewed: number; joined: number }
-      > = {}
+      > = {};
 
       vacancies.forEach((vacancy) => {
-        newCounts[vacancy.position_title] = getCandidateCountsForVacancy(vacancy.position_title)
-      })
+        newCounts[vacancy.position_title] = getCandidateCountsForVacancy(vacancy.position_title);
+      });
 
-      setCandidateCounts(newCounts)
-    }
+      setCandidateCounts(newCounts);
+    };
 
     // Initial load
-    updateCandidateCounts()
+    updateCandidateCounts();
 
     const handleCandidateUpdate = () => {
-      updateCandidateCounts()
-    }
+      updateCandidateCounts();
+    };
 
-    window.addEventListener("candidateUpdated", handleCandidateUpdate)
-    window.addEventListener("storage", handleCandidateUpdate)
+    window.addEventListener("candidateUpdated", handleCandidateUpdate);
+    window.addEventListener("storage", handleCandidateUpdate);
 
     return () => {
-      window.removeEventListener("candidateUpdated", handleCandidateUpdate)
-      window.removeEventListener("storage", handleCandidateUpdate)
-    }
-  }, [vacancies, getCandidateCountsForVacancy])
+      window.removeEventListener("candidateUpdated", handleCandidateUpdate);
+      window.removeEventListener("storage", handleCandidateUpdate);
+    };
+  }, [vacancies, getCandidateCountsForVacancy]);
 
   useEffect(() => {
     const handleCloseDialog = () => {
-      setIsCreateOpen(false)
-      setIsEditOpen(false)
-    }
+      setIsCreateOpen(false);
+      setIsEditOpen(false);
+    };
 
-    window.addEventListener("closeVacancyDialog", handleCloseDialog)
+    window.addEventListener("closeVacancyDialog", handleCloseDialog);
     return () => {
-      window.removeEventListener("closeVacancyDialog", handleCloseDialog)
-    }
-  }, [])
+      window.removeEventListener("closeVacancyDialog", handleCloseDialog);
+    };
+  }, []);
 
   const filteredVacancies = vacancies.filter((vacancy) => {
     const matchesSearch =
       (vacancy.position_title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (vacancy.location?.toLowerCase() || "").includes(searchTerm.toLowerCase())
+      (vacancy.location?.toLowerCase() || "").includes(searchTerm.toLowerCase());
 
-    const matchesStatus = statusFilter === "all" || vacancy.status === statusFilter
-    const matchesPriority = priorityFilter === "all" || vacancy.priority === priorityFilter
-    const matchesRecruiter = recruiterFilter === "all" || vacancy.recruiter_name === recruiterFilter
+    const matchesStatus = statusFilter === "all" || vacancy.status === statusFilter;
+    const matchesPriority = priorityFilter === "all" || vacancy.priority === priorityFilter;
+    const matchesRecruiter = recruiterFilter === "all" || vacancy.recruiter_name === recruiterFilter;
 
-    return matchesSearch && matchesStatus && matchesPriority && matchesRecruiter
-  })
+    return matchesSearch && matchesStatus && matchesPriority && matchesRecruiter;
+  });
 
-  const totalPages = Math.ceil(filteredVacancies.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedVacancies = filteredVacancies.slice(startIndex, startIndex + itemsPerPage)
+  const totalPages = Math.ceil(filteredVacancies.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedVacancies = filteredVacancies.slice(startIndex, startIndex + itemsPerPage);
 
   useEffect(() => {
-    setCurrentPage(1)
-  }, [searchTerm, statusFilter, priorityFilter, recruiterFilter])
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, priorityFilter, recruiterFilter]);
 
   const handleCreateVacancy = async (vacancyData: Partial<Vacancy>) => {
     try {
-      setError(null)
-      const newVacancy = await addVacancy(vacancyData)
-      
+      setError(null);
+      const newVacancy = await addVacancy(vacancyData);
+
       // Keep all original form data and only take id and postedOn from backend
       const completeVacancy = {
         ...vacancyData,
         id: newVacancy.id || newVacancy._id,
         postedOn: newVacancy.postedOn || new Date().toISOString(),
-      }
-      
-      setVacancies([...vacancies, completeVacancy])
-      setIsCreateOpen(false)
+      };
+
+      setVacancies([...vacancies, completeVacancy]);
+      setIsCreateOpen(false);
     } catch (err) {
-      console.error('Failed to create vacancy:', err)
-      setError(err instanceof Error ? err.message : 'Failed to create vacancy')
+      console.error("Failed to create vacancy:", err);
+      setError(err instanceof Error ? err.message : "Failed to create vacancy");
     }
-  }
+  };
 
   const handleEditVacancy = async (vacancyData: Partial<Vacancy>) => {
-    if (!selectedVacancy) return
+    if (!selectedVacancy) return;
 
     try {
       const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${selectedVacancy.id}`, {
         method: "PUT",
-        body: JSON.stringify({...selectedVacancy, ...vacancyData})
-      })
+        body: JSON.stringify({ ...selectedVacancy, ...vacancyData }),
+      });
 
       if (response.ok) {
         // Reload vacancies from API to get updated data
-        const updatedVacancies = await fetchVacancies()
-        setVacancies(updatedVacancies)
-        setIsEditOpen(false)
-        setSelectedVacancy(null)
+        const updatedVacancies = await fetchVacancies();
+        setVacancies(updatedVacancies);
+        setIsEditOpen(false);
+        setSelectedVacancy(null);
       } else {
-        console.error("Failed to update vacancy:", await response.text())
+        console.error("Failed to update vacancy:", await response.text());
       }
     } catch (error) {
-      console.error("Error updating vacancy:", error)
+      console.error("Error updating vacancy:", error);
     }
-  }
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "P0":
-        return "bg-red-100 text-red-700"
+        return "bg-red-100 text-red-700";
       case "P1":
-        return "bg-orange-100 text-orange-700"
+        return "bg-orange-100 text-orange-700";
       case "P2":
-        return "bg-blue-100 text-blue-700"
+        return "bg-blue-100 text-blue-700";
       case "P3":
-        return "bg-gray-100 text-gray-700"
+        return "bg-gray-100 text-gray-700";
       default:
-        return "bg-gray-100 text-gray-700"
+        return "bg-gray-100 text-gray-700";
     }
-  }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "paused":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "closed":
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const isDeadlineExpired = (deadline: string) => {
-    return new Date(deadline) < new Date()
-  }
+    return new Date(deadline) < new Date();
+  };
 
   const handlePanelistUpdate = async (panelistIds: string[]) => {
-    if (!selectedVacancy) return
+    if (!selectedVacancy) return;
 
     try {
       // Update vacancy in database
       const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${selectedVacancy.id}`, {
         method: "PUT",
-        body: JSON.stringify({...selectedVacancy, assignedPanelists: panelistIds})
-      })
-
-      if (response.ok) {
-        // Reload vacancies from API to get updated data  
-        const updatedVacancies = await fetchVacancies()
-        setVacancies(updatedVacancies)
-        setSelectedVacancy({ ...selectedVacancy, assignedPanelists: panelistIds })
-        setIsPanelistEditOpen(false)
-      } else {
-        console.error("Failed to update panelists:", await response.text())
-      }
-    } catch (error) {
-      console.error("Error updating panelists:", error)
-    }
-  }
-
-  const handleStatusChange = async (vacancyId: string, newStatus: string) => {
-    const vacancy = vacancies.find(v => v.id === vacancyId)
-    if (!vacancy) return
-
-    try {
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${vacancyId}`, {
-        method: "PUT", 
-        body: JSON.stringify({...vacancy, status: newStatus})
-      })
+        body: JSON.stringify({ ...selectedVacancy, assignedPanelists: panelistIds }),
+      });
 
       if (response.ok) {
         // Reload vacancies from API to get updated data
-        const updatedVacancies = await fetchVacancies()
-        setVacancies(updatedVacancies)
+        const updatedVacancies = await fetchVacancies();
+        setVacancies(updatedVacancies);
+        setSelectedVacancy({ ...selectedVacancy, assignedPanelists: panelistIds });
+        setIsPanelistEditOpen(false);
       } else {
-        console.error("Failed to update status:", await response.text())
+        console.error("Failed to update panelists:", await response.text());
       }
     } catch (error) {
-      console.error("Error updating status:", error)
+      console.error("Error updating panelists:", error);
     }
-  }
+  };
 
-  const [hrUsers, setHrUsers] = useState<any[]>([])
-  
+  const handleStatusChange = async (vacancyId: string, newStatus: string) => {
+    const vacancy = vacancies.find((v) => v.id === vacancyId);
+    if (!vacancy) return;
+
+    try {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${vacancyId}`, {
+        method: "PUT",
+        body: JSON.stringify({ ...vacancy, status: newStatus }),
+      });
+
+      if (response.ok) {
+        // Reload vacancies from API to get updated data
+        const updatedVacancies = await fetchVacancies();
+        setVacancies(updatedVacancies);
+      } else {
+        console.error("Failed to update status:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
+  };
+
+  const [hrUsers, setHrUsers] = useState<any[]>([]);
+
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        const users = await getAllUsers()
-        const hrUsersList = users.filter((user: any) => user.role === 'hr')
-        setHrUsers(hrUsersList)
+        const users = await getAllUsers();
+        const hrUsersList = users.filter((user: any) => user.role === "hr");
+        setHrUsers(hrUsersList);
       } catch (err) {
-        console.error('Failed to load users:', err)
+        console.error("Failed to load users:", err);
       }
-    }
-    loadUsers()
-  }, [])
+    };
+    loadUsers();
+  }, []);
 
   const uniqueRecruiters = Array.from(
     new Set([...vacancies.map((v) => v.recruiter_name).filter(Boolean), ...hrUsers.map((user) => user.name)]),
-  )
+  );
 
   const handleClearFilters = () => {
-    setSearchTerm("")
-    setStatusFilter("all")
-    setPriorityFilter("all")
-    setRecruiterFilter("all")
-  }
+    setSearchTerm("");
+    setStatusFilter("all");
+    setPriorityFilter("all");
+    setRecruiterFilter("all");
+  };
 
   return (
     <DashboardLayout requiredRole="hr">
@@ -309,19 +314,19 @@ export default function VacanciesPage() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">positions</h1>
-              <p className="text-gray-600">View and manage all positions created in the system</p>
+              <h1 className="text-2xl font-bold text-gray-900">Vacancies</h1>
+              <p className="text-gray-600">Manage job openings and track applications</p>
             </div>
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-blue-600 hover:bg-blue-700">
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Position
+                  Create Vacancy
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Create New Position</DialogTitle>
+                  <DialogTitle>Create New Vacancy</DialogTitle>
                 </DialogHeader>
                 <VacancyForm onSubmit={handleCreateVacancy} />
               </DialogContent>
@@ -347,7 +352,7 @@ export default function VacanciesPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search positions by title or location..."
+                  placeholder="Search vacancies by title or location..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 pr-8"
@@ -413,12 +418,8 @@ export default function VacanciesPage() {
                   >
                     <Grid className="h-4 w-4" />
                   </Button>
-                </div>                
-                <Button 
-                  variant="outline" 
-                  onClick={handleClearFilters}
-                  className="whitespace-nowrap"
-                >
+                </div>
+                <Button variant="outline" onClick={handleClearFilters} className="whitespace-nowrap">
                   Clear Filters
                 </Button>
               </div>
@@ -438,242 +439,239 @@ export default function VacanciesPage() {
 
           {/* Vacancies List/Grid */}
           {!loading && !error && (
-          <>
-            {viewMode === "list" ? (
-              <>
-                <Card>
-                  <CardContent className="p-0">
-                    <TooltipProvider>
-                      <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>S.No</TableHead>
-                      <TableHead>Position Title</TableHead>
-                      <TableHead>Priority</TableHead>
-                      <TableHead>Experience Range</TableHead>
-                      <TableHead>Drive On</TableHead>
-                      <TableHead>No. of Vacancies</TableHead>
-                      <TableHead>Recruiter</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>No. of Panelists</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                     {paginatedVacancies.map((vacancy) => {
-                       const counts = candidateCounts[vacancy.position_title] || {
-                         applications: 0,
-                         shortlisted: 0,
-                         interviewed: 0,
-                         joined: 0,
-                       }
-                       return (
-                         <TableRow
-                           key={vacancy.id}
-                         >
-                          <TableCell>
-                            <div className="font-mono text-sm text-gray-600">{filteredVacancies.indexOf(vacancy) + 1}</div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{vacancy.position_title}</div>
-                              <div className="text-sm text-gray-500">{vacancy.location}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getPriorityColor(vacancy.priority)}>{vacancy.priority}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">{vacancy.experience_range}</div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              {vacancy.walkInDetails?.date 
-                                ? formatDate(vacancy.walkInDetails.date)
-                                : "—"
-                              }
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm font-medium">{vacancy.number_of_vacancies}</div>
-                          </TableCell>
-                          <TableCell>{vacancy.recruiter_name || vacancy.hiring_manager_name}</TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="p-0 h-auto">
-                                  <div className="flex items-center gap-1">
-                                    <Badge className={getStatusColor(vacancy.status)}>{vacancy.status}</Badge>
-                                    <ChevronDown className="h-3 w-3" />
+            <>
+              {viewMode === "list" ? (
+                <>
+                  <Card>
+                    <CardContent className="p-0">
+                      <TooltipProvider>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>S.No</TableHead>
+                              <TableHead>Position Title</TableHead>
+                              <TableHead>Priority</TableHead>
+                              <TableHead>Experience Range</TableHead>
+                              <TableHead>Drive On</TableHead>
+                              <TableHead>No. of Vacancies</TableHead>
+                              <TableHead>Recruiter</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>No. of Panelists</TableHead>
+                              <TableHead>Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {paginatedVacancies.map((vacancy) => {
+                              const counts = candidateCounts[vacancy.position_title] || {
+                                applications: 0,
+                                shortlisted: 0,
+                                interviewed: 0,
+                                joined: 0,
+                              };
+                              return (
+                                <TableRow key={vacancy.id}>
+                                  <TableCell>
+                                    <div className="font-mono text-sm text-gray-600">
+                                      {filteredVacancies.indexOf(vacancy) + 1}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div>
+                                      <div className="font-medium">{vacancy.position_title}</div>
+                                      <div className="text-sm text-gray-500">{vacancy.location}</div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge className={getPriorityColor(vacancy.priority)}>{vacancy.priority}</Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="text-sm">{vacancy.experience_range}</div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="text-sm">
+                                      {vacancy.walkInDetails?.date
+                                        ? formatDate(vacancy.walkInDetails.date)
+                                        : formatDate(vacancy.postedOn)}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="text-sm font-medium">{vacancy.number_of_vacancies}</div>
+                                  </TableCell>
+                                  <TableCell>{vacancy.recruiter_name || vacancy.hiring_manager_name}</TableCell>
+                                  <TableCell>
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="p-0 h-auto">
+                                          <div className="flex items-center gap-1">
+                                            <Badge className={getStatusColor(vacancy.status)}>{vacancy.status}</Badge>
+                                            <ChevronDown className="h-3 w-3" />
+                                          </div>
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent>
+                                        <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "active")}>
+                                          Active
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "paused")}>
+                                          Paused
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "closed")}>
+                                          Closed
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center space-x-2">
+                                      <span className="font-medium">{vacancy.assignedPanelists.length}</span>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-blue-600"
+                                        onClick={() => {
+                                          setSelectedVacancy(vacancy);
+                                          setIsPanelistEditOpen(true);
+                                        }}
+                                      >
+                                        <Edit className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          setSelectedVacancy(vacancy);
+                                          setIsDetailsOpen(true);
+                                        }}
+                                      >
+                                        <Eye className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          setSelectedVacancy(vacancy);
+                                          setIsEditOpen(true);
+                                        }}
+                                      >
+                                        <Edit className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                            {!loading && !error && filteredVacancies.length === 0 && (
+                              <TableRow>
+                                <TableCell colSpan={10} className="py-12">
+                                  <div className="flex flex-col items-center justify-center text-center w-full">
+                                    <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                      <Plus className="h-8 w-8 text-gray-400" />
+                                    </div>
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">No vacancies found</h3>
+                                    <p className="text-gray-500 mb-4">
+                                      {searchTerm ||
+                                      statusFilter !== "all" ||
+                                      priorityFilter !== "all" ||
+                                      recruiterFilter !== "all"
+                                        ? "Try adjusting your search criteria"
+                                        : "Get started by creating your first vacancy"}
+                                    </p>
                                   </div>
-                                </Button>
-                              </DropdownMenuTrigger>
-                               <DropdownMenuContent>
-                                 <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "active")}>
-                                   Active
-                                 </DropdownMenuItem>
-                                 <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "paused")}>
-                                   Paused
-                                 </DropdownMenuItem>
-                                 <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "closed")}>
-                                   Closed
-                                 </DropdownMenuItem>
-                               </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <span className="font-medium">{vacancy.assignedPanelists.length}</span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-blue-600"
-                                onClick={() => {
-                                  setSelectedVacancy(vacancy)
-                                  setIsPanelistEditOpen(true)
-                                }}
-                              >
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedVacancy(vacancy)
-                                  setIsDetailsOpen(true)
-                                }}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedVacancy(vacancy)
-                                  setIsEditOpen(true)
-                                }}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )
-                     })}
-                     {!loading && !error && filteredVacancies.length === 0 && (
-                        <TableRow>
-                          <TableCell colSpan={10} className="py-12">
-                            <div className="flex flex-col items-center justify-center text-center w-full">
-                              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                <Plus className="h-8 w-8 text-gray-400" />
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                      </TooltipProvider>
+                    </CardContent>
+                  </Card>
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {paginatedVacancies.map((vacancy) => {
+                      const counts = candidateCounts[vacancy.position_title] || {
+                        applications: 0,
+                        shortlisted: 0,
+                        interviewed: 0,
+                        joined: 0,
+                      };
+                      return (
+                        <Card key={vacancy.id}>
+                          <CardHeader>
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start space-x-3">
+                                <div>
+                                  <CardTitle className="text-lg">{vacancy.position_title}</CardTitle>
+                                  <p className="text-sm text-gray-600">{vacancy.location}</p>
+                                </div>
                               </div>
-                              <h3 className="text-lg font-medium text-gray-900 mb-2">No vacancies found</h3>
-                              <p className="text-gray-500 mb-4">
-                                {searchTerm || statusFilter !== "all" || priorityFilter !== "all" || recruiterFilter !== "all"
-                                  ? "Try adjusting your search criteria"
-                                  : "Get started by creating your first vacancy"}
-                              </p>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedVacancy(vacancy);
+                                      setIsDetailsOpen(true);
+                                    }}
+                                  >
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    View Details
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedVacancy(vacancy);
+                                      setIsEditOpen(true);
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
-                          </TableCell>
-                        </TableRow>
-                    )}
-                   </TableBody>
-                 </Table>
-                 </TooltipProvider>
-               </CardContent>
-             </Card>
-           </>
-         ) : (
-           <>
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-               {paginatedVacancies.map((vacancy) => {
-              const counts = candidateCounts[vacancy.position_title] || {
-                applications: 0,
-                shortlisted: 0,
-                interviewed: 0,
-                joined: 0,
-              }
-               return (
-                 <Card
-                   key={vacancy.id}
-                 >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-3">
-                        <div>
-                          <CardTitle className="text-lg">{vacancy.position_title}</CardTitle>
-                          <p className="text-sm text-gray-600">{vacancy.location}</p>
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedVacancy(vacancy)
-                              setIsDetailsOpen(true)
-                            }}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedVacancy(vacancy)
-                              setIsEditOpen(true)
-                            }}
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge className={getPriorityColor(vacancy.priority)}>{vacancy.priority}</Badge>
-                      <Badge className={getStatusColor(vacancy.status)}>{vacancy.status}</Badge>
-                      {isDeadlineExpired(vacancy.deadline) && <AlertTriangle className="h-4 w-4 text-red-500" />}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="text-gray-500">Panelists:</span>
-                          <div className="font-medium">{vacancy.assignedPanelists.length} assigned</div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-               })}
-             </div>
-           </>
-          )}
-          </>
+                            <div className="flex items-center space-x-2">
+                              <Badge className={getPriorityColor(vacancy.priority)}>{vacancy.priority}</Badge>
+                              <Badge className={getStatusColor(vacancy.status)}>{vacancy.status}</Badge>
+                              {isDeadlineExpired(vacancy.deadline) && (
+                                <AlertTriangle className="h-4 w-4 text-red-500" />
+                              )}
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-3">
+                              <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <span className="text-gray-500">Panelists:</span>
+                                  <div className="font-medium">{vacancy.assignedPanelists.length} assigned</div>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </>
           )}
         </div>
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          className="mt-4"
-        />
+        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} className="mt-4" />
 
         <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
           <DialogContent className="w-[80%] max-w-none max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Vacancy Details</DialogTitle>
+              <DialogTitle>Position Details</DialogTitle>
             </DialogHeader>
             <div className="mt-6">{selectedVacancy && <VacancyDetails vacancy={selectedVacancy} />}</div>
           </DialogContent>
@@ -682,11 +680,9 @@ export default function VacanciesPage() {
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Edit Position</DialogTitle>
+              <DialogTitle>Edit Vacancy</DialogTitle>
             </DialogHeader>
-            {selectedVacancy && (
-              <VacancyForm vacancy={selectedVacancy} onSubmit={handleEditVacancy} />
-            )}
+            {selectedVacancy && <VacancyForm vacancy={selectedVacancy} onSubmit={handleEditVacancy} />}
           </DialogContent>
         </Dialog>
 
@@ -705,5 +701,5 @@ export default function VacanciesPage() {
         </Dialog>
       </div>
     </DashboardLayout>
-  )
+  );
 }

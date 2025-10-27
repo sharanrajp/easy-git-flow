@@ -281,7 +281,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
         {(currentStep === 1 || vacancy) && (
           <Card>
             <CardHeader>
-              <CardTitle>Vacancy Details</CardTitle>
+              <CardTitle>Position Details</CardTitle>
               <CardDescription>Fill in the basic information about the position</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -481,29 +481,22 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   placeholder="Select or type experience range"
                   value={formData.experience_range}
                   onChange={(e) => setFormData({ ...formData, experience_range: e.target.value })}
-                  onBlur={(e) => {
-                    const value = e.target.value.trim();
-                    // Check if it's a custom numeric range like "5-7" and doesn't already have " years"
-                    if (value && /^\d+-\d+$/.test(value) && !value.endsWith(" years")) {
-                      setFormData({ ...formData, experience_range: `${value} years` });
-                    }
-                  }}
                   required
                 />
                 <datalist id="experience-presets">
-                  <option value="0-1 years" />
-                  <option value="1-2 years" />
-                  <option value="2-3 years" />
-                  <option value="4-5 years" />
-                  <option value="5+ years" />
+                  <option value="0-1 exp" />
+                  <option value="1-2 exp" />
+                  <option value="2-3 exp" />
+                  <option value="4-5 exp" />
+                  <option value="5+ exp" />
                 </datalist>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="plan">Reason for Hiring</Label>
+                <Label htmlFor="plan">Plan</Label>
                 <Input
                   id="plan"
-                  placeholder="Enter the reason for opening this position"
+                  placeholder="Enter plan details"
                   value={formData.plan}
                   onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
                 />
@@ -791,11 +784,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
             ) : currentStep === 1 ? (
               <Button
                 type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setCurrentStep(2);
-                }}
+                onClick={() => setCurrentStep(2)}
                 disabled={!canProceedToStep2()}
                 className="bg-blue-600 hover:bg-blue-700"
               >
