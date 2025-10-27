@@ -493,10 +493,10 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="plan">Plan</Label>
+                <Label htmlFor="plan">Reason for Hiring</Label>
                 <Input
                   id="plan"
-                  placeholder="Enter plan details"
+                  placeholder="Enter the reason for opening this position"
                   value={formData.plan}
                   onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
                 />
