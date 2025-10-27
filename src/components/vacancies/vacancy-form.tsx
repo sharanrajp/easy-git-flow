@@ -465,7 +465,45 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   list="experience-presets"
                   placeholder="Select or type experience range"
                   value={formData.experience_range}
-                  onChange={(e) => setFormData({ ...formData, experience_range: e.target.value })}
+                  onChange={(e) => {
+                    let value = e.target.value
+                    
+                    // Auto-append " years" for custom numeric ranges
+                    // Pattern matches: "5-7", "3-5", "10+", etc.
+                    const numericRangePattern = /^\d+[-+]\d*$/
+                    const presetOptions = ["0-1 exp", "1-2 exp", "2-3 exp", "4-5 exp", "5+ exp"]
+                    
+                    // Only append " years" if:
+                    // 1. It's not a preset option
+                    // 2. It matches the numeric range pattern
+                    // 3. It doesn't already end with "years" or "exp"
+                    if (
+                      !presetOptions.includes(value) &&
+                      numericRangePattern.test(value.trim()) &&
+                      !value.endsWith(" years") &&
+                      !value.endsWith(" exp")
+                    ) {
+                      value = value.trim() + " years"
+                    }
+                    
+                    setFormData({ ...formData, experience_range: value })
+                  }}
+                  onBlur={(e) => {
+                    // Also handle on blur for cases where user tabs out
+                    let value = e.target.value
+                    const numericRangePattern = /^\d+[-+]\d*$/
+                    const presetOptions = ["0-1 exp", "1-2 exp", "2-3 exp", "4-5 exp", "5+ exp"]
+                    
+                    if (
+                      !presetOptions.includes(value) &&
+                      numericRangePattern.test(value.trim()) &&
+                      !value.endsWith(" years") &&
+                      !value.endsWith(" exp")
+                    ) {
+                      value = value.trim() + " years"
+                      setFormData({ ...formData, experience_range: value })
+                    }
+                  }}
                   required
                 />
                 <datalist id="experience-presets">
