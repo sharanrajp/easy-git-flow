@@ -490,7 +490,7 @@ export default function VacanciesPage() {
                             <div className="text-sm">
                               {vacancy.walkInDetails?.date 
                                 ? formatDate(vacancy.walkInDetails.date)
-                                : formatDate(vacancy.postedOn)
+                                : "—"
                               }
                             </div>
                           </TableCell>
