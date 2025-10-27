@@ -39,18 +39,18 @@ const navigationItems = {
     { name: "Dashboard", href: "/dashboard/hr", icon: LayoutDashboard },
     { name: "Candidates", href: "/dashboard/hr/candidates", icon: UserCheck },
     { name: "Users", href: "/dashboard/hr/users", icon: Users },
-    { name: "Positions", href: "/dashboard/hr/vacancies", icon: Briefcase },
+    { name: "Positions", href: "/dashboard/hr/positions", icon: Briefcase },
   ],
   admin: [
     { name: "Dashboard", href: "/dashboard/hr", icon: LayoutDashboard },
     { name: "Candidates", href: "/dashboard/hr/candidates", icon: UserCheck },
     { name: "Users", href: "/dashboard/hr/users", icon: Users },
-    { name: "Positions", href: "/dashboard/hr/vacancies", icon: Briefcase },
+    { name: "Positions", href: "/dashboard/hr/positions", icon: Briefcase },
   ],
   recruiter: [
     { name: "Dashboard", href: "/dashboard/hr", icon: LayoutDashboard },
     { name: "Candidates", href: "/dashboard/hr/candidates", icon: UserCheck },
-    { name: "Positions", href: "/dashboard/hr/vacancies", icon: Briefcase },
+    { name: "Positions", href: "/dashboard/hr/positions", icon: Briefcase },
   ],
   panel_member: [
     { name: "Dashboard", href: "/dashboard/panelist", icon: LayoutDashboard },

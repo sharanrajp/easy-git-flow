@@ -21,7 +21,7 @@ function App() {
             <Route path="/dashboard/hr" element={<HRDashboard />} />
             <Route path="/dashboard/hr/candidates" element={<HRCandidatesPage />} />
             <Route path="/dashboard/hr/users" element={<HRUsersPage />} />
-            <Route path="/dashboard/hr/vacancies" element={<HRVacanciesPage />} />
+            <Route path="/dashboard/hr/positions" element={<HRVacanciesPage />} />
             <Route path="/dashboard/panelist" element={<PanelistDashboard />} />
             <Route path="/dashboard/superadmin" element={<SuperadminDashboard />} />
           </Routes>
