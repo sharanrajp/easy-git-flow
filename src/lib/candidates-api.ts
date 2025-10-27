@@ -226,7 +226,7 @@ export async function fetchPanelistsForCandidate(candidateId: string, vacancyId:
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/Position/getpanelist`, {
+    const response = await fetch(`${API_BASE_URL}/Vacancy/getpanelist`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

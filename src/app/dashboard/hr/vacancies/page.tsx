@@ -183,7 +183,7 @@ export default function VacanciesPage() {
     if (!selectedVacancy) return;
 
     try {
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Position/${selectedVacancy.id}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${selectedVacancy.id}`, {
         method: "PUT",
         body: JSON.stringify({ ...selectedVacancy, ...vacancyData }),
       });
@@ -239,7 +239,7 @@ export default function VacanciesPage() {
 
     try {
       // Update vacancy in database
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Position/${selectedVacancy.id}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${selectedVacancy.id}`, {
         method: "PUT",
         body: JSON.stringify({ ...selectedVacancy, assignedPanelists: panelistIds }),
       });
@@ -263,7 +263,7 @@ export default function VacanciesPage() {
     if (!vacancy) return;
 
     try {
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Position/${vacancyId}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${vacancyId}`, {
         method: "PUT",
         body: JSON.stringify({ ...vacancy, status: newStatus }),
       });
