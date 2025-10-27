@@ -481,6 +481,13 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   placeholder="Select or type experience range"
                   value={formData.experience_range}
                   onChange={(e) => setFormData({ ...formData, experience_range: e.target.value })}
+                  onBlur={(e) => {
+                    const value = e.target.value.trim();
+                    // Check if it's a custom numeric range like "5-7" and doesn't already have " years"
+                    if (value && /^\d+-\d+$/.test(value) && !value.endsWith(" years")) {
+                      setFormData({ ...formData, experience_range: `${value} years` });
+                    }
+                  }}
                   required
                 />
                 <datalist id="experience-presets">
@@ -784,7 +791,11 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
             ) : currentStep === 1 ? (
               <Button
                 type="button"
-                onClick={() => setCurrentStep(2)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setCurrentStep(2);
+                }}
                 disabled={!canProceedToStep2()}
                 className="bg-blue-600 hover:bg-blue-700"
               >
