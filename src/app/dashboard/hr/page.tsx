@@ -13,7 +13,7 @@ import { calculateHRMetrics, type HRDashboardMetrics } from "@/lib/dashboard-api
 import { useToast } from "@/hooks/use-toast";
 import { fetchVacancies } from "@/lib/vacancy-api";
 import { getAllUsers, type User } from "@/lib/auth";
-import type { Vacancy } from "@/lib/schema-data";
+import type { Position } from "@/lib/schema-data";
 import {
   fetchUnassignedCandidates,
   fetchAssignedCandidates,
@@ -42,7 +42,7 @@ export default function HRDashboard() {
   const [pipelineVacancyFilter, setPipelineVacancyFilter] = useState("all");
   const [performanceRecruiterFilter, setPerformanceRecruiterFilter] = useState("all");
 
-  const [vacancies, setVacancies] = useState<Vacancy[]>([]);
+  const [vacancies, setVacancies] = useState<Position[]>([]);
   const [hrUsers, setHrUsers] = useState<User[]>([]);
 
   // Store all fetched data

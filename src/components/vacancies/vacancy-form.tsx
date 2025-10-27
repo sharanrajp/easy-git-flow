@@ -24,13 +24,13 @@ import {
 } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import type { Vacancy } from "@/lib/schema-data";
+import type { Position } from "@/lib/schema-data";
 import { getAllUsers } from "@/lib/auth";
 import { formatDate } from "@/lib/utils";
 
 interface VacancyFormProps {
-  vacancy?: Vacancy;
-  onSubmit: (data: Partial<Vacancy>) => void;
+  vacancy?: Position;
+  onSubmit: (data: Partial<Position>) => void;
 }
 
 export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
@@ -112,7 +112,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const submitData: Partial<Vacancy> = {
+    const submitData: Partial<Position> = {
       ...formData,
       experience_range: formData.experience_range,
       interview_type: "Walk-In", // Only Walk-In interviews for this version
@@ -271,7 +271,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
           </div>
           <Progress value={progress} className="h-2" />
           <div className="flex justify-between text-xs text-gray-500">
-            <span className={currentStep === 1 ? "font-medium text-blue-600" : ""}>Vacancy Details</span>
+            <span className={currentStep === 1 ? "font-medium text-blue-600" : ""}>Position Details</span>
             <span className={currentStep === 2 ? "font-medium text-blue-600" : ""}>Select Panelists</span>
           </div>
         </div>
@@ -281,7 +281,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
         {(currentStep === 1 || vacancy) && (
           <Card>
             <CardHeader>
-              <CardTitle>Vacancy Details</CardTitle>
+              <CardTitle>Position Details</CardTitle>
               <CardDescription>Fill in the basic information about the position</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -405,7 +405,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="number_of_vacancies">Number of Vacancies *</Label>
+                  <Label htmlFor="number_of_vacancies">Number of Positions *</Label>
                   <Input
                     id="number_of_vacancies"
                     type="number"
@@ -792,7 +792,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               </Button>
             ) : (
               <Button type="submit" disabled={!canSubmit()} className="bg-blue-600 hover:bg-blue-700">
-                Create Vacancy
+                Create Position
               </Button>
             )}
           </div>

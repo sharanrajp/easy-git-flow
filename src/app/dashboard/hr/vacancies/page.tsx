@@ -31,7 +31,7 @@ import {
   ChevronDown,
   X,
 } from "lucide-react";
-import { type Vacancy } from "@/lib/schema-data";
+import { type Position } from "@/lib/schema-data";
 import { getAllUsers } from "@/lib/auth";
 import { fetchVacancies, addVacancy } from "@/lib/vacancy-api";
 import { makeAuthenticatedRequest } from "@/lib/auth";
@@ -43,7 +43,7 @@ import { formatDate } from "@/lib/utils";
 import { Pagination } from "@/components/ui/pagination";
 
 export default function VacanciesPage() {
-  const [vacancies, setVacancies] = useState<Vacancy[]>([]);
+  const [vacancies, setVacancies] = useState<Position[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,7 +52,7 @@ export default function VacanciesPage() {
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [recruiterFilter, setRecruiterFilter] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
-  const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null);
+  const [selectedVacancy, setSelectedVacancy] = useState<Position | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -159,7 +159,7 @@ export default function VacanciesPage() {
     setCurrentPage(1);
   }, [searchTerm, statusFilter, priorityFilter, recruiterFilter]);
 
-  const handleCreateVacancy = async (vacancyData: Partial<Vacancy>) => {
+  const handleCreateVacancy = async (vacancyData: Partial<Position>) => {
     try {
       setError(null);
       const newVacancy = await addVacancy(vacancyData);
@@ -179,11 +179,11 @@ export default function VacanciesPage() {
     }
   };
 
-  const handleEditVacancy = async (vacancyData: Partial<Vacancy>) => {
+  const handleEditVacancy = async (vacancyData: Partial<Position>) => {
     if (!selectedVacancy) return;
 
     try {
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${selectedVacancy.id}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Position/${selectedVacancy.id}`, {
         method: "PUT",
         body: JSON.stringify({ ...selectedVacancy, ...vacancyData }),
       });
@@ -239,7 +239,7 @@ export default function VacanciesPage() {
 
     try {
       // Update vacancy in database
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${selectedVacancy.id}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Position/${selectedVacancy.id}`, {
         method: "PUT",
         body: JSON.stringify({ ...selectedVacancy, assignedPanelists: panelistIds }),
       });
@@ -263,7 +263,7 @@ export default function VacanciesPage() {
     if (!vacancy) return;
 
     try {
-      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${vacancyId}`, {
+      const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Position/${vacancyId}`, {
         method: "PUT",
         body: JSON.stringify({ ...vacancy, status: newStatus }),
       });
@@ -437,7 +437,7 @@ export default function VacanciesPage() {
             </div>
           )}
 
-          {/* Vacancies List/Grid */}
+          {/* Positions List/Grid */}
           {!loading && !error && (
             <>
               {viewMode === "list" ? (

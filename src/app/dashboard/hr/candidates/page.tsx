@@ -108,7 +108,7 @@ export default function CandidatesPage() {
   const [isAssignedDetailsOpen, setIsAssignedDetailsOpen] = useState(false)
   const [selectedUnassignedCandidate, setSelectedUnassignedCandidate] = useState<BackendCandidate | null>(null)
   const [isUnassignedDetailsOpen, setIsUnassignedDetailsOpen] = useState(false)
-  const [vacancies, setVacancies] = useState<Vacancy[]>([])
+  const [vacancies, setVacancies] = useState<Position[]>([])
   const [loadingVacancies, setLoadingVacancies] = useState(false)
   const [vacancyError, setVacancyError] = useState<string | null>(null)
   

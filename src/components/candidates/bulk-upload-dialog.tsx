@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { makeAuthenticatedRequest } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { fetchVacancies } from "../../lib/vacancy-api"
-import type { Vacancy } from "../../lib/schema-data"
+import type { Position } from "../../lib/schema-data"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
@@ -62,7 +62,7 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
   const [appliedPosition, setAppliedPosition] = useState("")
   const [source, setSource] = useState("")
   const [otherSource, setOtherSource] = useState("")
-  const [vacancies, setVacancies] = useState<Vacancy[]>([])
+  const [vacancies, setVacancies] = useState<Position[]>([])
   const [selectedRecruiter, setSelectedRecruiter] = useState("")
   const [loadingVacancies, setLoadingVacancies] = useState(true)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
@@ -78,7 +78,7 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
       try {
         setLoadingVacancies(true)
         const allVacancies = await fetchVacancies()
-        const activeVacancies = allVacancies.filter((v: Vacancy) => v.status === "active")
+        const activeVacancies = allVacancies.filter((v: Position) => v.status === "active")
         setVacancies(activeVacancies)
       } catch (error) {
         console.error('Failed to load vacancies:', error)

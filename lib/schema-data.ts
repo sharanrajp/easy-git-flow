@@ -29,7 +29,7 @@ export interface DashboardData {
   }>
 }
 
-export interface Vacancy {
+export interface Position {
   id: string
   position_title: string
   location: string

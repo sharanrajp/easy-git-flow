@@ -1,5 +1,5 @@
 import { getToken } from './auth';
-import type { Vacancy } from './schema-data';
+import type { Position } from './schema-data';
 import { API_BASE_URL } from './api-config';
 
 // Backend vacancy interface (what we receive from API)
@@ -55,7 +55,7 @@ interface VacancyCreateRequest {
 }
 
 // Transform backend vacancy to frontend format
-function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
+function transformBackendToFrontend(backendVacancy: BackendVacancy): Position {
   return {
     id: backendVacancy._id || "",
     position_title: backendVacancy.position_title || "",
@@ -91,7 +91,7 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
 }
 
 // Transform frontend vacancy to backend format for creation
-function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyCreateRequest {
+function transformFrontendToBackend(frontendVacancy: Partial<Position>): VacancyCreateRequest {
   // Handle date conversion safely
   let driveDate = "";
   if (frontendVacancy.walkInDetails?.date) {
@@ -126,7 +126,7 @@ function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyC
 }
 
 // Fetch all vacancies from backend
-export async function fetchVacancies(): Promise<Vacancy[]> {
+export async function fetchVacancies(): Promise<Position[]> {
   const token = getToken();
   
   if (!token) {
@@ -134,7 +134,7 @@ export async function fetchVacancies(): Promise<Vacancy[]> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/Vacancy/get_all_vacancies`, {
+    const response = await fetch(`${API_BASE_URL}/Position/get_all_vacancies`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -155,7 +155,7 @@ export async function fetchVacancies(): Promise<Vacancy[]> {
 }
 
 // Add a new vacancy to backend
-export async function addVacancy(vacancyData: Partial<Vacancy>): Promise<Vacancy> {
+export async function addVacancy(vacancyData: Partial<Position>): Promise<Position> {
   const token = getToken();
   
   if (!token) {
@@ -165,7 +165,7 @@ export async function addVacancy(vacancyData: Partial<Vacancy>): Promise<Vacancy
   const backendData = transformFrontendToBackend(vacancyData);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/Vacancy/add`, {
+    const response = await fetch(`${API_BASE_URL}/Position/add`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

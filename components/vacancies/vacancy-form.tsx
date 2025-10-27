@@ -9,12 +9,12 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { X, Plus, Upload, Building, MapPin, Calendar, User as UserIcon, Target, FileText } from "lucide-react"
-import type { Vacancy } from "@/lib/schema-data"
+import type { Position } from "@/lib/schema-data"
 import { getAllUsers, type User } from "@/lib/auth"
 import { PanelistSelector } from "@/components/vacancies/panelist-selector"
 
 interface VacancyFormProps {
-  vacancy?: Vacancy | null
+  vacancy?: Position | null
   onSubmit: (data: any) => void
   onCancel: () => void
   currentUser?: any
@@ -147,7 +147,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            {vacancy ? "Edit Vacancy" : "Create New Vacancy"}
+            {vacancy ? "Edit Position" : "Create New Position"}
           </h1>
           <p className="text-gray-600 mt-2">
             Fill in the details below to {vacancy ? "update the" : "create a new"} job vacancy.
@@ -158,7 +158,7 @@ export function VacancyForm({ vacancy, onSubmit, onCancel, currentUser }: Vacanc
             Cancel
           </Button>
           <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-            {vacancy ? "Update Vacancy" : "Create Vacancy"}
+            {vacancy ? "Update Position" : "Create Position"}
           </Button>
         </div>
       </div>

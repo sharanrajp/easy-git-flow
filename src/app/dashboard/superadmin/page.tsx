@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { fetchVacancies } from "@/lib/vacancy-api"
 import { fetchDriveInsights, fetchJoinedCandidates, type DriveInsights, type JoinedCandidate } from "@/lib/analytics-api"
 import { fetchAssignedCandidates, fetchUnassignedCandidates, type BackendCandidate } from "@/lib/candidates-api"
-import { type Vacancy } from "@/lib/schema-data"
+import { type Position } from "@/lib/schema-data"
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts"
 import { Users, UserCheck, Clock, TrendingUp, CheckCircle, XCircle, Briefcase, RefreshCw, Search, Download, Calendar, X } from "lucide-react"
 import { format } from "date-fns"
@@ -30,7 +30,7 @@ interface AggregateMetrics {
   active_drives: number
 }
 
-interface VacancyWithInsights extends Vacancy {
+interface VacancyWithInsights extends Position {
   insights?: DriveInsights | null
 }
 
@@ -343,21 +343,21 @@ export default function SuperadminDashboard() {
   return (
     <DashboardLayout requiredRole="admin">
       <div className="space-y-6 p-6">
-        {/* Header with KPI Vacancy Filter */}
+        {/* Header with KPI Position Filter */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
             <p className="text-muted-foreground mt-1">Superadmin Analytics Overview</p>
           </div>
           
-          {/* KPI Filter (Vacancy only) */}
+          {/* KPI Filter (Position only) */}
           <div className="flex gap-3">
             <Select value={kpiVacancyFilter} onValueChange={setKpiVacancyFilter}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="Select Vacancy" />
+                <SelectValue placeholder="Select Position" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Vacancies</SelectItem>
+                <SelectItem value="all">All Positions</SelectItem>
                 {vacancies.map(v => (
                   <SelectItem key={v.id} value={v.id}>{v.position_title}</SelectItem>
                 ))}
@@ -467,10 +467,10 @@ export default function SuperadminDashboard() {
             <div className="flex gap-3 items-center">
               <Select value={candidateVacancyFilter} onValueChange={setCandidateVacancyFilter}>
                 <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Select Vacancy" />
+                  <SelectValue placeholder="Select Position" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Vacancies</SelectItem>
+                  <SelectItem value="all">All Positions</SelectItem>
                   {vacancies.map(v => (
                     <SelectItem key={v.id} value={v.id}>{v.position_title}</SelectItem>
                   ))}
@@ -542,7 +542,7 @@ export default function SuperadminDashboard() {
                     <TableHead>Location</TableHead>
                     <TableHead>Drive Date</TableHead>
                     <TableHead>Total Candidates</TableHead>
-                    <TableHead>Joined / Vacancies</TableHead>
+                    <TableHead>Joined / Positions</TableHead>
                     <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -696,7 +696,7 @@ export default function SuperadminDashboard() {
                         <TableHead>Location</TableHead>
                         <TableHead>Drive Date</TableHead>
                         <TableHead>Total Candidates</TableHead>
-                        <TableHead>Selected / Vacancies</TableHead>
+                        <TableHead>Selected / Positions</TableHead>
                         <TableHead>Avg Time to Hire</TableHead>
                         <TableHead>Avg Time to Fill</TableHead>
                         <TableHead>Status</TableHead>
