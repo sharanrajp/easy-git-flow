@@ -42,8 +42,8 @@ interface VacancyCreateRequest {
   experience_range: string;
   skills_required: string[];
   interview_type: string;
-  drive_date: string;
-  drive_location: string;
+  drive_date?: string | null;
+  drive_location?: string;
   job_desc?: string;
   request_type?:string;
   assignedPanelists?: string[];
@@ -92,8 +92,8 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
 
 // Transform frontend vacancy to backend format for creation
 function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyCreateRequest {
-  // Handle date conversion safely - check for empty strings and invalid dates
-  let driveDate = "";
+  // Handle date conversion - convert to ISO string or use null
+  let driveDate: string | null = null;
   const dateValue = frontendVacancy.walkInDetails?.date;
   if (dateValue && dateValue.trim() !== "") {
     const date = new Date(dateValue);
@@ -102,7 +102,7 @@ function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyC
     }
   }
 
-  return {
+  const payload: any = {
     position_title: frontendVacancy.position_title || "",
     hiring_manager_name: frontendVacancy.hiring_manager_name || "",
     assignedPanelists: frontendVacancy.assignedPanelists || [],
@@ -114,8 +114,6 @@ function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyC
     experience_range: frontendVacancy.experience_range || "",
     skills_required: frontendVacancy.skills_required || [],
     interview_type: frontendVacancy.interview_type || "Walk-In",
-    drive_date: driveDate,
-    drive_location: frontendVacancy.walkInDetails?.location || "",
     job_desc: frontendVacancy.job_desc || "",
     request_type: frontendVacancy.request_type || "new",
     city: frontendVacancy.city || "",
@@ -124,6 +122,19 @@ function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyC
     position_approved_by: frontendVacancy.position_approved_by || "",
     reason_for_hiring: frontendVacancy.plan || "",
   };
+
+  // Only include drive_date if a valid date was provided
+  if (driveDate) {
+    payload.drive_date = driveDate;
+  }
+
+  // Only include drive_location if provided
+  const location = frontendVacancy.walkInDetails?.location;
+  if (location && location.trim() !== "") {
+    payload.drive_location = location;
+  }
+
+  return payload;
 }
 
 // Fetch all vacancies from backend
