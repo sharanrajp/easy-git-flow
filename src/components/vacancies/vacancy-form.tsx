@@ -271,7 +271,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
           </div>
           <Progress value={progress} className="h-2" />
           <div className="flex justify-between text-xs text-gray-500">
-            <span className={currentStep === 1 ? "font-medium text-blue-600" : ""}>Position Details</span>
+            <span className={currentStep === 1 ? "font-medium text-blue-600" : ""}>Vacancy Details</span>
             <span className={currentStep === 2 ? "font-medium text-blue-600" : ""}>Select Panelists</span>
           </div>
         </div>
@@ -281,7 +281,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
         {(currentStep === 1 || vacancy) && (
           <Card>
             <CardHeader>
-              <CardTitle>Position Details</CardTitle>
+              <CardTitle>Vacancy Details</CardTitle>
               <CardDescription>Fill in the basic information about the position</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -484,11 +484,11 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   required
                 />
                 <datalist id="experience-presets">
-                  <option value="0-1 exp" />
-                  <option value="1-2 exp" />
-                  <option value="2-3 exp" />
-                  <option value="4-5 exp" />
-                  <option value="5+ exp" />
+                  <option value="0-1 years" />
+                  <option value="1-2 years" />
+                  <option value="2-3 years" />
+                  <option value="4-5 years" />
+                  <option value="5+ years" />
                 </datalist>
               </div>
 
@@ -792,7 +792,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               </Button>
             ) : (
               <Button type="submit" disabled={!canSubmit()} className="bg-blue-600 hover:bg-blue-700">
-                Save Position
+                Create Vacancy
               </Button>
             )}
           </div>
