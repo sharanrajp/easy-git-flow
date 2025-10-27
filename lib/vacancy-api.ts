@@ -92,6 +92,15 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
 
 // Transform frontend vacancy to backend format for creation
 function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyCreateRequest {
+  // Handle date conversion safely
+  let driveDate = "";
+  if (frontendVacancy.walkInDetails?.date) {
+    const date = new Date(frontendVacancy.walkInDetails.date);
+    if (!isNaN(date.getTime())) {
+      driveDate = date.toISOString();
+    }
+  }
+
   return {
     position_title: frontendVacancy.position_title || "",
     hiring_manager_name: frontendVacancy.hiring_manager_name || "",
@@ -104,7 +113,7 @@ function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyC
     experience_range: frontendVacancy.experience_range || "",
     skills_required: frontendVacancy.skills_required || [],
     interview_type: frontendVacancy.interview_type || "Walk-In",
-    drive_date: new Date(frontendVacancy.walkInDetails?.date || "").toISOString() || "",
+    drive_date: driveDate,
     drive_location: frontendVacancy.walkInDetails?.location || "",
     job_desc: frontendVacancy.job_desc || "",
     request_type: frontendVacancy.request_type || "new",
