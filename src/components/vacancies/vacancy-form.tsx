@@ -271,7 +271,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
           </div>
           <Progress value={progress} className="h-2" />
           <div className="flex justify-between text-xs text-gray-500">
-            <span className={currentStep === 1 ? "font-medium text-blue-600" : ""}>Vacancy Details</span>
+            <span className={currentStep === 1 ? "font-medium text-blue-600" : ""}>Position Details</span>
             <span className={currentStep === 2 ? "font-medium text-blue-600" : ""}>Select Panelists</span>
           </div>
         </div>
@@ -792,7 +792,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               </Button>
             ) : (
               <Button type="submit" disabled={!canSubmit()} className="bg-blue-600 hover:bg-blue-700">
-                Create Vacancy
+                Save Position
               </Button>
             )}
           </div>

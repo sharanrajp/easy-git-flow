@@ -313,20 +313,20 @@ export default function VacanciesPage() {
         <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Vacancies</h1>
-              <p className="text-gray-600">Manage job openings and track applications</p>
-            </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Positions</h1>
+            <p className="text-gray-600">Manage job openings and track applications</p>
+          </div>
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-blue-600 hover:bg-blue-700">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Vacancy
+                  Add Position
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Create New Vacancy</DialogTitle>
+                  <DialogTitle>Create New Position</DialogTitle>
                 </DialogHeader>
                 <VacancyForm onSubmit={handleCreateVacancy} />
               </DialogContent>
@@ -352,7 +352,7 @@ export default function VacanciesPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search vacancies by title or location..."
+                  placeholder="Search positions by title or location..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 pr-8"
@@ -433,7 +433,7 @@ export default function VacanciesPage() {
           {loading && (
             <div className="flex justify-center items-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-2 text-gray-600">Loading vacancies...</span>
+              <span className="ml-2 text-gray-600">Loading positions...</span>
             </div>
           )}
 
@@ -453,7 +453,7 @@ export default function VacanciesPage() {
                               <TableHead>Priority</TableHead>
                               <TableHead>Experience Range</TableHead>
                               <TableHead>Drive On</TableHead>
-                              <TableHead>No. of Vacancies</TableHead>
+                              <TableHead>No. of Positions</TableHead>
                               <TableHead>Recruiter</TableHead>
                               <TableHead>Status</TableHead>
                               <TableHead>No. of Panelists</TableHead>
@@ -680,7 +680,7 @@ export default function VacanciesPage() {
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Edit Vacancy</DialogTitle>
+              <DialogTitle>Edit Position</DialogTitle>
             </DialogHeader>
             {selectedVacancy && <VacancyForm vacancy={selectedVacancy} onSubmit={handleEditVacancy} />}
           </DialogContent>
