@@ -666,7 +666,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
             <CardHeader>
               <CardTitle>Select Panelists</CardTitle>
               <CardDescription>
-                Choose panelists and managers for this vacancy from all users (optional). Selected:{" "}
+                Choose panelists for this vacancy (optional). Selected:{" "}
                 {formData.assignedPanelists.length}
               </CardDescription>
             </CardHeader>
