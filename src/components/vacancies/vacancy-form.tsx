@@ -1,31 +1,42 @@
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { X, Upload, Search, UserPlus, UserMinus, Loader2, CalendarIcon, Check, ChevronsUpDown, XCircle } from "lucide-react"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import type { Vacancy } from "@/lib/schema-data"
-import { getAllUsers } from "@/lib/auth"
-import { formatDate } from "@/lib/utils"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import {
+  X,
+  Upload,
+  Search,
+  UserPlus,
+  UserMinus,
+  Loader2,
+  CalendarIcon,
+  Check,
+  ChevronsUpDown,
+  XCircle,
+} from "lucide-react";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import type { Vacancy } from "@/lib/schema-data";
+import { getAllUsers } from "@/lib/auth";
+import { formatDate } from "@/lib/utils";
 
 interface VacancyFormProps {
-  vacancy?: Vacancy
-  onSubmit: (data: Partial<Vacancy>) => void
+  vacancy?: Vacancy;
+  onSubmit: (data: Partial<Vacancy>) => void;
 }
 
 export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
-  const [currentStep, setCurrentStep] = useState(1)
+  const [currentStep, setCurrentStep] = useState(1);
   // No stored user available since we removed localStorage
-  const currentUser = null
+  const currentUser = null;
 
   const [formData, setFormData] = useState({
     position_title: vacancy?.position_title || "",
@@ -47,69 +58,75 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     drive_date: vacancy?.walkInDetails?.date || "",
     drive_location: vacancy?.walkInDetails?.location || "",
     assignedPanelists: vacancy?.assignedPanelists || [],
-  })
+  });
 
-  const [newSkill, setNewSkill] = useState("")
-  const [panelistSearch, setPanelistSearch] = useState("")
-  const [skillSearchOpen, setSkillSearchOpen] = useState(false)
-  const [skillSearch, setSkillSearch] = useState("")
-  const [allUsers, setAllUsers] = useState<any[]>([])
-  const [hrUsers, setHrUsers] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [managers, setManagers] = useState<any[]>([])
+  const [newSkill, setNewSkill] = useState("");
+  const [panelistSearch, setPanelistSearch] = useState("");
+  const [skillSearchOpen, setSkillSearchOpen] = useState(false);
+  const [skillSearch, setSkillSearch] = useState("");
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [hrUsers, setHrUsers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [managers, setManagers] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
-      setIsLoading(true)
+      setIsLoading(true);
       try {
-        const users = await getAllUsers()
-        setAllUsers(users)
-        setManagers(users.filter((user) => user.role === "tpm_tem"))
-        setHrUsers(users.filter((user) => user.role === "hr"))
+        const users = await getAllUsers();
+        setAllUsers(users);
+        setManagers(users.filter((user) => user.role === "tpm_tem"));
+        setHrUsers(users.filter((user) => user.role === "hr"));
       } catch (error) {
-        console.error("Failed to fetch users:", error)
-        setAllUsers([])
-        setManagers([])
-        setHrUsers([])
+        console.error("Failed to fetch users:", error);
+        setAllUsers([]);
+        setManagers([]);
+        setHrUsers([]);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
-    fetchUsers()
-  }, [])
+    };
+    fetchUsers();
+  }, []);
 
   useEffect(() => {
     // No user data available since localStorage was removed
     // This effect is now a no-op
-  }, [])
+  }, []);
 
   const filteredUsers = allUsers.filter(
     (user) =>
       user.role === "panelist" &&
-      user.panelist_type !== "manager" && user.role !== "hr" &&
-      ((user.name?.toLowerCase().includes(panelistSearch.toLowerCase()) || false) ||
-      (Array.isArray(user.skill_set) && user.skill_set.some((skill: string) => skill?.toLowerCase().includes(panelistSearch.toLowerCase())))),
-  )
+      user.panelist_type !== "manager" &&
+      user.role !== "hr" &&
+      (user.name?.toLowerCase().includes(panelistSearch.toLowerCase()) ||
+        false ||
+        (Array.isArray(user.skill_set) &&
+          user.skill_set.some((skill: string) => skill?.toLowerCase().includes(panelistSearch.toLowerCase())))),
+  );
 
-  const selectedUsers = filteredUsers.filter((u) => formData.assignedPanelists.includes(u._id))
-  const unselectedUsers = filteredUsers.filter((u) => !formData.assignedPanelists.includes(u._id))
-  const sortedUsers = [...selectedUsers, ...unselectedUsers]
+  const selectedUsers = filteredUsers.filter((u) => formData.assignedPanelists.includes(u._id));
+  const unselectedUsers = filteredUsers.filter((u) => !formData.assignedPanelists.includes(u._id));
+  const sortedUsers = [...selectedUsers, ...unselectedUsers];
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     const submitData: Partial<Vacancy> = {
       ...formData,
       experience_range: formData.experience_range,
       interview_type: "Walk-In", // Only Walk-In interviews for this version
-      walkInDetails: formData.drive_date || formData.drive_location ? {
-        date: formData.drive_date,
-        location: formData.drive_location,
-      } : undefined,
-    }
+      walkInDetails:
+        formData.drive_date || formData.drive_location
+          ? {
+              date: formData.drive_date,
+              location: formData.drive_location,
+            }
+          : undefined,
+    };
 
-    onSubmit(submitData)
-  }
+    onSubmit(submitData);
+  };
 
   const handleCancel = () => {
     // Reset form data to initial state
@@ -133,42 +150,42 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       drive_date: vacancy?.walkInDetails?.date || "",
       drive_location: vacancy?.walkInDetails?.location || "",
       assignedPanelists: vacancy?.assignedPanelists || [],
-    })
-    setCurrentStep(1)
-    setNewSkill("")
-    setPanelistSearch("")
-    setSkillSearch("")
+    });
+    setCurrentStep(1);
+    setNewSkill("");
+    setPanelistSearch("");
+    setSkillSearch("");
 
     // Close the dialog by triggering parent component
     if (typeof window !== "undefined") {
-      const event = new CustomEvent("closeVacancyDialog")
-      window.dispatchEvent(event)
+      const event = new CustomEvent("closeVacancyDialog");
+      window.dispatchEvent(event);
     }
-  }
+  };
 
   const addSkill = (skill: string) => {
     if (skill.trim() && !formData.skills_required.includes(skill.trim())) {
       setFormData({
         ...formData,
         skills_required: [...formData.skills_required, skill.trim()],
-      })
+      });
     }
-  }
+  };
 
   const removeSkill = (skill: string) => {
     setFormData({
       ...formData,
       skills_required: formData.skills_required.filter((s) => s !== skill),
-    })
-  }
+    });
+  };
 
   const toggleSkill = (skill: string) => {
     if (formData.skills_required.includes(skill)) {
-      removeSkill(skill)
+      removeSkill(skill);
     } else {
-      addSkill(skill)
+      addSkill(skill);
     }
-  }
+  };
 
   // Predefined skills list
   const availableSkills = [
@@ -205,25 +222,23 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     "MySQL",
     "Git",
     "CI/CD",
-  ]
+  ];
 
-  const filteredSkills = availableSkills.filter(
-    (skill) => skill.toLowerCase().includes(skillSearch.toLowerCase())
-  )
+  const filteredSkills = availableSkills.filter((skill) => skill.toLowerCase().includes(skillSearch.toLowerCase()));
 
   const handlePanelistChange = (panelistId: string, checked: boolean) => {
     if (checked) {
       setFormData({
         ...formData,
         assignedPanelists: [...formData.assignedPanelists, panelistId],
-      })
+      });
     } else {
       setFormData({
         ...formData,
         assignedPanelists: formData.assignedPanelists.filter((id) => id !== panelistId),
-      })
+      });
     }
-  }
+  };
 
   const canProceedToStep2 = () => {
     return (
@@ -237,14 +252,14 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       formData.number_of_vacancies &&
       formData.experience_range &&
       formData.job_desc.trim()
-    )
-  }
+    );
+  };
 
   const canSubmit = () => {
-    return canProceedToStep2() // Panelist selection is no longer mandatory
-  }
+    return canProceedToStep2(); // Panelist selection is no longer mandatory
+  };
 
-  const progress = currentStep === 1 ? 50 : 100
+  const progress = currentStep === 1 ? 50 : 100;
 
   return (
     <div className="space-y-6">
@@ -256,7 +271,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
           </div>
           <Progress value={progress} className="h-2" />
           <div className="flex justify-between text-xs text-gray-500">
-            <span className={currentStep === 1 ? "font-medium text-blue-600" : ""}>Position Details</span>
+            <span className={currentStep === 1 ? "font-medium text-blue-600" : ""}>Vacancy Details</span>
             <span className={currentStep === 2 ? "font-medium text-blue-600" : ""}>Select Panelists</span>
           </div>
         </div>
@@ -266,7 +281,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
         {(currentStep === 1 || vacancy) && (
           <Card>
             <CardHeader>
-              <CardTitle>Position Details</CardTitle>
+              <CardTitle>Vacancy Details</CardTitle>
               <CardDescription>Fill in the basic information about the position</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -345,11 +360,11 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                       <SelectValue placeholder="Select manager" />
                     </SelectTrigger>
                     <SelectContent>
-                    {managers.map((user) => (
-                      <SelectItem key={user._id} value={user.name}>
-                        {user.name}
-                      </SelectItem>
-                    ))}
+                      {managers.map((user) => (
+                        <SelectItem key={user._id} value={user.name}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -363,11 +378,11 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                       <SelectValue placeholder="Select recruiter" />
                     </SelectTrigger>
                     <SelectContent>
-                    {hrUsers.map((user) => (
-                      <SelectItem key={user._id} value={user.name}>
-                        {user.name}
-                      </SelectItem>
-                    ))}
+                      {hrUsers.map((user) => (
+                        <SelectItem key={user._id} value={user.name}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -390,7 +405,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="number_of_vacancies">Number of Openings *</Label>
+                  <Label htmlFor="number_of_vacancies">Number of Vacancies *</Label>
                   <Input
                     id="number_of_vacancies"
                     type="number"
@@ -469,19 +484,19 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   required
                 />
                 <datalist id="experience-presets">
-                  <option value="0-1 exp" />
-                  <option value="1-2 exp" />
-                  <option value="2-3 exp" />
-                  <option value="4-5 exp" />
-                  <option value="5+ exp" />
+                  <option value="0-1 years" />
+                  <option value="1-2 years" />
+                  <option value="2-3 years" />
+                  <option value="4-5 years" />
+                  <option value="5+ years" />
                 </datalist>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="plan">Reason for Hiring</Label>
+                <Label htmlFor="plan">Plan</Label>
                 <Input
                   id="plan"
-                  placeholder="Enter the reason for opening this position"
+                  placeholder="Enter plan details"
                   value={formData.plan}
                   onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
                 />
@@ -512,9 +527,9 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                           onChange={(e) => setSkillSearch(e.target.value)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" && skillSearch.trim()) {
-                              e.preventDefault()
-                              addSkill(skillSearch)
-                              setSkillSearch("")
+                              e.preventDefault();
+                              addSkill(skillSearch);
+                              setSkillSearch("");
                             }
                           }}
                           className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -531,12 +546,12 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                         )}
                       </div>
                       <div className="max-h-60 overflow-y-auto p-1">
-                        {skillSearch && !availableSkills.some(s => s.toLowerCase() === skillSearch.toLowerCase()) && (
+                        {skillSearch && !availableSkills.some((s) => s.toLowerCase() === skillSearch.toLowerCase()) && (
                           <div
                             className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
                             onClick={() => {
-                              addSkill(skillSearch)
-                              setSkillSearch("")
+                              addSkill(skillSearch);
+                              setSkillSearch("");
                             }}
                           >
                             <div className="flex items-center flex-1">
@@ -600,10 +615,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                     <Label>Drive Date</Label>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start text-left font-normal"
-                        >
+                        <Button variant="outline" className="w-full justify-start text-left font-normal">
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {formData.drive_date ? formatDate(formData.drive_date) : "Select date"}
                         </Button>
@@ -615,11 +627,11 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                           onSelect={(date) => {
                             if (date) {
                               const year = date.getFullYear();
-                              const month = String(date.getMonth() + 1).padStart(2, '0');
-                              const day = String(date.getDate()).padStart(2, '0');
+                              const month = String(date.getMonth() + 1).padStart(2, "0");
+                              const day = String(date.getDate()).padStart(2, "0");
                               setFormData({ ...formData, drive_date: `${year}-${month}-${day}` });
                             } else {
-                              setFormData({ ...formData, drive_date: '' });
+                              setFormData({ ...formData, drive_date: "" });
                             }
                           }}
                           initialFocus
@@ -647,7 +659,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
             <CardHeader>
               <CardTitle>Select Panelists</CardTitle>
               <CardDescription>
-                Choose panelists for this position (optional). Selected:{" "}
+                Choose panelists and managers for this vacancy from all users (optional). Selected:{" "}
                 {formData.assignedPanelists.length}
               </CardDescription>
             </CardHeader>
@@ -780,12 +792,12 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               </Button>
             ) : (
               <Button type="submit" disabled={!canSubmit()} className="bg-blue-600 hover:bg-blue-700">
-                Save Position
+                Create Vacancy
               </Button>
             )}
           </div>
         </div>
       </form>
     </div>
-  )
+  );
 }
