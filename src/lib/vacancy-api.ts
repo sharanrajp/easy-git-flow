@@ -8,9 +8,9 @@ interface BackendVacancy {
   position_title: string;
   hiring_manager_name: string;
   recruiter_name: string;
-  job_type: string;
+  employment_type: string;
   priority: string;
-  number_of_vacancies: number;
+  number_of_openings: number;
   status: string;
   experience_range: string;
   skills_required: string[];
@@ -25,6 +25,9 @@ interface BackendVacancy {
   request_type?: string;
   city?: string;
   projectClientName?: string;
+  category?: string;
+  position_approved_by?: string;
+  reason_for_hiring?: string;
 }
 
 // Frontend vacancy interface for posting (what we send to API)
@@ -32,9 +35,9 @@ interface VacancyCreateRequest {
   position_title: string;
   hiring_manager_name: string;
   recruiter_name: string;
-  job_type: string;
+  employment_type: string;
   priority: string;
-  number_of_vacancies: number;
+  number_of_openings: number;
   status: string;
   experience_range: string;
   skills_required: string[];
@@ -46,6 +49,9 @@ interface VacancyCreateRequest {
   assignedPanelists?: string[];
   city?: string;
   projectClientName?: string;
+  category?: string;
+  position_approved_by?: string;
+  reason_for_hiring?: string;
 }
 
 // Transform backend vacancy to frontend format
@@ -55,9 +61,9 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
     position_title: backendVacancy.position_title || "",
     hiring_manager_name: backendVacancy.hiring_manager_name || "",
     recruiter_name: backendVacancy.recruiter_name || "",
-    job_type: (backendVacancy.job_type as "full_time" | "part-time" | "contract") || "full_time",
+    job_type: (backendVacancy.employment_type as "full_time" | "part-time" | "contract") || "full_time",
     priority: (backendVacancy.priority as "P3" | "P2" | "P1" | "P0") || "P3",
-    number_of_vacancies: backendVacancy.number_of_vacancies || 1,
+    number_of_vacancies: backendVacancy.number_of_openings || 1,
     request_type: backendVacancy.request_type || "new",
     status: (backendVacancy.status as "active" | "paused" | "closed") || "active",
     experience_range: backendVacancy.experience_range || "",
@@ -76,6 +82,9 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
     assignedPanelists: Array.isArray(backendVacancy.assignedPanelists) ? backendVacancy.assignedPanelists : [],
     city: backendVacancy.city || "",
     projectClientName: backendVacancy.projectClientName || "",
+    category: backendVacancy.category || "",
+    position_approved_by: backendVacancy.position_approved_by || "",
+    plan: backendVacancy.reason_for_hiring || "",
     drive_date: backendVacancy.drive_date || "",
     drive_location: backendVacancy.drive_location || "",
   };
@@ -83,24 +92,37 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Vacancy {
 
 // Transform frontend vacancy to backend format for creation
 function transformFrontendToBackend(frontendVacancy: Partial<Vacancy>): VacancyCreateRequest {
+  // Handle date conversion safely - check for empty strings and invalid dates
+  let driveDate = "";
+  const dateValue = frontendVacancy.walkInDetails?.date;
+  if (dateValue && dateValue.trim() !== "") {
+    const date = new Date(dateValue);
+    if (!isNaN(date.getTime())) {
+      driveDate = date.toISOString();
+    }
+  }
+
   return {
     position_title: frontendVacancy.position_title || "",
     hiring_manager_name: frontendVacancy.hiring_manager_name || "",
     assignedPanelists: frontendVacancy.assignedPanelists || [],
     recruiter_name: frontendVacancy.recruiter_name || "",
-    job_type: frontendVacancy.job_type || "full_time",
+    employment_type: frontendVacancy.job_type || "full_time",
     priority: frontendVacancy.priority || "P3",
-    number_of_vacancies: frontendVacancy.number_of_vacancies || 1,
+    number_of_openings: frontendVacancy.number_of_vacancies || 1,
     status: frontendVacancy.status || "active",
     experience_range: frontendVacancy.experience_range || "",
     skills_required: frontendVacancy.skills_required || [],
     interview_type: frontendVacancy.interview_type || "Walk-In",
-    drive_date: new Date(frontendVacancy.walkInDetails?.date || "").toISOString() || "",
+    drive_date: driveDate,
     drive_location: frontendVacancy.walkInDetails?.location || "",
     job_desc: frontendVacancy.job_desc || "",
     request_type: frontendVacancy.request_type || "new",
     city: frontendVacancy.city || "",
     projectClientName: frontendVacancy.projectClientName || "",
+    category: frontendVacancy.category || "",
+    position_approved_by: frontendVacancy.position_approved_by || "",
+    reason_for_hiring: frontendVacancy.plan || "",
   };
 }
 
