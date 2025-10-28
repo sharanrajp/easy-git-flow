@@ -91,7 +91,7 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Position {
 }
 
 // Transform frontend vacancy to backend format for creation
-function transformFrontendToBackend(frontendVacancy: Partial<Position>): VacancyCreateRequest {
+export function transformFrontendToBackend(frontendVacancy: Partial<Position>): VacancyCreateRequest {
   // Handle date conversion - convert to ISO string or use null
   let driveDate: string | null = null;
   const dateValue = frontendVacancy.walkInDetails?.date;

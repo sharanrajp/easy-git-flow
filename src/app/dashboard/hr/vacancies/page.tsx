@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 import { type Position } from "@/lib/schema-data";
 import { getAllUsers } from "@/lib/auth";
-import { fetchVacancies, addVacancy } from "@/lib/vacancy-api";
+import { fetchVacancies, addVacancy, transformFrontendToBackend } from "@/lib/vacancy-api";
 import { makeAuthenticatedRequest } from "@/lib/auth";
 import { API_BASE_URL } from "@/lib/api-config";
 import { VacancyForm } from "@/components/vacancies/vacancy-form";
@@ -183,9 +183,10 @@ export default function VacanciesPage() {
     if (!selectedVacancy) return;
 
     try {
+      const transformedData = transformFrontendToBackend(vacancyData);
       const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${selectedVacancy.id}`, {
         method: "PUT",
-        body: JSON.stringify({ ...selectedVacancy, ...vacancyData }),
+        body: JSON.stringify(transformedData),
       });
 
       if (response.ok) {
