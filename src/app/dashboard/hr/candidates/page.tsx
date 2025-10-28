@@ -2281,9 +2281,19 @@ export default function CandidatesPage() {
                         <TableHead>Skills</TableHead>
                         <TableHead>Experience</TableHead>
                         <TableHead>Round</TableHead>
-                        <TableHead>{mainTab === "virtual" ? "Schedule Info" : "Panelist"}</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
+                        {mainTab === "virtual" ? (
+                          <>
+                            <TableHead>Schedule Info</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </>
+                        ) : (
+                          <>
+                            <TableHead>Panelist</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </>
+                        )}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -2362,92 +2372,138 @@ export default function CandidatesPage() {
                             </TableCell>
                             <TableCell>{candidate.total_experience || "N/A"}</TableCell>
                             <TableCell>{candidate.last_interview_round}</TableCell>
-                            <TableCell>
-                              {mainTab === "virtual" && (candidate as any).scheduled_date ? (
-                                <div className="space-y-1 text-sm">
-                                  <div className="flex items-center gap-1 text-green-700">
-                                    <Calendar className="h-3 w-3" />
-                                    <span>{new Date((candidate as any).scheduled_date).toLocaleDateString()}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1 text-blue-700">
-                                    <Clock className="h-3 w-3" />
-                                    <span>{(candidate as any).scheduled_time}</span>
-                                  </div>
-                                  {(candidate as any).meeting_link && (
-                                    <a 
-                                      href={(candidate as any).meeting_link} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:underline text-xs"
-                                    >
-                                      Join Meeting
-                                    </a>
+                            {mainTab === "virtual" ? (
+                              <>
+                                <TableCell>
+                                  {(candidate as any).scheduled_date ? (
+                                    <div className="space-y-1.5">
+                                      <div className="flex items-center gap-1.5 text-sm">
+                                        <Calendar className="h-3.5 w-3.5 text-green-600" />
+                                        <span className="text-foreground font-medium">
+                                          {new Date((candidate as any).scheduled_date).toLocaleDateString('en-GB')}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-1.5 text-sm">
+                                        <Clock className="h-3.5 w-3.5 text-blue-600" />
+                                        <span className="text-foreground">{(candidate as any).scheduled_time}</span>
+                                      </div>
+                                      {(candidate as any).meeting_link && (
+                                        <a 
+                                          href={(candidate as any).meeting_link} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 hover:underline text-sm font-medium"
+                                        >
+                                          Meeting Link
+                                        </a>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground text-sm">Not scheduled</span>
                                   )}
-                                </div>
-                              ) : (
-                                candidate.panel_name || "N/A"
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={getStatusColor(candidate.final_status || "assigned")}>
-                                <div className="flex items-center gap-1">
-                                  {formatStatusLabel(candidate.final_status || "assigned")}
-                                </div>
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setSelectedAssignedCandidate(candidate)
-                                    setIsAssignedDetailsOpen(true)
-                                  }}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setSelectedCandidate(candidate as any)
-                                    setIsEditOpen(true)
-                                  }}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => setDeleteCandidate(candidate as any)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-600" />
-                                </Button>
-                                {/* For walk-in: show Map Assign for selected/on-hold in R1/R2 */}
-                                {mainTab === "walk-in" && ["selected", "on-hold"].includes(candidate.final_status) && (candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="cursor-pointer bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                                    onClick={() => handleMapAssign(candidate)}
-                                  >
-                                    Map Assign
-                                  </Button>
-                                )}
-                                {/* For virtual: show Reschedule for all candidates with schedule info */}
-                                {mainTab === "virtual" && (candidate as any).scheduled_date && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-blue-600 hover:bg-blue-50"
-                                    onClick={() => handleVirtualRescheduleInterview(candidate)}
-                                  >
-                                    Reschedule
-                                  </Button>
-                                )}
-                              </div>
-                            </TableCell>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className={getStatusColor(candidate.final_status || "assigned")}>
+                                    <div className="flex items-center gap-1">
+                                      {formatStatusLabel(candidate.final_status || "assigned")}
+                                    </div>
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        setSelectedAssignedCandidate(candidate)
+                                        setIsAssignedDetailsOpen(true)
+                                      }}
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        setSelectedCandidate(candidate as any)
+                                        setIsEditOpen(true)
+                                      }}
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => setDeleteCandidate(candidate as any)}
+                                    >
+                                      <Trash2 className="h-4 w-4 text-red-600" />
+                                    </Button>
+                                    {(candidate as any).scheduled_date && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="text-blue-600 hover:bg-blue-50 border-blue-200"
+                                        onClick={() => handleVirtualRescheduleInterview(candidate)}
+                                      >
+                                        Reschedule
+                                      </Button>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </>
+                            ) : (
+                              <>
+                                <TableCell>{candidate.panel_name || "N/A"}</TableCell>
+                                <TableCell>
+                                  <Badge className={getStatusColor(candidate.final_status || "assigned")}>
+                                    <div className="flex items-center gap-1">
+                                      {formatStatusLabel(candidate.final_status || "assigned")}
+                                    </div>
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        setSelectedAssignedCandidate(candidate)
+                                        setIsAssignedDetailsOpen(true)
+                                      }}
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        setSelectedCandidate(candidate as any)
+                                        setIsEditOpen(true)
+                                      }}
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => setDeleteCandidate(candidate as any)}
+                                    >
+                                      <Trash2 className="h-4 w-4 text-red-600" />
+                                    </Button>
+                                    {["selected", "on-hold"].includes(candidate.final_status) && (candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="cursor-pointer bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                                        onClick={() => handleMapAssign(candidate)}
+                                      >
+                                        Map Assign
+                                      </Button>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </>
+                            )}
                           </TableRow>
                         )
                       })}
