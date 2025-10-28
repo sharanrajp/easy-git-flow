@@ -112,9 +112,7 @@ export function VirtualScheduleInterviewDialog({
 
   const togglePanelistSelection = (panelistId: string) => {
     setSelectedPanelMembers((prev) =>
-      prev.includes(panelistId)
-        ? prev.filter((id) => id !== panelistId)
-        : [...prev, panelistId]
+      prev.includes(panelistId) ? [] : [panelistId]
     )
   }
 
