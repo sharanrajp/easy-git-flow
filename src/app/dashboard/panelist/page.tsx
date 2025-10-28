@@ -723,14 +723,16 @@ export default function PanelistDashboard() {
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {scheduledInterviews.map((candidate) => {
-                  const canStartInterview = currentUser?.role === "panelist" && 
-                                           currentUser?.privileges?.status === "interview-assigned" &&
-                                           candidate.interview_type !== "virtual"
-                  const canEndInterview = currentUser?.role === "panelist" && 
-                                         currentUser?.privileges?.status === "in_interview"
                   const isVirtual = candidate.interview_type === "virtual"
                   const isR1 = candidate.last_interview_round?.toLowerCase() === "r1"
                   const meetingLink = (candidate as any).meeting_link
+                  
+                  // For walk-in interviews, show buttons based on interview session status
+                  const interviewSession = interviewSessions.find(s => s.candidateId === candidate._id)
+                  const hasStartedInterview = interviewSession?.status === "in-progress"
+                  
+                  const canStartInterview = !isVirtual && !hasStartedInterview
+                  const canEndInterview = !isVirtual && hasStartedInterview
                   
                   return (
                     <Card
