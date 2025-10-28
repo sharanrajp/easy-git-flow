@@ -62,6 +62,7 @@ export default function VacanciesPage() {
   >({});
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
+  const [interviewType, setInterviewType] = useState<"walk-in" | "virtual">("walk-in");
 
   const getCandidateCountsForVacancy = useCallback((vacancyTitle: string) => {
     return { applications: 0, shortlisted: 0, interviewed: 0, joined: 0 };
@@ -148,7 +149,13 @@ export default function VacanciesPage() {
     const matchesPriority = priorityFilter === "all" || vacancy.priority === priorityFilter;
     const matchesRecruiter = recruiterFilter === "all" || vacancy.recruiter_name === recruiterFilter;
 
-    return matchesSearch && matchesStatus && matchesPriority && matchesRecruiter;
+    // Filter by interview type
+    const matchesInterviewType = 
+      interviewType === "walk-in" 
+        ? vacancy.walkInDetails?.date 
+        : !vacancy.walkInDetails?.date;
+
+    return matchesSearch && matchesStatus && matchesPriority && matchesRecruiter && matchesInterviewType;
   });
 
   const totalPages = Math.ceil(filteredVacancies.length / itemsPerPage);
@@ -157,7 +164,7 @@ export default function VacanciesPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, priorityFilter, recruiterFilter]);
+  }, [searchTerm, statusFilter, priorityFilter, recruiterFilter, interviewType]);
 
   const handleCreateVacancy = async (vacancyData: Partial<Position>) => {
     try {
@@ -460,240 +467,470 @@ export default function VacanciesPage() {
           {/* Positions List/Grid */}
           {!loading && !error && (
             <>
-              {viewMode === "list" ? (
-                <>
-                  <Card>
-                    <CardContent className="p-0">
-                      <TooltipProvider>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>S.No</TableHead>
-                              <TableHead>Position Title</TableHead>
-                              <TableHead>Priority</TableHead>
-                              <TableHead>Experience Range</TableHead>
-                              <TableHead>Drive On</TableHead>
-                              <TableHead>Openings</TableHead>
-                              <TableHead>Recruiter</TableHead>
-                              <TableHead>Status</TableHead>
-                              <TableHead>No. of Panelists</TableHead>
-                              <TableHead>Actions</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {paginatedVacancies.map((vacancy) => {
-                              const counts = candidateCounts[vacancy.position_title] || {
-                                applications: 0,
-                                shortlisted: 0,
-                                interviewed: 0,
-                                joined: 0,
-                              };
-                              return (
-                                <TableRow key={vacancy.id}>
-                                  <TableCell>
-                                    <div className="font-mono text-sm text-gray-600">
-                                      {filteredVacancies.indexOf(vacancy) + 1}
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>
-                                    <div>
-                                      <div className="font-medium">{vacancy.position_title}</div>
-                                      <div className="text-sm text-gray-500">{vacancy.location}</div>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Badge className={getPriorityColor(vacancy.priority)}>{vacancy.priority}</Badge>
-                                  </TableCell>
-                                  <TableCell>
-                                    <div className="text-sm">{vacancy.experience_range}</div>
-                                  </TableCell>
-                                  <TableCell>
-                                    <div className="text-sm">
-                                      {vacancy.walkInDetails?.date
-                                        ? formatDate(vacancy.walkInDetails.date)
-                                        : formatDate(vacancy.postedOn)}
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>
-                                    <div className="text-sm font-medium">{vacancy.number_of_vacancies}</div>
-                                  </TableCell>
-                                  <TableCell>{vacancy.recruiter_name || vacancy.hiring_manager_name}</TableCell>
-                                  <TableCell>
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="sm" className="p-0 h-auto">
-                                          <div className="flex items-center gap-1">
-                                            <Badge className={getStatusColor(vacancy.status)}>{vacancy.status}</Badge>
-                                            <ChevronDown className="h-3 w-3" />
-                                          </div>
+              <Tabs value={interviewType} onValueChange={(value) => setInterviewType(value as "walk-in" | "virtual")} className="w-full">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="walk-in">Walk-in</TabsTrigger>
+                  <TabsTrigger value="virtual">Virtual</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="walk-in">
+                  {viewMode === "list" ? (
+                    <Card>
+                      <CardContent className="p-0">
+                        <TooltipProvider>
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>S.No</TableHead>
+                                <TableHead>Position Title</TableHead>
+                                <TableHead>Priority</TableHead>
+                                <TableHead>Experience Range</TableHead>
+                                <TableHead>Drive On</TableHead>
+                                <TableHead>Openings</TableHead>
+                                <TableHead>Recruiter</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>No. of Panelists</TableHead>
+                                <TableHead>Actions</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {paginatedVacancies.map((vacancy) => {
+                                const counts = candidateCounts[vacancy.position_title] || {
+                                  applications: 0,
+                                  shortlisted: 0,
+                                  interviewed: 0,
+                                  joined: 0,
+                                };
+                                return (
+                                  <TableRow key={vacancy.id}>
+                                    <TableCell>
+                                      <div className="font-mono text-sm text-gray-600">
+                                        {filteredVacancies.indexOf(vacancy) + 1}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div>
+                                        <div className="font-medium">{vacancy.position_title}</div>
+                                        <div className="text-sm text-gray-500">{vacancy.location}</div>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge className={getPriorityColor(vacancy.priority)}>{vacancy.priority}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="text-sm">{vacancy.experience_range}</div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="text-sm">
+                                        {vacancy.walkInDetails?.date
+                                          ? formatDate(vacancy.walkInDetails.date)
+                                          : formatDate(vacancy.postedOn)}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="text-sm font-medium">{vacancy.number_of_vacancies}</div>
+                                    </TableCell>
+                                    <TableCell>{vacancy.recruiter_name || vacancy.hiring_manager_name}</TableCell>
+                                    <TableCell>
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button variant="ghost" size="sm" className="p-0 h-auto">
+                                            <div className="flex items-center gap-1">
+                                              <Badge className={getStatusColor(vacancy.status)}>{vacancy.status}</Badge>
+                                              <ChevronDown className="h-3 w-3" />
+                                            </div>
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                          <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "active")}>
+                                            Active
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "paused")}>
+                                            Paused
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "closed")}>
+                                            Closed
+                                          </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "joined")}>
+                                            Joined
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "offer Accepted")}>
+                                            Offer Accepted
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "offer Declined")}>
+                                            Offer Declined
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "on-Hold")}>
+                                            On-Hold
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center space-x-2">
+                                        <span className="font-medium">{vacancy.assignedPanelists.length}</span>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-blue-600"
+                                          onClick={() => {
+                                            setSelectedVacancy(vacancy);
+                                            setIsPanelistEditOpen(true);
+                                          }}
+                                        >
+                                          <Edit className="h-3 w-3" />
                                         </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent>
-                                        <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "active")}>
-                                          Active
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "paused")}>
-                                          Paused
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "closed")}>
-                                          Closed
-                                        </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "joined")}>
-                                          Joined
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "offer Accepted")}>
-                                          Offer Accepted
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "offer Declined")}>
-                                          Offer Declined
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "on-Hold")}>
-                                          On-Hold
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                                  </TableCell>
-                                  <TableCell>
-                                    <div className="flex items-center space-x-2">
-                                      <span className="font-medium">{vacancy.assignedPanelists.length}</span>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-blue-600"
-                                        onClick={() => {
-                                          setSelectedVacancy(vacancy);
-                                          setIsPanelistEditOpen(true);
-                                        }}
-                                      >
-                                        <Edit className="h-3 w-3" />
-                                      </Button>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>
-                                    <div className="flex items-center gap-2">
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => {
-                                          setSelectedVacancy(vacancy);
-                                          setIsDetailsOpen(true);
-                                        }}
-                                      >
-                                        <Eye className="h-4 w-4" />
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => {
-                                          setSelectedVacancy(vacancy);
-                                          setIsEditOpen(true);
-                                        }}
-                                      >
-                                        <Edit className="h-4 w-4" />
-                                      </Button>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center gap-2">
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => {
+                                            setSelectedVacancy(vacancy);
+                                            setIsDetailsOpen(true);
+                                          }}
+                                        >
+                                          <Eye className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => {
+                                            setSelectedVacancy(vacancy);
+                                            setIsEditOpen(true);
+                                          }}
+                                        >
+                                          <Edit className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                              {!loading && !error && filteredVacancies.length === 0 && (
+                                <TableRow>
+                                  <TableCell colSpan={10} className="py-12">
+                                    <div className="flex flex-col items-center justify-center text-center w-full">
+                                      <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                        <Plus className="h-8 w-8 text-gray-400" />
+                                      </div>
+                                      <h3 className="text-lg font-medium text-gray-900 mb-2">No walk-in positions found</h3>
+                                      <p className="text-gray-500 mb-4">
+                                        {searchTerm ||
+                                        statusFilter !== "all" ||
+                                        priorityFilter !== "all" ||
+                                        recruiterFilter !== "all"
+                                          ? "Try adjusting your search criteria"
+                                          : "No walk-in positions available"}
+                                      </p>
                                     </div>
                                   </TableCell>
                                 </TableRow>
-                              );
-                            })}
-                            {!loading && !error && filteredVacancies.length === 0 && (
-                              <TableRow>
-                                <TableCell colSpan={10} className="py-12">
-                                  <div className="flex flex-col items-center justify-center text-center w-full">
-                                    <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                      <Plus className="h-8 w-8 text-gray-400" />
-                                    </div>
-                                    <h3 className="text-lg font-medium text-gray-900 mb-2">No vacancies found</h3>
-                                    <p className="text-gray-500 mb-4">
-                                      {searchTerm ||
-                                      statusFilter !== "all" ||
-                                      priorityFilter !== "all" ||
-                                      recruiterFilter !== "all"
-                                        ? "Try adjusting your search criteria"
-                                        : "Get started by creating your first vacancy"}
-                                    </p>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            )}
-                          </TableBody>
-                        </Table>
-                      </TooltipProvider>
-                    </CardContent>
-                  </Card>
-                </>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {paginatedVacancies.map((vacancy) => {
-                      const counts = candidateCounts[vacancy.position_title] || {
-                        applications: 0,
-                        shortlisted: 0,
-                        interviewed: 0,
-                        joined: 0,
-                      };
-                      return (
-                        <Card key={vacancy.id}>
-                          <CardHeader>
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-start space-x-3">
-                                <div>
-                                  <CardTitle className="text-lg">{vacancy.position_title}</CardTitle>
-                                  <p className="text-sm text-gray-600">{vacancy.location}</p>
-                                </div>
-                              </div>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      setSelectedVacancy(vacancy);
-                                      setIsDetailsOpen(true);
-                                    }}
-                                  >
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    View Details
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      setSelectedVacancy(vacancy);
-                                      setIsEditOpen(true);
-                                    }}
-                                  >
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Edit
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Badge className={getPriorityColor(vacancy.priority)}>{vacancy.priority}</Badge>
-                              <Badge className={getStatusColor(vacancy.status)}>{vacancy.status}</Badge>
-                              {isDeadlineExpired(vacancy.deadline) && (
-                                <AlertTriangle className="h-4 w-4 text-red-500" />
                               )}
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-3">
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <span className="text-gray-500">Panelists:</span>
-                                  <div className="font-medium">{vacancy.assignedPanelists.length} assigned</div>
+                            </TableBody>
+                          </Table>
+                        </TooltipProvider>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {paginatedVacancies.map((vacancy) => {
+                        const counts = candidateCounts[vacancy.position_title] || {
+                          applications: 0,
+                          shortlisted: 0,
+                          interviewed: 0,
+                          joined: 0,
+                        };
+                        return (
+                          <Card key={vacancy.id}>
+                            <CardHeader>
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-start space-x-3">
+                                  <div>
+                                    <CardTitle className="text-lg">{vacancy.position_title}</CardTitle>
+                                    <p className="text-sm text-gray-600">{vacancy.location}</p>
+                                  </div>
+                                </div>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        setSelectedVacancy(vacancy);
+                                        setIsDetailsOpen(true);
+                                      }}
+                                    >
+                                      <Eye className="h-4 w-4 mr-2" />
+                                      View Details
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        setSelectedVacancy(vacancy);
+                                        setIsEditOpen(true);
+                                      }}
+                                    >
+                                      <Edit className="h-4 w-4 mr-2" />
+                                      Edit
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Badge className={getPriorityColor(vacancy.priority)}>{vacancy.priority}</Badge>
+                                <Badge className={getStatusColor(vacancy.status)}>{vacancy.status}</Badge>
+                                {isDeadlineExpired(vacancy.deadline) && (
+                                  <AlertTriangle className="h-4 w-4 text-red-500" />
+                                )}
+                              </div>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-3">
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                  <div>
+                                    <span className="text-gray-500">Panelists:</span>
+                                    <div className="font-medium">{vacancy.assignedPanelists.length} assigned</div>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="virtual">
+                  {viewMode === "list" ? (
+                    <Card>
+                      <CardContent className="p-0">
+                        <TooltipProvider>
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>S.No</TableHead>
+                                <TableHead>Position Title</TableHead>
+                                <TableHead>Priority</TableHead>
+                                <TableHead>Experience Range</TableHead>
+                                <TableHead>Openings</TableHead>
+                                <TableHead>Recruiter</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>No. of Panelists</TableHead>
+                                <TableHead>Actions</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {paginatedVacancies.map((vacancy) => {
+                                const counts = candidateCounts[vacancy.position_title] || {
+                                  applications: 0,
+                                  shortlisted: 0,
+                                  interviewed: 0,
+                                  joined: 0,
+                                };
+                                return (
+                                  <TableRow key={vacancy.id}>
+                                    <TableCell>
+                                      <div className="font-mono text-sm text-gray-600">
+                                        {filteredVacancies.indexOf(vacancy) + 1}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div>
+                                        <div className="font-medium">{vacancy.position_title}</div>
+                                        <div className="text-sm text-gray-500">{vacancy.location}</div>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge className={getPriorityColor(vacancy.priority)}>{vacancy.priority}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="text-sm">{vacancy.experience_range}</div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="text-sm font-medium">{vacancy.number_of_vacancies}</div>
+                                    </TableCell>
+                                    <TableCell>{vacancy.recruiter_name || vacancy.hiring_manager_name}</TableCell>
+                                    <TableCell>
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button variant="ghost" size="sm" className="p-0 h-auto">
+                                            <div className="flex items-center gap-1">
+                                              <Badge className={getStatusColor(vacancy.status)}>{vacancy.status}</Badge>
+                                              <ChevronDown className="h-3 w-3" />
+                                            </div>
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                          <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "active")}>
+                                            Active
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "paused")}>
+                                            Paused
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "closed")}>
+                                            Closed
+                                          </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "joined")}>
+                                            Joined
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "offer Accepted")}>
+                                            Offer Accepted
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "offer Declined")}>
+                                            Offer Declined
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "on-Hold")}>
+                                            On-Hold
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center space-x-2">
+                                        <span className="font-medium">{vacancy.assignedPanelists.length}</span>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-blue-600"
+                                          onClick={() => {
+                                            setSelectedVacancy(vacancy);
+                                            setIsPanelistEditOpen(true);
+                                          }}
+                                        >
+                                          <Edit className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center gap-2">
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => {
+                                            setSelectedVacancy(vacancy);
+                                            setIsDetailsOpen(true);
+                                          }}
+                                        >
+                                          <Eye className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => {
+                                            setSelectedVacancy(vacancy);
+                                            setIsEditOpen(true);
+                                          }}
+                                        >
+                                          <Edit className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                              {!loading && !error && filteredVacancies.length === 0 && (
+                                <TableRow>
+                                  <TableCell colSpan={9} className="py-12">
+                                    <div className="flex flex-col items-center justify-center text-center w-full">
+                                      <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                        <Plus className="h-8 w-8 text-gray-400" />
+                                      </div>
+                                      <h3 className="text-lg font-medium text-gray-900 mb-2">No virtual positions found</h3>
+                                      <p className="text-gray-500 mb-4">
+                                        {searchTerm ||
+                                        statusFilter !== "all" ||
+                                        priorityFilter !== "all" ||
+                                        recruiterFilter !== "all"
+                                          ? "Try adjusting your search criteria"
+                                          : "No virtual positions available"}
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </TableBody>
+                          </Table>
+                        </TooltipProvider>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {paginatedVacancies.map((vacancy) => {
+                        const counts = candidateCounts[vacancy.position_title] || {
+                          applications: 0,
+                          shortlisted: 0,
+                          interviewed: 0,
+                          joined: 0,
+                        };
+                        return (
+                          <Card key={vacancy.id}>
+                            <CardHeader>
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-start space-x-3">
+                                  <div>
+                                    <CardTitle className="text-lg">{vacancy.position_title}</CardTitle>
+                                    <p className="text-sm text-gray-600">{vacancy.location}</p>
+                                  </div>
+                                </div>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        setSelectedVacancy(vacancy);
+                                        setIsDetailsOpen(true);
+                                      }}
+                                    >
+                                      <Eye className="h-4 w-4 mr-2" />
+                                      View Details
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        setSelectedVacancy(vacancy);
+                                        setIsEditOpen(true);
+                                      }}
+                                    >
+                                      <Edit className="h-4 w-4 mr-2" />
+                                      Edit
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Badge className={getPriorityColor(vacancy.priority)}>{vacancy.priority}</Badge>
+                                <Badge className={getStatusColor(vacancy.status)}>{vacancy.status}</Badge>
+                                {isDeadlineExpired(vacancy.deadline) && (
+                                  <AlertTriangle className="h-4 w-4 text-red-500" />
+                                )}
+                              </div>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-3">
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                  <div>
+                                    <span className="text-gray-500">Panelists:</span>
+                                    <div className="font-medium">{vacancy.assignedPanelists.length} assigned</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </>
           )}
         </div>
