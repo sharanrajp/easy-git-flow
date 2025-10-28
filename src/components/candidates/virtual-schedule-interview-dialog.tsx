@@ -110,9 +110,14 @@ export function VirtualScheduleInterviewDialog({
   }
 
   const handlePanelistSelection = (panelistId: string) => {
-    setSelectedPanelMembers((prev) => 
-      prev.includes(panelistId) ? [] : [panelistId]
-    )
+    setSelectedPanelMembers((prev) => {
+      // If clicking the same panelist, deselect it
+      if (prev.includes(panelistId)) {
+        return []
+      }
+      // Otherwise, replace with the new selection
+      return [panelistId]
+    })
   }
 
   return (
