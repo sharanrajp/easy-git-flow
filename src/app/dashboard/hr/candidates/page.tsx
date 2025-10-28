@@ -3695,7 +3695,7 @@ export default function CandidatesPage() {
           candidate={virtualScheduleCandidate}
           isReschedule={isVirtualReschedule}
           existingSchedule={
-            virtualScheduleCandidate && (virtualScheduleCandidate as any).interview_date
+            isVirtualReschedule && virtualScheduleCandidate && (virtualScheduleCandidate as any).interview_date
               ? {
                   date: (virtualScheduleCandidate as any).interview_date,
                   time: (virtualScheduleCandidate as any).interview_time,
