@@ -756,14 +756,25 @@ export default function PanelistDashboard() {
 
                         {/* Interview Action Button in Top Right */}
                         {isVirtual && meetingLink ? (
-                          <Button
-                            onClick={() => window.open(meetingLink, '_blank')}
-                            size="sm"
-                            className="bg-purple-600 hover:bg-purple-700"
-                          >
-                            <ExternalLink className="h-4 w-4 mr-1" />
-                            Join Teams
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => window.open(meetingLink, '_blank')}
+                              size="sm"
+                              className="bg-purple-600 hover:bg-purple-700"
+                            >
+                              <ExternalLink className="h-4 w-4 mr-1" />
+                              Join Meeting
+                            </Button>
+                            <Button
+                              onClick={() => handleEndInterview(candidate)}
+                              disabled={isUpdatingStatus}
+                              size="sm"
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              <Pause className="h-4 w-4 mr-1" />
+                              End & Give Feedback
+                            </Button>
+                          </div>
                         ) : (
                           <>
                             {canStartInterview && (
@@ -785,7 +796,7 @@ export default function PanelistDashboard() {
                                 className="bg-red-600 hover:bg-red-700"
                               >
                                 <Pause className="h-4 w-4 mr-1" />
-                                End Interview with Feedback
+                                End & Give Feedback
                               </Button>
                             )}
                           </>
