@@ -2451,15 +2451,27 @@ export default function CandidatesPage() {
                                     >
                                       <Trash2 className="h-4 w-4 text-red-600" />
                                     </Button>
-                                    {(candidate as any).interview_date && (
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="text-blue-600 hover:bg-blue-50 border-blue-200"
-                                        onClick={() => handleVirtualRescheduleInterview(candidate)}
-                                      >
-                                        Reschedule
-                                      </Button>
+                                    {/* Show Schedule/Reschedule for R1/R2 Selected or On-Hold */}
+                                    {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && 
+                                     (candidate.final_status === "selected" || candidate.final_status === "on-hold") && (
+                                      (candidate as any).interview_date ? (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="text-blue-600 hover:bg-blue-50 border-blue-200"
+                                          onClick={() => handleVirtualRescheduleInterview(candidate)}
+                                        >
+                                          Reschedule
+                                        </Button>
+                                      ) : (
+                                        <Button
+                                          size="sm"
+                                          className="bg-green-600 hover:bg-green-700 text-white"
+                                          onClick={() => handleVirtualScheduleInterview(candidate)}
+                                        >
+                                          Schedule Interview
+                                        </Button>
+                                      )
                                     )}
                                   </div>
                                 </TableCell>
