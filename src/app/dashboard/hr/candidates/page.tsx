@@ -45,6 +45,7 @@ import {
   Download,
   Search,
   X,
+  Users,
 } from "lucide-react"
 import { fetchVacancies } from "@/lib/vacancy-api"
 import { CandidateForm } from "@/components/candidates/candidate-form"
@@ -2140,6 +2141,12 @@ export default function CandidatesPage() {
                                     <Clock className="h-3 w-3" />
                                     <span>{(candidate as any).scheduled_time}</span>
                                   </div>
+                                  {(candidate as any).panel_name && (
+                                    <div className="flex items-center gap-1 text-gray-700">
+                                      <Users className="h-3 w-3" />
+                                      <span className="font-medium">{(candidate as any).panel_name}</span>
+                                    </div>
+                                  )}
                                   {(candidate as any).meeting_link && (
                                     <a
                                       href={(candidate as any).meeting_link}
@@ -2387,6 +2394,12 @@ export default function CandidatesPage() {
                                         <Clock className="h-3.5 w-3.5 text-blue-600" />
                                         <span className="text-foreground">{(candidate as any).interview_time}</span>
                                       </div>
+                                      {candidate.panel_name && (
+                                        <div className="flex items-center gap-1.5 text-sm">
+                                          <Users className="h-3.5 w-3.5 text-gray-600" />
+                                          <span className="text-foreground font-medium">{candidate.panel_name}</span>
+                                        </div>
+                                      )}
                                       {(candidate as any).meeting_link && (
                                         <a 
                                           href={(candidate as any).meeting_link} 
