@@ -30,7 +30,7 @@ interface BackendVacancy {
   reason_for_hiring?: string;
 }
 
-// Frontend vacancy interface for posting (what we send to API)
+// Frontend vacancy interface for posting/updating (what we send to API)
 interface VacancyCreateRequest {
   position_title: string;
   hiring_manager_name: string;
@@ -42,16 +42,16 @@ interface VacancyCreateRequest {
   experience_range: string;
   skills_required: string[];
   interview_type: string;
-  drive_date?: string; // Optional - only include if valid date provided
-  drive_location?: string; // Optional
+  drive_date?: string | null; // Optional - null if not applicable
+  drive_location?: string; // Optional - empty or actual location
   job_desc?: string;
-  request_type?:string;
+  request_type?: string;
   assignedPanelists?: string[];
   city?: string;
   projectClientName?: string;
   category?: string;
   position_approved_by?: string;
-  reason_for_hiring?: string;
+  reason_for_hiring?: string | null;
 }
 
 // Transform backend vacancy to frontend format
@@ -92,8 +92,8 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Position {
 
 // Transform frontend vacancy to backend format for creation/update
 export function transformFrontendToBackend(frontendVacancy: Partial<Position>): VacancyCreateRequest {
-  // Handle date conversion - convert to ISO string or provide a valid default
-  let driveDate: string | undefined = undefined;
+  // Handle date conversion - convert to ISO string or null
+  let driveDate: string | null = null;
   const dateValue = frontendVacancy.walkInDetails?.date || frontendVacancy.drive_date;
   if (dateValue && dateValue.trim() !== "") {
     const date = new Date(dateValue);
@@ -101,6 +101,12 @@ export function transformFrontendToBackend(frontendVacancy: Partial<Position>): 
       driveDate = date.toISOString();
     }
   }
+
+  // Handle location
+  const location = frontendVacancy.walkInDetails?.location || frontendVacancy.drive_location || "";
+
+  // Handle reason for hiring
+  const reasonForHiring = frontendVacancy.plan?.trim() ? frontendVacancy.plan : null;
 
   // Build payload with required fields
   const payload: VacancyCreateRequest = {
@@ -121,18 +127,10 @@ export function transformFrontendToBackend(frontendVacancy: Partial<Position>): 
     projectClientName: frontendVacancy.projectClientName || "",
     category: frontendVacancy.category || "",
     position_approved_by: frontendVacancy.position_approved_by || "",
-    reason_for_hiring: frontendVacancy.plan || "",
+    reason_for_hiring: reasonForHiring,
+    drive_date: driveDate,
+    drive_location: location,
   };
-
-  // Only include optional fields if they have valid values
-  if (driveDate) {
-    payload.drive_date = driveDate;
-  }
-
-  const location = frontendVacancy.walkInDetails?.location || frontendVacancy.drive_location;
-  if (location && location.trim() !== "") {
-    payload.drive_location = location;
-  }
 
   return payload;
 }
@@ -194,6 +192,38 @@ export async function addVacancy(vacancyData: Partial<Position>): Promise<Positi
     return transformBackendToFrontend(backendVacancy);
   } catch (error) {
     console.error('Error adding vacancy:', error);
+    throw error;
+  }
+}
+
+// Update an existing vacancy
+export async function updateVacancy(vacancyId: string, vacancyData: Partial<Position>): Promise<Position> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const backendData = transformFrontendToBackend(vacancyData);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/Vacancy/${vacancyId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(backendData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update vacancy: ${response.status} ${response.statusText}`);
+    }
+
+    const backendVacancy: BackendVacancy = await response.json();
+    return transformBackendToFrontend(backendVacancy);
+  } catch (error) {
+    console.error('Error updating vacancy:', error);
     throw error;
   }
 }
