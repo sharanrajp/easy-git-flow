@@ -81,7 +81,10 @@ export function VirtualScheduleInterviewDialog({
         }
         setSelectedTime(existingSchedule.time || "")
         setMeetingLink(existingSchedule.meetingLink || "")
-        setSelectedPanelMembers(existingSchedule.panelMembers || [])
+        // Ensure panel members are properly set when rescheduling
+        const panelMembers = existingSchedule.panelMembers || []
+        setSelectedPanelMembers(panelMembers)
+        console.log("Pre-selecting panel members for reschedule:", panelMembers)
       } else {
         setSelectedDate(undefined)
         setSelectedTime("")
@@ -90,7 +93,7 @@ export function VirtualScheduleInterviewDialog({
       }
       setRescheduleReason("")
     }
-  }, [open])
+  }, [open, existingSchedule])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -198,51 +201,54 @@ export function VirtualScheduleInterviewDialog({
           {/* Panel Members Selection */}
           <div className="space-y-2">
             <Label>Select Panel Member *</Label>
-            <div className="border rounded-md p-4 max-h-60 overflow-y-auto space-y-3">
+            <div className="border rounded-md p-4 max-h-60 overflow-y-auto space-y-3 bg-background">
               {loading ? (
                 <p className="text-sm text-muted-foreground">Loading panelists...</p>
               ) : panelists.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No panelists available</p>
               ) : (
-                panelists.map((panelist) => (
-                  <div 
-                    key={panelist._id} 
-                    className={cn(
-                      "flex items-center space-x-3 p-3 rounded-md border cursor-pointer transition-colors",
-                      selectedPanelMembers.includes(panelist._id) 
-                        ? "border-primary bg-primary/5" 
-                        : "border-border hover:bg-muted/50"
-                    )}
-                    onClick={() => handlePanelistSelection(panelist._id)}
-                  >
-                    <input
-                      type="radio"
-                      id={panelist._id}
-                      name="panelist"
-                      checked={selectedPanelMembers.includes(panelist._id)}
-                      onChange={() => handlePanelistSelection(panelist._id)}
-                      className="w-4 h-4 text-primary"
-                    />
-                    <label
-                      htmlFor={panelist._id}
-                      className="flex-1 text-sm font-medium cursor-pointer"
+                panelists.map((panelist) => {
+                  const isSelected = selectedPanelMembers.includes(panelist._id)
+                  return (
+                    <div 
+                      key={panelist._id} 
+                      className={cn(
+                        "flex items-center space-x-3 p-3 rounded-md border cursor-pointer transition-all",
+                        isSelected
+                          ? "border-primary bg-primary/10 ring-2 ring-primary/20" 
+                          : "border-border hover:bg-muted/50 hover:border-muted-foreground/30"
+                      )}
+                      onClick={() => handlePanelistSelection(panelist._id)}
                     >
-                      <div>
-                        <p>{panelist.name}</p>
-                        {panelist.skill_set && panelist.skill_set.length > 0 && (
-                          <p className="text-xs text-muted-foreground">
-                            Skills: {Array.isArray(panelist.skill_set) ? panelist.skill_set.join(", ") : panelist.skill_set}
-                          </p>
-                        )}
-                      </div>
-                    </label>
-                  </div>
-                ))
+                      <input
+                        type="radio"
+                        id={panelist._id}
+                        name="panelist"
+                        checked={isSelected}
+                        onChange={() => handlePanelistSelection(panelist._id)}
+                        className="w-4 h-4 text-primary accent-primary cursor-pointer"
+                      />
+                      <label
+                        htmlFor={panelist._id}
+                        className="flex-1 text-sm font-medium cursor-pointer"
+                      >
+                        <div>
+                          <p className={cn(isSelected && "text-primary font-semibold")}>{panelist.name}</p>
+                          {panelist.skill_set && panelist.skill_set.length > 0 && (
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              Skills: {Array.isArray(panelist.skill_set) ? panelist.skill_set.join(", ") : panelist.skill_set}
+                            </p>
+                          )}
+                        </div>
+                      </label>
+                    </div>
+                  )
+                })
               )}
             </div>
             {selectedPanelMembers.length > 0 && (
               <p className="text-sm text-muted-foreground">
-                {selectedPanelMembers.length} panelist(s) selected
+                {selectedPanelMembers.length} panelist selected
               </p>
             )}
           </div>
