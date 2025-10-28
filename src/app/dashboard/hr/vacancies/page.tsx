@@ -468,7 +468,7 @@ export default function VacanciesPage() {
           {!loading && !error && (
             <>
               <Tabs value={interviewType} onValueChange={(value) => setInterviewType(value as "walk-in" | "virtual")} className="w-full">
-                <TabsList className="mb-4">
+                <TabsList className="mb-4 w-full justify-start">
                   <TabsTrigger value="walk-in">Walk-in</TabsTrigger>
                   <TabsTrigger value="virtual">Virtual</TabsTrigger>
                 </TabsList>
