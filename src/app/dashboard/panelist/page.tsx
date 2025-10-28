@@ -755,16 +755,18 @@ export default function PanelistDashboard() {
                         </div>
 
                         {/* Interview Action Button in Top Right */}
-                        {isVirtual && meetingLink ? (
+                        {isVirtual ? (
                           <div className="flex gap-2">
-                            <Button
-                              onClick={() => window.open(meetingLink, '_blank')}
-                              size="sm"
-                              className="bg-purple-600 hover:bg-purple-700"
-                            >
-                              <ExternalLink className="h-4 w-4 mr-1" />
-                              Join Meeting
-                            </Button>
+                            {meetingLink && (
+                              <Button
+                                onClick={() => window.open(meetingLink, '_blank')}
+                                size="sm"
+                                className="bg-purple-600 hover:bg-purple-700"
+                              >
+                                <ExternalLink className="h-4 w-4 mr-1" />
+                                Join Meeting
+                              </Button>
+                            )}
                             <Button
                               onClick={() => handleEndInterview(candidate)}
                               disabled={isUpdatingStatus}
