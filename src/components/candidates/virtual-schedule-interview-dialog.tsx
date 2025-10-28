@@ -110,7 +110,9 @@ export function VirtualScheduleInterviewDialog({
   }
 
   const handlePanelistSelection = (panelistId: string) => {
-    setSelectedPanelMembers([panelistId])
+    setSelectedPanelMembers((prev) => 
+      prev.includes(panelistId) ? [] : [panelistId]
+    )
   }
 
   return (
