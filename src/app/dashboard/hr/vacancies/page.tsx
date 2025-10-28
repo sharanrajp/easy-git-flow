@@ -247,10 +247,13 @@ export default function VacanciesPage() {
     if (!selectedVacancy) return;
 
     try {
-      // Update vacancy in database
+      // Update vacancy with proper backend transformation
+      const updatedVacancy = { ...selectedVacancy, assignedPanelists: panelistIds };
+      const transformedData = transformFrontendToBackend(updatedVacancy);
+      
       const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${selectedVacancy.id}`, {
         method: "PUT",
-        body: JSON.stringify({ ...selectedVacancy, assignedPanelists: panelistIds }),
+        body: JSON.stringify(transformedData),
       });
 
       if (response.ok) {
@@ -272,9 +275,13 @@ export default function VacanciesPage() {
     if (!vacancy) return;
 
     try {
+      // Update status with proper backend transformation
+      const updatedVacancy = { ...vacancy, status: newStatus };
+      const transformedData = transformFrontendToBackend(updatedVacancy);
+      
       const response = await makeAuthenticatedRequest(`${API_BASE_URL}/Vacancy/${vacancyId}`, {
         method: "PUT",
-        body: JSON.stringify({ ...vacancy, status: newStatus }),
+        body: JSON.stringify(transformedData),
       });
 
       if (response.ok) {
