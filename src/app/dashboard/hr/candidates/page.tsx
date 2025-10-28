@@ -3670,10 +3670,10 @@ export default function CandidatesPage() {
           candidate={virtualScheduleCandidate}
           isReschedule={isVirtualReschedule}
           existingSchedule={
-            virtualScheduleCandidate && (virtualScheduleCandidate as any).scheduled_date
+            virtualScheduleCandidate && (virtualScheduleCandidate as any).interview_date
               ? {
-                  date: (virtualScheduleCandidate as any).scheduled_date,
-                  time: (virtualScheduleCandidate as any).scheduled_time,
+                  date: (virtualScheduleCandidate as any).interview_date,
+                  time: (virtualScheduleCandidate as any).interview_time,
                   meetingLink: (virtualScheduleCandidate as any).meeting_link,
                   panelMembers: (virtualScheduleCandidate as any).panel_members || [],
                 }
