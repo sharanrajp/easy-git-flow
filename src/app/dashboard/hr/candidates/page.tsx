@@ -2375,17 +2375,17 @@ export default function CandidatesPage() {
                             {mainTab === "virtual" ? (
                               <>
                                 <TableCell>
-                                  {(candidate as any).scheduled_date ? (
+                                  {(candidate as any).interview_date ? (
                                     <div className="space-y-1.5">
                                       <div className="flex items-center gap-1.5 text-sm">
                                         <Calendar className="h-3.5 w-3.5 text-green-600" />
                                         <span className="text-foreground font-medium">
-                                          {new Date((candidate as any).scheduled_date).toLocaleDateString('en-GB')}
+                                          {new Date((candidate as any).interview_date).toLocaleDateString('en-GB')}
                                         </span>
                                       </div>
                                       <div className="flex items-center gap-1.5 text-sm">
                                         <Clock className="h-3.5 w-3.5 text-blue-600" />
-                                        <span className="text-foreground">{(candidate as any).scheduled_time}</span>
+                                        <span className="text-foreground">{(candidate as any).interview_time}</span>
                                       </div>
                                       {(candidate as any).meeting_link && (
                                         <a 
@@ -2438,7 +2438,7 @@ export default function CandidatesPage() {
                                     >
                                       <Trash2 className="h-4 w-4 text-red-600" />
                                     </Button>
-                                    {(candidate as any).scheduled_date && (
+                                    {(candidate as any).interview_date && (
                                       <Button
                                         size="sm"
                                         variant="outline"
