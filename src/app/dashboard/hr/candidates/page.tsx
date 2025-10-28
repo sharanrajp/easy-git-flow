@@ -1717,42 +1717,77 @@ export default function CandidatesPage() {
         throw new Error("No authentication token")
       }
 
-      // Determine the round based on candidate's current status
-      const getNextRound = () => {
-        const status = virtualScheduleCandidate.final_status || virtualScheduleCandidate.last_interview_round
-        if (!status || status === "Yet to Attend") return "r1"
-        if (status.includes("r1") || virtualScheduleCandidate.last_interview_round === "r1") return "r2"
-        if (status.includes("r2") || virtualScheduleCandidate.last_interview_round === "r2") return "r3"
-        return "r1"
-      }
-
-      const round = getNextRound()
-
-      // Call POST /virtual/schedule API for each panel member
-      for (const panelId of data.panelMembers) {
-        const payload = {
-          candidate_id: virtualScheduleCandidate._id,
-          panel_id: panelId,
-          round: round,
+      // Check if this is a reschedule
+      if (isVirtualReschedule && virtualScheduleCandidate.interview_id) {
+        // Call PUT /virtual/reschedule/{interview_id} API
+        const reschedulePayload = {
           interview_date: data.date.toISOString().split('T')[0],
           interview_time: data.time,
           meeting_link: data.meetingLink,
-          assigned_by: currentUser.email,
+          reschedule_reason: data.rescheduleReason || "",
         }
 
-        const response = await fetch(`${API_BASE_URL}/virtual/schedule`, {
-          method: "POST",
+        const response = await fetch(`${API_BASE_URL}/virtual/reschedule/${virtualScheduleCandidate.interview_id}`, {
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`,
           },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(reschedulePayload),
         })
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
-          throw new Error(errorData.detail || `Failed to schedule interview: ${response.statusText}`)
+          throw new Error(errorData.detail || `Failed to reschedule interview: ${response.statusText}`)
         }
+
+        toast({
+          title: "Success",
+          description: "Interview rescheduled successfully.",
+        })
+      } else {
+        // Determine the round based on candidate's current status
+        const getNextRound = () => {
+          const status = virtualScheduleCandidate.final_status || virtualScheduleCandidate.last_interview_round
+          if (!status || status === "Yet to Attend") return "r1"
+          if (status.includes("r1") || virtualScheduleCandidate.last_interview_round === "r1") return "r2"
+          if (status.includes("r2") || virtualScheduleCandidate.last_interview_round === "r2") return "r3"
+          return "r1"
+        }
+
+        const round = getNextRound()
+
+        // Call POST /virtual/schedule API for each panel member
+        for (const panelId of data.panelMembers) {
+          const payload = {
+            candidate_id: virtualScheduleCandidate._id,
+            panel_id: panelId,
+            round: round,
+            interview_date: data.date.toISOString().split('T')[0],
+            interview_time: data.time,
+            meeting_link: data.meetingLink,
+            assigned_by: currentUser.email,
+          }
+
+          const response = await fetch(`${API_BASE_URL}/virtual/schedule`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+          })
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}))
+            throw new Error(errorData.detail || `Failed to schedule interview: ${response.statusText}`)
+          }
+        }
+
+        toast({
+          title: "Success",
+          description: "Virtual interview scheduled successfully.",
+        })
       }
 
       // Refresh candidate lists
@@ -1763,19 +1798,14 @@ export default function CandidatesPage() {
       setUnassignedCandidates(unassignedData)
       setAssignedCandidates(assignedData)
 
-      toast({
-        title: "Success",
-        description: "Virtual interview scheduled successfully.",
-      })
-
       setIsVirtualScheduleDialogOpen(false)
       setVirtualScheduleCandidate(null)
       setIsVirtualReschedule(false)
     } catch (error) {
-      console.error('Error scheduling interview:', error)
+      console.error('Error scheduling/rescheduling interview:', error)
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to schedule interview. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to process request. Please try again.",
         variant: "destructive",
       })
     }
@@ -2405,26 +2435,16 @@ export default function CandidatesPage() {
                                     Map Assign
                                   </Button>
                                 )}
-                                {/* For virtual: show Schedule Interview only for Selected status */}
-                                {mainTab === "virtual" && candidate.final_status === "selected" && (
-                                  (candidate as any).scheduled_date ? (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="text-blue-600 hover:bg-blue-50"
-                                      onClick={() => handleVirtualRescheduleInterview(candidate)}
-                                    >
-                                      Reschedule
-                                    </Button>
-                                  ) : (
-                                    <Button
-                                      size="sm"
-                                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                                      onClick={() => handleVirtualScheduleInterview(candidate)}
-                                    >
-                                      Schedule Interview
-                                    </Button>
-                                  )
+                                {/* For virtual: show Reschedule for all candidates with schedule info */}
+                                {mainTab === "virtual" && (candidate as any).scheduled_date && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-blue-600 hover:bg-blue-50"
+                                    onClick={() => handleVirtualRescheduleInterview(candidate)}
+                                  >
+                                    Reschedule
+                                  </Button>
                                 )}
                               </div>
                             </TableCell>

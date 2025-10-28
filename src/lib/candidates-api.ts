@@ -35,6 +35,10 @@ export interface BackendCandidate {
   offer_released_date?: string;
   joined_date?: string;
   interview_type?: "walk-in" | "virtual";
+  interview_id?: string;
+  scheduled_date?: string;
+  scheduled_time?: string;
+  meeting_link?: string;
   previous_rounds?: Array<{
     round: string;
     status: string;
