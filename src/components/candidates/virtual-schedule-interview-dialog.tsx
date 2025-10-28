@@ -11,7 +11,6 @@ import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { getAllUsers, type User } from "@/lib/auth"
 import { fetchPanelistsForCandidate, type BackendCandidate } from "@/lib/candidates-api"
-import { Checkbox } from "@/components/ui/checkbox"
 
 interface VirtualScheduleInterviewDialogProps {
   open: boolean
@@ -110,14 +109,8 @@ export function VirtualScheduleInterviewDialog({
     }
   }
 
-  const togglePanelistSelection = (panelistId: string, checked: boolean) => {
-    if (checked) {
-      // Single-select: only this panelist should be selected
-      setSelectedPanelMembers([panelistId])
-    } else {
-      // Uncheck: clear selection
-      setSelectedPanelMembers([])
-    }
+  const handlePanelistSelection = (panelistId: string) => {
+    setSelectedPanelMembers([panelistId])
   }
 
   return (
@@ -197,7 +190,7 @@ export function VirtualScheduleInterviewDialog({
 
           {/* Panel Members Selection */}
           <div className="space-y-2">
-            <Label>Select Panel Members *</Label>
+            <Label>Select Panel Member *</Label>
             <div className="border rounded-md p-4 max-h-60 overflow-y-auto space-y-3">
               {loading ? (
                 <p className="text-sm text-muted-foreground">Loading panelists...</p>
@@ -205,15 +198,27 @@ export function VirtualScheduleInterviewDialog({
                 <p className="text-sm text-muted-foreground">No panelists available</p>
               ) : (
                 panelists.map((panelist) => (
-                  <div key={panelist._id} className="flex items-center space-x-3">
-                    <Checkbox
+                  <div 
+                    key={panelist._id} 
+                    className={cn(
+                      "flex items-center space-x-3 p-3 rounded-md border cursor-pointer transition-colors",
+                      selectedPanelMembers.includes(panelist._id) 
+                        ? "border-primary bg-primary/5" 
+                        : "border-border hover:bg-muted/50"
+                    )}
+                    onClick={() => handlePanelistSelection(panelist._id)}
+                  >
+                    <input
+                      type="radio"
                       id={panelist._id}
+                      name="panelist"
                       checked={selectedPanelMembers.includes(panelist._id)}
-                      onCheckedChange={(checked) => togglePanelistSelection(panelist._id, checked as boolean)}
+                      onChange={() => handlePanelistSelection(panelist._id)}
+                      className="w-4 h-4 text-primary"
                     />
                     <label
                       htmlFor={panelist._id}
-                      className="flex-1 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      className="flex-1 text-sm font-medium cursor-pointer"
                     >
                       <div>
                         <p>{panelist.name}</p>
