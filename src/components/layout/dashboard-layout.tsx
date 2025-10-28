@@ -7,7 +7,7 @@ import { type User, getStoredUser, getToken } from "@/lib/auth"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
-  requiredRole?: User["role"]
+  requiredRole?: User["role"] | User["role"][]
 }
 
 export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps) {
@@ -31,20 +31,26 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
     }
 
     // Check role authorization
-    if (requiredRole && storedUser.role !== requiredRole) {
-      // Redirect to appropriate dashboard
-      switch (storedUser.role) {
-        case "hr":
-        case "admin":
-        case "recruiter":
-          navigate("/dashboard/hr")
-          break
-        case "panel_member":
-        case "tpm_tem":
-          navigate("/dashboard/panelist")
-          break
+    if (requiredRole) {
+      const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
+      if (!allowedRoles.includes(storedUser.role)) {
+        // Redirect to appropriate dashboard
+        switch (storedUser.role) {
+          case "hr":
+          case "admin":
+          case "recruiter":
+            navigate("/dashboard/hr")
+            break
+          case "panel_member":
+          case "tpm_tem":
+            navigate("/dashboard/panelist")
+            break
+          default:
+            navigate("/login")
+            break
+        }
+        return
       }
-      return
     }
 
     setUser(storedUser)

@@ -316,7 +316,7 @@ export default function VacanciesPage() {
   };
 
   return (
-    <DashboardLayout requiredRole="admin">
+    <DashboardLayout requiredRole={["admin", "hr", "recruiter"]}>
       <div className="flex flex-col h-full pt-1">
         {/* Fixed header section */}
         <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background">
