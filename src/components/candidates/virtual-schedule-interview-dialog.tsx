@@ -127,16 +127,14 @@ export function VirtualScheduleInterviewDialog({
           <DialogTitle>
             {isReschedule ? "Reschedule Interview" : "Schedule Interview"}
           </DialogTitle>
-          <DialogDescription>
-            {candidate && (
-              <div className="mt-2">
-                <p className="font-medium text-foreground">
-                  {candidate.name} - {candidate.applied_position}
-                </p>
-                <p className="text-sm text-muted-foreground">{candidate.email}</p>
-              </div>
-            )}
-          </DialogDescription>
+          {candidate && (
+            <div className="mt-2 space-y-1">
+              <p className="font-medium text-foreground">
+                {candidate.name} - {candidate.applied_position}
+              </p>
+              <p className="text-sm text-muted-foreground">{candidate.email}</p>
+            </div>
+          )}
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
