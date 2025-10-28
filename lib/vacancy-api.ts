@@ -42,8 +42,8 @@ interface VacancyCreateRequest {
   experience_range: string;
   skills_required: string[];
   interview_type: string;
-  drive_date: string;
-  drive_location: string;
+  drive_date?: string; // Optional - only include if valid date provided
+  drive_location?: string; // Optional
   job_desc?: string;
   request_type?:string;
   assignedPanelists?: string[];
@@ -90,21 +90,22 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Position {
   };
 }
 
-// Transform frontend vacancy to backend format for creation
+// Transform frontend vacancy to backend format for creation/update
 function transformFrontendToBackend(frontendVacancy: Partial<Position>): VacancyCreateRequest {
-  // Handle date conversion safely
-  let driveDate = "";
-  if (frontendVacancy.walkInDetails?.date) {
-    const date = new Date(frontendVacancy.walkInDetails.date);
+  // Handle date conversion - convert to ISO string or provide a valid default
+  let driveDate: string | undefined = undefined;
+  const dateValue = frontendVacancy.walkInDetails?.date || frontendVacancy.drive_date;
+  if (dateValue && dateValue.trim() !== "") {
+    const date = new Date(dateValue);
     if (!isNaN(date.getTime())) {
       driveDate = date.toISOString();
     }
   }
 
-  return {
+  // Build payload with required fields
+  const payload: VacancyCreateRequest = {
     position_title: frontendVacancy.position_title || "",
     hiring_manager_name: frontendVacancy.hiring_manager_name || "",
-    assignedPanelists: frontendVacancy.assignedPanelists || [],
     recruiter_name: frontendVacancy.recruiter_name || "",
     employment_type: frontendVacancy.job_type || "full_time",
     priority: frontendVacancy.priority || "P3",
@@ -113,16 +114,27 @@ function transformFrontendToBackend(frontendVacancy: Partial<Position>): Vacancy
     experience_range: frontendVacancy.experience_range || "",
     skills_required: frontendVacancy.skills_required || [],
     interview_type: frontendVacancy.interview_type || "Walk-In",
-    drive_date: driveDate,
-    drive_location: frontendVacancy.walkInDetails?.location || "",
     job_desc: frontendVacancy.job_desc || "",
     request_type: frontendVacancy.request_type || "new",
+    assignedPanelists: frontendVacancy.assignedPanelists || [],
     city: frontendVacancy.city || "",
     projectClientName: frontendVacancy.projectClientName || "",
     category: frontendVacancy.category || "",
     position_approved_by: frontendVacancy.position_approved_by || "",
     reason_for_hiring: frontendVacancy.plan || "",
   };
+
+  // Only include optional fields if they have valid values
+  if (driveDate) {
+    payload.drive_date = driveDate;
+  }
+
+  const location = frontendVacancy.walkInDetails?.location || frontendVacancy.drive_location;
+  if (location && location.trim() !== "") {
+    payload.drive_location = location;
+  }
+
+  return payload;
 }
 
 // Fetch all vacancies from backend
