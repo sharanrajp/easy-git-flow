@@ -110,10 +110,14 @@ export function VirtualScheduleInterviewDialog({
     }
   }
 
-  const togglePanelistSelection = (panelistId: string) => {
-    setSelectedPanelMembers((prev) =>
-      prev.includes(panelistId) ? [] : [panelistId]
-    )
+  const togglePanelistSelection = (panelistId: string, checked: boolean) => {
+    if (checked) {
+      // Single-select: only this panelist should be selected
+      setSelectedPanelMembers([panelistId])
+    } else {
+      // Uncheck: clear selection
+      setSelectedPanelMembers([])
+    }
   }
 
   return (
@@ -207,7 +211,7 @@ export function VirtualScheduleInterviewDialog({
                     <Checkbox
                       id={panelist._id}
                       checked={selectedPanelMembers.includes(panelist._id)}
-                      onCheckedChange={() => togglePanelistSelection(panelist._id)}
+                      onCheckedChange={(checked) => togglePanelistSelection(panelist._id, checked as boolean)}
                     />
                     <label
                       htmlFor={panelist._id}
