@@ -58,6 +58,8 @@ export function VirtualScheduleInterviewDialog({
       try {
         setLoading(true)
         const panelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
+        console.log("Fetched panelists:", panelists)
+        console.log("First panelist object:", panelists[0])
         setPanelists(panelists || [])
       } catch (error) {
         console.error("Failed to fetch panelists:", error)
@@ -212,29 +214,32 @@ export function VirtualScheduleInterviewDialog({
               ) : panelists.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No panelists available</p>
               ) : (
-                panelists.map((panelist) => {
-                  const isSelected = selectedPanelMembers.includes(panelist._id)
+                panelists.map((panelist: any) => {
+                  // Handle different possible ID fields
+                  const panelistId = panelist._id || panelist.id || panelist.panel_id || panelist.username || panelist.email
+                  console.log("Panelist object:", panelist, "Using ID:", panelistId)
+                  const isSelected = selectedPanelMembers.includes(panelistId)
                   return (
                     <div 
-                      key={panelist._id} 
+                      key={panelistId} 
                       className={cn(
                         "flex items-center space-x-3 p-3 rounded-md border cursor-pointer transition-all",
                         isSelected
                           ? "border-primary bg-primary/10 ring-2 ring-primary/20" 
                           : "border-border hover:bg-muted/50 hover:border-muted-foreground/30"
                       )}
-                      onClick={() => handlePanelistSelection(panelist._id)}
+                      onClick={() => handlePanelistSelection(panelistId)}
                     >
                       <input
                         type="radio"
-                        id={panelist._id}
+                        id={panelistId}
                         name="panelist"
                         checked={isSelected}
-                        onChange={() => handlePanelistSelection(panelist._id)}
+                        onChange={() => handlePanelistSelection(panelistId)}
                         className="w-4 h-4 text-primary accent-primary cursor-pointer"
                       />
                       <label
-                        htmlFor={panelist._id}
+                        htmlFor={panelistId}
                         className="flex-1 text-sm font-medium cursor-pointer"
                       >
                         <div>
