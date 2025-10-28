@@ -228,7 +228,7 @@ export default function HRDashboard() {
 
   if (isLoading) {
     return (
-      <DashboardLayout requiredRole="hr">
+      <DashboardLayout requiredRole="admin">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="flex flex-col items-center gap-3">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
@@ -240,7 +240,7 @@ export default function HRDashboard() {
   }
 
   return (
-    <DashboardLayout requiredRole="hr">
+    <DashboardLayout requiredRole="admin">
       <div className="space-y-6 animate-fade-in pt-6">
         {/* Time Period Filters */}
         <div className="flex flex-wrap gap-2">

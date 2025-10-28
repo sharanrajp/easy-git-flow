@@ -353,7 +353,7 @@ export default function UsersPage() {
   }
 
   return (
-    <DashboardLayout>
+    <DashboardLayout requiredRole="admin">
       <div className="flex flex-col h-full pt-1">
         {/* Fixed header section */}
         <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background">
