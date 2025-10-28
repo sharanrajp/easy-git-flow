@@ -1709,34 +1709,50 @@ export default function CandidatesPage() {
     panelMembers: string[]
     rescheduleReason?: string
   }) => {
-    if (!virtualScheduleCandidate) return
+    if (!virtualScheduleCandidate || !currentUser) return
 
     try {
-      // Get panel member names for display
-      const allUsers = await getAllUsers()
-      const selectedPanelists = allUsers.filter(u => data.panelMembers.includes(u._id))
-      const panelNames = selectedPanelists.map(p => p.name).join(", ")
-
-      const scheduleData = {
-        scheduled_date: data.date.toISOString().split('T')[0],
-        scheduled_time: data.time,
-        meeting_link: data.meetingLink,
-        panel_members: data.panelMembers,
-        ...(data.rescheduleReason && { reschedule_reason: data.rescheduleReason }),
+      const token = getToken()
+      if (!token) {
+        throw new Error("No authentication token")
       }
 
-      // Update candidate with schedule data
-      await updateCandidate(virtualScheduleCandidate._id, scheduleData)
+      // Determine the round based on candidate's current status
+      const getNextRound = () => {
+        const status = virtualScheduleCandidate.final_status || virtualScheduleCandidate.last_interview_round
+        if (!status || status === "Yet to Attend") return "r1"
+        if (status.includes("r1") || virtualScheduleCandidate.last_interview_round === "r1") return "r2"
+        if (status.includes("r2") || virtualScheduleCandidate.last_interview_round === "r2") return "r3"
+        return "r1"
+      }
 
-      // For virtual interviews, assign to panel using first panelist as panel_id
-      // This creates the assignment record needed for backend to recognize as "assigned"
-      if (!isVirtualReschedule && data.panelMembers.length > 0 && currentUser) {
-        await assignCandidateToPanel(
-          virtualScheduleCandidate._id,
-          data.panelMembers[0], // Use first panelist as panel_id
-          'r1',
-          currentUser.name || currentUser.email
-        )
+      const round = getNextRound()
+
+      // Call POST /virtual/schedule API for each panel member
+      for (const panelId of data.panelMembers) {
+        const payload = {
+          candidate_id: virtualScheduleCandidate._id,
+          panel_id: panelId,
+          round: round,
+          interview_date: data.date.toISOString().split('T')[0],
+          interview_time: data.time,
+          meeting_link: data.meetingLink,
+          assigned_by: currentUser.email,
+        }
+
+        const response = await fetch(`${API_BASE_URL}/virtual/schedule`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.detail || `Failed to schedule interview: ${response.statusText}`)
+        }
       }
 
       // Refresh candidate lists
@@ -1749,9 +1765,7 @@ export default function CandidatesPage() {
 
       toast({
         title: "Success",
-        description: isVirtualReschedule 
-          ? "Interview rescheduled successfully" 
-          : "Interview scheduled successfully",
+        description: "Virtual interview scheduled successfully.",
       })
 
       setIsVirtualScheduleDialogOpen(false)
@@ -1761,7 +1775,7 @@ export default function CandidatesPage() {
       console.error('Error scheduling interview:', error)
       toast({
         title: "Error",
-        description: "Failed to schedule interview. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to schedule interview. Please try again.",
         variant: "destructive",
       })
     }
