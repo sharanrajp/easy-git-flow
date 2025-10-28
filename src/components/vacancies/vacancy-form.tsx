@@ -433,6 +433,10 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                       <SelectItem value="active">Active</SelectItem>
                       <SelectItem value="paused">Paused</SelectItem>
                       <SelectItem value="closed">Closed</SelectItem>
+                      <SelectItem value="joined">Joined</SelectItem>
+                      <SelectItem value="offer Accepted">Offer Accepted</SelectItem>
+                      <SelectItem value="offer Declined">Offer Declined</SelectItem>
+                      <SelectItem value="on-Hold">On-Hold</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

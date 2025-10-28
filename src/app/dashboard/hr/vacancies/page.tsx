@@ -226,6 +226,14 @@ export default function VacanciesPage() {
         return "bg-yellow-100 text-yellow-800";
       case "closed":
         return "bg-gray-100 text-gray-800";
+      case "joined":
+        return "bg-blue-100 text-blue-800";
+      case "offer Accepted":
+        return "bg-emerald-100 text-emerald-800";
+      case "offer Declined":
+        return "bg-red-100 text-red-800";
+      case "on-Hold":
+        return "bg-orange-100 text-orange-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -377,6 +385,10 @@ export default function VacanciesPage() {
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="paused">Paused</SelectItem>
                     <SelectItem value="closed">Closed</SelectItem>
+                    <SelectItem value="joined">Joined</SelectItem>
+                    <SelectItem value="offer Accepted">Offer Accepted</SelectItem>
+                    <SelectItem value="offer Declined">Offer Declined</SelectItem>
+                    <SelectItem value="on-Hold">On-Hold</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={priorityFilter} onValueChange={setPriorityFilter}>
@@ -454,7 +466,7 @@ export default function VacanciesPage() {
                               <TableHead>Priority</TableHead>
                               <TableHead>Experience Range</TableHead>
                               <TableHead>Drive On</TableHead>
-                              <TableHead>No. of Positions</TableHead>
+                              <TableHead>Openings</TableHead>
                               <TableHead>Recruiter</TableHead>
                               <TableHead>Status</TableHead>
                               <TableHead>No. of Panelists</TableHead>
@@ -518,6 +530,18 @@ export default function VacanciesPage() {
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "closed")}>
                                           Closed
+                                        </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "joined")}>
+                                          Joined
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "offer Accepted")}>
+                                          Offer Accepted
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "offer Declined")}>
+                                          Offer Declined
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleStatusChange(vacancy.id, "on-Hold")}>
+                                          On-Hold
                                         </DropdownMenuItem>
                                       </DropdownMenuContent>
                                     </DropdownMenu>

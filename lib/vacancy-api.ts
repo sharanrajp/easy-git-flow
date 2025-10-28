@@ -65,7 +65,7 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Position {
     priority: (backendVacancy.priority as "P3" | "P2" | "P1" | "P0") || "P3",
     number_of_vacancies: backendVacancy.number_of_openings || 1,
     request_type: backendVacancy.request_type || "new",
-    status: (backendVacancy.status as "active" | "paused" | "closed") || "active",
+    status: (backendVacancy.status as "active" | "paused" | "closed" | "joined" | "offer Accepted" | "offer Declined" | "on-Hold") || "active",
     experience_range: backendVacancy.experience_range || "",
     skills_required: Array.isArray(backendVacancy.skills_required) ? backendVacancy.skills_required : [],
     interview_type: (backendVacancy.interview_type as "Walk-In") || "Walk-In",

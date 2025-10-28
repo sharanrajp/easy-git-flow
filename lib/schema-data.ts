@@ -35,7 +35,7 @@ export interface Position {
   location: string
   job_type: "full_time" | "part-time" | "contract"
   priority: "P3" | "P2" | "P1" | "P0"
-  status: "active" | "paused" | "closed"
+  status: "active" | "paused" | "closed" | "joined" | "offer Accepted" | "offer Declined" | "on-Hold"
   hiring_manager_name: string
   recruiter_name: string
   recruiters?: string[]
