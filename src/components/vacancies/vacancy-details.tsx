@@ -137,7 +137,7 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Posted On</label>
-                <p className="text-sm font-semibold text-gray-900 mt-1">{formatDate(vacancy.postedOn ? vacancy.postedOn : new Date())}</p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">{formatDate(vacancy.created_at ? vacancy.created_at : new Date())}</p>
               </div>
             </div>
           </div>
@@ -165,15 +165,6 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">
-                Interview Type
-              </label>
-              <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg">
-                <Calendar className="h-4 w-4 text-purple-600" />
-                <span className="text-sm font-medium text-purple-800">Walk-in Interview</span>
-              </div>
-            </div>
             {vacancy.walkInDetails && (
               <>
                 <div>
@@ -182,7 +173,9 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                   </label>
                   <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg">
                     <Clock className="h-4 w-4 text-purple-600" />
-                    <span className="text-sm font-medium text-purple-800">{vacancy.walkInDetails.date}</span>
+                    <span className="text-sm font-medium text-purple-800">
+                      {vacancy.walkInDetails.date && vacancy.walkInDetails.date !== 'None' ? vacancy.walkInDetails.date : '–'}
+                    </span>
                   </div>
                 </div>
                 <div className="md:col-span-2">
@@ -191,7 +184,9 @@ export function VacancyDetails({ vacancy }: VacancyDetailsProps) {
                   </label>
                   <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg">
                     <MapIcon className="h-4 w-4 text-purple-600" />
-                    <span className="text-sm font-medium text-purple-800">{vacancy.walkInDetails.location}</span>
+                    <span className="text-sm font-medium text-purple-800">
+                      {vacancy.walkInDetails.location && vacancy.walkInDetails.location !== 'None' ? vacancy.walkInDetails.location : '–'}
+                    </span>
                   </div>
                 </div>
               </>

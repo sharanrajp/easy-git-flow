@@ -52,6 +52,7 @@ export interface Position {
   drive_date?: string
   drive_location?: string
   postedOn: string
+  created_at?: string
   assignedPanelists: string[]
   request_type?: string
   projectClientName?: string
