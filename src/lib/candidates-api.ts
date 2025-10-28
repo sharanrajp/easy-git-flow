@@ -39,6 +39,7 @@ export interface BackendCandidate {
   interview_date?: string;
   interview_time?: string;
   meeting_link?: string;
+  panel_members?: string[];
   previous_rounds?: Array<{
     round: string;
     status: string;
