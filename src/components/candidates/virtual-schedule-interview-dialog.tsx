@@ -10,7 +10,7 @@ import { Calendar, Clock } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { getAllUsers, type User } from "@/lib/auth"
-import type { BackendCandidate } from "@/lib/candidates-api"
+import { fetchPanelistsForCandidate, type BackendCandidate } from "@/lib/candidates-api"
 import { Checkbox } from "@/components/ui/checkbox"
 
 interface VirtualScheduleInterviewDialogProps {
@@ -51,16 +51,27 @@ export function VirtualScheduleInterviewDialog({
 
   useEffect(() => {
     const fetchPanelists = async () => {
+      if (!candidate?._id || !candidate?.vacancyId) {
+        setPanelists([])
+        return
+      }
+      
       try {
-        const users = await getAllUsers()
-        setPanelists(users.filter((user: User) => user.role === "panel_member" || user.role === "tpm_tem"))
+        setLoading(true)
+        const panelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
+        setPanelists(panelists || [])
       } catch (error) {
         console.error("Failed to fetch panelists:", error)
         setPanelists([])
+      } finally {
+        setLoading(false)
       }
     }
-    fetchPanelists()
-  }, [])
+    
+    if (open && candidate) {
+      fetchPanelists()
+    }
+  }, [open, candidate])
 
   useEffect(() => {
     if (open) {
@@ -188,7 +199,9 @@ export function VirtualScheduleInterviewDialog({
           <div className="space-y-2">
             <Label>Select Panel Members *</Label>
             <div className="border rounded-md p-4 max-h-60 overflow-y-auto space-y-3">
-              {panelists.length === 0 ? (
+              {loading ? (
+                <p className="text-sm text-muted-foreground">Loading panelists...</p>
+              ) : panelists.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No panelists available</p>
               ) : (
                 panelists.map((panelist) => (
@@ -204,9 +217,9 @@ export function VirtualScheduleInterviewDialog({
                     >
                       <div>
                         <p>{panelist.name}</p>
-                        {panelist.skill_set && (
+                        {panelist.skill_set && panelist.skill_set.length > 0 && (
                           <p className="text-xs text-muted-foreground">
-                            Skills: {panelist.skill_set.join(", ")}
+                            Skills: {Array.isArray(panelist.skill_set) ? panelist.skill_set.join(", ") : panelist.skill_set}
                           </p>
                         )}
                       </div>
