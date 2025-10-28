@@ -1712,6 +1712,9 @@ export default function CandidatesPage() {
   }) => {
     if (!virtualScheduleCandidate || !currentUser) return
 
+    console.log("handleVirtualScheduleSubmit - Received data:", data)
+    console.log("Panel members to schedule:", data.panelMembers)
+
     try {
       const token = getToken()
       if (!token) {
@@ -1759,6 +1762,7 @@ export default function CandidatesPage() {
         const round = getNextRound()
 
         // Call POST /virtual/schedule API for each panel member
+        console.log("Scheduling for panel members:", data.panelMembers)
         for (const panelId of data.panelMembers) {
           const payload = {
             candidate_id: virtualScheduleCandidate._id,
@@ -1769,6 +1773,8 @@ export default function CandidatesPage() {
             meeting_link: data.meetingLink,
             assigned_by: currentUser.email,
           }
+
+          console.log("Sending payload to /virtual/schedule:", payload)
 
           const response = await fetch(`${API_BASE_URL}/virtual/schedule`, {
             method: "POST",
@@ -1781,8 +1787,12 @@ export default function CandidatesPage() {
 
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}))
+            console.error("Failed to schedule interview:", errorData)
             throw new Error(errorData.detail || `Failed to schedule interview: ${response.statusText}`)
           }
+          
+          const responseData = await response.json()
+          console.log("Schedule API response:", responseData)
         }
 
         toast({

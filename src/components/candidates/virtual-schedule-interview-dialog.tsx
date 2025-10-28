@@ -97,10 +97,17 @@ export function VirtualScheduleInterviewDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    console.log("Form submitted with panel members:", selectedPanelMembers)
     if (selectedDate && selectedTime && meetingLink && selectedPanelMembers.length > 0) {
       if (isReschedule && !rescheduleReason) {
         return
       }
+      console.log("Submitting schedule data:", {
+        date: selectedDate,
+        time: selectedTime,
+        meetingLink,
+        panelMembers: selectedPanelMembers,
+      })
       onSubmit({
         date: selectedDate,
         time: selectedTime,
@@ -113,13 +120,11 @@ export function VirtualScheduleInterviewDialog({
   }
 
   const handlePanelistSelection = (panelistId: string) => {
+    console.log("Selecting panelist:", panelistId)
     setSelectedPanelMembers((prev) => {
-      // If clicking the same panelist, deselect it
-      if (prev.includes(panelistId)) {
-        return []
-      }
-      // Otherwise, replace with the new selection
-      return [panelistId]
+      const newSelection = [panelistId] // Always single selection
+      console.log("Previous selection:", prev, "New selection:", newSelection)
+      return newSelection
     })
   }
 
