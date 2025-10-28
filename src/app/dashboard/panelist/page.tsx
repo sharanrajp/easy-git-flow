@@ -278,16 +278,44 @@ export default function PanelistDashboard() {
   const handleStartInterview = async (candidateId: string) => {
     if (isUpdatingStatus) return
     
-    // Optimistic update: Update UI immediately
-    if (currentUser) {
-      const updatedUser = {
-        ...currentUser,
-        privileges: { ...currentUser.privileges, status: "in_interview" as const }
+    const candidate = candidates.find(c => c._id === candidateId)
+    if (!candidate || !currentUser) return
+    
+    // Create or update interview session
+    const { getInterviewSessions, saveInterviewSession } = await import("@/lib/interview-data")
+    const sessions = getInterviewSessions()
+    let session = sessions.find(s => s.candidateId === candidateId && s.panelistName === currentUser.name)
+    
+    if (!session) {
+      // Create new session
+      session = {
+        id: `session-${candidateId}-${Date.now()}`,
+        candidateId: candidateId,
+        candidateName: candidate.name,
+        panelistId: currentUser.username || currentUser.name,
+        panelistName: currentUser.name,
+        position: candidate.applied_position || "N/A",
+        round: candidate.last_interview_round || "R1",
+        scheduledTime: new Date().toISOString(),
+        status: "in-progress" as const,
+        startTime: new Date().toISOString()
       }
-      setCurrentUser(updatedUser)
-      localStorage.setItem("ats_user", JSON.stringify(updatedUser))
-      window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }))
+    } else {
+      // Update existing session to in-progress
+      session.status = "in-progress"
+      session.startTime = new Date().toISOString()
     }
+    
+    saveInterviewSession(session)
+    
+    // Optimistic update: Update UI immediately
+    const updatedUser = {
+      ...currentUser,
+      privileges: { ...currentUser.privileges, status: "in_interview" as const }
+    }
+    setCurrentUser(updatedUser)
+    localStorage.setItem("ats_user", JSON.stringify(updatedUser))
+    window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }))
     
     setIsUpdatingStatus(true)
     try {
@@ -380,16 +408,24 @@ export default function PanelistDashboard() {
   }, [selectedScheduledCandidate, currentUser, handleScheduledFeedbackClose])
 
   useEffect(() => {
-    if (currentUser?.name) {
-      const sessions = getInterviewSessionsForPanelist(currentUser.name)
-      const scheduled = sessions.filter(
-        (s) => s.status === "scheduled" || s.status === "in-progress" || s.status === "paused",
-      )
-      const completed = sessions.filter((s) => s.status === "completed")
+    const loadSessions = () => {
+      if (currentUser?.name) {
+        const sessions = getInterviewSessionsForPanelist(currentUser.name)
+        const scheduled = sessions.filter(
+          (s) => s.status === "scheduled" || s.status === "in-progress" || s.status === "paused",
+        )
+        const completed = sessions.filter((s) => s.status === "completed")
 
-      setInterviewSessions(scheduled)
-      setCompletedInterviews(completed)
+        setInterviewSessions(scheduled)
+        setCompletedInterviews(completed)
+      }
     }
+    
+    loadSessions()
+    
+    // Reload when sessions are updated
+    window.addEventListener("interviewSessionUpdated", loadSessions)
+    return () => window.removeEventListener("interviewSessionUpdated", loadSessions)
   }, [currentUser?.name])
 
   useEffect(() => {

@@ -28,10 +28,25 @@ export interface InterviewSession {
 }
 
 export function getInterviewSessions(): InterviewSession[] {
-  return []
+  if (typeof window === "undefined") return []
+  const sessions = localStorage.getItem("interview_sessions")
+  return sessions ? JSON.parse(sessions) : []
 }
 
 export function saveInterviewSession(session: InterviewSession) {
+  if (typeof window === "undefined") return
+  
+  const sessions = getInterviewSessions()
+  const existingIndex = sessions.findIndex(s => s.id === session.id)
+  
+  if (existingIndex >= 0) {
+    sessions[existingIndex] = session
+  } else {
+    sessions.push(session)
+  }
+  
+  localStorage.setItem("interview_sessions", JSON.stringify(sessions))
+  
   // Dispatch custom event for real-time updates
   window.dispatchEvent(new CustomEvent("interviewSessionUpdated", { detail: session }))
 }
