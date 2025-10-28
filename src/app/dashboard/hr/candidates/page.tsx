@@ -2457,13 +2457,7 @@ export default function CandidatesPage() {
                                       <Button
                                         size="sm"
                                         className="bg-green-600 hover:bg-green-700 text-white"
-                                        onClick={() => {
-                                          if ((candidate as any).interview_date) {
-                                            handleVirtualRescheduleInterview(candidate)
-                                          } else {
-                                            handleVirtualScheduleInterview(candidate)
-                                          }
-                                        }}
+                                        onClick={() => handleVirtualScheduleInterview(candidate)}
                                       >
                                         Schedule Interview
                                       </Button>
