@@ -15,6 +15,7 @@ interface UserFormProps {
   user?: User
   onSubmit: (data: Partial<User>) => void
   onCancel?: () => void
+  allowedRoles?: string[]
 }
 
 interface FormData {
@@ -27,7 +28,7 @@ interface FormData {
   current_status?: User["current_status"]
 }
 
-export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
+export function UserForm({ user, onSubmit, onCancel, allowedRoles }: UserFormProps) {
   const [formData, setFormData] = useState<FormData>({
     name: user?.name || "",
     email: user?.email || "",
@@ -144,11 +145,21 @@ export function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="hr">HR</SelectItem>
-            <SelectItem value="recruiter">Recruiter</SelectItem>
-            <SelectItem value="tpm_tem">TPM/TEM</SelectItem>
-            <SelectItem value="panel_member">Panel Member</SelectItem>
+            {(!allowedRoles || allowedRoles.includes("admin")) && (
+              <SelectItem value="admin">Admin</SelectItem>
+            )}
+            {(!allowedRoles || allowedRoles.includes("hr")) && (
+              <SelectItem value="hr">HR</SelectItem>
+            )}
+            {(!allowedRoles || allowedRoles.includes("recruiter")) && (
+              <SelectItem value="recruiter">Recruiter</SelectItem>
+            )}
+            {(!allowedRoles || allowedRoles.includes("tpm_tem")) && (
+              <SelectItem value="tpm_tem">TPM/TEM</SelectItem>
+            )}
+            {(!allowedRoles || allowedRoles.includes("panel_member")) && (
+              <SelectItem value="panel_member">Panel Member</SelectItem>
+            )}
           </SelectContent>
         </Select>
       </div>

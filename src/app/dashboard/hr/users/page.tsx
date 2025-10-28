@@ -12,13 +12,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Plus, Search, Edit, Trash2, Grid, List, X } from "lucide-react"
-import { getAllUsers, type User, makeAuthenticatedRequest } from "@/lib/auth"
+import { getAllUsers, type User, makeAuthenticatedRequest, getCurrentUser } from "@/lib/auth"
 import { API_BASE_URL } from "@/lib/api-config"
 import { UserForm } from "@/components/users/user-form"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/hooks/use-toast"
 import { SkillsDisplay } from "@/components/ui/skills-display"
+import { getCreatableRoles, canCreateUsers, canAccessUsersPage } from "@/lib/user-permissions"
 
 export default function UsersPage() {
   const { toast } = useToast()
@@ -37,6 +38,22 @@ export default function UsersPage() {
   const [deleting, setDeleting] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 15
+
+  // Get current user and their permissions
+  const currentUser = getCurrentUser()
+  const allowedRoles = currentUser ? getCreatableRoles(currentUser.role) : []
+  const canCreate = currentUser ? canCreateUsers(currentUser.role) : false
+
+  // Redirect if user doesn't have access to this page
+  useEffect(() => {
+    if (!currentUser || !canAccessUsersPage(currentUser.role)) {
+      if (currentUser?.role === "panel_member" || currentUser?.role === "tpm_tem") {
+        window.location.href = "/dashboard/panelist"
+      } else {
+        window.location.href = "/dashboard"
+      }
+    }
+  }, [currentUser])
 
   const fetchUsers = async () => {
     try {
@@ -160,6 +177,16 @@ export default function UsersPage() {
   }
 
   const handleCreateUser = async (userData: Partial<User>) => {
+    // Validate that the user is allowed to create this role
+    if (userData.role && !allowedRoles.includes(userData.role)) {
+      toast({
+        title: "Permission Denied",
+        description: "You do not have permission to create users with this role.",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
       const response = await makeAuthenticatedRequest(`${API_BASE_URL}/admin/add-user`, {
         method: "POST",
@@ -194,6 +221,16 @@ export default function UsersPage() {
 
   const handleEditUser = async (userData: Partial<User>) => {
     if (!selectedUser) return
+
+    // Validate role change permission
+    if (userData.role && !allowedRoles.includes(userData.role)) {
+      toast({
+        title: "Permission Denied",
+        description: "You do not have permission to assign this role.",
+        variant: "destructive",
+      })
+      return
+    }
 
     try {
       const updatedUser: User = { ...selectedUser, ...userData }
@@ -316,7 +353,7 @@ export default function UsersPage() {
   }
 
   return (
-    <DashboardLayout requiredRole="hr">
+    <DashboardLayout>
       <div className="flex flex-col h-full pt-1">
         {/* Fixed header section */}
         <div className="flex-shrink-0 space-y-4 pb-4 border-b bg-background">
@@ -326,20 +363,30 @@ export default function UsersPage() {
               <h1 className="text-2xl font-bold text-gray-900">Users</h1>
               <p className="text-gray-600">Manage system users and their roles</p>
             </div>
-            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700 cursor-pointer">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add User
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Add New User</DialogTitle>
-                </DialogHeader>
-                <UserForm onSubmit={handleCreateUser} onCancel={() => setIsCreateOpen(false)} />
-              </DialogContent>
-            </Dialog>
+            {canCreate ? (
+              <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-blue-600 hover:bg-blue-700 cursor-pointer">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add User
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Add New User</DialogTitle>
+                  </DialogHeader>
+                  <UserForm 
+                    onSubmit={handleCreateUser} 
+                    onCancel={() => setIsCreateOpen(false)}
+                    allowedRoles={allowedRoles}
+                  />
+                </DialogContent>
+              </Dialog>
+            ) : (
+              <div className="text-sm text-muted-foreground italic">
+                You do not have permission to create users.
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col lg:flex-row gap-4">
@@ -721,7 +768,12 @@ export default function UsersPage() {
             </DialogHeader>
             <div className="mt-6">
               {selectedUser && (
-                <UserForm user={selectedUser} onSubmit={handleEditUser} onCancel={() => setIsEditOpen(false)} />
+                <UserForm 
+                  user={selectedUser} 
+                  onSubmit={handleEditUser} 
+                  onCancel={() => setIsEditOpen(false)}
+                  allowedRoles={allowedRoles}
+                />
               )}
             </div>
           </DialogContent>
