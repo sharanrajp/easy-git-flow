@@ -251,7 +251,11 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       formData.recruiter_name &&
       formData.number_of_vacancies &&
       formData.experience_range &&
-      formData.job_desc.trim()
+      formData.job_desc.trim() &&
+      formData.category &&
+      formData.position_approved_by &&
+      formData.plan &&
+      formData.skills_required.length > 0
     );
   };
 
@@ -441,10 +445,11 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category">Category *</Label>
                   <Select
                     value={formData.category}
                     onValueChange={(value: any) => setFormData({ ...formData, category: value })}
+                    required
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select category" />
@@ -468,11 +473,12 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="position_approved_by">Position Approved By</Label>
+                  <Label htmlFor="position_approved_by">Position Approved By *</Label>
                   <Input
                     id="position_approved_by"
                     value={formData.position_approved_by}
                     onChange={(e) => setFormData({ ...formData, position_approved_by: e.target.value })}
+                    required
                   />
                 </div>
               </div>
@@ -504,17 +510,18 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="plan">Reason for Hiring</Label>
+                <Label htmlFor="plan">Reason for Hiring *</Label>
                 <Input
                   id="plan"
                   placeholder="Enter the reason for opening this position"
                   value={formData.plan}
                   onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
+                  required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Skills Required</Label>
+                <Label>Skills Required *</Label>
                 <Popover open={skillSearchOpen} onOpenChange={setSkillSearchOpen}>
                   <PopoverTrigger asChild>
                     <Button
