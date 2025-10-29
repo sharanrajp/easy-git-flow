@@ -653,38 +653,40 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
                   <CheckCircle className="h-4 w-4 text-success" />
                   <h3 className="text-sm font-semibold">Added Candidates ({selectedUploadDetails.added_candidates.length})</h3>
                 </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {selectedUploadDetails.added_candidates.map((candidate) => (
-                      <TableRow key={candidate._id}>
-                        <TableCell className="font-medium">{candidate.name}</TableCell>
-                        <TableCell>{candidate.email}</TableCell>
-                        <TableCell>{candidate.phone_number || '-'}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{candidate.status}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => handleViewCandidateDetails(candidate._id)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                <div className="overflow-x-auto w-full">
+                  <Table className="table-fixed">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[200px]">Name</TableHead>
+                        <TableHead className="w-[200px]">Email</TableHead>
+                        <TableHead className="w-[150px]">Phone</TableHead>
+                        <TableHead className="w-[120px]">Status</TableHead>
+                        <TableHead className="w-[80px]">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedUploadDetails.added_candidates.map((candidate) => (
+                        <TableRow key={candidate._id}>
+                          <TableCell className="font-medium truncate">{candidate.name}</TableCell>
+                          <TableCell className="truncate">{candidate.email}</TableCell>
+                          <TableCell>{candidate.phone_number || '-'}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{candidate.status}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleViewCandidateDetails(candidate._id)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             )}
 
@@ -695,26 +697,28 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
                   <AlertCircle className="h-4 w-4 text-destructive" />
                   <h3 className="text-sm font-semibold">Skipped Candidates ({selectedUploadDetails.skipped_candidates.length})</h3>
                 </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Row</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Reason</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {selectedUploadDetails.skipped_candidates.map((candidate, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{candidate.row_number || index + 1}</TableCell>
-                        <TableCell className="font-medium">{candidate.name}</TableCell>
-                        <TableCell>{candidate.email || '-'}</TableCell>
-                        <TableCell className="text-destructive">{candidate.reason}</TableCell>
+                <div className="overflow-x-auto w-full">
+                  <Table className="table-fixed">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[80px]">Row</TableHead>
+                        <TableHead className="w-[200px]">Name</TableHead>
+                        <TableHead className="w-[200px]">Email</TableHead>
+                        <TableHead className="w-[300px]">Reason</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedUploadDetails.skipped_candidates.map((candidate, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{candidate.row_number || index + 1}</TableCell>
+                          <TableCell className="font-medium truncate">{candidate.name}</TableCell>
+                          <TableCell className="truncate">{candidate.email || '-'}</TableCell>
+                          <TableCell className="text-destructive break-words">{candidate.reason}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             )}
 
@@ -777,51 +781,53 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
                 <p className="text-xs mt-1">Upload history will appear here</p>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Upload ID</TableHead>
-                    <TableHead>Uploaded By</TableHead>
-                    <TableHead>Upload Type</TableHead>
-                    <TableHead>Position</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Added</TableHead>
-                    <TableHead>Skipped</TableHead>
-                    <TableHead>Date & Time</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {uploadLogs.map((log) => (
-                    <TableRow key={log.upload_id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewUploadDetails(log.upload_id)}>
-                      <TableCell className="font-mono text-xs">{log.upload_id.substring(0, 8)}...</TableCell>
-                      <TableCell>{log.uploaded_by}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{log.upload_type}</Badge>
-                      </TableCell>
-                      <TableCell>{log.applied_position}</TableCell>
-                      <TableCell>{log.total_candidates}</TableCell>
-                      <TableCell>
-                        <Badge variant="default" className="bg-success">{log.added_count}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="destructive">{log.skipped_count}</Badge>
-                      </TableCell>
-                      <TableCell className="text-xs">{log.uploaded_date} {log.uploaded_time}</TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleViewUploadDetails(log.upload_id)}
-                          disabled={loadingUploadDetails}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
+              <div className="overflow-x-auto w-full">
+                <Table className="table-fixed">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[120px]">Upload ID</TableHead>
+                      <TableHead className="w-[120px]">Uploaded By</TableHead>
+                      <TableHead className="w-[100px]">Upload Type</TableHead>
+                      <TableHead className="w-[150px]">Position</TableHead>
+                      <TableHead className="w-[70px]">Total</TableHead>
+                      <TableHead className="w-[80px]">Added</TableHead>
+                      <TableHead className="w-[80px]">Skipped</TableHead>
+                      <TableHead className="w-[150px]">Date & Time</TableHead>
+                      <TableHead className="w-[80px]">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {uploadLogs.map((log) => (
+                      <TableRow key={log.upload_id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewUploadDetails(log.upload_id)}>
+                        <TableCell className="font-mono text-xs truncate">{log.upload_id.substring(0, 8)}...</TableCell>
+                        <TableCell className="truncate">{log.uploaded_by}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{log.upload_type}</Badge>
+                        </TableCell>
+                        <TableCell className="truncate">{log.applied_position}</TableCell>
+                        <TableCell>{log.total_candidates}</TableCell>
+                        <TableCell>
+                          <Badge variant="default" className="bg-success">{log.added_count}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="destructive">{log.skipped_count}</Badge>
+                        </TableCell>
+                        <TableCell className="text-xs truncate">{log.uploaded_date} {log.uploaded_time}</TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleViewUploadDetails(log.upload_id)}
+                            disabled={loadingUploadDetails}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
 
             <div className="flex justify-end pt-2">
