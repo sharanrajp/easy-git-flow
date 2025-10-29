@@ -521,7 +521,7 @@ export default function UsersPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getRoleColor(user.role, user.panelist_type)}>{formatRole(user.role, user.panelist_type)}</Badge>
+                        <Badge className={getRoleColor(user.role)}>{formatRole(user.role)}</Badge>
                       </TableCell>
                       <TableCell>
                         <SkillsDisplay skills={user.skill_set || []} />
@@ -540,11 +540,15 @@ export default function UsersPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {user.role === "panelist" && user.current_status ? (
+                        {(user.role === "panel_member" || user.role === "tpm_tem") && user.current_status ? (
                           user.current_status === "in_interview" ? (
-                            <Badge className={getStatusColor(user.current_status)}>in_interview</Badge>
+                            <Badge className={getStatusColor(user.current_status)}>In Interview</Badge>
+                          ) : user.current_status === "interview-assigned" ? (
+                            <Badge className={getStatusColor(user.current_status)}>Interview Assigned</Badge>
                           ) : (
-                            <Badge className={getStatusColor(user.current_status)}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
+                            <Badge className={getStatusColor(user.current_status)}>
+                              {user.current_status === "free" ? "Available" : user.current_status === "break" ? "Break" : user.current_status}
+                            </Badge>
                           )
                         ) : (
                           <span className="text-gray-400">-</span>
@@ -672,17 +676,21 @@ export default function UsersPage() {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <Badge className={`${getRoleColor(user.role)} text-xs`}>
-                            {formatRole(user.role, user.panelist_type)}
+                            {formatRole(user.role)}
                           </Badge>
-                          {user.role === "panelist" &&
+                          {(user.role === "panel_member" || user.role === "tpm_tem") &&
                             user.current_status &&
                             (user.current_status === "in_interview" ? (
-                              <Badge className={`${getStatusColor(user.current_status)} text-xs`}>in_interview</Badge>
+                              <Badge className={`${getStatusColor(user.current_status)} text-xs`}>In Interview</Badge>
+                            ) : user.current_status === "interview-assigned" ? (
+                              <Badge className={`${getStatusColor(user.current_status)} text-xs`}>Interview Assigned</Badge>
                             ) : (
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="ghost" size="sm" className="p-0 h-auto cursor-pointer">
-                                    <Badge className={`${getStatusColor(user.current_status)} text-xs`}>{user.current_status === "free" ? "available" : user.current_status}</Badge>
+                                    <Badge className={`${getStatusColor(user.current_status)} text-xs`}>
+                                      {user.current_status === "free" ? "Available" : user.current_status === "break" ? "Break" : user.current_status}
+                                    </Badge>
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="start">
@@ -696,17 +704,15 @@ export default function UsersPage() {
                                     </div>
                                   </DropdownMenuItem>
                                   {user.current_status === "free" && (
-                                    <>
-                                      <DropdownMenuItem
-                                        onClick={() => handleStatusChange(user._id, "break")}
-                                        className="cursor-pointer"
-                                      >
-                                        <div className="flex items-center">
-                                          <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
-                                          Break
-                                        </div>
-                                      </DropdownMenuItem>
-                                    </>
+                                    <DropdownMenuItem
+                                      onClick={() => handleStatusChange(user._id, "break")}
+                                      className="cursor-pointer"
+                                    >
+                                      <div className="flex items-center">
+                                        <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
+                                        Break
+                                      </div>
+                                    </DropdownMenuItem>
                                   )}
                                 </DropdownMenuContent>
                               </DropdownMenu>
