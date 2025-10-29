@@ -2503,27 +2503,40 @@ export default function CandidatesPage() {
                                     >
                                       <Trash2 className="h-4 w-4 text-red-600" />
                                     </Button>
-                                    {/* Show Schedule Interview for R1/R2 Selected */}
-                                    {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && 
-                                     candidate.final_status === "selected" && (
+                                    {/* Show Reschedule button if interview is already scheduled */}
+                                    {(candidate as any).interview_date ? (
                                       <Button
                                         size="sm"
-                                        className="bg-green-600 hover:bg-green-700 text-white"
-                                        onClick={() => handleVirtualScheduleInterview(candidate)}
+                                        className="text-blue-600 hover:bg-blue-50"
+                                        onClick={() => handleVirtualRescheduleInterview(candidate)}
                                       >
-                                        Schedule Interview
+                                        Reschedule
                                       </Button>
-                                    )}
-                                    {/* Show Schedule Interview for R1/R2 On-Hold */}
-                                    {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && 
-                                     candidate.final_status === "on-hold" && !((candidate as any).interview_date) && (
-                                      <Button
-                                        size="sm"
-                                        className="bg-green-600 hover:bg-green-700 text-white"
-                                        onClick={() => handleVirtualScheduleInterview(candidate)}
-                                      >
-                                        Schedule Interview
-                                      </Button>
+                                    ) : (
+                                      <>
+                                        {/* Show Schedule Interview for R1/R2 Selected */}
+                                        {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && 
+                                         candidate.final_status === "selected" && (
+                                          <Button
+                                            size="sm"
+                                            className="bg-green-600 hover:bg-green-700 text-white"
+                                            onClick={() => handleVirtualScheduleInterview(candidate)}
+                                          >
+                                            Schedule Interview
+                                          </Button>
+                                        )}
+                                        {/* Show Schedule Interview for R1/R2 On-Hold */}
+                                        {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && 
+                                         candidate.final_status === "on-hold" && (
+                                          <Button
+                                            size="sm"
+                                            className="bg-green-600 hover:bg-green-700 text-white"
+                                            onClick={() => handleVirtualScheduleInterview(candidate)}
+                                          >
+                                            Schedule Interview
+                                          </Button>
+                                        )}
+                                      </>
                                     )}
                                   </div>
                                 </TableCell>
