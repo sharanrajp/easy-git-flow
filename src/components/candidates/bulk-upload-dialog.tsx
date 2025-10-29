@@ -82,7 +82,7 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
   const [loadingUploadDetails, setLoadingUploadDetails] = useState(false)
   const [selectedCandidate, setSelectedCandidate] = useState<BackendCandidate | null>(null)
   const [loadingCandidateDetails, setLoadingCandidateDetails] = useState(false)
-  const [uploadedByFilter, setUploadedByFilter] = useState<string>("")
+  const [uploadedByFilter, setUploadedByFilter] = useState<string>("all")
   const [availableRecruiters, setAvailableRecruiters] = useState<string[]>([])
 
   // Load active vacancies on component mount
@@ -118,7 +118,7 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
   const loadUploadLogs = async () => {
     setLoadingLogs(true)
     try {
-      const logs = await fetchBulkUploadLogs(uploadedByFilter || undefined)
+      const logs = await fetchBulkUploadLogs(uploadedByFilter !== "all" ? uploadedByFilter : undefined)
       setUploadLogs(logs)
       
       // Extract unique recruiters for filter
@@ -689,7 +689,7 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
                   <SelectValue placeholder="Filter by recruiter" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Recruiters</SelectItem>
+                  <SelectItem value="all">All Recruiters</SelectItem>
                   {availableRecruiters.map((recruiter) => (
                     <SelectItem key={recruiter} value={recruiter}>
                       {recruiter}
