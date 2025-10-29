@@ -76,7 +76,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
         const users = await getAllUsers();
         setAllUsers(users);
         setManagers(users.filter((user) => user.role === "tpm_tem"));
-        setHrUsers(users.filter((user) => user.role === "hr"));
+        setHrUsers(users.filter((user) => user.role === "recruiter"));
       } catch (error) {
         console.error("Failed to fetch users:", error);
         setAllUsers([]);
@@ -472,12 +472,21 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="position_approved_by">Position Approved By *</Label>
-                  <Input
-                    id="position_approved_by"
+                  <Select
                     value={formData.position_approved_by}
-                    onChange={(e) => setFormData({ ...formData, position_approved_by: e.target.value })}
-                    required
-                  />
+                    onValueChange={(value: any) => setFormData({ ...formData, position_approved_by: value })}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select approver" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {managers.map((user) => (
+                        <SelectItem key={user._id} value={user.name}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
