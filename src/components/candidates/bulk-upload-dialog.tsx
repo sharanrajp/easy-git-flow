@@ -788,7 +788,6 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
                     <TableHead>Added</TableHead>
                     <TableHead>Skipped</TableHead>
                     <TableHead>Date & Time</TableHead>
-                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -808,17 +807,6 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
                         <Badge variant="destructive">{log.skipped_count}</Badge>
                       </TableCell>
                       <TableCell className="text-xs">{log.uploaded_date} {log.uploaded_time}</TableCell>
-                      <TableCell>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleViewUploadDetails(log.upload_id)}
-                          disabled={loadingUploadDetails}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
