@@ -158,13 +158,14 @@ export function VirtualScheduleInterviewDialog({
       }
       setRescheduleReason("")
       // Reset all flags when dialog opens
-      hasUserChangedSelectionRef.current = false
-      hasAutoSelectedRef.current = false
+      if (!hasUserChangedSelectionRef.current) {
+        hasAutoSelectedRef.current = false
+      }
       hasFetchedPanelistsRef.current = false // Allow fetching for new dialog session
       setPanelistsLoaded(false) // Reset loaded state
       console.log("Dialog opened - reset all fetch/selection flags")
     }
-  }, [open, existingSchedule])
+  }, [open])
 
   // Update selected panel members when panelists are loaded and we have existing schedule
   useEffect(() => {

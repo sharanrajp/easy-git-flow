@@ -3760,20 +3760,29 @@ export default function CandidatesPage() {
           }}
           candidate={virtualScheduleCandidate}
           isReschedule={isVirtualReschedule}
-          existingSchedule={
-            isVirtualReschedule && virtualScheduleCandidate && (virtualScheduleCandidate as any).interview_date
-              ? {
-                  date: (virtualScheduleCandidate as any).interview_date,
-                  time: (virtualScheduleCandidate as any).interview_time,
-                  meetingLink: (virtualScheduleCandidate as any).meeting_link,
-                  panelMembers: [
-                    (virtualScheduleCandidate as any).panel_id || 
-                    (virtualScheduleCandidate as any).panel_name || 
-                    virtualScheduleCandidate.panel_name
-                  ].filter(Boolean),
-                }
-              : undefined
-          }
+          existingSchedule={useMemo(() => {
+            if (isVirtualReschedule && virtualScheduleCandidate && (virtualScheduleCandidate as any).interview_date) {
+              return {
+                date: (virtualScheduleCandidate as any).interview_date,
+                time: (virtualScheduleCandidate as any).interview_time,
+                meetingLink: (virtualScheduleCandidate as any).meeting_link,
+                panelMembers: [
+                  (virtualScheduleCandidate as any).panel_id || 
+                  (virtualScheduleCandidate as any).panel_name || 
+                  virtualScheduleCandidate.panel_name
+                ].filter(Boolean),
+              }
+            }
+            return undefined
+          }, [
+            isVirtualReschedule,
+            virtualScheduleCandidate?._id,
+            (virtualScheduleCandidate as any)?.interview_date,
+            (virtualScheduleCandidate as any)?.interview_time,
+            (virtualScheduleCandidate as any)?.meeting_link,
+            (virtualScheduleCandidate as any)?.panel_id,
+            virtualScheduleCandidate?.panel_name,
+          ])}
           onSubmit={handleVirtualScheduleSubmit}
         />
       </div>
