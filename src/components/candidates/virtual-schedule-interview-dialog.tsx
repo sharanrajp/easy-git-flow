@@ -10,7 +10,7 @@ import { Calendar, Clock } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { getAllUsers, type User } from "@/lib/auth"
-import { fetchPanelistsForCandidate, type BackendCandidate } from "@/lib/candidates-api"
+import { fetchPanelistsForCandidate, fetchPanelsWithStatus, type BackendCandidate } from "@/lib/candidates-api"
 
 interface VirtualScheduleInterviewDialogProps {
   open: boolean
@@ -50,17 +50,19 @@ export function VirtualScheduleInterviewDialog({
 
   useEffect(() => {
     const fetchPanelists = async () => {
-      if (!candidate?._id || !candidate?.vacancyId) {
-        setPanelists([])
-        return
-      }
-      
       try {
         setLoading(true)
-        const panelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
-        console.log("Fetched panelists:", panelists)
-        console.log("First panelist object:", panelists[0])
-        setPanelists(panelists || [])
+        // Use the panels/with-status endpoint to get all panelists
+        const allPanelists = await fetchPanelsWithStatus()
+        console.log("Fetched all panelists with status:", allPanelists)
+        
+        // Filter to only show panel members and TPM/TEM
+        const eligiblePanelists = allPanelists.filter((p: any) => 
+          p.role === 'panel_member' || p.role === 'tpm_tem'
+        )
+        
+        console.log("Eligible panelists:", eligiblePanelists)
+        setPanelists(eligiblePanelists || [])
       } catch (error) {
         console.error("Failed to fetch panelists:", error)
         setPanelists([])
@@ -69,10 +71,10 @@ export function VirtualScheduleInterviewDialog({
       }
     }
     
-    if (open && candidate) {
+    if (open) {
       fetchPanelists()
     }
-  }, [open, candidate])
+  }, [open])
 
   useEffect(() => {
     if (open) {
@@ -96,6 +98,28 @@ export function VirtualScheduleInterviewDialog({
       setRescheduleReason("")
     }
   }, [open, existingSchedule])
+
+  // Update selected panel members when panelists are loaded and we have existing schedule
+  useEffect(() => {
+    if (existingSchedule?.panelMembers && panelists.length > 0) {
+      const existingPanelNames = existingSchedule.panelMembers
+      console.log("Matching existing panel names:", existingPanelNames)
+      console.log("Against loaded panelists:", panelists)
+      
+      // Find matching panelist by name or ID
+      const matchingPanelists = panelists.filter((p: any) => 
+        existingPanelNames.includes(p.name) || 
+        existingPanelNames.includes(p._id) ||
+        existingPanelNames.includes(p.email)
+      )
+      
+      if (matchingPanelists.length > 0) {
+        const matchingIds = matchingPanelists.map((p: any) => p._id)
+        console.log("Found matching panelists, setting IDs:", matchingIds)
+        setSelectedPanelMembers(matchingIds)
+      }
+    }
+  }, [panelists, existingSchedule])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -215,12 +239,11 @@ export function VirtualScheduleInterviewDialog({
                 <p className="text-sm text-muted-foreground">No panelists available</p>
               ) : (
                 panelists.map((panelist: any) => {
-                  // Handle different possible ID fields
-                  const panelistId = panelist._id || panelist.id || panelist.panel_id || panelist.username || panelist.email
+                  // Use _id as the primary identifier
+                  const panelistId = panelist._id
                   console.log("Panelist object:", panelist, "Using ID:", panelistId)
-                  // Check if selected by ID or name
-                  const isSelected = selectedPanelMembers.includes(panelistId) || 
-                                    selectedPanelMembers.includes(panelist.name)
+                  // Check if selected by ID
+                  const isSelected = selectedPanelMembers.includes(panelistId)
                   return (
                     <div 
                       key={panelistId} 
