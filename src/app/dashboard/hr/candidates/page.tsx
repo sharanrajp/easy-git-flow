@@ -2507,7 +2507,8 @@ export default function CandidatesPage() {
                                     {(candidate as any).interview_date ? (
                                       <Button
                                         size="sm"
-                                        className="text-blue-600 hover:bg-blue-50"
+                                        variant="outline"
+                                        className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
                                         onClick={() => handleVirtualRescheduleInterview(candidate)}
                                       >
                                         Reschedule

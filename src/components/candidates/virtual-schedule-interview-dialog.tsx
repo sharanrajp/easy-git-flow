@@ -10,7 +10,7 @@ import { Calendar, Clock } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { getAllUsers, type User } from "@/lib/auth"
-import { fetchPanelistsForCandidate, fetchPanelsWithStatus, type BackendCandidate } from "@/lib/candidates-api"
+import { fetchPanelistsForCandidate, type BackendCandidate } from "@/lib/candidates-api"
 
 interface VirtualScheduleInterviewDialogProps {
   open: boolean
@@ -50,19 +50,17 @@ export function VirtualScheduleInterviewDialog({
 
   useEffect(() => {
     const fetchPanelists = async () => {
+      if (!candidate?._id || !candidate?.vacancyId) {
+        setPanelists([])
+        return
+      }
+      
       try {
         setLoading(true)
-        // Use the panels/with-status endpoint to get all panelists
-        const allPanelists = await fetchPanelsWithStatus()
-        console.log("Fetched all panelists with status:", allPanelists)
-        
-        // Filter to only show panel members and TPM/TEM
-        const eligiblePanelists = allPanelists.filter((p: any) => 
-          p.role === 'panel_member' || p.role === 'tpm_tem'
-        )
-        
-        console.log("Eligible panelists:", eligiblePanelists)
-        setPanelists(eligiblePanelists || [])
+        const panelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
+        console.log("Fetched panelists:", panelists)
+        console.log("First panelist object:", panelists[0])
+        setPanelists(panelists || [])
       } catch (error) {
         console.error("Failed to fetch panelists:", error)
         setPanelists([])
@@ -71,10 +69,10 @@ export function VirtualScheduleInterviewDialog({
       }
     }
     
-    if (open) {
+    if (open && candidate) {
       fetchPanelists()
     }
-  }, [open])
+  }, [open, candidate])
 
   useEffect(() => {
     if (open) {
@@ -239,11 +237,12 @@ export function VirtualScheduleInterviewDialog({
                 <p className="text-sm text-muted-foreground">No panelists available</p>
               ) : (
                 panelists.map((panelist: any) => {
-                  // Use _id as the primary identifier
-                  const panelistId = panelist._id
+                  // Handle different possible ID fields
+                  const panelistId = panelist._id || panelist.id || panelist.panel_id || panelist.username || panelist.email
                   console.log("Panelist object:", panelist, "Using ID:", panelistId)
-                  // Check if selected by ID
-                  const isSelected = selectedPanelMembers.includes(panelistId)
+                  // Check if selected by ID or name
+                  const isSelected = selectedPanelMembers.includes(panelistId) || 
+                                    selectedPanelMembers.includes(panelist.name)
                   return (
                     <div 
                       key={panelistId} 
