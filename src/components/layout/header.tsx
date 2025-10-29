@@ -50,6 +50,7 @@ const navigationItems = {
   recruiter: [
     { name: "Dashboard", href: "/dashboard/hr", icon: LayoutDashboard },
     { name: "Candidates", href: "/dashboard/hr/candidates", icon: UserCheck },
+    { name: "Users", href: "/dashboard/hr/users", icon: Users },
     { name: "Positions", href: "/dashboard/hr/positions", icon: Briefcase },
   ],
   panel_member: [
