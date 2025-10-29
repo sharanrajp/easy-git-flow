@@ -60,8 +60,30 @@ export function VirtualScheduleInterviewDialog({
         return
       }
       
-      if (!candidate?._id || !candidate?.vacancyId) {
+      if (!candidate?._id) {
+        console.log("No candidate ID available")
         setPanelists([])
+        return
+      }
+
+      if (!candidate?.vacancyId) {
+        console.log("No vacancyId - fetching all available panelists")
+        // If no vacancyId, fetch all panelists using the generic API
+        try {
+          setLoading(true)
+          hasFetchedPanelistsRef.current = true
+          const allUsers = await getAllUsers()
+          const panelMembers = allUsers.filter((user: any) => user.role === 'panel_member')
+          console.log("Fetched all panel members:", panelMembers)
+          setPanelists(panelMembers)
+          setPanelistsLoaded(true)
+        } catch (error) {
+          console.error("Failed to fetch panelists:", error)
+          setPanelists([])
+          hasFetchedPanelistsRef.current = false
+        } finally {
+          setLoading(false)
+        }
         return
       }
       
@@ -71,7 +93,7 @@ export function VirtualScheduleInterviewDialog({
       try {
         setLoading(true)
         const fetchedPanelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
-        console.log("Fetched panelists:", fetchedPanelists)
+        console.log("Fetched panelists for vacancy:", fetchedPanelists)
         
         // If this is a reschedule, ensure the currently assigned panelist is in the list
         if (isReschedule && candidate.panel_name) {
