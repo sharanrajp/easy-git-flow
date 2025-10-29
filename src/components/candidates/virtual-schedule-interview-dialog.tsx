@@ -57,10 +57,33 @@ export function VirtualScheduleInterviewDialog({
       
       try {
         setLoading(true)
-        const panelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
-        console.log("Fetched panelists:", panelists)
-        console.log("First panelist object:", panelists[0])
-        setPanelists(panelists || [])
+        const fetchedPanelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
+        console.log("Fetched panelists:", fetchedPanelists)
+        
+        // If this is a reschedule, ensure the currently assigned panelist is in the list
+        if (isReschedule && candidate.panel_name) {
+          const hasCurrentPanelist = fetchedPanelists.some((p: any) => 
+            p.name === candidate.panel_name || 
+            p.email === (candidate as any).panel_email
+          )
+          
+          if (!hasCurrentPanelist && candidate.panel_name) {
+            // Add the current panelist to the list
+            const currentPanelist = {
+              _id: (candidate as any).panel_id || candidate.panel_name,
+              name: candidate.panel_name,
+              email: (candidate as any).panel_email || '',
+              role: 'panel_member',
+              skill_set: []
+            }
+            console.log("Adding current panelist to list:", currentPanelist)
+            setPanelists([currentPanelist, ...fetchedPanelists])
+          } else {
+            setPanelists(fetchedPanelists || [])
+          }
+        } else {
+          setPanelists(fetchedPanelists || [])
+        }
       } catch (error) {
         console.error("Failed to fetch panelists:", error)
         setPanelists([])
@@ -72,7 +95,7 @@ export function VirtualScheduleInterviewDialog({
     if (open && candidate) {
       fetchPanelists()
     }
-  }, [open, candidate])
+  }, [open, candidate, isReschedule])
 
   useEffect(() => {
     if (open) {
@@ -99,7 +122,23 @@ export function VirtualScheduleInterviewDialog({
 
   // Update selected panel members when panelists are loaded and we have existing schedule
   useEffect(() => {
-    if (existingSchedule?.panelMembers && panelists.length > 0) {
+    if (isReschedule && candidate && panelists.length > 0) {
+      console.log("Attempting to match existing panelist")
+      console.log("Candidate panel_name:", candidate.panel_name)
+      console.log("Loaded panelists:", panelists)
+      
+      // Find matching panelist by name or email
+      const matchingPanelist = panelists.find((p: any) => 
+        p.name === candidate.panel_name || 
+        p.email === (candidate as any).panel_email
+      )
+      
+      if (matchingPanelist) {
+        const panelistId = matchingPanelist._id || matchingPanelist.name
+        console.log("Found matching panelist, setting ID:", panelistId)
+        setSelectedPanelMembers([panelistId])
+      }
+    } else if (existingSchedule?.panelMembers && panelists.length > 0 && !isReschedule) {
       const existingPanelNames = existingSchedule.panelMembers
       console.log("Matching existing panel names:", existingPanelNames)
       console.log("Against loaded panelists:", panelists)
@@ -117,7 +156,7 @@ export function VirtualScheduleInterviewDialog({
         setSelectedPanelMembers(matchingIds)
       }
     }
-  }, [panelists, existingSchedule])
+  }, [panelists, existingSchedule, isReschedule, candidate])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
