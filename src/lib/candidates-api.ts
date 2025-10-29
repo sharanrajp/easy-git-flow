@@ -538,6 +538,19 @@ export interface BulkUploadLog {
   uploaded_time: string;
 }
 
+// API response interface (what we actually receive)
+interface BulkUploadLogApiResponse {
+  _id: string;
+  upload_id: string;
+  uploaded_by: string;
+  uploaded_at: string;
+  applied_position: string;
+  source: string;
+  total_candidates: number;
+  added_count: number;
+  skipped_count: number;
+}
+
 export interface BulkUploadLogDetails {
   upload_id: string;
   uploaded_by: string;
@@ -583,13 +596,31 @@ export async function fetchBulkUploadLogs(uploadedBy?: string): Promise<BulkUplo
     const data = await response.json();
     
     // API returns {message: "...", logs: [...]}
-    const logs = data.logs || data;
+    const apiLogs: BulkUploadLogApiResponse[] = data.logs || data;
     
     // Ensure the logs array is valid
-    if (!Array.isArray(logs)) {
+    if (!Array.isArray(apiLogs)) {
       console.error('API returned non-array logs:', data);
       return [];
     }
+    
+    // Transform API response to match our interface
+    const logs: BulkUploadLog[] = apiLogs.map(log => {
+      // Split uploaded_at into date and time
+      const [date, time] = log.uploaded_at.split(' ');
+      
+      return {
+        upload_id: log.upload_id,
+        uploaded_by: log.uploaded_by,
+        upload_type: 'Bulk', // All entries from this endpoint are bulk uploads
+        applied_position: log.applied_position,
+        total_candidates: log.total_candidates,
+        added_count: log.added_count,
+        skipped_count: log.skipped_count,
+        uploaded_date: date,
+        uploaded_time: time,
+      };
+    });
     
     return logs;
   } catch (error) {
