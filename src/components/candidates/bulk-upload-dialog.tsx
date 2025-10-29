@@ -47,6 +47,7 @@ interface UploadResponse {
   applied_position: string
   source: string
   recruiter_name: string
+  upload_id?: string
   skipped?: SkippedCandidate[]
   existing_candidates?: ExistingCandidate[]
 }
@@ -84,6 +85,8 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
   const [loadingCandidateDetails, setLoadingCandidateDetails] = useState(false)
   const [uploadedByFilter, setUploadedByFilter] = useState<string>("all")
   const [availableRecruiters, setAvailableRecruiters] = useState<string[]>([])
+  const [currentUploadId, setCurrentUploadId] = useState<string | null>(null)
+  const [showAllLogs, setShowAllLogs] = useState(false)
 
   // Load active vacancies on component mount
   useEffect(() => {
@@ -108,12 +111,19 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
     loadVacancies()
   }, [])
 
-  // Load upload logs when switching to logs tab
+  // Load upload logs when switching to logs tab or filter changes
   useEffect(() => {
-    if (showLogs) {
+    if (showLogs && showAllLogs) {
       loadUploadLogs()
     }
-  }, [showLogs, uploadedByFilter])
+  }, [showLogs, showAllLogs, uploadedByFilter])
+
+  // When manually switching to Logs tab, show all logs if no current upload
+  useEffect(() => {
+    if (showLogs && !currentUploadId && !showAllLogs) {
+      setShowAllLogs(true)
+    }
+  }, [showLogs])
 
   const loadUploadLogs = async () => {
     setLoadingLogs(true)
@@ -338,7 +348,17 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
       // Call parent onSubmit to refresh data
       onSubmit([])
 
-      // Reset form after successful upload
+      // Switch to Logs tab and load current upload details
+      if (successData.upload_id) {
+        setCurrentUploadId(successData.upload_id)
+        setShowAllLogs(false)
+        setShowLogs(true)
+        
+        // Load details of the current upload
+        handleViewUploadDetails(successData.upload_id)
+      }
+
+      // Reset form after a delay
       setTimeout(() => {
         setFile(null)
         setAppliedPosition("")
@@ -387,7 +407,15 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
 
   return (
     <>
-    <Tabs defaultValue="upload" value={showLogs ? "logs" : "upload"} onValueChange={(value) => setShowLogs(value === "logs")} className="space-y-4">
+    <Tabs defaultValue="upload" value={showLogs ? "logs" : "upload"} onValueChange={(value) => {
+      setShowLogs(value === "logs")
+      // Reset current upload when switching back to upload tab
+      if (value === "upload") {
+        setCurrentUploadId(null)
+        setShowAllLogs(false)
+        setSelectedUploadDetails(null)
+      }
+    }} className="space-y-4">
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="upload">Upload</TabsTrigger>
         <TabsTrigger value="logs" className="relative">
@@ -585,10 +613,14 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
           // Upload Details View
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setSelectedUploadDetails(null)}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <h3 className="text-sm font-semibold">Upload Details</h3>
+              {showAllLogs && (
+                <Button variant="ghost" size="sm" onClick={() => setSelectedUploadDetails(null)}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              )}
+              <h3 className="text-sm font-semibold">
+                {currentUploadId && !showAllLogs ? "Recent Upload Details" : "Upload Details"}
+              </h3>
             </div>
             
             <Card>
@@ -686,17 +718,38 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
               </div>
             )}
 
-            <div className="flex justify-end pt-2">
-              <Button variant="outline" onClick={() => setSelectedUploadDetails(null)} size="sm">
-                Back to Logs
-              </Button>
+            <div className="flex justify-end gap-2 pt-2">
+              {currentUploadId && !showAllLogs ? (
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setShowAllLogs(true)
+                      setSelectedUploadDetails(null)
+                      loadUploadLogs()
+                    }} 
+                    size="sm"
+                  >
+                    View All Previous Logs
+                  </Button>
+                  <Button variant="outline" onClick={onCancel} size="sm">
+                    Close
+                  </Button>
+                </>
+              ) : (
+                <Button variant="outline" onClick={() => setSelectedUploadDetails(null)} size="sm">
+                  Back to Logs
+                </Button>
+              )}
             </div>
           </div>
         ) : (
           // Upload Logs List View
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold">Bulk Upload History</h3>
+              <h3 className="text-sm font-semibold">
+                {showAllLogs ? "All Upload History" : "Bulk Upload History"}
+              </h3>
               <Select value={uploadedByFilter} onValueChange={setUploadedByFilter}>
                 <SelectTrigger className="w-[200px] h-8 text-xs">
                   <SelectValue placeholder="Filter by recruiter" />
