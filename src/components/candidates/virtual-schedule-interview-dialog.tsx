@@ -49,13 +49,24 @@ export function VirtualScheduleInterviewDialog({
   const [loading, setLoading] = useState(false)
   const hasUserChangedSelectionRef = useRef(false)
   const hasAutoSelectedRef = useRef(false)
+  const hasFetchedPanelistsRef = useRef(false)
+  const panelistsLoadedRef = useRef(false)
 
   useEffect(() => {
     const fetchPanelists = async () => {
+      // Prevent repeated API calls - only fetch once per dialog session
+      if (hasFetchedPanelistsRef.current) {
+        console.log("Skipping fetch - already fetched for this session")
+        return
+      }
+      
       if (!candidate?._id || !candidate?.vacancyId) {
         setPanelists([])
         return
       }
+      
+      // Mark that we're fetching to prevent duplicate calls
+      hasFetchedPanelistsRef.current = true
       
       try {
         setLoading(true)
@@ -86,9 +97,14 @@ export function VirtualScheduleInterviewDialog({
         } else {
           setPanelists(fetchedPanelists || [])
         }
+        
+        // Mark that panelists have been loaded successfully
+        panelistsLoadedRef.current = true
+        console.log("Panelists loaded successfully")
       } catch (error) {
         console.error("Failed to fetch panelists:", error)
         setPanelists([])
+        hasFetchedPanelistsRef.current = false // Reset on error to allow retry
       } finally {
         setLoading(false)
       }
@@ -97,7 +113,7 @@ export function VirtualScheduleInterviewDialog({
     if (open && candidate) {
       fetchPanelists()
     }
-  }, [open, candidate, isReschedule])
+  }, [open])
 
   useEffect(() => {
     if (open) {
@@ -119,13 +135,23 @@ export function VirtualScheduleInterviewDialog({
         setSelectedPanelMembers([])
       }
       setRescheduleReason("")
-      hasUserChangedSelectionRef.current = false // Reset the flag when dialog opens
-      hasAutoSelectedRef.current = false // Reset auto-selection flag
+      // Reset all flags when dialog opens
+      hasUserChangedSelectionRef.current = false
+      hasAutoSelectedRef.current = false
+      hasFetchedPanelistsRef.current = false // Allow fetching for new dialog session
+      panelistsLoadedRef.current = false // Reset loaded state
+      console.log("Dialog opened - reset all fetch/selection flags")
     }
   }, [open, existingSchedule])
 
   // Update selected panel members when panelists are loaded and we have existing schedule
   useEffect(() => {
+    // Only run when panelists have been loaded successfully
+    if (!panelistsLoadedRef.current || panelists.length === 0) {
+      console.log("Skipping auto-selection - panelists not loaded or empty")
+      return
+    }
+    
     // Only auto-select if user hasn't manually changed the selection AND we haven't auto-selected yet
     if (hasUserChangedSelectionRef.current || hasAutoSelectedRef.current) {
       console.log("Skipping auto-selection - user changed:", hasUserChangedSelectionRef.current, "already auto-selected:", hasAutoSelectedRef.current)
@@ -168,7 +194,7 @@ export function VirtualScheduleInterviewDialog({
         hasAutoSelectedRef.current = true // Mark that we've done the initial auto-selection
       }
     }
-  }, [panelists, existingSchedule, isReschedule])
+  }, [panelistsLoadedRef.current, isReschedule, candidate])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
