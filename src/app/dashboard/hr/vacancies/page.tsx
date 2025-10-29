@@ -319,8 +319,10 @@ export default function VacanciesPage() {
   }, []);
 
   const uniqueRecruiters = Array.from(
-    new Set([...vacancies.map((v) => v.recruiter_name).filter(Boolean), ...hrUsers.map((user) => user.name)]),
-  );
+    new Set([...vacancies.map((v) => v.recruiter_name)
+      .filter(Boolean)
+    ]),
+  );  
 
   const handleClearFilters = () => {
     setSearchTerm("");

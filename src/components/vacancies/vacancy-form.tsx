@@ -117,9 +117,9 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       walkInDetails:
         formData.drive_date || formData.drive_location
           ? {
-              date: formData.drive_date,
-              location: formData.drive_location,
-            }
+            date: formData.drive_date,
+            location: formData.drive_location,
+          }
           : undefined,
     };
 
@@ -253,7 +253,8 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       formData.category &&
       formData.position_approved_by &&
       formData.plan &&
-      formData.skills_required.length > 0
+      formData.skills_required.length > 0 &&
+      (!formData.drive_date || (formData.drive_date && formData.drive_location?.trim()))
     );
   };
 
@@ -591,9 +592,8 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                             onClick={() => toggleSkill(skill)}
                           >
                             <Check
-                              className={`mr-2 h-4 w-4 ${
-                                formData.skills_required.includes(skill) ? "opacity-100" : "opacity-0"
-                              }`}
+                              className={`mr-2 h-4 w-4 ${formData.skills_required.includes(skill) ? "opacity-100" : "opacity-0"
+                                }`}
                             />
                             {skill}
                           </div>
@@ -661,16 +661,24 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                           }}
                           initialFocus
                         />
+                        <Button
+                          variant="ghost"
+                          className="text-[#20a2e0] hover:text-[#1b90c8] ml-2 mt-2 mb-2"
+                          onClick={() => setFormData({ ...formData, drive_date: "" })}
+                        >
+                          Clear
+                        </Button>
                       </PopoverContent>
                     </Popover>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="drive_location">Drive Location</Label>
+                    <Label htmlFor="drive_location">Drive Location{formData?.drive_date && <span>*</span>}</Label>
                     <Input
                       id="drive_location"
                       placeholder="Enter interview location"
                       value={formData.drive_location}
                       onChange={(e) => setFormData({ ...formData, drive_location: e.target.value })}
+                      required={!!formData?.drive_date}
                     />
                   </div>
                 </div>
