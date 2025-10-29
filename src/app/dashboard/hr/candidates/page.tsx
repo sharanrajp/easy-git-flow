@@ -1754,10 +1754,12 @@ export default function CandidatesPage() {
       if (isVirtualReschedule && virtualScheduleCandidate.interview_id) {
         // Call PUT /virtual/reschedule/{interview_id} API
         const reschedulePayload = {
-          interview_date: data.date.toISOString().split('T')[0],
-          interview_time: data.time,
-          meeting_link: data.meetingLink,
-          reschedule_reason: data.rescheduleReason || "",
+          new_date: data.date.toISOString().split('T')[0],
+          new_time: data.time,
+          new_panel_id: data.panelMembers[0],
+          new_meeting_link: data.meetingLink,
+          reason: data.rescheduleReason || "",
+          updated_by: currentUser.email,
         }
 
         const response = await fetch(`${API_BASE_URL}/virtual/reschedule/${virtualScheduleCandidate.interview_id}`, {
