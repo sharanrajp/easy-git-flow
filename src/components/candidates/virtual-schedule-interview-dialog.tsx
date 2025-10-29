@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -47,8 +47,8 @@ export function VirtualScheduleInterviewDialog({
   const [rescheduleReason, setRescheduleReason] = useState("")
   const [panelists, setPanelists] = useState<User[]>([])
   const [loading, setLoading] = useState(false)
-  const [hasUserChangedSelection, setHasUserChangedSelection] = useState(false)
-  const [hasInitiallyAutoSelected, setHasInitiallyAutoSelected] = useState(false)
+  const hasUserChangedSelectionRef = useRef(false)
+  const hasAutoSelectedRef = useRef(false)
 
   useEffect(() => {
     const fetchPanelists = async () => {
@@ -119,15 +119,16 @@ export function VirtualScheduleInterviewDialog({
         setSelectedPanelMembers([])
       }
       setRescheduleReason("")
-      setHasUserChangedSelection(false) // Reset the flag when dialog opens
-      setHasInitiallyAutoSelected(false) // Reset auto-selection flag
+      hasUserChangedSelectionRef.current = false // Reset the flag when dialog opens
+      hasAutoSelectedRef.current = false // Reset auto-selection flag
     }
   }, [open, existingSchedule])
 
   // Update selected panel members when panelists are loaded and we have existing schedule
   useEffect(() => {
     // Only auto-select if user hasn't manually changed the selection AND we haven't auto-selected yet
-    if (hasUserChangedSelection || hasInitiallyAutoSelected) {
+    if (hasUserChangedSelectionRef.current || hasAutoSelectedRef.current) {
+      console.log("Skipping auto-selection - user changed:", hasUserChangedSelectionRef.current, "already auto-selected:", hasAutoSelectedRef.current)
       return
     }
     
@@ -146,7 +147,7 @@ export function VirtualScheduleInterviewDialog({
         const panelistId = matchingPanelist._id || matchingPanelist.name
         console.log("Found matching panelist, setting ID:", panelistId)
         setSelectedPanelMembers([panelistId])
-        setHasInitiallyAutoSelected(true) // Mark that we've done the initial auto-selection
+        hasAutoSelectedRef.current = true // Mark that we've done the initial auto-selection
       }
     } else if (existingSchedule?.panelMembers && panelists.length > 0 && !isReschedule) {
       const existingPanelNames = existingSchedule.panelMembers
@@ -164,10 +165,10 @@ export function VirtualScheduleInterviewDialog({
         const matchingIds = matchingPanelists.map((p: any) => p._id)
         console.log("Found matching panelists, setting IDs:", matchingIds)
         setSelectedPanelMembers(matchingIds)
-        setHasInitiallyAutoSelected(true) // Mark that we've done the initial auto-selection
+        hasAutoSelectedRef.current = true // Mark that we've done the initial auto-selection
       }
     }
-  }, [panelists, existingSchedule, isReschedule, hasUserChangedSelection, hasInitiallyAutoSelected])
+  }, [panelists, existingSchedule, isReschedule])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -194,8 +195,8 @@ export function VirtualScheduleInterviewDialog({
   }
 
   const handlePanelistSelection = (panelistId: string) => {
-    console.log("Selecting panelist:", panelistId)
-    setHasUserChangedSelection(true) // Mark that user has manually changed selection
+    console.log("User manually selecting panelist:", panelistId)
+    hasUserChangedSelectionRef.current = true // Mark that user has manually changed selection
     setSelectedPanelMembers((prev) => {
       const newSelection = [panelistId] // Always single selection
       console.log("Previous selection:", prev, "New selection:", newSelection)
