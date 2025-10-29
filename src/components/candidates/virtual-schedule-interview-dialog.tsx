@@ -47,6 +47,7 @@ export function VirtualScheduleInterviewDialog({
   const [rescheduleReason, setRescheduleReason] = useState("")
   const [panelists, setPanelists] = useState<User[]>([])
   const [loading, setLoading] = useState(false)
+  const [hasUserChangedSelection, setHasUserChangedSelection] = useState(false)
 
   useEffect(() => {
     const fetchPanelists = async () => {
@@ -117,11 +118,17 @@ export function VirtualScheduleInterviewDialog({
         setSelectedPanelMembers([])
       }
       setRescheduleReason("")
+      setHasUserChangedSelection(false) // Reset the flag when dialog opens
     }
   }, [open, existingSchedule])
 
   // Update selected panel members when panelists are loaded and we have existing schedule
   useEffect(() => {
+    // Only auto-select if user hasn't manually changed the selection
+    if (hasUserChangedSelection) {
+      return
+    }
+    
     if (isReschedule && candidate && panelists.length > 0) {
       console.log("Attempting to match existing panelist")
       console.log("Candidate panel_name:", candidate.panel_name)
@@ -156,7 +163,7 @@ export function VirtualScheduleInterviewDialog({
         setSelectedPanelMembers(matchingIds)
       }
     }
-  }, [panelists, existingSchedule, isReschedule, candidate])
+  }, [panelists, existingSchedule, isReschedule, candidate, hasUserChangedSelection])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -184,6 +191,7 @@ export function VirtualScheduleInterviewDialog({
 
   const handlePanelistSelection = (panelistId: string) => {
     console.log("Selecting panelist:", panelistId)
+    setHasUserChangedSelection(true) // Mark that user has manually changed selection
     setSelectedPanelMembers((prev) => {
       const newSelection = [panelistId] // Always single selection
       console.log("Previous selection:", prev, "New selection:", newSelection)
