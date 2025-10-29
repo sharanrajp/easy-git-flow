@@ -788,11 +788,12 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
                     <TableHead>Added</TableHead>
                     <TableHead>Skipped</TableHead>
                     <TableHead>Date & Time</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {uploadLogs.map((log) => (
-                    <TableRow key={log.upload_id}>
+                    <TableRow key={log.upload_id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewUploadDetails(log.upload_id)}>
                       <TableCell className="font-mono text-xs">{log.upload_id.substring(0, 8)}...</TableCell>
                       <TableCell>{log.uploaded_by}</TableCell>
                       <TableCell>
@@ -807,6 +808,16 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
                         <Badge variant="destructive">{log.skipped_count}</Badge>
                       </TableCell>
                       <TableCell className="text-xs">{log.uploaded_date} {log.uploaded_time}</TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleViewUploadDetails(log.upload_id)}
+                          disabled={loadingUploadDetails}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
