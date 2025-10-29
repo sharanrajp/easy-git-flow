@@ -580,7 +580,14 @@ export async function fetchBulkUploadLogs(uploadedBy?: string): Promise<BulkUplo
       throw new Error(`Failed to fetch bulk upload logs: ${response.status} ${response.statusText}`);
     }
 
-    const logs: BulkUploadLog[] = await response.json();
+    const logs = await response.json();
+    
+    // Ensure the response is an array
+    if (!Array.isArray(logs)) {
+      console.error('API returned non-array response:', logs);
+      return [];
+    }
+    
     return logs;
   } catch (error) {
     console.error('Error fetching bulk upload logs:', error);

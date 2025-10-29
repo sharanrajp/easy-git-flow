@@ -119,13 +119,26 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
     setLoadingLogs(true)
     try {
       const logs = await fetchBulkUploadLogs(uploadedByFilter !== "all" ? uploadedByFilter : undefined)
-      setUploadLogs(logs)
       
-      // Extract unique recruiters for filter
-      const recruiters = Array.from(new Set(logs.map(log => log.uploaded_by))).filter(Boolean)
-      setAvailableRecruiters(recruiters)
+      // Ensure logs is an array before setting state
+      if (Array.isArray(logs)) {
+        setUploadLogs(logs)
+        
+        // Extract unique recruiters for filter
+        const recruiters = Array.from(new Set(logs.map(log => log.uploaded_by))).filter(Boolean)
+        setAvailableRecruiters(recruiters)
+      } else {
+        console.error('API returned non-array response:', logs)
+        setUploadLogs([])
+        toast({
+          variant: "destructive",
+          title: "Invalid response",
+          description: "The server returned an invalid response format.",
+        })
+      }
     } catch (error) {
       console.error('Failed to load upload logs:', error)
+      setUploadLogs([]) // Ensure uploadLogs is always an array
       toast({
         variant: "destructive",
         title: "Error loading logs",
