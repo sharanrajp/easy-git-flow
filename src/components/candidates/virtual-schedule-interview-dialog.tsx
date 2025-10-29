@@ -48,6 +48,7 @@ export function VirtualScheduleInterviewDialog({
   const [panelists, setPanelists] = useState<User[]>([])
   const [loading, setLoading] = useState(false)
   const [hasUserChangedSelection, setHasUserChangedSelection] = useState(false)
+  const [hasInitiallyAutoSelected, setHasInitiallyAutoSelected] = useState(false)
 
   useEffect(() => {
     const fetchPanelists = async () => {
@@ -119,13 +120,14 @@ export function VirtualScheduleInterviewDialog({
       }
       setRescheduleReason("")
       setHasUserChangedSelection(false) // Reset the flag when dialog opens
+      setHasInitiallyAutoSelected(false) // Reset auto-selection flag
     }
   }, [open, existingSchedule])
 
   // Update selected panel members when panelists are loaded and we have existing schedule
   useEffect(() => {
-    // Only auto-select if user hasn't manually changed the selection
-    if (hasUserChangedSelection) {
+    // Only auto-select if user hasn't manually changed the selection AND we haven't auto-selected yet
+    if (hasUserChangedSelection || hasInitiallyAutoSelected) {
       return
     }
     
@@ -144,6 +146,7 @@ export function VirtualScheduleInterviewDialog({
         const panelistId = matchingPanelist._id || matchingPanelist.name
         console.log("Found matching panelist, setting ID:", panelistId)
         setSelectedPanelMembers([panelistId])
+        setHasInitiallyAutoSelected(true) // Mark that we've done the initial auto-selection
       }
     } else if (existingSchedule?.panelMembers && panelists.length > 0 && !isReschedule) {
       const existingPanelNames = existingSchedule.panelMembers
@@ -161,9 +164,10 @@ export function VirtualScheduleInterviewDialog({
         const matchingIds = matchingPanelists.map((p: any) => p._id)
         console.log("Found matching panelists, setting IDs:", matchingIds)
         setSelectedPanelMembers(matchingIds)
+        setHasInitiallyAutoSelected(true) // Mark that we've done the initial auto-selection
       }
     }
-  }, [panelists, existingSchedule, isReschedule, candidate, hasUserChangedSelection])
+  }, [panelists, existingSchedule, isReschedule, candidate, hasUserChangedSelection, hasInitiallyAutoSelected])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
