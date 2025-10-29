@@ -651,7 +651,13 @@ export async function fetchBulkUploadLogDetails(uploadId: string): Promise<BulkU
     }
 
     const details: BulkUploadLogDetails = await response.json();
-    return details;
+    
+    // Ensure arrays exist with default empty arrays
+    return {
+      ...details,
+      added_candidates: details.added_candidates || [],
+      skipped_candidates: details.skipped_candidates || [],
+    };
   } catch (error) {
     console.error('Error fetching bulk upload log details:', error);
     throw error;

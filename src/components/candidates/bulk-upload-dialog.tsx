@@ -647,7 +647,7 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
             </Card>
 
             {/* Added Candidates */}
-            {selectedUploadDetails.added_candidates.length > 0 && (
+            {selectedUploadDetails.added_candidates?.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-success" />
@@ -689,7 +689,7 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
             )}
 
             {/* Skipped Candidates */}
-            {selectedUploadDetails.skipped_candidates.length > 0 && (
+            {selectedUploadDetails.skipped_candidates?.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 text-destructive" />
