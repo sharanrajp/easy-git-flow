@@ -292,9 +292,8 @@ export function VirtualScheduleInterviewDialog({
                   // Handle different possible ID fields
                   const panelistId = panelist._id || panelist.id || panelist.panel_id || panelist.username || panelist.email
                   console.log("Panelist object:", panelist, "Using ID:", panelistId)
-                  // Check if selected by ID or name
-                  const isSelected = selectedPanelMembers.includes(panelistId) || 
-                                    selectedPanelMembers.includes(panelist.name)
+                  // Check if selected by ID only (ensures only one radio button is selected)
+                  const isSelected = selectedPanelMembers.includes(panelistId)
                   return (
                     <div 
                       key={panelistId} 
