@@ -122,7 +122,6 @@ export function transformFrontendToBackend(frontendVacancy: Partial<Position>): 
     interview_type: frontendVacancy.interview_type || "Walk-In",
     job_desc: frontendVacancy.job_desc || "",
     request_type: frontendVacancy.request_type || "new",
-    assignedPanelists: frontendVacancy.assignedPanelists || [],
     city: frontendVacancy.city || "",
     projectClientName: frontendVacancy.projectClientName || "",
     category: frontendVacancy.category || "",
@@ -131,6 +130,11 @@ export function transformFrontendToBackend(frontendVacancy: Partial<Position>): 
     drive_date: driveDate,
     drive_location: location,
   };
+
+  // Only include assignedPanelists if array has items
+  if (frontendVacancy.assignedPanelists && frontendVacancy.assignedPanelists.length > 0) {
+    payload.assignedPanelists = frontendVacancy.assignedPanelists;
+  }
 
   return payload;
 }

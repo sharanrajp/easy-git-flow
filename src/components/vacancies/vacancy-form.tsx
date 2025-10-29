@@ -96,9 +96,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
 
   const filteredUsers = allUsers.filter(
     (user) =>
-      user.role === "panelist" &&
-      user.panelist_type !== "manager" &&
-      user.role !== "hr" &&
+      user.role === "panel_member" &&
       (user.name?.toLowerCase().includes(panelistSearch.toLowerCase()) ||
         false ||
         (Array.isArray(user.skill_set) &&
