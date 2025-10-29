@@ -224,9 +224,14 @@ export function VirtualScheduleInterviewDialog({
     console.log("User manually selecting panelist:", panelistId)
     hasUserChangedSelectionRef.current = true // Mark that user has manually changed selection
     setSelectedPanelMembers((prev) => {
-      const newSelection = [panelistId] // Always single selection
-      console.log("Previous selection:", prev, "New selection:", newSelection)
-      return newSelection
+      // If clicking the same panelist, unselect it
+      if (prev.includes(panelistId)) {
+        console.log("Unselecting panelist:", panelistId)
+        return []
+      }
+      // Otherwise, select only this panelist (single selection)
+      console.log("Selecting panelist:", panelistId)
+      return [panelistId]
     })
   }
 
@@ -307,7 +312,7 @@ export function VirtualScheduleInterviewDialog({
 
           {/* Panel Members Selection */}
           <div className="space-y-2">
-            <Label>Select Panel Member *</Label>
+            <Label>Select Panel Member (select one) *</Label>
             <div className="border rounded-md p-4 max-h-60 overflow-y-auto space-y-3 bg-background">
               {loading ? (
                 <p className="text-sm text-muted-foreground">Loading panelists...</p>
@@ -331,9 +336,8 @@ export function VirtualScheduleInterviewDialog({
                       onClick={() => handlePanelistSelection(panelistId)}
                     >
                       <input
-                        type="radio"
+                        type="checkbox"
                         id={panelistId}
-                        name="panelist"
                         checked={isSelected}
                         onChange={() => handlePanelistSelection(panelistId)}
                         className="w-4 h-4 text-primary accent-primary cursor-pointer"
