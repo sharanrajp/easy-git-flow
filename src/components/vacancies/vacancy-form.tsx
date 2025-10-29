@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Position } from "@/lib/schema-data";
 import { getAllUsers } from "@/lib/auth";
 import { formatDate } from "@/lib/utils";
@@ -563,38 +564,66 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                           </button>
                         )}
                       </div>
-                      <div className="max-h-60 overflow-y-auto p-1">
-                        {skillSearch && !availableSkills.some((s) => s.toLowerCase() === skillSearch.toLowerCase()) && (
-                          <div
-                            className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
-                            onClick={() => {
-                              addSkill(skillSearch);
-                              setSkillSearch("");
-                            }}
-                          >
-                            <div className="flex items-center flex-1">
-                              <span className="font-medium">Add "{skillSearch}"</span>
+                      <ScrollArea className="max-h-60">
+                        <div className="p-1">
+                          {skillSearch && !availableSkills.some((s) => s.toLowerCase() === skillSearch.toLowerCase()) && (
+                            <div
+                              role="option"
+                              tabIndex={0}
+                              className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                              onClick={() => {
+                                addSkill(skillSearch);
+                                setSkillSearch("");
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  addSkill(skillSearch);
+                                  setSkillSearch("");
+                                }
+                              }}
+                            >
+                              <div className="flex items-center flex-1">
+                                <span className="font-medium">Add "{skillSearch}"</span>
+                              </div>
                             </div>
-                          </div>
-                        )}
-                        {filteredSkills.map((skill) => (
-                          <div
-                            key={skill}
-                            className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
-                            onClick={() => toggleSkill(skill)}
-                          >
-                            <Check
-                              className={`mr-2 h-4 w-4 ${
-                                formData.skills_required.includes(skill) ? "opacity-100" : "opacity-0"
-                              }`}
-                            />
-                            {skill}
-                          </div>
-                        ))}
-                        {filteredSkills.length === 0 && !skillSearch && (
-                          <div className="px-2 py-1.5 text-sm text-muted-foreground">No skills found</div>
-                        )}
-                      </div>
+                          )}
+                          {filteredSkills.map((skill, index) => (
+                            <div
+                              key={skill}
+                              role="option"
+                              tabIndex={0}
+                              aria-selected={formData.skills_required.includes(skill)}
+                              className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                              onClick={() => toggleSkill(skill)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  toggleSkill(skill);
+                                } else if (e.key === "ArrowDown") {
+                                  e.preventDefault();
+                                  const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                                  if (nextElement) nextElement.focus();
+                                } else if (e.key === "ArrowUp") {
+                                  e.preventDefault();
+                                  const prevElement = e.currentTarget.previousElementSibling as HTMLElement;
+                                  if (prevElement) prevElement.focus();
+                                }
+                              }}
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 ${
+                                  formData.skills_required.includes(skill) ? "opacity-100" : "opacity-0"
+                                }`}
+                              />
+                              {skill}
+                            </div>
+                          ))}
+                          {filteredSkills.length === 0 && !skillSearch && (
+                            <div className="px-2 py-1.5 text-sm text-muted-foreground">No skills found</div>
+                          )}
+                        </div>
+                      </ScrollArea>
                     </div>
                   </PopoverContent>
                 </Popover>
