@@ -287,6 +287,35 @@ export async function fetchAvailablePanels(round: string = 'r1'): Promise<any[]>
   }
 }
 
+// Fetch all panels with status
+export async function fetchPanelsWithStatus(): Promise<any[]> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/panels/with-status`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch panels with status: ${response.status} ${response.statusText}`);
+    }
+
+    const panels = await response.json();
+    return panels;
+  } catch (error) {
+    console.error('Error fetching panels with status:', error);
+    throw error;
+  }
+}
+
 // Assign candidate to panel
 export async function assignCandidateToPanel(candidateId: string, panelId: string, round: string = 'r1', assignedBy: string): Promise<void> {
   console.log('assignCandidateToPanel called with:', { candidateId, panelId, round, assignedBy }) // Debug log

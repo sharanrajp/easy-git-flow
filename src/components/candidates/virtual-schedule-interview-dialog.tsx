@@ -47,6 +47,8 @@ export function VirtualScheduleInterviewDialog({
   const [rescheduleReason, setRescheduleReason] = useState("")
   const [panelists, setPanelists] = useState<User[]>([])
   const [loading, setLoading] = useState(false)
+  const [hasUserChangedSelection, setHasUserChangedSelection] = useState(false)
+  const [hasInitiallyAutoSelected, setHasInitiallyAutoSelected] = useState(false)
 
   useEffect(() => {
     const fetchPanelists = async () => {
@@ -57,10 +59,33 @@ export function VirtualScheduleInterviewDialog({
       
       try {
         setLoading(true)
-        const panelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
-        console.log("Fetched panelists:", panelists)
-        console.log("First panelist object:", panelists[0])
-        setPanelists(panelists || [])
+        const fetchedPanelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
+        console.log("Fetched panelists:", fetchedPanelists)
+        
+        // If this is a reschedule, ensure the currently assigned panelist is in the list
+        if (isReschedule && candidate.panel_name) {
+          const hasCurrentPanelist = fetchedPanelists.some((p: any) => 
+            p.name === candidate.panel_name || 
+            p.email === (candidate as any).panel_email
+          )
+          
+          if (!hasCurrentPanelist && candidate.panel_name) {
+            // Add the current panelist to the list
+            const currentPanelist = {
+              _id: (candidate as any).panel_id || candidate.panel_name,
+              name: candidate.panel_name,
+              email: (candidate as any).panel_email || '',
+              role: 'panel_member',
+              skill_set: []
+            }
+            console.log("Adding current panelist to list:", currentPanelist)
+            setPanelists([currentPanelist, ...fetchedPanelists])
+          } else {
+            setPanelists(fetchedPanelists || [])
+          }
+        } else {
+          setPanelists(fetchedPanelists || [])
+        }
       } catch (error) {
         console.error("Failed to fetch panelists:", error)
         setPanelists([])
@@ -72,7 +97,7 @@ export function VirtualScheduleInterviewDialog({
     if (open && candidate) {
       fetchPanelists()
     }
-  }, [open, candidate])
+  }, [open, candidate, isReschedule])
 
   useEffect(() => {
     if (open) {
@@ -94,8 +119,55 @@ export function VirtualScheduleInterviewDialog({
         setSelectedPanelMembers([])
       }
       setRescheduleReason("")
+      setHasUserChangedSelection(false) // Reset the flag when dialog opens
+      setHasInitiallyAutoSelected(false) // Reset auto-selection flag
     }
   }, [open, existingSchedule])
+
+  // Update selected panel members when panelists are loaded and we have existing schedule
+  useEffect(() => {
+    // Only auto-select if user hasn't manually changed the selection AND we haven't auto-selected yet
+    if (hasUserChangedSelection || hasInitiallyAutoSelected) {
+      return
+    }
+    
+    if (isReschedule && candidate && panelists.length > 0) {
+      console.log("Attempting to match existing panelist")
+      console.log("Candidate panel_name:", candidate.panel_name)
+      console.log("Loaded panelists:", panelists)
+      
+      // Find matching panelist by name or email
+      const matchingPanelist = panelists.find((p: any) => 
+        p.name === candidate.panel_name || 
+        p.email === (candidate as any).panel_email
+      )
+      
+      if (matchingPanelist) {
+        const panelistId = matchingPanelist._id || matchingPanelist.name
+        console.log("Found matching panelist, setting ID:", panelistId)
+        setSelectedPanelMembers([panelistId])
+        setHasInitiallyAutoSelected(true) // Mark that we've done the initial auto-selection
+      }
+    } else if (existingSchedule?.panelMembers && panelists.length > 0 && !isReschedule) {
+      const existingPanelNames = existingSchedule.panelMembers
+      console.log("Matching existing panel names:", existingPanelNames)
+      console.log("Against loaded panelists:", panelists)
+      
+      // Find matching panelist by name or ID
+      const matchingPanelists = panelists.filter((p: any) => 
+        existingPanelNames.includes(p.name) || 
+        existingPanelNames.includes(p._id) ||
+        existingPanelNames.includes(p.email)
+      )
+      
+      if (matchingPanelists.length > 0) {
+        const matchingIds = matchingPanelists.map((p: any) => p._id)
+        console.log("Found matching panelists, setting IDs:", matchingIds)
+        setSelectedPanelMembers(matchingIds)
+        setHasInitiallyAutoSelected(true) // Mark that we've done the initial auto-selection
+      }
+    }
+  }, [panelists, existingSchedule, isReschedule, candidate, hasUserChangedSelection, hasInitiallyAutoSelected])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -123,6 +195,7 @@ export function VirtualScheduleInterviewDialog({
 
   const handlePanelistSelection = (panelistId: string) => {
     console.log("Selecting panelist:", panelistId)
+    setHasUserChangedSelection(true) // Mark that user has manually changed selection
     setSelectedPanelMembers((prev) => {
       const newSelection = [panelistId] // Always single selection
       console.log("Previous selection:", prev, "New selection:", newSelection)
@@ -218,7 +291,9 @@ export function VirtualScheduleInterviewDialog({
                   // Handle different possible ID fields
                   const panelistId = panelist._id || panelist.id || panelist.panel_id || panelist.username || panelist.email
                   console.log("Panelist object:", panelist, "Using ID:", panelistId)
-                  const isSelected = selectedPanelMembers.includes(panelistId)
+                  // Check if selected by ID or name
+                  const isSelected = selectedPanelMembers.includes(panelistId) || 
+                                    selectedPanelMembers.includes(panelist.name)
                   return (
                     <div 
                       key={panelistId} 
