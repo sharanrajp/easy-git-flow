@@ -50,7 +50,7 @@ export function VirtualScheduleInterviewDialog({
   const hasUserChangedSelectionRef = useRef(false)
   const hasAutoSelectedRef = useRef(false)
   const hasFetchedPanelistsRef = useRef(false)
-  const panelistsLoadedRef = useRef(false)
+  const [panelistsLoaded, setPanelistsLoaded] = useState(false)
 
   useEffect(() => {
     const fetchPanelists = async () => {
@@ -99,7 +99,7 @@ export function VirtualScheduleInterviewDialog({
         }
         
         // Mark that panelists have been loaded successfully
-        panelistsLoadedRef.current = true
+        setPanelistsLoaded(true)
         console.log("Panelists loaded successfully")
       } catch (error) {
         console.error("Failed to fetch panelists:", error)
@@ -139,7 +139,7 @@ export function VirtualScheduleInterviewDialog({
       hasUserChangedSelectionRef.current = false
       hasAutoSelectedRef.current = false
       hasFetchedPanelistsRef.current = false // Allow fetching for new dialog session
-      panelistsLoadedRef.current = false // Reset loaded state
+      setPanelistsLoaded(false) // Reset loaded state
       console.log("Dialog opened - reset all fetch/selection flags")
     }
   }, [open, existingSchedule])
@@ -147,7 +147,7 @@ export function VirtualScheduleInterviewDialog({
   // Update selected panel members when panelists are loaded and we have existing schedule
   useEffect(() => {
     // Only run when panelists have been loaded successfully
-    if (!panelistsLoadedRef.current || panelists.length === 0) {
+    if (!panelistsLoaded || panelists.length === 0) {
       console.log("Skipping auto-selection - panelists not loaded or empty")
       return
     }
@@ -194,7 +194,7 @@ export function VirtualScheduleInterviewDialog({
         hasAutoSelectedRef.current = true // Mark that we've done the initial auto-selection
       }
     }
-  }, [panelistsLoadedRef.current, isReschedule, candidate])
+  }, [panelistsLoaded])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -317,7 +317,6 @@ export function VirtualScheduleInterviewDialog({
                 panelists.map((panelist: any) => {
                   // Handle different possible ID fields
                   const panelistId = panelist._id || panelist.id || panelist.panel_id || panelist.username || panelist.email
-                  console.log("Panelist object:", panelist, "Using ID:", panelistId)
                   // Check if selected by ID only (ensures only one radio button is selected)
                   const isSelected = selectedPanelMembers.includes(panelistId)
                   return (
