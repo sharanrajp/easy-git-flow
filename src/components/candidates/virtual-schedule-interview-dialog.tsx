@@ -167,7 +167,7 @@ export function VirtualScheduleInterviewDialog({
         setHasInitiallyAutoSelected(true) // Mark that we've done the initial auto-selection
       }
     }
-  }, [panelists, existingSchedule, isReschedule, candidate, hasUserChangedSelection, hasInitiallyAutoSelected])
+  }, [panelists, existingSchedule, isReschedule, hasUserChangedSelection, hasInitiallyAutoSelected])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
