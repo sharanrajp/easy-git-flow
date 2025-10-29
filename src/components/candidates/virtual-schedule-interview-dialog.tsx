@@ -218,7 +218,9 @@ export function VirtualScheduleInterviewDialog({
                   // Handle different possible ID fields
                   const panelistId = panelist._id || panelist.id || panelist.panel_id || panelist.username || panelist.email
                   console.log("Panelist object:", panelist, "Using ID:", panelistId)
-                  const isSelected = selectedPanelMembers.includes(panelistId)
+                  // Check if selected by ID or name
+                  const isSelected = selectedPanelMembers.includes(panelistId) || 
+                                    selectedPanelMembers.includes(panelist.name)
                   return (
                     <div 
                       key={panelistId} 

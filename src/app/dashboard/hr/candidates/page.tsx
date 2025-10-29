@@ -3765,7 +3765,11 @@ export default function CandidatesPage() {
                   date: (virtualScheduleCandidate as any).interview_date,
                   time: (virtualScheduleCandidate as any).interview_time,
                   meetingLink: (virtualScheduleCandidate as any).meeting_link,
-                  panelMembers: (virtualScheduleCandidate as any).panel_members || [],
+                  panelMembers: [
+                    (virtualScheduleCandidate as any).panel_id || 
+                    (virtualScheduleCandidate as any).panel_name || 
+                    virtualScheduleCandidate.panel_name
+                  ].filter(Boolean),
                 }
               : undefined
           }
