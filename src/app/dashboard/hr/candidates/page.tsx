@@ -79,6 +79,8 @@ export default function CandidatesPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [experienceFilter, setExperienceFilter] = useState("all")
   const [recruiterFilter, setRecruiterFilter] = useState("all")
+  const [recruiterNameFilter, setRecruiterNameFilter] = useState("all")
+  const [recruiters, setRecruiters] = useState<User[]>([])
   const [roundFilter, setRoundFilter] = useState("all")
   const [interviewTypeFilter, setInterviewTypeFilter] = useState("all")
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null)
@@ -161,9 +163,27 @@ export default function CandidatesPage() {
   }
 
   useEffect(() => {
-    // Get current user on component mount
-    const user = getCurrentUser()
-    setCurrentUser(user)
+    const initializeUser = async () => {
+      const user = getCurrentUser()
+      setCurrentUser(user)
+      
+      // Fetch all users to get recruiters list
+      try {
+        const allUsers = await getAllUsers()
+        const recruitersList = allUsers.filter(u => u.role === "recruiter")
+        setRecruiters(recruitersList)
+        
+        // If current user is a recruiter, default to showing only their candidates
+        if (user && user.role === "recruiter") {
+          setRecruiterNameFilter(user.name)
+        }
+      } catch (error) {
+        console.error("Failed to fetch recruiters:", error)
+        setRecruiters([])
+      }
+    }
+    
+    initializeUser()
   }, [])
 
   useEffect(() => {
@@ -276,7 +296,7 @@ export default function CandidatesPage() {
     setUnassignedCurrentPage(1)
     setAssignedCurrentPage(1)
     setCompletedCurrentPage(1)
-  }, [searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter, interviewTypeFilter, mainTab])
+  }, [searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, recruiterNameFilter, roundFilter, dateFilter, interviewTypeFilter, mainTab])
 
   // Clear all filters
   const handleClearFilters = () => {
@@ -286,6 +306,7 @@ export default function CandidatesPage() {
     setStatusFilter("all")
     setExperienceFilter("all")
     setRecruiterFilter("all")
+    setRecruiterNameFilter("all")
     setRoundFilter("all")
     setInterviewTypeFilter("all")
   }
@@ -323,6 +344,9 @@ export default function CandidatesPage() {
       const matchesRecruiter = recruiterFilter === "all" ? true
           : recruiterFilter === "others" ? !["linkedin", "naukri", "website", "referral"].includes((candidate.source || "").toLowerCase())
           : (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
+      const matchesRecruiterName = recruiterNameFilter === "all" 
+        ? true 
+        : (candidate.recruiter_name || "").toLowerCase() === recruiterNameFilter.toLowerCase()
       const matchesRound = roundFilter === "all" || (candidate.last_interview_round || "").toLowerCase() === roundFilter.toLowerCase()
       
       const matchesDate = (() => {
@@ -353,6 +377,7 @@ export default function CandidatesPage() {
         matchesStatus &&
         matchesExperience &&
         matchesRecruiter &&
+        matchesRecruiterName &&
         matchesRound &&
         matchesDate
       )
@@ -388,6 +413,9 @@ export default function CandidatesPage() {
    const matchesRecruiter = recruiterFilter === "all" ? true
           : recruiterFilter === "others" ? !["linkedin", "naukri", "website", "referral"].includes((candidate.source || "").toLowerCase())
           : (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
+    const matchesRecruiterName = recruiterNameFilter === "all"
+      ? true
+      : (candidate.recruiter_name || "").toLowerCase() === recruiterNameFilter.toLowerCase()
     const matchesRound = roundFilter === "all" || 
       (candidate.last_interview_round || candidate.currentRound || "").toLowerCase() === roundFilter.toLowerCase()
     const matchesInterviewType = interviewTypeFilter === "all" || candidate.interview_type === interviewTypeFilter
@@ -418,6 +446,7 @@ export default function CandidatesPage() {
       matchesStatus &&
       matchesExperience &&
       matchesRecruiter &&
+      matchesRecruiterName &&
       matchesRound &&
       matchesInterviewType &&
       matchesDate
@@ -2007,7 +2036,20 @@ export default function CandidatesPage() {
                 <SelectItem value="others">Others</SelectItem>
               </SelectContent>
             </Select>
-            <Button 
+            <Select value={recruiterNameFilter} onValueChange={setRecruiterNameFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Recruiter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Recruiters</SelectItem>
+                {recruiters.map((recruiter) => (
+                  <SelectItem key={recruiter._id} value={recruiter.name}>
+                    {recruiter.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
               variant="outline" 
               onClick={handleClearFilters}
               className="whitespace-nowrap"
