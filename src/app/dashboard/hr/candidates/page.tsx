@@ -1751,7 +1751,17 @@ export default function CandidatesPage() {
       }
 
       // Check if this is a reschedule
-      if (isVirtualReschedule && virtualScheduleCandidate.interview_id) {
+      // Extract interview_id from nested structure based on last_interview_round
+      const interviewId = virtualScheduleCandidate.interviews?.[virtualScheduleCandidate.last_interview_round || 'r1']?.interview_id;
+      
+      console.log("Reschedule check:", {
+        isVirtualReschedule,
+        last_round: virtualScheduleCandidate.last_interview_round,
+        interviews: virtualScheduleCandidate.interviews,
+        extracted_interview_id: interviewId
+      });
+
+      if (isVirtualReschedule && interviewId) {
         // Call PUT /virtual/reschedule/{interview_id} API
         const reschedulePayload = {
           new_date: data.date.toISOString().split('T')[0],
@@ -1762,7 +1772,9 @@ export default function CandidatesPage() {
           updated_by: currentUser.email,
         }
 
-        const response = await fetch(`${API_BASE_URL}/virtual/reschedule/${virtualScheduleCandidate.interview_id}`, {
+        console.log(`Calling PUT /virtual/reschedule/${interviewId}`, reschedulePayload);
+
+        const response = await fetch(`${API_BASE_URL}/virtual/reschedule/${interviewId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
