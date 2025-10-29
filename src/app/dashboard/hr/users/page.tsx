@@ -19,7 +19,7 @@ import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { useToast } from "@/hooks/use-toast"
 import { SkillsDisplay } from "@/components/ui/skills-display"
-import { getCreatableRoles, canCreateUsers, canAccessUsersPage } from "@/lib/user-permissions"
+import { getCreatableRoles, canCreateUsers, canAccessUsersPage, canManageUser } from "@/lib/user-permissions"
 
 export default function UsersPage() {
   const { toast } = useToast()
@@ -130,7 +130,20 @@ export default function UsersPage() {
   }
 
   const handleDeleteSelected = async () => {
-    if (selectedUsers.length === 0 || deleting) return
+    if (selectedUsers.length === 0 || deleting || !currentUser) return
+
+    // Check permissions for each selected user
+    const usersToDelete = users.filter(user => selectedUsers.includes(user._id))
+    const unauthorizedUsers = usersToDelete.filter(user => !canManageUser(currentUser.role, user.role))
+    
+    if (unauthorizedUsers.length > 0) {
+      toast({
+        title: "Permission Denied",
+        description: `You do not have permission to delete ${unauthorizedUsers.length} of the selected user(s).`,
+        variant: "destructive",
+      })
+      return
+    }
 
     try {
       setDeleting(true)
@@ -560,10 +573,10 @@ export default function UsersPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              if (user.role === "superadmin") {
+                              if (!currentUser || !canManageUser(currentUser.role, user.role)) {
                                 toast({
-                                  title: "Action Not Allowed",
-                                  description: "Superadmin cannot be edited or deleted.",
+                                  title: "Permission Denied",
+                                  description: "You do not have permission to edit this user.",
                                   variant: "destructive",
                                 })
                                 return
@@ -572,6 +585,7 @@ export default function UsersPage() {
                               setIsEditOpen(true)
                             }}
                             className="cursor-pointer"
+                            disabled={!currentUser || !canManageUser(currentUser.role, user.role)}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -579,10 +593,10 @@ export default function UsersPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              if (user.role === "superadmin") {
+                              if (!currentUser || !canManageUser(currentUser.role, user.role)) {
                                 toast({
-                                  title: "Action Not Allowed",
-                                  description: "Superadmin cannot be edited or deleted.",
+                                  title: "Permission Denied",
+                                  description: "You do not have permission to delete this user.",
                                   variant: "destructive",
                                 })
                                 return
@@ -590,6 +604,7 @@ export default function UsersPage() {
                               setDeleteUser(user)
                             }}
                             className="cursor-pointer"
+                            disabled={!currentUser || !canManageUser(currentUser.role, user.role)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -639,10 +654,10 @@ export default function UsersPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
                               onClick={() => {
-                                if (user.role === "superadmin") {
+                                if (!currentUser || !canManageUser(currentUser.role, user.role)) {
                                   toast({
-                                    title: "Action Not Allowed",
-                                    description: "Superadmin cannot be edited or deleted.",
+                                    title: "Permission Denied",
+                                    description: "You do not have permission to edit this user.",
                                     variant: "destructive",
                                   })
                                   return
@@ -651,21 +666,22 @@ export default function UsersPage() {
                                 setIsEditOpen(true)
                               }}
                               className="cursor-pointer"
+                              disabled={!currentUser || !canManageUser(currentUser.role, user.role)}
                             >
                               <Edit className="h-4 w-4 mr-2" />
                               Edit User
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => {
-                              if (user.role === "superadmin") {
+                              if (!currentUser || !canManageUser(currentUser.role, user.role)) {
                                 toast({
-                                  title: "Action Not Allowed",
-                                  description: "Superadmin cannot be edited or deleted.",
+                                  title: "Permission Denied",
+                                  description: "You do not have permission to delete this user.",
                                   variant: "destructive",
                                 })
                                 return
                               }
                               setDeleteUser(user)
-                            }} className="text-red-600 cursor-pointer">
+                            }} className="text-red-600 cursor-pointer" disabled={!currentUser || !canManageUser(currentUser.role, user.role)}>
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete User
                             </DropdownMenuItem>

@@ -31,3 +31,30 @@ export function canCreateUsers(userRole: User["role"]): boolean {
 export function canAccessUsersPage(userRole: User["role"]): boolean {
   return ["admin", "hr", "recruiter"].includes(userRole)
 }
+
+/**
+ * Checks if a user can edit or delete another user based on their roles
+ * Admin can edit/delete any role
+ * HR can edit/delete: recruiter, panel_member, tpm_tem
+ * Recruiter can edit/delete: panel_member, tpm_tem
+ * Others cannot edit/delete anyone
+ */
+export function canManageUser(currentUserRole: User["role"], targetUserRole: User["role"]): boolean {
+  // Admin can manage any user
+  if (currentUserRole === "admin") {
+    return true
+  }
+
+  // HR can manage: recruiter, panel_member, tpm_tem
+  if (currentUserRole === "hr") {
+    return ["recruiter", "panel_member", "tpm_tem"].includes(targetUserRole)
+  }
+
+  // Recruiter can manage: panel_member, tpm_tem
+  if (currentUserRole === "recruiter") {
+    return ["panel_member", "tpm_tem"].includes(targetUserRole)
+  }
+
+  // Other roles cannot manage users
+  return false
+}
