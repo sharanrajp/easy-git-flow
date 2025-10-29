@@ -524,3 +524,124 @@ export async function deleteCandidates(candidateIds: string[]): Promise<{ delete
     throw error;
   }
 }
+
+// Bulk upload logs interfaces
+export interface BulkUploadLog {
+  upload_id: string;
+  uploaded_by: string;
+  upload_type: string;
+  applied_position: string;
+  total_candidates: number;
+  added_count: number;
+  skipped_count: number;
+  uploaded_date: string;
+  uploaded_time: string;
+}
+
+export interface BulkUploadLogDetails {
+  upload_id: string;
+  uploaded_by: string;
+  upload_type: string;
+  applied_position: string;
+  uploaded_date: string;
+  uploaded_time: string;
+  added_candidates: BackendCandidate[];
+  skipped_candidates: Array<{
+    name: string;
+    email?: string;
+    reason: string;
+    row_number?: number;
+  }>;
+}
+
+// Fetch all bulk upload logs
+export async function fetchBulkUploadLogs(uploadedBy?: string): Promise<BulkUploadLog[]> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const url = new URL(`${API_BASE_URL}/candidates/bulk-upload-log`);
+    if (uploadedBy) {
+      url.searchParams.append('uploaded_by', uploadedBy);
+    }
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch bulk upload logs: ${response.status} ${response.statusText}`);
+    }
+
+    const logs: BulkUploadLog[] = await response.json();
+    return logs;
+  } catch (error) {
+    console.error('Error fetching bulk upload logs:', error);
+    throw error;
+  }
+}
+
+// Fetch specific bulk upload log details by upload_id
+export async function fetchBulkUploadLogDetails(uploadId: string): Promise<BulkUploadLogDetails> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/candidates/bulk-upload-log/${uploadId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch bulk upload log details: ${response.status} ${response.statusText}`);
+    }
+
+    const details: BulkUploadLogDetails = await response.json();
+    return details;
+  } catch (error) {
+    console.error('Error fetching bulk upload log details:', error);
+    throw error;
+  }
+}
+
+// Fetch candidate details by candidate_id
+export async function fetchCandidateDetails(candidateId: string): Promise<BackendCandidate> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/candidates/details/${candidateId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch candidate details: ${response.status} ${response.statusText}`);
+    }
+
+    const candidate: BackendCandidate = await response.json();
+    return candidate;
+  } catch (error) {
+    console.error('Error fetching candidate details:', error);
+    throw error;
+  }
+}

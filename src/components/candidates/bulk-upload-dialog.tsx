@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
-import { Download, FileText, CheckCircle, AlertCircle, FileSearch } from "lucide-react"
+import { Download, FileText, CheckCircle, AlertCircle, FileSearch, Eye, ChevronLeft } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -15,6 +15,9 @@ import type { Position } from "../../lib/schema-data"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { fetchBulkUploadLogs, fetchBulkUploadLogDetails, fetchCandidateDetails, type BulkUploadLog, type BulkUploadLogDetails, type BackendCandidate } from "@/lib/candidates-api"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface BulkUploadDialogProps {
   onSubmit: (candidates: any[]) => void
@@ -71,6 +74,16 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
   const [existingCandidates, setExistingCandidates] = useState<ExistingCandidate[]>([])
   const [showLogs, setShowLogs] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  // New states for comprehensive logs
+  const [uploadLogs, setUploadLogs] = useState<BulkUploadLog[]>([])
+  const [loadingLogs, setLoadingLogs] = useState(false)
+  const [selectedUploadDetails, setSelectedUploadDetails] = useState<BulkUploadLogDetails | null>(null)
+  const [loadingUploadDetails, setLoadingUploadDetails] = useState(false)
+  const [selectedCandidate, setSelectedCandidate] = useState<BackendCandidate | null>(null)
+  const [loadingCandidateDetails, setLoadingCandidateDetails] = useState(false)
+  const [uploadedByFilter, setUploadedByFilter] = useState<string>("")
+  const [availableRecruiters, setAvailableRecruiters] = useState<string[]>([])
 
   // Load active vacancies on component mount
   useEffect(() => {
@@ -94,6 +107,68 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
 
     loadVacancies()
   }, [])
+
+  // Load upload logs when switching to logs tab
+  useEffect(() => {
+    if (showLogs) {
+      loadUploadLogs()
+    }
+  }, [showLogs, uploadedByFilter])
+
+  const loadUploadLogs = async () => {
+    setLoadingLogs(true)
+    try {
+      const logs = await fetchBulkUploadLogs(uploadedByFilter || undefined)
+      setUploadLogs(logs)
+      
+      // Extract unique recruiters for filter
+      const recruiters = Array.from(new Set(logs.map(log => log.uploaded_by))).filter(Boolean)
+      setAvailableRecruiters(recruiters)
+    } catch (error) {
+      console.error('Failed to load upload logs:', error)
+      toast({
+        variant: "destructive",
+        title: "Error loading logs",
+        description: "Failed to load upload logs. Please try again.",
+      })
+    } finally {
+      setLoadingLogs(false)
+    }
+  }
+
+  const handleViewUploadDetails = async (uploadId: string) => {
+    setLoadingUploadDetails(true)
+    try {
+      const details = await fetchBulkUploadLogDetails(uploadId)
+      setSelectedUploadDetails(details)
+    } catch (error) {
+      console.error('Failed to load upload details:', error)
+      toast({
+        variant: "destructive",
+        title: "Error loading details",
+        description: "Failed to load upload details. Please try again.",
+      })
+    } finally {
+      setLoadingUploadDetails(false)
+    }
+  }
+
+  const handleViewCandidateDetails = async (candidateId: string) => {
+    setLoadingCandidateDetails(true)
+    try {
+      const candidate = await fetchCandidateDetails(candidateId)
+      setSelectedCandidate(candidate)
+    } catch (error) {
+      console.error('Failed to load candidate details:', error)
+      toast({
+        variant: "destructive",
+        title: "Error loading candidate",
+        description: "Failed to load candidate details. Please try again.",
+      })
+    } finally {
+      setLoadingCandidateDetails(false)
+    }
+  }
 
   // Auto-select recruiter when applied position changes
   const handleAppliedPositionChange = (positionTitle: string) => {
@@ -298,6 +373,7 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
   }
 
   return (
+    <>
     <Tabs defaultValue="upload" value={showLogs ? "logs" : "upload"} onValueChange={(value) => setShowLogs(value === "logs")} className="space-y-4">
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="upload">Upload</TabsTrigger>
@@ -492,89 +568,199 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
       </TabsContent>
 
       <TabsContent value="logs" className="space-y-4 mt-4">
-        {(skippedCandidates.length === 0 && existingCandidates.length === 0) ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <FileSearch className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm font-medium">No logs available</p>
-            <p className="text-xs mt-1">Upload candidates to see skipped entries and existing candidates</p>
-          </div>
-        ) : (
+        {selectedUploadDetails ? (
+          // Upload Details View
           <div className="space-y-4">
-            {/* Skipped Candidates */}
-            {skippedCandidates.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setSelectedUploadDetails(null)}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <h3 className="text-sm font-semibold">Upload Details</h3>
+            </div>
+            
+            <Card>
+              <CardContent className="pt-4">
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-muted-foreground">Uploaded By:</span>
+                    <p className="font-medium">{selectedUploadDetails.uploaded_by}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Upload Type:</span>
+                    <p className="font-medium">{selectedUploadDetails.upload_type}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Applied Position:</span>
+                    <p className="font-medium">{selectedUploadDetails.applied_position}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Upload Date & Time:</span>
+                    <p className="font-medium">{selectedUploadDetails.uploaded_date} {selectedUploadDetails.uploaded_time}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Added Candidates */}
+            {selectedUploadDetails.added_candidates.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-destructive" />
-                  <h3 className="text-sm font-semibold">Skipped Candidates ({skippedCandidates.length})</h3>
+                  <CheckCircle className="h-4 w-4 text-success" />
+                  <h3 className="text-sm font-semibold">Added Candidates ({selectedUploadDetails.added_candidates.length})</h3>
                 </div>
-                <div className="border rounded-lg overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-xs">Row</TableHead>
-                        <TableHead className="text-xs">Name</TableHead>
-                        <TableHead className="text-xs">Email</TableHead>
-                        <TableHead className="text-xs">Reason</TableHead>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {selectedUploadDetails.added_candidates.map((candidate) => (
+                      <TableRow key={candidate._id}>
+                        <TableCell className="font-medium">{candidate.name}</TableCell>
+                        <TableCell>{candidate.email}</TableCell>
+                        <TableCell>{candidate.phone_number || '-'}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{candidate.status}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleViewCandidateDetails(candidate._id)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {skippedCandidates.map((candidate, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="text-xs">{candidate.row_number || index + 1}</TableCell>
-                          <TableCell className="text-xs font-medium">{candidate.name}</TableCell>
-                          <TableCell className="text-xs">{candidate.email || '-'}</TableCell>
-                          <TableCell className="text-xs text-destructive">{candidate.reason}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             )}
 
-            {/* Existing Candidates */}
-            {existingCandidates.length > 0 && (
+            {/* Skipped Candidates */}
+            {selectedUploadDetails.skipped_candidates.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-warning" />
-                  <h3 className="text-sm font-semibold">Existing Candidates ({existingCandidates.length})</h3>
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                  <h3 className="text-sm font-semibold">Skipped Candidates ({selectedUploadDetails.skipped_candidates.length})</h3>
                 </div>
-                <p className="text-xs text-muted-foreground">These candidates have already attended previous rounds</p>
-                <div className="border rounded-lg overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-xs">Name</TableHead>
-                        <TableHead className="text-xs">Email</TableHead>
-                        <TableHead className="text-xs">Phone</TableHead>
-                        <TableHead className="text-xs">Position</TableHead>
-                        <TableHead className="text-xs">Status</TableHead>
-                        <TableHead className="text-xs">Round</TableHead>
-                        <TableHead className="text-xs">Date</TableHead>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Row</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Reason</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {selectedUploadDetails.skipped_candidates.map((candidate, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{candidate.row_number || index + 1}</TableCell>
+                        <TableCell className="font-medium">{candidate.name}</TableCell>
+                        <TableCell>{candidate.email || '-'}</TableCell>
+                        <TableCell className="text-destructive">{candidate.reason}</TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {existingCandidates.map((candidate, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="text-xs font-medium">{candidate.name}</TableCell>
-                          <TableCell className="text-xs">{candidate.email || '-'}</TableCell>
-                          <TableCell className="text-xs">{candidate.phone_number || '-'}</TableCell>
-                          <TableCell className="text-xs">{candidate.applied_position}</TableCell>
-                          <TableCell className="text-xs">
-                            <Badge variant="outline" className="text-[10px]">{candidate.interview_status}</Badge>
-                          </TableCell>
-                          <TableCell className="text-xs">{candidate.last_interview_round}</TableCell>
-                          <TableCell className="text-xs">{candidate.last_interview_date || '-'}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             )}
 
             <div className="flex justify-end pt-2">
-              <Button variant="outline" onClick={onCancel} size="sm" className="text-xs">
+              <Button variant="outline" onClick={() => setSelectedUploadDetails(null)} size="sm">
+                Back to Logs
+              </Button>
+            </div>
+          </div>
+        ) : (
+          // Upload Logs List View
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold">Bulk Upload History</h3>
+              <Select value={uploadedByFilter} onValueChange={setUploadedByFilter}>
+                <SelectTrigger className="w-[200px] h-8 text-xs">
+                  <SelectValue placeholder="Filter by recruiter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Recruiters</SelectItem>
+                  {availableRecruiters.map((recruiter) => (
+                    <SelectItem key={recruiter} value={recruiter}>
+                      {recruiter}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {loadingLogs ? (
+              <div className="text-center py-12">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">Loading logs...</p>
+              </div>
+            ) : uploadLogs.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <FileSearch className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                <p className="text-sm font-medium">No upload logs found</p>
+                <p className="text-xs mt-1">Upload history will appear here</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Upload ID</TableHead>
+                    <TableHead>Uploaded By</TableHead>
+                    <TableHead>Upload Type</TableHead>
+                    <TableHead>Position</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead>Added</TableHead>
+                    <TableHead>Skipped</TableHead>
+                    <TableHead>Date & Time</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {uploadLogs.map((log) => (
+                    <TableRow key={log.upload_id}>
+                      <TableCell className="font-mono text-xs">{log.upload_id.substring(0, 8)}...</TableCell>
+                      <TableCell>{log.uploaded_by}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{log.upload_type}</Badge>
+                      </TableCell>
+                      <TableCell>{log.applied_position}</TableCell>
+                      <TableCell>{log.total_candidates}</TableCell>
+                      <TableCell>
+                        <Badge variant="default" className="bg-success">{log.added_count}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="destructive">{log.skipped_count}</Badge>
+                      </TableCell>
+                      <TableCell className="text-xs">{log.uploaded_date} {log.uploaded_time}</TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleViewUploadDetails(log.upload_id)}
+                          disabled={loadingUploadDetails}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+
+            <div className="flex justify-end pt-2">
+              <Button variant="outline" onClick={onCancel} size="sm">
                 Close
               </Button>
             </div>
@@ -582,5 +768,202 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
         )}
       </TabsContent>
     </Tabs>
+
+    {/* Candidate Details Dialog */}
+    {selectedCandidate && (
+      <Dialog open={!!selectedCandidate} onOpenChange={() => setSelectedCandidate(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Candidate Details</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Candidate Header */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div>
+                    <h2 className="text-2xl font-bold">{selectedCandidate.name}</h2>
+                    <p className="text-muted-foreground">{selectedCandidate.applied_position}</p>
+                    <Badge className="mt-2">{selectedCandidate.status}</Badge>
+                  </div>
+                  
+                  <Tabs defaultValue="details" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="details">Candidate Details</TabsTrigger>
+                      <TabsTrigger value="interviews">Interview & Feedback</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="details" className="space-y-4 mt-4">
+                      {/* Contact Information */}
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-sm">Contact Information</h3>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Email:</span>
+                            <p className="font-medium">{selectedCandidate.email}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Phone:</span>
+                            <p className="font-medium">{selectedCandidate.phone_number || '-'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Location:</span>
+                            <p className="font-medium">{selectedCandidate.location}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Professional Information */}
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-sm">Professional Information</h3>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Experience:</span>
+                            <p className="font-medium">{selectedCandidate.total_experience || '-'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Notice Period:</span>
+                            <p className="font-medium">{selectedCandidate.notice_period || '-'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Interview Type:</span>
+                            <p className="font-medium capitalize">{selectedCandidate.interview_type || '-'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Source:</span>
+                            <p className="font-medium">{selectedCandidate.source || '-'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Recruiter:</span>
+                            <p className="font-medium">{selectedCandidate.recruiter_name || '-'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Applied Date:</span>
+                            <p className="font-medium">{selectedCandidate.created_at}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Compensation */}
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-sm">Compensation</h3>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Current CTC:</span>
+                            <p className="font-medium">{selectedCandidate.current_ctc || '-'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Expected CTC:</span>
+                            <p className="font-medium">{selectedCandidate.expected_ctc || '-'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Negotiable:</span>
+                            <Badge variant={selectedCandidate.negotiable_ctc ? "default" : "secondary"}>
+                              {selectedCandidate.negotiable_ctc ? "Yes" : "No"}
+                            </Badge>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Open to Relocation:</span>
+                            <Badge variant={selectedCandidate.willing_to_relocate ? "default" : "secondary"}>
+                              {selectedCandidate.willing_to_relocate ? "Yes" : "No"}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Skills */}
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-sm">Skills & Technologies</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedCandidate.skill_set && selectedCandidate.skill_set.length > 0 ? (
+                            selectedCandidate.skill_set.map((skill, index) => (
+                              <Badge key={index} variant="secondary">
+                                {skill}
+                              </Badge>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground">No skills listed</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Resume */}
+                      {selectedCandidate.resume_link && (
+                        <div className="space-y-2">
+                          <h3 className="font-semibold text-sm">Resume</h3>
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={selectedCandidate.resume_link} target="_blank" rel="noopener noreferrer">
+                              <Download className="h-4 w-4 mr-2" />
+                              Download Resume
+                            </a>
+                          </Button>
+                        </div>
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="interviews" className="space-y-4 mt-4">
+                      {/* Interview Status */}
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-sm">Interview Status</h3>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Current Round:</span>
+                            <p className="font-medium">{selectedCandidate.last_interview_round || 'Not started'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Final Status:</span>
+                            <Badge>{selectedCandidate.final_status || selectedCandidate.status}</Badge>
+                          </div>
+                          {selectedCandidate.interview_date && (
+                            <div>
+                              <span className="text-muted-foreground">Interview Date:</span>
+                              <p className="font-medium">{selectedCandidate.interview_date} {selectedCandidate.interview_time}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Previous Rounds */}
+                      {selectedCandidate.previous_rounds && selectedCandidate.previous_rounds.length > 0 && (
+                        <div className="space-y-2">
+                          <h3 className="font-semibold text-sm">Interview History</h3>
+                          <div className="space-y-3">
+                            {selectedCandidate.previous_rounds.map((round, index) => (
+                              <Card key={index}>
+                                <CardContent className="pt-4">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <Badge variant="outline">{round.round}</Badge>
+                                    <Badge className={round.status === "selected" ? "bg-success" : "bg-destructive"}>
+                                      {round.status}
+                                    </Badge>
+                                  </div>
+                                  {round.feedback && (
+                                    <div className="text-sm mt-2">
+                                      <span className="text-muted-foreground">Feedback:</span>
+                                      <p className="mt-1">{round.feedback}</p>
+                                    </div>
+                                  )}
+                                  {round.rating && (
+                                    <div className="text-sm mt-2">
+                                      <span className="text-muted-foreground">Rating:</span>
+                                      <p className="font-medium">{round.rating}/5</p>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )}
+    </>
   )
 }
