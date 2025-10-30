@@ -807,7 +807,7 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
                         <TableCell className="truncate">{log.applied_position}</TableCell>
                         <TableCell>{log.total_candidates}</TableCell>
                         <TableCell>
-                          <Badge variant="default" className="bg-success">{log.added_count}</Badge>
+                          <Badge variant="default" className="bg-success text-[#40474C] text-sm font-medium px-2 py-1">{log.added_count}</Badge>
                         </TableCell>
                         <TableCell>
                           <Badge variant="destructive">{log.skipped_count}</Badge>
