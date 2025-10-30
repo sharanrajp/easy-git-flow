@@ -73,7 +73,7 @@ export function VirtualScheduleInterviewDialog({
           setLoading(true)
           hasFetchedPanelistsRef.current = true
           const allUsers = await getAllUsers()
-          const panelMembers = allUsers.filter((user: any) => user.role === 'panel_member' || user.role === 'tpm_tem')
+          const panelMembers = allUsers.filter((user: any) => user.role === 'panel_member')
           console.log("Fetched all panel members:", panelMembers)
           setPanelists(panelMembers)
           setPanelistsLoaded(true)
