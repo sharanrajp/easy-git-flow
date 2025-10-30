@@ -3391,7 +3391,7 @@ export default function CandidatesPage() {
                 Upload multiple candidates from CSV or Excel files
               </DialogDescription>
             </DialogHeader>
-            <div>
+            <div className="max-w-[53rem] w-full">
               <BulkUploadDialog onSubmit={handleBulkUpload} onCancel={() => setIsBulkUploadOpen(false)} />
             </div>
           </DialogContent>
