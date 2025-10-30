@@ -564,6 +564,7 @@ export interface BulkUploadLogDetails {
     email?: string;
     reason: string;
     row_number?: number;
+    candidate_id?: string;
   }>;
 }
 
@@ -672,6 +673,7 @@ export async function fetchBulkUploadLogDetails(uploadId: string): Promise<BulkU
         email: candidate.email,
         reason: candidate.reason,
         row_number: candidate.row_number,
+        candidate_id: candidate.candidate_id,
       })),
     };
     

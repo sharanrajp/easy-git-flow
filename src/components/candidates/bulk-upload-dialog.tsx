@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
-import { Download, FileText, CheckCircle, AlertCircle, FileSearch, Eye, ChevronLeft } from "lucide-react"
+import { Download, FileText, CheckCircle, AlertCircle, FileSearch, Eye, ChevronLeft, MessageSquare } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -29,6 +29,7 @@ interface SkippedCandidate {
   email?: string
   reason: string
   row_number?: number
+  candidate_id?: string
 }
 
 interface ExistingCandidate {
@@ -82,6 +83,7 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
   const [selectedUploadDetails, setSelectedUploadDetails] = useState<BulkUploadLogDetails | null>(null)
   const [loadingUploadDetails, setLoadingUploadDetails] = useState(false)
   const [selectedCandidate, setSelectedCandidate] = useState<BackendCandidate | null>(null)
+  const [showCandidateDialog, setShowCandidateDialog] = useState(false)
   const [loadingCandidateDetails, setLoadingCandidateDetails] = useState(false)
   const [uploadedByFilter, setUploadedByFilter] = useState<string>("all")
   const [availableRecruiters, setAvailableRecruiters] = useState<string[]>([])
@@ -701,10 +703,11 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
                   <Table className="table-fixed">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[80px]">Row</TableHead>
+                    <TableHead className="w-[80px]">Row</TableHead>
                         <TableHead className="w-[200px]">Name</TableHead>
                         <TableHead className="w-[200px]">Email</TableHead>
                         <TableHead className="w-[300px]">Reason</TableHead>
+                        <TableHead className="w-[120px]">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -714,6 +717,30 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
                           <TableCell className="font-medium truncate">{candidate.name}</TableCell>
                           <TableCell className="truncate">{candidate.email || '-'}</TableCell>
                           <TableCell className="text-destructive break-words">{candidate.reason}</TableCell>
+                          <TableCell>
+                            {candidate.candidate_id && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    const details = await fetchCandidateDetails(candidate.candidate_id!)
+                                    setSelectedCandidate(details)
+                                    setShowCandidateDialog(true)
+                                  } catch (error) {
+                                    toast({
+                                      title: "Error",
+                                      description: "Failed to fetch candidate details",
+                                      variant: "destructive",
+                                    })
+                                  }
+                                }}
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                View Details
+                              </Button>
+                            )}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -1035,6 +1062,211 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
         </DialogContent>
       </Dialog>
     )}
+
+    {/* Candidate Details Dialog */}
+    <Dialog open={showCandidateDialog} onOpenChange={setShowCandidateDialog}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Candidate Details</DialogTitle>
+        </DialogHeader>
+        
+        {selectedCandidate && (
+          <div className="space-y-6">
+            {/* Header */}
+            <div>
+              <h2 className="text-2xl font-bold">{selectedCandidate.name}</h2>
+              <p className="text-muted-foreground">{selectedCandidate.applied_position}</p>
+              <Badge className="mt-2">{selectedCandidate.status}</Badge>
+            </div>
+
+            <Tabs defaultValue="details" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="details">Candidate Details</TabsTrigger>
+                <TabsTrigger value="interviews">Interview & Feedback</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="details" className="space-y-4">
+                {/* Contact Information */}
+                <Card>
+                  <CardContent className="pt-6 space-y-3">
+                    <h3 className="font-semibold mb-3">Contact Information</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <span className="text-sm text-muted-foreground">Email</span>
+                        <p className="font-medium">{selectedCandidate.email}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">Phone</span>
+                        <p className="font-medium">{selectedCandidate.phone_number || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">Location</span>
+                        <p className="font-medium">{selectedCandidate.location || 'N/A'}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Professional Information */}
+                <Card>
+                  <CardContent className="pt-6 space-y-4">
+                    <h3 className="font-semibold mb-3">Professional Information</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <span className="text-sm text-muted-foreground">Experience</span>
+                        <p className="font-medium">{selectedCandidate.total_experience || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">Notice Period</span>
+                        <p className="font-medium">{selectedCandidate.notice_period || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">Source</span>
+                        <p className="font-medium">{selectedCandidate.source || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">Applied Date</span>
+                        <p className="font-medium">{selectedCandidate.created_at}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">Recruiter</span>
+                        <p className="font-medium">{selectedCandidate.recruiter_name || 'Not assigned'}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">Interview Type</span>
+                        <p className="font-medium capitalize">{selectedCandidate.interview_type || 'N/A'}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Compensation */}
+                <Card>
+                  <CardContent className="pt-6 space-y-4">
+                    <h3 className="font-semibold mb-3">Compensation</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <span className="text-sm text-muted-foreground">Current CTC</span>
+                        <p className="font-medium">{selectedCandidate.current_ctc || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">Expected CTC</span>
+                        <p className="font-medium">{selectedCandidate.expected_ctc || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">Negotiable</span>
+                        <p className="font-medium">{selectedCandidate.negotiable_ctc ? 'Yes' : 'No'}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">Open to Relocation</span>
+                        <p className="font-medium">{selectedCandidate.willing_to_relocate ? 'Yes' : 'No'}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Skills */}
+                {selectedCandidate.skill_set && selectedCandidate.skill_set.length > 0 && (
+                  <Card>
+                    <CardContent className="pt-6">
+                      <h3 className="font-semibold mb-3">Skills & Technologies</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedCandidate.skill_set.map((skill: string, index: number) => (
+                          <Badge key={index} variant="secondary">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="interviews" className="space-y-4">
+                {/* Current Interview Status */}
+                {selectedCandidate.currentRound && (
+                  <Card>
+                    <CardContent className="pt-6 space-y-3">
+                      <h3 className="font-semibold mb-3">Current Interview Status</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <span className="text-sm text-muted-foreground">Current Round</span>
+                          <p className="font-medium">{selectedCandidate.currentRound}</p>
+                        </div>
+                        <div>
+                          <span className="text-sm text-muted-foreground">Assigned Panelist</span>
+                          <p className="font-medium">{selectedCandidate.assignedPanelist || 'Not assigned'}</p>
+                        </div>
+                        {selectedCandidate.interviewDateTime && (
+                          <div className="col-span-2">
+                            <span className="text-sm text-muted-foreground">Scheduled Date & Time</span>
+                            <p className="font-medium">
+                              {new Date(selectedCandidate.interviewDateTime).toLocaleString()}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Interview History */}
+                {selectedCandidate.previous_rounds && selectedCandidate.previous_rounds.length > 0 ? (
+                  <Card>
+                    <CardContent className="pt-6 space-y-4">
+                      <h3 className="font-semibold mb-3">Interview History</h3>
+                      <div className="space-y-4">
+                        {selectedCandidate.previous_rounds.map((round, index) => (
+                          <div key={index} className="border rounded-lg p-4 space-y-3">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <Badge variant="outline" className="text-lg">
+                                  {round.round}
+                                </Badge>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Status: <span className="font-medium">{round.status}</span>
+                                </p>
+                              </div>
+                              <Badge variant={round.status === 'selected' ? 'default' : 'destructive'}>
+                                {round.status === 'selected' ? 'Passed' : 'Failed'}
+                              </Badge>
+                            </div>
+                            
+                            {round.rating && (
+                              <div>
+                                <span className="text-sm text-muted-foreground">Rating</span>
+                                <p className="font-medium">{round.rating}/5</p>
+                              </div>
+                            )}
+                            
+                            {round.feedback && (
+                              <div>
+                                <span className="text-sm text-muted-foreground">Feedback</span>
+                                <p className="text-sm mt-1 bg-muted p-3 rounded">{round.feedback}</p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <MessageSquare className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No interview history</h3>
+                      <p className="text-muted-foreground">
+                        This candidate has not been interviewed yet.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
     </>
   )
 }
