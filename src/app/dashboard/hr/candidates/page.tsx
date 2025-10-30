@@ -2531,7 +2531,7 @@ export default function CandidatesPage() {
                                       <>
                                         {/* Show Schedule Interview for R1/R2/R3 Selected */}
                                         {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2" || candidate.last_interview_round === "r3") && 
-                                         candidate.final_status === "selected" && (
+                                         candidate.final_status?.toLowerCase() === "selected" && (
                                           <Button
                                             size="sm"
                                             className="bg-green-600 hover:bg-green-700 text-white"
@@ -2542,7 +2542,7 @@ export default function CandidatesPage() {
                                         )}
                                         {/* Show Schedule Interview for R1/R2/R3 On-Hold */}
                                         {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2" || candidate.last_interview_round === "r3") && 
-                                         candidate.final_status === "on-hold" && (
+                                         candidate.final_status?.toLowerCase() === "on-hold" && (
                                           <Button
                                             size="sm"
                                             className="bg-green-600 hover:bg-green-700 text-white"
