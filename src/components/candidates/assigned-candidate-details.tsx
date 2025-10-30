@@ -8,6 +8,7 @@ import { useState } from "react"
 import { FileSearch, CheckCircle, X, Star } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { type BackendCandidate as APIBackendCandidate } from "@/lib/candidates-api"
 
 // Local formatDate function since it's not exported from utils
 function formatDate(dateString: string | Date): string {
@@ -23,41 +24,15 @@ function formatDate(dateString: string | Date): string {
   return `${day}/${month}/${year}`
 }
 
-export interface BackendCandidate {
-  _id: string
-  name: string
-  email: string
-  phone_number?: string
-  applied_position?: string
-  status?: string
-  final_status?: string
-  total_experience?: number
-  skill_set?: string[]
-  source?: string
-  created_at?: string
-  recruiter_name?: string
-  assignedPanelist?: string
-  panel_name?: string
-  currentRound?: string
-  last_interview_round?: string
-  interviewDateTime?: string
-  waitTime?: string | null
-  waitTimeStarted?: string | null
-  isCheckedIn?: boolean
+// Extended type for candidate details with additional fields
+export type BackendCandidate = Omit<APIBackendCandidate, 'previous_rounds'> & {
   register_number?: string
-  interview_type?: string
-  notice_period?: string
-  current_ctc?: number
-  expected_ctc?: number
-  willing_to_relocate?: boolean
-  resume_link?: string
-  offer_released_date?: string
-  joined_date?: string
+  isCheckedIn?: boolean
   previous_rounds?: Array<{
     round?: string
     status?: string
     feedback_submitted?: boolean
-    rating?: string
+    rating?: string | number
     feedback?: string
     panel_name?: string
     panel_email?: string
