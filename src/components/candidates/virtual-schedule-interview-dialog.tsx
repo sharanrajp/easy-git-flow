@@ -66,6 +66,16 @@ export function VirtualScheduleInterviewDialog({
         return
       }
 
+      // Determine next round - use same logic as Walk-in schedule form
+      let nextRound = "r1"
+      if (candidate.status === "r1-completed") {
+        nextRound = "r2"
+      } else if (candidate.status === "r2-completed") {
+        nextRound = "r3"
+      }
+      
+      console.log("Virtual Schedule - Candidate:", candidate.name, "Status:", candidate.status, "Next Round:", nextRound)
+
       if (!candidate?.vacancyId) {
         console.log("No vacancyId - fetching all available panelists")
         // If no vacancyId, fetch all panelists using the generic API
@@ -73,16 +83,6 @@ export function VirtualScheduleInterviewDialog({
           setLoading(true)
           hasFetchedPanelistsRef.current = true
           const allUsers = await getAllUsers()
-          
-          // Determine next round - use same logic as Walk-in schedule form
-          let nextRound = "r1"
-          if (candidate.status === "r1-completed") {
-            nextRound = "r2"
-          } else if (candidate.status === "r2-completed") {
-            nextRound = "r3"
-          }
-          
-          console.log("Virtual Schedule - Candidate:", candidate.name, "Status:", candidate.status, "Next Round:", nextRound)
           
           // For R3, only show tpm_tem role; for R1 and R2, show panel_member role
           // Filter by current_status "free" to match Walk-in behavior
@@ -93,7 +93,7 @@ export function VirtualScheduleInterviewDialog({
             return user.role === 'panel_member' && user.current_status === 'free'
           })
           
-          console.log("Next round:", nextRound, "Fetched panel members:", panelMembers)
+          console.log("No vacancyId path - Next round:", nextRound, "Fetched panel members:", panelMembers)
           setPanelists(panelMembers)
           setPanelistsLoaded(true)
         } catch (error) {
@@ -111,8 +111,34 @@ export function VirtualScheduleInterviewDialog({
       
       try {
         setLoading(true)
-        const fetchedPanelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
+        let fetchedPanelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
         console.log("Fetched panelists for vacancy:", fetchedPanelists)
+        
+        // Apply R3 filtering logic to match Walk-in behavior
+        if (nextRound === "r3") {
+          // For R3, we need tpm_tem users
+          const tpmUsers = fetchedPanelists.filter((p: any) => 
+            p.role === 'tpm_tem' && p.current_status === 'free'
+          )
+          
+          // If no tpm_tem users in vacancy panelists, fetch all users and filter for tpm_tem
+          if (tpmUsers.length === 0) {
+            console.log("No tpm_tem in vacancy panelists, fetching all users for R3")
+            const allUsers = await getAllUsers()
+            fetchedPanelists = allUsers.filter((user: any) => 
+              user.role === 'tpm_tem' && user.current_status === 'free'
+            )
+          } else {
+            fetchedPanelists = tpmUsers
+          }
+        } else {
+          // For R1 and R2, filter for panel_member role with status "free"
+          fetchedPanelists = fetchedPanelists.filter((p: any) => 
+            p.role === 'panel_member' && p.current_status === 'free'
+          )
+        }
+        
+        console.log("Vacancy path - Next round:", nextRound, "Filtered panel members:", fetchedPanelists)
         
         // If this is a reschedule, ensure the currently assigned panelist is in the list
         if (isReschedule && candidate.panel_name) {
@@ -127,7 +153,7 @@ export function VirtualScheduleInterviewDialog({
               _id: (candidate as any).panel_id || candidate.panel_name,
               name: candidate.panel_name,
               email: (candidate as any).panel_email || '',
-              role: 'panel_member',
+              role: nextRound === "r3" ? 'tpm_tem' : 'panel_member',
               skill_set: []
             }
             console.log("Adding current panelist to list:", currentPanelist)
