@@ -1030,6 +1030,9 @@ export default function CandidatesPage() {
       return
     }
     
+    // Calculate next round to determine panel type
+    const nextRound = getNextRound(candidate.last_interview_round || "")
+    
     // Open dialog immediately with loading state
     setSelectedCandidateForPanel(candidate)
     setAvailablePanels([])
@@ -1038,7 +1041,13 @@ export default function CandidatesPage() {
     
     // Fetch panelists in background
     try {
-      const panelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
+      let panelists = []
+      if (nextRound === "r3") {
+        // For R3, only show tpm_tem users
+        panelists = (await getAllUsers() || []).filter((user) => user.role === "tpm_tem" && user.current_status === "free")
+      } else {
+        panelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
+      }
       setAvailablePanels(panelists)
     } catch (error) {
       console.error('Error fetching available panelists:', error)
