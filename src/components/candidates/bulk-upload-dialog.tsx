@@ -711,7 +711,7 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
                       {selectedUploadDetails.skipped_candidates.map((candidate, index) => (
                         <TableRow key={index}>
                           <TableCell>{candidate.row_number || index + 1}</TableCell>
-                          <TableCell className="font-medium truncate">{candidate.name}</TableCell>
+                          <TableCell className="font-medium truncate">{candidate.candidate_name}</TableCell>
                           <TableCell className="truncate">{candidate.email || '-'}</TableCell>
                           <TableCell className="text-destructive break-words">{candidate.reason}</TableCell>
                         </TableRow>
