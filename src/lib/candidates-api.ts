@@ -705,7 +705,9 @@ export async function fetchCandidateDetails(candidateId: string): Promise<Backen
       throw new Error(`Failed to fetch candidate details: ${response.status} ${response.statusText}`);
     }
 
-    const candidate: BackendCandidate = await response.json();
+    const data = await response.json();
+    // API returns {message: "...", candidate: {...}}, extract the candidate object
+    const candidate: BackendCandidate = data.candidate || data;
     return candidate;
   } catch (error) {
     console.error('Error fetching candidate details:', error);
