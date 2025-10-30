@@ -113,39 +113,64 @@ export function VirtualScheduleInterviewDialog({
         setLoading(true)
         let fetchedPanelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
         console.log("Raw API response from fetchPanelistsForCandidate:", fetchedPanelists)
+        console.log("First panelist all fields:", fetchedPanelists?.[0] ? Object.keys(fetchedPanelists[0]) : 'No panelists')
         console.log("First panelist structure:", fetchedPanelists?.[0])
         
-        // Apply R3 filtering logic to match Walk-in behavior
-        if (nextRound === "r3") {
-          // For R3, we need tpm_tem users
-          console.log("Filtering for R3 tpm_tem users...")
-          const tpmUsers = fetchedPanelists.filter((p: any) => {
-            console.log("Checking panelist:", p.name, "role:", p.role, "current_status:", p.current_status)
-            return p.role === 'tpm_tem' && p.current_status === 'free'
-          })
-          
-          console.log("tpmUsers after filtering:", tpmUsers)
-          
-          // If no tpm_tem users in vacancy panelists, fetch all users and filter for tpm_tem
-          if (tpmUsers.length === 0) {
-            console.log("No tpm_tem in vacancy panelists, fetching all users for R3")
-            const allUsers = await getAllUsers()
-            console.log("All users fetched:", allUsers)
-            fetchedPanelists = allUsers.filter((user: any) => {
-              console.log("Checking user:", user.name, "role:", user.role, "current_status:", user.current_status)
+        // Check if API response has the expected structure
+        const hasValidStructure = fetchedPanelists.length > 0 && 
+          (fetchedPanelists[0].hasOwnProperty('role') || fetchedPanelists[0].hasOwnProperty('role_name')) &&
+          (fetchedPanelists[0].hasOwnProperty('current_status') || fetchedPanelists[0].hasOwnProperty('status'))
+        
+        if (!hasValidStructure || fetchedPanelists.length === 0) {
+          console.log("API response missing expected fields or empty, using getAllUsers() instead")
+          const allUsers = await getAllUsers()
+          fetchedPanelists = allUsers.filter((user: any) => {
+            if (nextRound === "r3") {
               return user.role === 'tpm_tem' && user.current_status === 'free'
-            })
-            console.log("tpm_tem users from allUsers:", fetchedPanelists)
-          } else {
-            fetchedPanelists = tpmUsers
-          }
-        } else {
-          // For R1 and R2, filter for panel_member role with status "free"
-          console.log("Filtering for R1/R2 panel_member users...")
-          fetchedPanelists = fetchedPanelists.filter((p: any) => {
-            console.log("Checking panelist:", p.name, "role:", p.role, "current_status:", p.current_status)
-            return p.role === 'panel_member' && p.current_status === 'free'
+            }
+            return user.role === 'panel_member' && user.current_status === 'free'
           })
+          console.log("Using getAllUsers path for R" + nextRound.slice(1), fetchedPanelists)
+        } else {
+          // Normalize data structure for filtering
+          fetchedPanelists = fetchedPanelists.map((p: any) => ({
+            ...p,
+            role: p.role || p.role_name || p.user_role,
+            current_status: p.current_status || p.status || 'unknown'
+          }))
+          
+          // Apply R3 filtering logic to match Walk-in behavior
+          if (nextRound === "r3") {
+            // For R3, we need tpm_tem users
+            console.log("Filtering for R3 tpm_tem users...")
+            const tpmUsers = fetchedPanelists.filter((p: any) => {
+              console.log("Checking panelist:", p.name, "role:", p.role, "current_status:", p.current_status)
+              return p.role === 'tpm_tem' && p.current_status === 'free'
+            })
+            
+            console.log("tpmUsers after filtering:", tpmUsers)
+            
+            // If no tpm_tem users in vacancy panelists, fetch all users and filter for tpm_tem
+            if (tpmUsers.length === 0) {
+              console.log("No tpm_tem in vacancy panelists, fetching all users for R3")
+              const allUsers = await getAllUsers()
+              console.log("All users fetched:", allUsers)
+              fetchedPanelists = allUsers.filter((user: any) => {
+                console.log("Checking user:", user.name, "role:", user.role, "current_status:", user.current_status)
+                return user.role === 'tpm_tem' && user.current_status === 'free'
+              })
+              console.log("tpm_tem users from allUsers:", fetchedPanelists)
+            } else {
+              fetchedPanelists = tpmUsers
+            }
+          } else {
+            // For R1 and R2, filter for panel_member role with status "free"
+            console.log("Filtering for R1/R2 panel_member users...")
+            fetchedPanelists = fetchedPanelists.filter((p: any) => {
+              console.log("Checking panelist:", p.name, "role:", p.role, "current_status:", p.current_status)
+              return p.role === 'panel_member' && p.current_status === 'free'
+            })
+          }
         }
         
         console.log("Vacancy path - Next round:", nextRound, "Final filtered panel members:", fetchedPanelists)
