@@ -2529,8 +2529,8 @@ export default function CandidatesPage() {
                                       </Button>
                                     ) : (
                                       <>
-                                        {/* Show Schedule Interview for R1/R2 Selected */}
-                                        {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && 
+                                        {/* Show Schedule Interview for R1/R2/R3 Selected */}
+                                        {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2" || candidate.last_interview_round === "r3") && 
                                          candidate.final_status === "selected" && (
                                           <Button
                                             size="sm"
@@ -2540,8 +2540,8 @@ export default function CandidatesPage() {
                                             Schedule Interview
                                           </Button>
                                         )}
-                                        {/* Show Schedule Interview for R1/R2 On-Hold */}
-                                        {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && 
+                                        {/* Show Schedule Interview for R1/R2/R3 On-Hold */}
+                                        {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2" || candidate.last_interview_round === "r3") && 
                                          candidate.final_status === "on-hold" && (
                                           <Button
                                             size="sm"
