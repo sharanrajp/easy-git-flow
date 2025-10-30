@@ -113,67 +113,39 @@ export function VirtualScheduleInterviewDialog({
         setLoading(true)
         let fetchedPanelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
         console.log("Raw API response from fetchPanelistsForCandidate:", fetchedPanelists)
-        console.log("First panelist all fields:", fetchedPanelists?.[0] ? Object.keys(fetchedPanelists[0]) : 'No panelists')
-        console.log("First panelist structure:", fetchedPanelists?.[0])
+        console.log("Next round:", nextRound)
         
-        // Check if API response has the expected structure
-        const hasValidStructure = fetchedPanelists.length > 0 && 
-          (fetchedPanelists[0].hasOwnProperty('role') || fetchedPanelists[0].hasOwnProperty('role_name')) &&
-          (fetchedPanelists[0].hasOwnProperty('current_status') || fetchedPanelists[0].hasOwnProperty('status'))
-        
-        if (!hasValidStructure || fetchedPanelists.length === 0) {
-          console.log("API response missing expected fields or empty, using getAllUsers() instead")
-          const allUsers = await getAllUsers()
-          fetchedPanelists = allUsers.filter((user: any) => {
-            if (nextRound === "r3") {
-              return user.role === 'tpm_tem' && user.current_status === 'free'
-            }
-            return user.role === 'panel_member' && user.current_status === 'free'
-          })
-          console.log("Using getAllUsers path for R" + nextRound.slice(1), fetchedPanelists)
-        } else {
-          // Normalize data structure for filtering
+        // For R3, the backend already returns the correct tpm_tem users
+        // The API returns: [{ id, name, email }] - no role or status fields
+        // So for R3, we just use the response directly
+        if (nextRound === "r3") {
+          console.log("R3 detected - using API response directly (backend already filtered for tpm_tem)")
+          // Just ensure the data structure is normalized
           fetchedPanelists = fetchedPanelists.map((p: any) => ({
             ...p,
-            role: p.role || p.role_name || p.user_role,
-            current_status: p.current_status || p.status || 'unknown'
+            _id: p.id || p._id, // Normalize id field
           }))
+        } else {
+          // For R1 and R2, filter for panel_member role with status "free"
+          // Check if the API response has role/status fields
+          const hasRoleFields = fetchedPanelists.length > 0 && 
+            (fetchedPanelists[0].hasOwnProperty('role') || fetchedPanelists[0].hasOwnProperty('current_status'))
           
-          // Apply R3 filtering logic to match Walk-in behavior
-          if (nextRound === "r3") {
-            // For R3, we need tpm_tem users
-            console.log("Filtering for R3 tpm_tem users...")
-            const tpmUsers = fetchedPanelists.filter((p: any) => {
-              console.log("Checking panelist:", p.name, "role:", p.role, "current_status:", p.current_status)
-              return p.role === 'tpm_tem' && p.current_status === 'free'
-            })
-            
-            console.log("tpmUsers after filtering:", tpmUsers)
-            
-            // If no tpm_tem users in vacancy panelists, fetch all users and filter for tpm_tem
-            if (tpmUsers.length === 0) {
-              console.log("No tpm_tem in vacancy panelists, fetching all users for R3")
-              const allUsers = await getAllUsers()
-              console.log("All users fetched:", allUsers)
-              fetchedPanelists = allUsers.filter((user: any) => {
-                console.log("Checking user:", user.name, "role:", user.role, "current_status:", user.current_status)
-                return user.role === 'tpm_tem' && user.current_status === 'free'
-              })
-              console.log("tpm_tem users from allUsers:", fetchedPanelists)
-            } else {
-              fetchedPanelists = tpmUsers
-            }
-          } else {
-            // For R1 and R2, filter for panel_member role with status "free"
-            console.log("Filtering for R1/R2 panel_member users...")
+          if (hasRoleFields) {
+            console.log("Filtering for R1/R2 panel_member users from API response")
             fetchedPanelists = fetchedPanelists.filter((p: any) => {
-              console.log("Checking panelist:", p.name, "role:", p.role, "current_status:", p.current_status)
-              return p.role === 'panel_member' && p.current_status === 'free'
+              const role = p.role || p.role_name || p.user_role
+              const status = p.current_status || p.status
+              console.log("Checking panelist:", p.name, "role:", role, "status:", status)
+              return role === 'panel_member' && status === 'free'
             })
+          } else {
+            // API doesn't return role fields, just use the response as-is
+            console.log("R1/R2: API response has no role fields, using response as-is")
           }
         }
         
-        console.log("Vacancy path - Next round:", nextRound, "Final filtered panel members:", fetchedPanelists)
+        console.log("Vacancy path - Next round:", nextRound, "Final panel members:", fetchedPanelists)
         
         // If this is a reschedule, ensure the currently assigned panelist is in the list
         if (isReschedule && candidate.panel_name) {
