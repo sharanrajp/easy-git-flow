@@ -2517,8 +2517,21 @@ export default function CandidatesPage() {
                                     >
                                       <Trash2 className="h-4 w-4 text-red-600" />
                                     </Button>
-                                    {/* Show Reschedule button if interview is already scheduled */}
-                                    {(candidate as any).interview_date ? (
+                                    {/* Debug logging */}
+                                    {console.log('Candidate:', candidate.name, 'Round:', candidate.last_interview_round, 'Status:', candidate.final_status, 'Interview Date:', (candidate as any).interview_date)}
+                                    
+                                    {/* Show Schedule Interview button for selected/on-hold candidates to schedule NEXT round */}
+                                    {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2" || candidate.last_interview_round === "r3") && 
+                                     (candidate.final_status?.toLowerCase() === "selected" || candidate.final_status?.toLowerCase() === "on-hold") ? (
+                                      <Button
+                                        size="sm"
+                                        className="bg-green-600 hover:bg-green-700 text-white"
+                                        onClick={() => handleVirtualScheduleInterview(candidate)}
+                                      >
+                                        Schedule Interview
+                                      </Button>
+                                    ) : (candidate as any).interview_date ? (
+                                      /* Show Reschedule for candidates with scheduled interviews who are not selected/on-hold */
                                       <Button
                                         size="sm"
                                         variant="outline"
@@ -2527,32 +2540,7 @@ export default function CandidatesPage() {
                                       >
                                         Reschedule
                                       </Button>
-                                    ) : (
-                                      <>
-                                        {/* Show Schedule Interview for R1/R2/R3 Selected */}
-                                        {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2" || candidate.last_interview_round === "r3") && 
-                                         candidate.final_status?.toLowerCase() === "selected" && (
-                                          <Button
-                                            size="sm"
-                                            className="bg-green-600 hover:bg-green-700 text-white"
-                                            onClick={() => handleVirtualScheduleInterview(candidate)}
-                                          >
-                                            Schedule Interview
-                                          </Button>
-                                        )}
-                                        {/* Show Schedule Interview for R1/R2/R3 On-Hold */}
-                                        {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2" || candidate.last_interview_round === "r3") && 
-                                         candidate.final_status?.toLowerCase() === "on-hold" && (
-                                          <Button
-                                            size="sm"
-                                            className="bg-green-600 hover:bg-green-700 text-white"
-                                            onClick={() => handleVirtualScheduleInterview(candidate)}
-                                          >
-                                            Schedule Interview
-                                          </Button>
-                                        )}
-                                      </>
-                                    )}
+                                    ) : null}
                                   </div>
                                 </TableCell>
                               </>
