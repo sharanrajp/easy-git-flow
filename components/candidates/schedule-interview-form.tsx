@@ -23,7 +23,17 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
     const fetchPanelists = async () => {
       try {
         const users = await getAllUsers()
-        setPanelists(users.filter((user: User) => (user.role === "panel_member" || user.role === "tpm_tem") && user.current_status === "free"))
+        // Filter based on round and interview type:
+        // - R1 OR R2 OR interview_type "both": show only panel_member
+        // - R3: show only tpm_tem
+        const filteredUsers = users.filter((user: User) => {
+          if (nextRound === "r3") {
+            return user.role === "tpm_tem" && user.current_status === "free"
+          }
+          // For R1, R2, or "both" type, show panel_member
+          return user.role === "panel_member" && user.current_status === "free"
+        })
+        setPanelists(filteredUsers)
       } catch (error) {
         console.error("Failed to fetch panelists:", error)
         setPanelists([])

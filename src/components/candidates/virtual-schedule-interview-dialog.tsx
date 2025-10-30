@@ -82,11 +82,14 @@ export function VirtualScheduleInterviewDialog({
             nextRound = "r3"
           }
           
-          // For R3, only show tpm_tem role; for R1 and R2, show panel_member role
+          // Filter based on round and interview type:
+          // - R1 OR R2 OR interview_type "both": show only panel_member
+          // - R3: show only tpm_tem
           const panelMembers = allUsers.filter((user: any) => {
             if (nextRound === "r3") {
               return user.role === 'tpm_tem'
             }
+            // For R1, R2, or "both" type, show panel_member
             return user.role === 'panel_member'
           })
           
