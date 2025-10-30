@@ -74,26 +74,23 @@ export function VirtualScheduleInterviewDialog({
           hasFetchedPanelistsRef.current = true
           const allUsers = await getAllUsers()
           
-          // Determine next round based on candidate status and last_interview_round
+          // Determine next round - use same logic as Walk-in schedule form
           let nextRound = "r1"
-          const lastRound = candidate.last_interview_round?.toLowerCase()
-          const finalStatus = candidate.final_status?.toLowerCase()
-          if (lastRound === "r2" && finalStatus === "selected") {
-            nextRound = "r3"
-          } else if (lastRound === "r2" || candidate.status === "r2-completed") {
-            nextRound = "r3"
-          } else if (lastRound === "r1" || candidate.status === "r1-completed") {
+          if (candidate.status === "r1-completed") {
             nextRound = "r2"
+          } else if (candidate.status === "r2-completed") {
+            nextRound = "r3"
           }
           
-          console.log("Virtual Schedule - Candidate:", candidate.name, "Last Round:", lastRound, "Final Status:", finalStatus, "Next Round:", nextRound)
+          console.log("Virtual Schedule - Candidate:", candidate.name, "Status:", candidate.status, "Next Round:", nextRound)
           
           // For R3, only show tpm_tem role; for R1 and R2, show panel_member role
+          // Filter by current_status "free" to match Walk-in behavior
           const panelMembers = allUsers.filter((user: any) => {
             if (nextRound === "r3") {
-              return user.role === 'tpm_tem'
+              return user.role === 'tpm_tem' && user.current_status === 'free'
             }
-            return user.role === 'panel_member'
+            return user.role === 'panel_member' && user.current_status === 'free'
           })
           
           console.log("Next round:", nextRound, "Fetched panel members:", panelMembers)
