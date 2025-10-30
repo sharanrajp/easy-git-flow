@@ -1136,12 +1136,8 @@ export default function CandidatesPage() {
     // Fetch panels in background
     try {
       let panels = []
-      // For R2 selected candidates OR candidates with interview_type "both", show only panel_member
-      if ((candidate.final_status === "selected" && candidate.last_interview_round === "r2") || 
-          candidate.interview_type === "both") {
-        panels = (await getAllUsers() || []).filter((user) => 
-          user.role === "panel_member" && user.current_status === "free"
-        )
+      if(candidate.final_status === "selected" && candidate.last_interview_round === "r2"){
+        panels = (await getAllUsers() || []).filter((user) => user.role === "panelist" && user.panelist_type === "manager" && user.current_status === "free")
       } else {
         panels = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
       }
