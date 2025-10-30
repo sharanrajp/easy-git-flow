@@ -650,14 +650,27 @@ export async function fetchBulkUploadLogDetails(uploadId: string): Promise<BulkU
       throw new Error(`Failed to fetch bulk upload log details: ${response.status} ${response.statusText}`);
     }
 
-    const details: BulkUploadLogDetails = await response.json();
+    const data = await response.json();
     
-    // Ensure arrays exist with default empty arrays
-    return {
-      ...details,
-      added_candidates: details.added_candidates || [],
-      skipped_candidates: details.skipped_candidates || [],
+    // API returns {message: "...", log: {...}}
+    const logData = data.log || data;
+    
+    // Split uploaded_at into date and time
+    const [date, time] = logData.uploaded_at.split(' ');
+    
+    // Transform API response to match our interface
+    const details: BulkUploadLogDetails = {
+      upload_id: logData.upload_id,
+      uploaded_by: logData.uploaded_by,
+      upload_type: 'Bulk', // Default value
+      applied_position: logData.applied_position,
+      uploaded_date: date,
+      uploaded_time: time,
+      added_candidates: logData.added_candidates || [],
+      skipped_candidates: logData.skipped_candidates || [],
     };
+    
+    return details;
   } catch (error) {
     console.error('Error fetching bulk upload log details:', error);
     throw error;
