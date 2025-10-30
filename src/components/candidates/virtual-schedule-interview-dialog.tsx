@@ -114,17 +114,24 @@ export function VirtualScheduleInterviewDialog({
         let fetchedPanelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
         console.log("Raw API response from fetchPanelistsForCandidate:", fetchedPanelists)
         console.log("Next round:", nextRound)
+        console.log("Is reschedule:", isReschedule)
+        console.log("Candidate panel_name:", candidate.panel_name)
         
         // For R3, the backend already returns the correct tpm_tem users
         // The API returns: [{ id, name, email }] - no role or status fields
         // So for R3, we just use the response directly
         if (nextRound === "r3") {
           console.log("R3 detected - using API response directly (backend already filtered for tpm_tem)")
-          // Just ensure the data structure is normalized
+          // Normalize the data structure to match what the component expects
           fetchedPanelists = fetchedPanelists.map((p: any) => ({
-            ...p,
             _id: p.id || p._id, // Normalize id field
+            id: p.id || p._id,  // Keep both for compatibility
+            name: p.name,
+            email: p.email,
+            role: 'tpm_tem',  // We know it's tpm_tem for R3
+            skill_set: p.skill_set || []
           }))
+          console.log("R3 normalized panelists:", fetchedPanelists)
         } else {
           // For R1 and R2, filter for panel_member role with status "free"
           // Check if the API response has role/status fields
@@ -140,37 +147,48 @@ export function VirtualScheduleInterviewDialog({
               return role === 'panel_member' && status === 'free'
             })
           } else {
-            // API doesn't return role fields, just use the response as-is
-            console.log("R1/R2: API response has no role fields, using response as-is")
+            // API doesn't return role fields, normalize the structure
+            console.log("R1/R2: API response has no role fields, normalizing structure")
+            fetchedPanelists = fetchedPanelists.map((p: any) => ({
+              _id: p.id || p._id,
+              id: p.id || p._id,
+              name: p.name,
+              email: p.email,
+              role: 'panel_member',
+              skill_set: p.skill_set || []
+            }))
           }
         }
         
-        console.log("Vacancy path - Next round:", nextRound, "Final panel members:", fetchedPanelists)
+        console.log("Vacancy path - Next round:", nextRound, "Panel members after processing:", fetchedPanelists)
         
         // If this is a reschedule, ensure the currently assigned panelist is in the list
         if (isReschedule && candidate.panel_name) {
+          console.log("Reschedule mode - checking for current panelist:", candidate.panel_name)
           const hasCurrentPanelist = fetchedPanelists.some((p: any) => 
             p.name === candidate.panel_name || 
             p.email === (candidate as any).panel_email
           )
           
+          console.log("Current panelist found in list:", hasCurrentPanelist)
+          
           if (!hasCurrentPanelist && candidate.panel_name) {
             // Add the current panelist to the list
             const currentPanelist = {
               _id: (candidate as any).panel_id || candidate.panel_name,
+              id: (candidate as any).panel_id || candidate.panel_name,
               name: candidate.panel_name,
               email: (candidate as any).panel_email || '',
               role: nextRound === "r3" ? 'tpm_tem' : 'panel_member',
               skill_set: []
             }
             console.log("Adding current panelist to list:", currentPanelist)
-            setPanelists([currentPanelist, ...fetchedPanelists])
-          } else {
-            setPanelists(fetchedPanelists || [])
+            fetchedPanelists = [currentPanelist, ...fetchedPanelists]
           }
-        } else {
-          setPanelists(fetchedPanelists || [])
         }
+        
+        console.log("Final panelists to display:", fetchedPanelists)
+        setPanelists(fetchedPanelists || [])
         
         // Mark that panelists have been loaded successfully
         setPanelistsLoaded(true)
