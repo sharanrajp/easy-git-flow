@@ -28,22 +28,6 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
   const [panelists, setPanelists] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchPanelists = async () => {
-      setIsLoading(true)
-      try {
-        const users = await getAllUsers()
-        setPanelists(users.filter((user) => (user.role === "panel_member" || user.role === "tpm_tem") && user.current_status === "free"))
-      } catch (error) {
-        console.error("Failed to fetch panelists:", error)
-        setPanelists([])
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    fetchPanelists()
-  }, [])
-
   const getNextRound = () => {
     if (!candidate.currentRound) return "r1"
 
@@ -58,6 +42,30 @@ export function ScheduleInterviewForm({ candidate, onSubmit, onCancel }: Schedul
   }
 
   const nextRound = getNextRound()
+
+  useEffect(() => {
+    const fetchPanelists = async () => {
+      setIsLoading(true)
+      try {
+        const users = await getAllUsers()
+        // For R3, only show tpm_tem role; for R1 and R2, show panel_member role
+        const filteredUsers = users.filter((user) => {
+          if (nextRound === "r3") {
+            return user.role === "tpm_tem" && user.current_status === "free"
+          }
+          return user.role === "panel_member" && user.current_status === "free"
+        })
+        setPanelists(filteredUsers)
+      } catch (error) {
+        console.error("Failed to fetch panelists:", error)
+        setPanelists([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchPanelists()
+  }, [nextRound])
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

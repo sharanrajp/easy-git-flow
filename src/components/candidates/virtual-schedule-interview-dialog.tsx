@@ -73,8 +73,24 @@ export function VirtualScheduleInterviewDialog({
           setLoading(true)
           hasFetchedPanelistsRef.current = true
           const allUsers = await getAllUsers()
-          const panelMembers = allUsers.filter((user: any) => user.role === 'panel_member' || user.role === 'tpm_tem')
-          console.log("Fetched all panel members:", panelMembers)
+          
+          // Determine next round based on candidate status
+          let nextRound = "r1"
+          if (candidate.status === "r1-completed") {
+            nextRound = "r2"
+          } else if (candidate.status === "r2-completed") {
+            nextRound = "r3"
+          }
+          
+          // For R3, only show tpm_tem role; for R1 and R2, show panel_member role
+          const panelMembers = allUsers.filter((user: any) => {
+            if (nextRound === "r3") {
+              return user.role === 'tpm_tem'
+            }
+            return user.role === 'panel_member'
+          })
+          
+          console.log("Next round:", nextRound, "Fetched panel members:", panelMembers)
           setPanelists(panelMembers)
           setPanelistsLoaded(true)
         } catch (error) {
