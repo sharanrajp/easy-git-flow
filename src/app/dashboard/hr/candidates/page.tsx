@@ -1136,7 +1136,10 @@ export default function CandidatesPage() {
     // Fetch panels in background
     try {
       let panels = []
-      if(candidate.final_status === "selected" && candidate.last_interview_round === "r2"){
+      if (nextRound === "r3") {
+        // For R3, only show tpm_tem users
+        panels = (await getAllUsers() || []).filter((user) => user.role === "tpm_tem" && user.current_status === "free")
+      } else if(candidate.final_status === "selected" && candidate.last_interview_round === "r2"){
         panels = (await getAllUsers() || []).filter((user) => user.role === "panelist" && user.panelist_type === "manager" && user.current_status === "free")
       } else {
         panels = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
