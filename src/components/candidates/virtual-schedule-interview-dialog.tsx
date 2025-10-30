@@ -252,21 +252,32 @@ export function VirtualScheduleInterviewDialog({
     }
     
     if (isReschedule && candidate && panelists.length > 0) {
+      console.log("=== R3 Reschedule Debug ===")
       console.log("Attempting to match existing panelist")
+      console.log("Candidate data:", candidate)
       console.log("Candidate panel_name:", candidate.panel_name)
+      console.log("Candidate panel_email:", (candidate as any).panel_email)
+      console.log("Candidate panel_id:", (candidate as any).panel_id)
       console.log("Loaded panelists:", panelists)
+      console.log("Number of panelists:", panelists.length)
       
       // Find matching panelist by name or email
-      const matchingPanelist = panelists.find((p: any) => 
-        p.name === candidate.panel_name || 
-        p.email === (candidate as any).panel_email
-      )
+      const matchingPanelist = panelists.find((p: any) => {
+        console.log(`Comparing panelist "${p.name}" (${p.email}) with candidate panel "${candidate.panel_name}"`)
+        return p.name === candidate.panel_name || 
+               p.email === (candidate as any).panel_email
+      })
       
       if (matchingPanelist) {
-        const panelistId = matchingPanelist._id || matchingPanelist.name
-        console.log("Found matching panelist, setting ID:", panelistId)
+        const panelistId = (matchingPanelist as any)._id || (matchingPanelist as any).id || matchingPanelist.name
+        console.log("✅ Found matching panelist:", matchingPanelist)
+        console.log("Setting selected ID:", panelistId)
         setSelectedPanelMembers([panelistId])
         hasAutoSelectedRef.current = true // Mark that we've done the initial auto-selection
+      } else {
+        console.log("❌ No matching panelist found!")
+        console.log("Available panelist names:", panelists.map((p: any) => p.name))
+        console.log("Looking for:", candidate.panel_name)
       }
     } else if (existingSchedule?.panelMembers && panelists.length > 0 && !isReschedule) {
       const existingPanelNames = existingSchedule.panelMembers
