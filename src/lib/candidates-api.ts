@@ -667,7 +667,12 @@ export async function fetchBulkUploadLogDetails(uploadId: string): Promise<BulkU
       uploaded_date: date,
       uploaded_time: time,
       added_candidates: logData.added_candidates || [],
-      skipped_candidates: logData.skipped_candidates || [],
+      skipped_candidates: (logData.skipped_candidates || []).map((candidate: any) => ({
+        name: candidate.candidate_name || candidate.name,
+        email: candidate.email,
+        reason: candidate.reason,
+        row_number: candidate.row_number,
+      })),
     };
     
     return details;
