@@ -77,13 +77,16 @@ export function VirtualScheduleInterviewDialog({
           // Determine next round based on candidate status and last_interview_round
           let nextRound = "r1"
           const lastRound = candidate.last_interview_round?.toLowerCase()
-          if (lastRound === "r2" && candidate.final_status === "selected") {
+          const finalStatus = candidate.final_status?.toLowerCase()
+          if (lastRound === "r2" && finalStatus === "selected") {
             nextRound = "r3"
           } else if (lastRound === "r2" || candidate.status === "r2-completed") {
             nextRound = "r3"
           } else if (lastRound === "r1" || candidate.status === "r1-completed") {
             nextRound = "r2"
           }
+          
+          console.log("Virtual Schedule - Candidate:", candidate.name, "Last Round:", lastRound, "Final Status:", finalStatus, "Next Round:", nextRound)
           
           // For R3, only show tpm_tem role; for R1 and R2, show panel_member role
           const panelMembers = allUsers.filter((user: any) => {
