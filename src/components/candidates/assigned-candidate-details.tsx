@@ -278,19 +278,22 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
 
             <TabsContent value="interviews" className="space-y-6">
               {/* Interview Feedback History */}
-              {candidate.previous_rounds && candidate.previous_rounds.length > 0 ? (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      📝 Interview Feedback History
-                      <Badge variant="secondary" className="text-xs">
-                        {candidate.previous_rounds.length} {candidate.previous_rounds.length === 1 ? 'Round' : 'Rounds'}
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      {candidate.previous_rounds!.slice().reverse().map((round: any, index: number) => (
+              {(() => {
+                // Support both 'previous_rounds' and 'interviews' field names
+                const interviewData = candidate.previous_rounds || (candidate as any).interviews || [];
+                return interviewData.length > 0 ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        📝 Interview Feedback History
+                        <Badge variant="secondary" className="text-xs">
+                          {interviewData.length} {interviewData.length === 1 ? 'Round' : 'Rounds'}
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        {interviewData.slice().reverse().map((round: any, index: number) => (
                         <div 
                           key={index} 
                           className="border border-gray-200 rounded-xl p-6 bg-gradient-to-r from-white to-gray-50 hover:shadow-md transition-all duration-200"
@@ -352,21 +355,22 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                             </Tooltip>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card>
-                  <CardContent className="text-center py-12">
-                    <div className="text-gray-400 mb-4">📝</div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No interview feedback available</h3>
-                    <p className="text-gray-500">
-                      Interview feedback will appear here once interviews are conducted and feedback is submitted.
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <div className="text-gray-400 mb-4">📝</div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No interview feedback available</h3>
+                      <p className="text-gray-500">
+                        Interview feedback will appear here once interviews are conducted and feedback is submitted.
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })()}
             </TabsContent>
           </Tabs>
         </div>
