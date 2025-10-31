@@ -1,14 +1,38 @@
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useState } from "react"
 
 interface PaginationProps {
   currentPage: number
   totalPages: number
   onPageChange: (page: number) => void
+  onRecordsPerPageChange?: (recordsPerPage: number) => void
+  initialRecordsPerPage?: number
   className?: string
+  showRecordsPerPageSelector?: boolean
 }
 
-export function Pagination({ currentPage, totalPages, onPageChange, className = "" }: PaginationProps) {
+export function Pagination({ 
+  currentPage, 
+  totalPages, 
+  onPageChange, 
+  className = "", 
+  initialRecordsPerPage = 15, 
+  onRecordsPerPageChange,
+  showRecordsPerPageSelector = false
+}: PaginationProps) {
+
+  console.log('pagination rendering', { currentPage, totalPages});
+
+  const [recordsPerPage, setRecordsPerPage] = useState(initialRecordsPerPage)
+
+  const handleRecordsChange = (value: string) => {
+    const numValue = Number(value)
+    setRecordsPerPage(numValue)
+    onRecordsPerPageChange?.(numValue)
+  }
+
   const getPageNumbers = () => {
     const pages: (number | string)[] = []
     const maxVisible = 5
@@ -48,6 +72,25 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
 
   return (
     <div className={`flex items-center justify-center gap-2 ${className}`}>
+      {/* Records per page selector */}
+      {showRecordsPerPageSelector && <div className="flex items-center gap-2">
+        <span className="text-sm text-muted-foreground font-bold">Records per page:</span>
+        <Select
+          value={recordsPerPage.toString()}
+          onValueChange={handleRecordsChange}
+        >
+          <SelectTrigger className="w-[80px] h-9">
+            <SelectValue placeholder="Select" />
+          </SelectTrigger>
+          <SelectContent>
+            {[5, 10, 15, 20].map((num) => (
+              <SelectItem key={num} value={num.toString()}>
+                {num}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>}
       <Button
         variant="outline"
         size="sm"

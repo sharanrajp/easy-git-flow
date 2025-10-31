@@ -144,7 +144,7 @@ export default function CandidatesPage() {
   // Pagination states
   const [unassignedCurrentPage, setUnassignedCurrentPage] = useState(1)
   const [assignedCurrentPage, setAssignedCurrentPage] = useState(1)
-  const itemsPerPage = 15
+  const [itemsPerPage, setItemsPerPage] = useState(5)  
 
   // Status change dialog states
   const [isStatusChangeDialogOpen, setIsStatusChangeDialogOpen] = useState(false)
@@ -2880,6 +2880,9 @@ export default function CandidatesPage() {
           currentPage={activeTab === "unassigned" ? unassignedCurrentPage : activeTab === "completed" ? completedCurrentPage : assignedCurrentPage}
           totalPages={activeTab === "unassigned" ? unassignedTotalPages : activeTab === "completed" ? completedTotalPages : assignedTotalPages}
           onPageChange={activeTab === "unassigned" ? setUnassignedCurrentPage : activeTab === "completed" ? setCompletedCurrentPage : setAssignedCurrentPage}
+          onRecordsPerPageChange={(records) => setItemsPerPage(records)}
+          initialRecordsPerPage={itemsPerPage}
+          showRecordsPerPageSelector={true}
         />
       </div>
 
