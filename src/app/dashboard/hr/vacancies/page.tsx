@@ -246,6 +246,27 @@ export default function VacanciesPage() {
     }
   };
 
+  const getStatusLabels = (status: string) => {
+    switch (status) {
+      case "active":
+        return "Active";
+      case "paused":
+        return "Paused";
+      case "closed":
+        return "Closed";
+      case "joined":
+        return "Joined";
+      case "offer Accepted":
+        return "Offer Accepted";
+      case "offer Declined":
+        return "Offer Declined";
+      case "on-Hold":
+        return "On-Hold";
+      default:
+        return status;
+    }
+  }
+
   const isDeadlineExpired = (deadline: string) => {
     return new Date(deadline) < new Date();
   };
@@ -537,7 +558,7 @@ export default function VacanciesPage() {
                                         <DropdownMenuTrigger asChild>
                                           <Button variant="ghost" size="sm" className="p-0 h-auto">
                                             <div className="flex items-center gap-1">
-                                              <Badge className={getStatusColor(vacancy.status)}>{vacancy.status}</Badge>
+                                              <Badge className={getStatusColor(vacancy.status)}>{getStatusLabels(vacancy.status)}</Badge>
                                               <ChevronDown className="h-3 w-3" />
                                             </div>
                                           </Button>
