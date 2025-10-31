@@ -268,7 +268,6 @@ export default function VacanciesPage() {
         const updatedVacancies = await fetchVacancies();
         setVacancies(updatedVacancies);
         setSelectedVacancy({ ...selectedVacancy, assignedPanelists: panelistIds });
-        setIsPanelistEditOpen(false);
       } else {
         console.error("Failed to update panelists:", await response.text());
       }
