@@ -38,6 +38,7 @@ export interface Position {
   status: "active" | "paused" | "closed" | "joined" | "offer Accepted" | "offer Declined" | "on-Hold"
   hiring_manager_name: string
   recruiter_name: string
+  recruiter_id?: string
   recruiters?: string[]
   panelists?: string[]
   number_of_vacancies: number
