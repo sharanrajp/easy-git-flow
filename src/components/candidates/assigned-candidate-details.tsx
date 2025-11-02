@@ -48,9 +48,10 @@ interface AssignedCandidateDetailsProps {
   candidate: BackendCandidate | null
   isOpen: boolean
   onClose: () => void
+  showOnlyFeedback?: boolean
 }
 
-export function AssignedCandidateDetails({ candidate, isOpen, onClose }: AssignedCandidateDetailsProps) {
+export function AssignedCandidateDetails({ candidate, isOpen, onClose, showOnlyFeedback = false }: AssignedCandidateDetailsProps) {
   if (!candidate) return null
   const [isResumeDialogOpen, setIsResumeDialogOpen] = useState(false)
   const [isScreeningDialogOpen, setIsScreeningDialogOpen] = useState(false)
@@ -122,20 +123,35 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
         </DialogHeader>
 
         <div className="space-y-6">
-          <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="details">Candidate Details</TabsTrigger>
-              <TabsTrigger value="interviews">
-                Interview & Feedback
-                {candidate.previous_rounds && candidate.previous_rounds.length > 0 && (
-                  <Badge variant="secondary" className="ml-2">
-                    {candidate.previous_rounds.length}
-                  </Badge>
-                )}
-              </TabsTrigger>
-            </TabsList>
+          <Tabs defaultValue={showOnlyFeedback ? "interviews" : "details"} className="w-full">
+            {!showOnlyFeedback && (
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="details">Candidate Details</TabsTrigger>
+                <TabsTrigger value="interviews">
+                  Interview & Feedback
+                  {candidate.previous_rounds && candidate.previous_rounds.length > 0 && (
+                    <Badge variant="secondary" className="ml-2">
+                      {candidate.previous_rounds.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+            )}
+            {showOnlyFeedback && (
+              <TabsList className="grid w-full grid-cols-1">
+                <TabsTrigger value="interviews">
+                  Interview & Feedback
+                  {candidate.previous_rounds && candidate.previous_rounds.length > 0 && (
+                    <Badge variant="secondary" className="ml-2">
+                      {candidate.previous_rounds.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+            )}
 
-            <TabsContent value="details" className="space-y-6">
+            {!showOnlyFeedback && (
+              <TabsContent value="details" className="space-y-6">
               {/* Basic Information */}
               <Card>
                 <CardHeader>
@@ -274,7 +290,8 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                   </Button>
                 </CardContent>
               </Card>
-            </TabsContent>
+              </TabsContent>
+            )}
 
             <TabsContent value="interviews" className="space-y-6">
               {/* Interview Feedback History */}

@@ -1185,6 +1185,7 @@ export default function PanelistDashboard() {
           candidate={viewingCandidate ? convertToBackendCandidate(viewingCandidate) : null}
           isOpen={showCandidateFeedback}
           onClose={() => setShowCandidateFeedback(false)}
+          showOnlyFeedback={true}
         />
 
         {/* Resume Dialog */}
