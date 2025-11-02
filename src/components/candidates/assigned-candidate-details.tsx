@@ -48,9 +48,10 @@ interface AssignedCandidateDetailsProps {
   candidate: BackendCandidate | null
   isOpen: boolean
   onClose: () => void
+  viewOnly?: boolean // For panelist view - no interactive buttons
 }
 
-export function AssignedCandidateDetails({ candidate, isOpen, onClose }: AssignedCandidateDetailsProps) {
+export function AssignedCandidateDetails({ candidate, isOpen, onClose, viewOnly = false }: AssignedCandidateDetailsProps) {
   if (!candidate) return null
   const [isResumeDialogOpen, setIsResumeDialogOpen] = useState(false)
   const [isScreeningDialogOpen, setIsScreeningDialogOpen] = useState(false)
@@ -242,38 +243,42 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
                     </div>
                   </div>
 
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Resume</label>
-                    <div className="mt-1">
-                      {candidate.resume_link ? (
-                        <Button
-                          variant="link"
-                          onClick={() => setIsResumeDialogOpen(true)}
-                          className="text-blue-600 hover:text-blue-800 p-0 h-auto"
-                        >
-                          View Resume
-                        </Button>
-                      ) : (
-                        <p className="text-gray-400 text-sm">No resume available</p>
-                      )}
+                  {!viewOnly && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Resume</label>
+                      <div className="mt-1">
+                        {candidate.resume_link ? (
+                          <Button
+                            variant="link"
+                            onClick={() => setIsResumeDialogOpen(true)}
+                            className="text-blue-600 hover:text-blue-800 p-0 h-auto"
+                          >
+                            View Resume
+                          </Button>
+                        ) : (
+                          <p className="text-gray-400 text-sm">No resume available</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
 
               {/* Screening Result Button */}
-              <Card>
-                <CardContent className="pt-6">
-                  <Button 
-                    onClick={() => setIsScreeningDialogOpen(true)} 
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <FileSearch className="h-4 w-4 mr-2" />
-                    View Screening Result
-                  </Button>
-                </CardContent>
-              </Card>
+              {!viewOnly && (
+                <Card>
+                  <CardContent className="pt-6">
+                    <Button 
+                      onClick={() => setIsScreeningDialogOpen(true)} 
+                      variant="outline"
+                      className="w-full"
+                    >
+                      <FileSearch className="h-4 w-4 mr-2" />
+                      View Screening Result
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="interviews" className="space-y-6">
@@ -376,96 +381,100 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose }: Assigne
         </div>
       </DialogContent>
 
-      <ResumeDialog
-        isOpen={isResumeDialogOpen}
-        onClose={() => setIsResumeDialogOpen(false)}
-        resumeUrl={candidate.resume_link || null}
-        candidateName={candidate.name}
-      />
+      {!viewOnly && (
+        <ResumeDialog
+          isOpen={isResumeDialogOpen}
+          onClose={() => setIsResumeDialogOpen(false)}
+          resumeUrl={candidate.resume_link || null}
+          candidateName={candidate.name}
+        />
+      )}
 
       {/* Screening Result Dialog */}
-      <Dialog open={isScreeningDialogOpen} onOpenChange={setIsScreeningDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle>Screening Result - {candidate.name}</DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="max-h-[60vh] pr-4">
-            <div className="space-y-6">
-              {/* Job Match Section */}
-              {(candidate as any).job_match ? (
-                <>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">Job Match</h3>
-                    
-                    {/* Match Percentage */}
-                    <div className="mb-4">
-                      <span className="text-sm text-gray-500">Match Percentage</span>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge 
-                          className={
-                            (candidate as any).job_match.match_percentage >= 70
-                              ? "bg-green-100 text-green-800"
-                              : (candidate as any).job_match.match_percentage >= 40
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
-                          }
-                        >
-                          {(candidate as any).job_match.match_percentage}%
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {/* Strengths */}
-                    {(candidate as any).job_match.strengths && (candidate as any).job_match.strengths.length > 0 && (
-                      <div className="mb-4">
-                        <span className="text-sm font-medium text-gray-700">Strengths</span>
-                        <ul className="mt-2 space-y-2">
-                          {(candidate as any).job_match.strengths.map((strength: string, index: number) => (
-                            <li key={index} className="flex items-start gap-2">
-                              <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                              <span className="text-sm text-gray-700">{strength}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* Gaps */}
-                    {(candidate as any).job_match.gaps && (candidate as any).job_match.gaps.length > 0 && (
-                      <div>
-                        <span className="text-sm font-medium text-gray-700">Gaps</span>
-                        <ul className="mt-2 space-y-2">
-                          {(candidate as any).job_match.gaps.map((gap: string, index: number) => (
-                            <li key={index} className="flex items-start gap-2">
-                              <X className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
-                              <span className="text-sm text-gray-700">{gap}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Resume Summary */}
-                  {(candidate as any).resume_summary && (
+      {!viewOnly && (
+        <Dialog open={isScreeningDialogOpen} onOpenChange={setIsScreeningDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>Screening Result - {candidate.name}</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[60vh] pr-4">
+              <div className="space-y-6">
+                {/* Job Match Section */}
+                {(candidate as any).job_match ? (
+                  <>
                     <div>
-                      <h3 className="text-lg font-semibold mb-2">Resume Summary</h3>
-                      <p className="text-sm text-gray-700 leading-relaxed">
-                        {(candidate as any).resume_summary}
-                      </p>
+                      <h3 className="text-lg font-semibold mb-3">Job Match</h3>
+                      
+                      {/* Match Percentage */}
+                      <div className="mb-4">
+                        <span className="text-sm text-gray-500">Match Percentage</span>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge 
+                            className={
+                              (candidate as any).job_match.match_percentage >= 70
+                                ? "bg-green-100 text-green-800"
+                                : (candidate as any).job_match.match_percentage >= 40
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                            }
+                          >
+                            {(candidate as any).job_match.match_percentage}%
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* Strengths */}
+                      {(candidate as any).job_match.strengths && (candidate as any).job_match.strengths.length > 0 && (
+                        <div className="mb-4">
+                          <span className="text-sm font-medium text-gray-700">Strengths</span>
+                          <ul className="mt-2 space-y-2">
+                            {(candidate as any).job_match.strengths.map((strength: string, index: number) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                                <span className="text-sm text-gray-700">{strength}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Gaps */}
+                      {(candidate as any).job_match.gaps && (candidate as any).job_match.gaps.length > 0 && (
+                        <div>
+                          <span className="text-sm font-medium text-gray-700">Gaps</span>
+                          <ul className="mt-2 space-y-2">
+                            {(candidate as any).job_match.gaps.map((gap: string, index: number) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <X className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                                <span className="text-sm text-gray-700">{gap}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-center py-8">
-                  <FileSearch className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-500">No screening result available for this candidate.</p>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+
+                    {/* Resume Summary */}
+                    {(candidate as any).resume_summary && (
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2">Resume Summary</h3>
+                        <p className="text-sm text-gray-700 leading-relaxed">
+                          {(candidate as any).resume_summary}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <FileSearch className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-gray-500">No screening result available for this candidate.</p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+      )}
     </Dialog>
   )
 }
