@@ -2748,17 +2748,28 @@ export default function CandidatesPage() {
                             <TableCell>{candidate.last_interview_round}</TableCell>
                             <TableCell>
                               <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" className="p-0 h-auto">
+                                <DropdownMenuTrigger asChild disabled={
+                                  candidate.last_interview_round?.toLowerCase() === "r3" && 
+                                  currentUser?.role !== "hr" && 
+                                  currentUser?.role !== "admin"
+                                }>
+                                  <Button variant="ghost" className="p-0 h-auto" disabled={
+                                    candidate.last_interview_round?.toLowerCase() === "r3" && 
+                                    currentUser?.role !== "hr" && 
+                                    currentUser?.role !== "admin"
+                                  }>
                                     <Badge className={getStatusColor(candidate.final_status || "selected")}>
                                       <div className="flex items-center gap-1">
                                         {formatStatusLabel(candidate.final_status || "selected")}
-                                        {!["rejected", "joined", "candidateDeclined"].includes(candidate.final_status || "") && <ChevronDown className="h-3 w-3" />}
+                                        {!["rejected", "joined", "candidateDeclined"].includes(candidate.final_status || "") && 
+                                         !(candidate.last_interview_round?.toLowerCase() === "r3" && currentUser?.role !== "hr" && currentUser?.role !== "admin") && 
+                                         <ChevronDown className="h-3 w-3" />}
                                       </div>
                                     </Badge>
                                   </Button>
                                 </DropdownMenuTrigger>
                                 {!["rejected", "joined", "candidateDeclined"].includes(candidate.final_status || "") &&
+                                 !(candidate.last_interview_round?.toLowerCase() === "r3" && currentUser?.role !== "hr" && currentUser?.role !== "admin") &&
                                 <DropdownMenuContent>
                                   {/* Forward-only status transitions based on R3 status */}
                                   {(() => {
