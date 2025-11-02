@@ -8,6 +8,7 @@ interface BackendVacancy {
   position_title: string;
   hiring_manager_name: string;
   recruiter_name: string;
+  recruiter_id?: string;
   employment_type: string;
   priority: string;
   number_of_openings: number;
@@ -34,7 +35,8 @@ interface BackendVacancy {
 interface VacancyCreateRequest {
   position_title: string;
   hiring_manager_name: string;
-  recruiter_name: string;
+  recruiter_name?: string;
+  recruiter_id: string;
   employment_type: string;
   priority: string;
   number_of_openings: number;
@@ -61,6 +63,7 @@ function transformBackendToFrontend(backendVacancy: BackendVacancy): Position {
     position_title: backendVacancy.position_title || "",
     hiring_manager_name: backendVacancy.hiring_manager_name || "",
     recruiter_name: backendVacancy.recruiter_name || "",
+    recruiter_id: backendVacancy.recruiter_id || "",
     job_type: (backendVacancy.employment_type as "full_time" | "part-time" | "contract") || "full_time",
     priority: (backendVacancy.priority as "P3" | "P2" | "P1" | "P0") || "P3",
     number_of_vacancies: backendVacancy.number_of_openings || 1,
@@ -112,7 +115,7 @@ export function transformFrontendToBackend(frontendVacancy: Partial<Position>): 
   const payload: VacancyCreateRequest = {
     position_title: frontendVacancy.position_title || "",
     hiring_manager_name: frontendVacancy.hiring_manager_name || "",
-    recruiter_name: frontendVacancy.recruiter_name || "",
+    recruiter_id: frontendVacancy.recruiter_id || "",
     employment_type: frontendVacancy.job_type || "full_time",
     priority: frontendVacancy.priority || "P3",
     number_of_openings: frontendVacancy.number_of_vacancies || 1,

@@ -48,6 +48,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
     status: vacancy?.status || "active",
     hiring_manager_name: vacancy?.hiring_manager_name || "",
     recruiter_name: vacancy?.recruiter_name || "",
+    recruiter_id: vacancy?.recruiter_id || "",
     number_of_vacancies: vacancy?.number_of_vacancies || 1,
     experience_range: vacancy?.experience_range || "",
     position_approved_by: vacancy?.position_approved_by || "",
@@ -138,6 +139,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       status: vacancy?.status || "active",
       hiring_manager_name: vacancy?.hiring_manager_name || "",
       recruiter_name: vacancy?.recruiter_name || "",
+      recruiter_id: vacancy?.recruiter_id || "",
       number_of_vacancies: vacancy?.number_of_vacancies || 1,
       experience_range: vacancy?.experience_range || "",
       position_approved_by: vacancy?.position_approved_by || "",
@@ -246,7 +248,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
       formData.priority &&
       formData.city &&
       formData.hiring_manager_name &&
-      formData.recruiter_name &&
+      formData.recruiter_id &&
       formData.number_of_vacancies &&
       formData.experience_range &&
       formData.job_desc.trim() &&
@@ -374,15 +376,22 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
                 <div className="space-y-2">
                   <Label htmlFor="recruiter_name">Recruiter Name *</Label>
                   <Select
-                    value={formData.recruiter_name}
-                    onValueChange={(value: any) => setFormData({ ...formData, recruiter_name: value })}
+                    value={formData.recruiter_id}
+                    onValueChange={(value: any) => {
+                      const selectedRecruiter = hrUsers.find(user => user._id === value);
+                      setFormData({ 
+                        ...formData, 
+                        recruiter_id: value,
+                        recruiter_name: selectedRecruiter?.name || ""
+                      });
+                    }}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select recruiter" />
                     </SelectTrigger>
                     <SelectContent>
                       {hrUsers.map((user) => (
-                        <SelectItem key={user._id} value={user.name}>
+                        <SelectItem key={user._id} value={user._id}>
                           {user.name}
                         </SelectItem>
                       ))}
