@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import { Pagination } from "@/components/ui/pagination"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Calendar,
   Clock,
@@ -155,6 +156,12 @@ export default function PanelistDashboard() {
 
   const scheduledInterviews = filteredCandidates.filter(candidate => !hasFeedbackCompleted(candidate))
   const completedCandidateInterviews = filteredCandidates.filter(candidate => hasFeedbackCompleted(candidate))
+
+  // Filter by interview type
+  const walkinScheduled = scheduledInterviews.filter(c => c.interview_type === "walk-in")
+  const walkinCompleted = completedCandidateInterviews.filter(c => c.interview_type === "walk-in")
+  const virtualScheduled = scheduledInterviews.filter(c => c.interview_type === "virtual")
+  const virtualCompleted = completedCandidateInterviews.filter(c => c.interview_type === "virtual")
 
   // Pagination for completed interviews
   const paginatedCompletedInterviews = useMemo(() => {
@@ -738,85 +745,66 @@ export default function PanelistDashboard() {
             )}
           </div>
 
-          {/* Scheduled Interviews Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-semibold">Scheduled Interviews ({scheduledInterviews.length})</h2>
-            </div>
-            
-            {isCandidatesLoading ? (
-              <div className="flex justify-center py-8">
-                <div className="text-sm text-muted-foreground">Loading candidates...</div>
-              </div>
-            ) : scheduledInterviews.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No scheduled interviews</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {scheduledInterviews.map((candidate) => {
-                  const isVirtual = candidate.interview_type === "virtual"
-                  const isR1 = candidate.last_interview_round?.toLowerCase() === "r1"
-                  const meetingLink = (candidate as any).meeting_link
-                  
-                  // For walk-in interviews, show buttons based on interview session status
-                  const interviewSession = interviewSessions.find(s => s.candidateId === candidate._id)
-                  const hasStartedInterview = interviewSession?.status === "in-progress"
-                  
-                  const canStartInterview = !isVirtual && !hasStartedInterview
-                  const canEndInterview = !isVirtual && hasStartedInterview
-                  
-                  return (
-                    <Card
-                      key={candidate._id}
-                      className="w-full h-full p-6 hover:shadow-lg transition-shadow relative"
-                    >
-                      {/* Top Section with Name + Action Button */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="space-y-1">
-                          <CardTitle className="text-2xl font-bold">{candidate.name}</CardTitle>
-                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                            <div className="text-sm text-gray-600">{candidate.applied_position || "N/A"}</div>
-                            <Badge variant="outline" className="font-mono bg-emerald-50 text-emerald-700 border-emerald-200">
-                              {candidate.register_number}
-                            </Badge>
-                            {candidate.last_interview_round && (
-                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                {candidate.last_interview_round}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
+          {/* Main Tabs: Walk-in and Virtual */}
+          <Tabs defaultValue="walk-in" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="walk-in">Walk-in</TabsTrigger>
+              <TabsTrigger value="virtual">Virtual</TabsTrigger>
+            </TabsList>
 
-                        {/* Interview Action Button in Top Right */}
-                        {isVirtual ? (
-                          <div className="flex gap-2">
-                            {meetingLink && (
-                              <Button
-                                onClick={() => window.open(meetingLink, '_blank')}
-                                size="sm"
-                                className="bg-purple-600 hover:bg-purple-700"
-                              >
-                                <ExternalLink className="h-4 w-4 mr-1" />
-                                Join Meeting
-                              </Button>
-                            )}
-                            <Button
-                              onClick={() => handleEndInterview(candidate)}
-                              disabled={isUpdatingStatus}
-                              size="sm"
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              <Pause className="h-4 w-4 mr-1" />
-                              End & Give Feedback
-                            </Button>
-                          </div>
-                        ) : (
-                          <>
+            {/* Walk-in Tab Content */}
+            <TabsContent value="walk-in" className="space-y-6">
+              {/* Scheduled Interviews - Walk-in */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Scheduled Interviews ({walkinScheduled.length})</h2>
+                </div>
+                
+                {isCandidatesLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="text-sm text-muted-foreground">Loading candidates...</div>
+                  </div>
+                ) : walkinScheduled.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-12 text-center">
+                      <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">No scheduled walk-in interviews</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {walkinScheduled.map((candidate) => {
+                      const isVirtual = candidate.interview_type === "virtual"
+                      const isR1 = candidate.last_interview_round?.toLowerCase() === "r1"
+                      
+                      const interviewSession = interviewSessions.find(s => s.candidateId === candidate._id)
+                      const hasStartedInterview = interviewSession?.status === "in-progress"
+                      
+                      const canStartInterview = !isVirtual && !hasStartedInterview
+                      const canEndInterview = !isVirtual && hasStartedInterview
+                      
+                      return (
+                        <Card
+                          key={candidate._id}
+                          className="w-full h-full p-6 hover:shadow-lg transition-shadow relative"
+                        >
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="space-y-1">
+                              <CardTitle className="text-2xl font-bold">{candidate.name}</CardTitle>
+                              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                                <div className="text-sm text-gray-600">{candidate.applied_position || "N/A"}</div>
+                                <Badge variant="outline" className="font-mono bg-emerald-50 text-emerald-700 border-emerald-200">
+                                  {candidate.register_number}
+                                </Badge>
+                                {candidate.last_interview_round && (
+                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                    {candidate.last_interview_round}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+
                             {canStartInterview && (
                               <Button
                                 onClick={() => handleStartInterview(candidate._id)}
@@ -839,147 +827,330 @@ export default function PanelistDashboard() {
                                 End & Give Feedback
                               </Button>
                             )}
-                          </>
-                        )}
-                      </div>
+                          </div>
 
-                      <CardContent className="space-y-6">
-                        {/* Action Buttons */}
-                        <div className="flex gap-2 flex-wrap">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewCandidateDetails(candidate)}
-                            className="flex-1"
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </Button>
-                          {!isR1 && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewCandidateFeedback(candidate)}
-                              className="flex-1"
-                            >
-                              <FileText className="h-4 w-4 mr-2" />
-                              View Feedback
-                            </Button>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                  )
-                })}
+                          <CardContent className="space-y-6">
+                            <div className="flex gap-2 flex-wrap">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewCandidateDetails(candidate)}
+                                className="flex-1"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
+                              </Button>
+                              {!isR1 && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleViewCandidateFeedback(candidate)}
+                                  className="flex-1"
+                                >
+                                  <FileText className="h-4 w-4 mr-2" />
+                                  View Feedback
+                                </Button>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Completed Interviews Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-semibold">Completed Interviews ({completedCandidateInterviews.length})</h2>
-            </div>
-              <Card>
-                <CardContent>
-                  {isCandidatesLoading ? (
-                    <div className="flex justify-center py-8">
-                      <div className="text-sm text-muted-foreground">Loading candidates...</div>
-                    </div>
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Reg. No.</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Position</TableHead>
-                          <TableHead>Skill Set</TableHead>
-                          <TableHead>Experience</TableHead>
-                          <TableHead>Interview Round</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {completedCandidateInterviews.length === 0 ? (
+              {/* Completed Interviews - Walk-in */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Completed Interviews ({walkinCompleted.length})</h2>
+                </div>
+                <Card>
+                  <CardContent>
+                    {isCandidatesLoading ? (
+                      <div className="flex justify-center py-8">
+                        <div className="text-sm text-muted-foreground">Loading candidates...</div>
+                      </div>
+                    ) : (
+                      <Table>
+                        <TableHeader>
                           <TableRow>
-                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                              No completed interviews found
-                            </TableCell>
+                            <TableHead>Reg. No.</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Position</TableHead>
+                            <TableHead>Skill Set</TableHead>
+                            <TableHead>Experience</TableHead>
+                            <TableHead>Interview Round</TableHead>
+                            <TableHead>Actions</TableHead>
                           </TableRow>
-                        ) : (
-                          paginatedCompletedInterviews.map((candidate) => {
-                            const panelistRounds = getPanelistRounds(candidate)
-                            return (
-                            <TableRow key={candidate._id}>
-                              <TableCell className="font-medium">
-                                {candidate.register_number}
-                              </TableCell>
-                              <TableCell>{candidate.name}</TableCell>
-                              <TableCell>{candidate.applied_position || "N/A"}</TableCell>
-                              <TableCell>
-                                <SkillsDisplay 
-                                  skills={Array.isArray(candidate.skill_set) ? candidate.skill_set : []} 
-                                  maxVisible={2}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                {candidate.total_experience} years
-                              </TableCell>
-                              <TableCell>
-                                {panelistRounds.length > 0 ? (
-                                  <div className="flex flex-wrap gap-1">
-                                    {panelistRounds.map((round, idx) => (
-                                      <Badge key={idx} variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                        {round.toUpperCase()}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <span className="text-muted-foreground">N/A</span>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleViewCandidateDetails(candidate)}
-                                  >
-                                    <Eye className="h-4 w-4 mr-1" />
-                                    View Details
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleViewCandidateFeedback(candidate)}
-                                    className="bg-green-600 hover:bg-green-700 text-white"
-                                  >
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    View Feedback
-                                  </Button>
-                                </div>
+                        </TableHeader>
+                        <TableBody>
+                          {walkinCompleted.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                No completed walk-in interviews found
                               </TableCell>
                             </TableRow>
-                          )})
-                        )}
-                      </TableBody>
-                    </Table>
-                  )}
-                </CardContent>
-              </Card>
+                          ) : (
+                            walkinCompleted.map((candidate) => {
+                              const panelistRounds = getPanelistRounds(candidate)
+                              return (
+                              <TableRow key={candidate._id}>
+                                <TableCell className="font-medium">
+                                  {candidate.register_number}
+                                </TableCell>
+                                <TableCell>{candidate.name}</TableCell>
+                                <TableCell>{candidate.applied_position || "N/A"}</TableCell>
+                                <TableCell>
+                                  <SkillsDisplay 
+                                    skills={Array.isArray(candidate.skill_set) ? candidate.skill_set : []} 
+                                    maxVisible={2}
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  {candidate.total_experience} years
+                                </TableCell>
+                                <TableCell>
+                                  {panelistRounds.length > 0 ? (
+                                    <div className="flex flex-wrap gap-1">
+                                      {panelistRounds.map((round, idx) => (
+                                        <Badge key={idx} variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                          {round.toUpperCase()}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground">N/A</span>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleViewCandidateDetails(candidate)}
+                                    >
+                                      <Eye className="h-4 w-4 mr-1" />
+                                      View Details
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleViewCandidateFeedback(candidate)}
+                                      className="bg-green-600 hover:bg-green-700 text-white"
+                                    >
+                                      <Eye className="h-4 w-4 mr-2" />
+                                      View Feedback
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            )})
+                          )}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
 
-              {/* Pagination */}
-              {completedCandidateInterviews.length > 0 && (
-                <div className="flex justify-center">
-                  <Pagination
-                    currentPage={completedCurrentPage}
-                    totalPages={completedTotalPages}
-                    onPageChange={setCompletedCurrentPage}
-                  />
+            {/* Virtual Tab Content */}
+            <TabsContent value="virtual" className="space-y-6">
+              {/* Scheduled Interviews - Virtual */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Scheduled Interviews ({virtualScheduled.length})</h2>
                 </div>
-              )}
-          </div>
+                
+                {isCandidatesLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="text-sm text-muted-foreground">Loading candidates...</div>
+                  </div>
+                ) : virtualScheduled.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-12 text-center">
+                      <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">No scheduled virtual interviews</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {virtualScheduled.map((candidate) => {
+                      const isR1 = candidate.last_interview_round?.toLowerCase() === "r1"
+                      const meetingLink = (candidate as any).meeting_link
+                      
+                      return (
+                        <Card
+                          key={candidate._id}
+                          className="w-full h-full p-6 hover:shadow-lg transition-shadow relative"
+                        >
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="space-y-1">
+                              <CardTitle className="text-2xl font-bold">{candidate.name}</CardTitle>
+                              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                                <div className="text-sm text-gray-600">{candidate.applied_position || "N/A"}</div>
+                                <Badge variant="outline" className="font-mono bg-emerald-50 text-emerald-700 border-emerald-200">
+                                  {candidate.register_number}
+                                </Badge>
+                                {candidate.last_interview_round && (
+                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                    {candidate.last_interview_round}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex gap-2">
+                              {meetingLink && (
+                                <Button
+                                  onClick={() => window.open(meetingLink, '_blank')}
+                                  size="sm"
+                                  className="bg-purple-600 hover:bg-purple-700"
+                                >
+                                  <ExternalLink className="h-4 w-4 mr-1" />
+                                  Join Meeting
+                                </Button>
+                              )}
+                              <Button
+                                onClick={() => handleEndInterview(candidate)}
+                                disabled={isUpdatingStatus}
+                                size="sm"
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                <Pause className="h-4 w-4 mr-1" />
+                                End & Give Feedback
+                              </Button>
+                            </div>
+                          </div>
+
+                          <CardContent className="space-y-6">
+                            <div className="flex gap-2 flex-wrap">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewCandidateDetails(candidate)}
+                                className="flex-1"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
+                              </Button>
+                              {!isR1 && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleViewCandidateFeedback(candidate)}
+                                  className="flex-1"
+                                >
+                                  <FileText className="h-4 w-4 mr-2" />
+                                  View Feedback
+                                </Button>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Completed Interviews - Virtual */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Completed Interviews ({virtualCompleted.length})</h2>
+                </div>
+                <Card>
+                  <CardContent>
+                    {isCandidatesLoading ? (
+                      <div className="flex justify-center py-8">
+                        <div className="text-sm text-muted-foreground">Loading candidates...</div>
+                      </div>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Reg. No.</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Position</TableHead>
+                            <TableHead>Skill Set</TableHead>
+                            <TableHead>Experience</TableHead>
+                            <TableHead>Interview Round</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {virtualCompleted.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                No completed virtual interviews found
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            virtualCompleted.map((candidate) => {
+                              const panelistRounds = getPanelistRounds(candidate)
+                              return (
+                              <TableRow key={candidate._id}>
+                                <TableCell className="font-medium">
+                                  {candidate.register_number}
+                                </TableCell>
+                                <TableCell>{candidate.name}</TableCell>
+                                <TableCell>{candidate.applied_position || "N/A"}</TableCell>
+                                <TableCell>
+                                  <SkillsDisplay 
+                                    skills={Array.isArray(candidate.skill_set) ? candidate.skill_set : []} 
+                                    maxVisible={2}
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  {candidate.total_experience} years
+                                </TableCell>
+                                <TableCell>
+                                  {panelistRounds.length > 0 ? (
+                                    <div className="flex flex-wrap gap-1">
+                                      {panelistRounds.map((round, idx) => (
+                                        <Badge key={idx} variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                          {round.toUpperCase()}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground">N/A</span>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleViewCandidateDetails(candidate)}
+                                    >
+                                      <Eye className="h-4 w-4 mr-1" />
+                                      View Details
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleViewCandidateFeedback(candidate)}
+                                      className="bg-green-600 hover:bg-green-700 text-white"
+                                    >
+                                      <Eye className="h-4 w-4 mr-2" />
+                                      View Feedback
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            )})
+                          )}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Candidate Details Popover */}
