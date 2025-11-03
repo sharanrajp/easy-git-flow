@@ -148,6 +148,14 @@ export function CandidateDetails({ candidate, onClose, onScheduleInterview }: Ca
                   <p className="font-medium">{candidate.recruiter_name || "Not assigned"}</p>
                 </div>
               </div>
+              {(candidate as any).recruiter_notes && (
+                <div className="pt-4 border-t">
+                  <span className="text-sm text-gray-500">Recruiter Notes</span>
+                  <p className="font-medium mt-1 text-gray-700 bg-gray-50 p-3 rounded-md">
+                    {(candidate as any).recruiter_notes}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

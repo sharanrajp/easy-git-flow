@@ -274,6 +274,15 @@ export function AssignedCandidateDetails({ candidate, isOpen, onClose, showOnlyF
                       )}
                     </div>
                   </div>
+
+                  {(candidate as any).recruiter_notes && (
+                    <div className="pt-4 border-t col-span-2">
+                      <label className="text-sm font-medium text-gray-500">Recruiter Notes</label>
+                      <p className="font-medium mt-1 text-gray-700 bg-gray-50 p-3 rounded-md">
+                        {(candidate as any).recruiter_notes}
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 

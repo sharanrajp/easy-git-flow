@@ -162,6 +162,20 @@ export function UnassignedCandidateDetails({ candidate, onClose, onScheduleInter
           </CardContent>
         </Card>
 
+        {/* Recruiter Notes */}
+        {(candidate as any).recruiter_notes && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Recruiter Notes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700 bg-gray-50 p-3 rounded-md">
+                {(candidate as any).recruiter_notes}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Action Buttons */}
         <Card>
           <CardContent className="pt-6 space-y-3">

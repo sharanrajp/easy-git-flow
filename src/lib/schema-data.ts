@@ -87,6 +87,7 @@ export interface Candidate {
   offer_released_date?: string
   joined_date?: string
   recruiter_name?: string
+  recruiter_notes?: string
   status:
     | "unassigned"
     | "assigned" 

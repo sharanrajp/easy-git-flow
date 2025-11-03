@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { X, FileText, CalendarIcon, ChevronsUpDown, Search, XCircle, Check } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
 import type { Candidate } from "@/lib/schema-data"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
@@ -75,6 +76,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     recruiter_name: candidate?.recruiter_name || "",
     offer_released_date: (candidate as any)?.offer_released_date || "",
     joined_date: (candidate as any)?.joined_date || "",
+    recruiter_notes: (candidate as any)?.recruiter_notes || "",
   })
 
   const [offerReleasedDate, setOfferReleasedDate] = useState<Date | undefined>(
@@ -209,6 +211,12 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
     // Validate required fields
     if (!formData.name || !formData.email || !formData.applied_position) {
       alert("Please fill in all required fields")
+      return
+    }
+
+    // Validate resume upload
+    if (!formData.resume && !(candidate as any)?.resume) {
+      alert("Please upload a resume")
       return
     }
 
@@ -458,7 +466,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="resume">Upload Resume</Label>
+        <Label htmlFor="resume">Upload Resume *</Label>
         <div className="flex items-center gap-3">
           <div className="flex-1">
             <Input
@@ -466,6 +474,7 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
               type="file"
               accept=".pdf,.doc,.docx"
               onChange={handleResumeUpload}
+              required={!(candidate as any)?.resume}
               className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 w-full"
             />
           </div>
@@ -475,8 +484,26 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
               <span>{formData.resume.name}</span>
             </div>
           )}
+          {!formData.resume && (candidate as any)?.resume && (
+            <div className="flex items-center gap-2 text-sm text-blue-600">
+              <FileText className="h-4 w-4" />
+              <span>Resume already uploaded</span>
+            </div>
+          )}
         </div>
         <p className="text-xs text-gray-500">Supported formats: PDF, DOC, DOCX (Max 5MB)</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="recruiter_notes">Recruiter Notes</Label>
+        <Textarea
+          id="recruiter_notes"
+          placeholder="Add any notes about the candidate..."
+          value={formData.recruiter_notes}
+          onChange={(e) => setFormData({ ...formData, recruiter_notes: e.target.value })}
+          className="min-h-[100px]"
+        />
+        <p className="text-xs text-gray-500">Optional field for internal notes</p>
       </div>
 
       <div className="grid grid-cols-2 gap-6">
