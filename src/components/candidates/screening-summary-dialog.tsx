@@ -74,7 +74,7 @@ export function ScreeningSummaryDialog({
       // Fetch screening summaries for all vacancies
       const summaryPromises = vacancies.map(async (vacancy: any) => {
         try {
-          const response = await fetch(`${API_BASE_URL}/screening/summary-by-position/${vacancy.vacancy_id}`, {
+          const response = await fetch(`${API_BASE_URL}/screening/summary-by-position/${vacancy._id}`, {
             method: "GET",
             headers: {
               "Authorization": `Bearer ${token}`,
@@ -87,7 +87,7 @@ export function ScreeningSummaryDialog({
           }
           return null
         } catch (error) {
-          console.error(`Error fetching summary for vacancy ${vacancy.vacancy_id}:`, error)
+          console.error(`Error fetching summary for vacancy ${vacancy._id}:`, error)
           return null
         }
       })
