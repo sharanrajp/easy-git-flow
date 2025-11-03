@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { X, FileText, CalendarIcon } from "lucide-react"
+import { X, FileText, CalendarIcon, ChevronsUpDown, Search, XCircle, Check } from "lucide-react"
 import type { Candidate } from "@/lib/schema-data"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
@@ -88,6 +88,74 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
   const [initialFormData] = useState(formData)
   const [vacancies, setVacancies] = useState<any[]>([])
   const [loadingVacancies, setLoadingVacancies] = useState(false)
+  const [skillSearch, setSkillSearch] = useState("");
+  const [skillSearchOpen, setSkillSearchOpen] = useState(false);
+
+  // Predefined skills list
+  const availableSkills = [
+    "Python",
+    "Java",
+    "SQL",
+    "JavaScript",
+    "TypeScript",
+    "React",
+    "Angular",
+    "Vue.js",
+    "Node.js",
+    "Cloud Computing",
+    "AWS",
+    "Azure",
+    "DevOps",
+    "Docker",
+    "Kubernetes",
+    "Data Analysis",
+    "Machine Learning",
+    "Artificial Intelligence",
+    "UX/UI Design",
+    "Communication",
+    "Leadership",
+    "Project Management",
+    "Agile",
+    "Scrum",
+    "HTML",
+    "CSS",
+    "REST API",
+    "GraphQL",
+    "MongoDB",
+    "PostgreSQL",
+    "MySQL",
+    "Git",
+    "CI/CD",
+  ];
+
+  const filteredSkills = availableSkills.filter((skill) => skill.toLowerCase().includes(skillSearch.toLowerCase()));
+
+  console.log({ filteredSkills, skillSearch });
+  
+
+  const removeSkill = (skill: string) => {
+    setFormData({
+      ...formData,
+      skill_set: formData.skill_set.filter((s: any) => s !== skill),
+    });
+  };
+
+  const addSkill = (skill: string) => {
+    if (skill.trim() && !formData.skill_set.includes(skill.trim())) {
+      setFormData({
+        ...formData,
+        skill_set: [...formData.skill_set, skill.trim()],
+      });
+    }
+  };
+
+  const toggleSkill = (skill: string) => {
+    if (formData.skill_set.includes(skill)) {
+      removeSkill(skill);
+    } else {
+      addSkill(skill);
+    }
+  };
 
   // Load vacancies from API
   useEffect(() => {
@@ -130,45 +198,28 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Validate phone number
     const phoneRegex = /^\d{10}$/
     if (!phoneRegex.test(formData.phone_number)) {
       alert("Please enter a valid 10-digit phone number")
       return
     }
-    
+
     // Validate required fields
     if (!formData.name || !formData.email || !formData.applied_position) {
       alert("Please fill in all required fields")
       return
     }
-    
+
     // Convert dates to ISO 8601 format without timezone shift
     const submitData = {
       ...formData,
       offer_released_date: offerReleasedDate ? dateToUTCString(offerReleasedDate) : formData.offer_released_date,
       joined_date: joinedDate ? dateToUTCString(joinedDate) : formData.joined_date,
     }
-    
+
     onSubmit(submitData as Partial<Candidate>)
-  }
-
-  const addSkill = () => {
-    if (newSkill.trim() && !formData.skill_set.includes(newSkill.trim())) {
-      setFormData({
-        ...formData,
-        skill_set: [...formData.skill_set, newSkill.trim()],
-      })
-      setNewSkill("")
-    }
-  }
-
-  const removeSkill = (skill: string) => {
-    setFormData({
-      ...formData,
-      skill_set: formData.skill_set.filter((s: string) => s !== skill),
-    })
   }
 
   const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -319,8 +370,8 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
             value={formData.applied_position}
             onValueChange={(value) => {
               const selectedVacancy = vacancies.find((v: any) => v.position_title === value)
-              setFormData({ 
-                ...formData, 
+              setFormData({
+                ...formData,
                 applied_position: value,
                 recruiter_name: selectedVacancy?.recruiter_name || "Auto-assigned"
               })
@@ -359,8 +410,8 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label htmlFor="source">Source *</Label>
-          <Select 
-            value={formData.source} 
+          <Select
+            value={formData.source}
             onValueChange={(value) => setFormData({ ...formData, source: value, other_source: value === 'other' ? formData.other_source : '' })}
           >
             <SelectTrigger className="w-full">
@@ -479,36 +530,98 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
           <Label htmlFor="willing_to_relocate">Open to Relocation</Label>
         </div>
       </div>
-
-      <div className="space-y-2">
-        <Label>Skills *</Label>
-        <div className="flex space-x-2">
-          <Input
-            placeholder="Add a skill"
-            value={newSkill}
-            onChange={(e) => setNewSkill(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
-            className="flex-1"
-          />
-          <Button type="button" onClick={addSkill}>
-            Add
-          </Button>
-        </div>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {formData.skill_set.map((skill: string) => (
-            <Badge key={skill} variant="secondary" className="flex items-center gap-1 pr-1">
-              <span>{skill}</span>
-              <button
+        <div className="space-y-2">
+          <Label>Skills *</Label>
+          <Popover open={skillSearchOpen} onOpenChange={setSkillSearchOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={skillSearchOpen}
+                className="w-full justify-between"
                 type="button"
-                onClick={() => removeSkill(skill)}
-                className="ml-1 hover:text-destructive transition-colors focus:outline-none"
-                aria-label={`Remove ${skill}`}
               >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          ))}
-        </div>
+                Select skills...
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0" align="start" onWheel={(e) => e.stopPropagation()}>
+              <div className="flex flex-col">
+                <div className="flex items-center border-b px-3">
+                  <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                  <Input
+                    placeholder="Search or add custom skill..."
+                    value={skillSearch}
+                    onChange={(e) => setSkillSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && skillSearch.trim()) {
+                        e.preventDefault();
+                        addSkill(skillSearch);
+                        setSkillSearch("");
+                      }
+                    }}
+                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                  {skillSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setSkillSearch("")}
+                      className="ml-2 hover:bg-accent rounded-sm p-1 transition-colors"
+                      aria-label="Clear search"
+                    >
+                      <XCircle className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                    </button>
+                  )}
+                </div>
+                <div className="max-h-60 overflow-y-auto p-1">
+                  {skillSearch && !availableSkills.some((s) => s.toLowerCase() === skillSearch.toLowerCase()) && (
+                    <div
+                      className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => {
+                        addSkill(skillSearch);
+                        setSkillSearch("");
+                      }}
+                    >
+                      <div className="flex items-center flex-1">
+                        <span className="font-medium">Add "{skillSearch}"</span>
+                      </div>
+                    </div>
+                  )}
+                  {filteredSkills.map((skill) => (
+                    <div
+                      key={skill}
+                      className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => toggleSkill(skill)}
+                    >
+                      <Check
+                        className={`mr-2 h-4 w-4 ${formData.skill_set.includes(skill) ? "opacity-100" : "opacity-0"
+                          }`}
+                      />
+                      {skill}
+                    </div>
+                  ))}
+                  {filteredSkills.length === 0 && !skillSearch && (
+                    <div className="px-2 py-1.5 text-sm text-muted-foreground">No skills found</div>
+                  )}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {formData.skill_set.map((skill: any) => (
+              <Badge key={skill} variant="secondary" className="flex items-center gap-1 pr-1">
+                <span>{skill}</span>
+                <button
+                  type="button"
+                  onClick={() => removeSkill(skill)}
+                  className="ml-1 hover:text-destructive transition-colors focus:outline-none"
+                  aria-label={`Remove ${skill}`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
       </div>
 
       {/* Date Fields for Offer Released and Joined - Only show if candidate has these dates */}
@@ -581,16 +694,16 @@ export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, sub
       )}
 
       <div className="flex justify-end space-x-3 pt-4 border-t border-border">
-        <Button 
-          type="button" 
-          variant="outline" 
+        <Button
+          type="button"
+          variant="outline"
           onClick={onCancel}
           className="hover:bg-muted smooth-transition px-6"
         >
           Cancel
         </Button>
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           className="gradient-primary text-white hover:scale-105 smooth-transition shadow-elegant px-6"
         >
           {submitButtonText || (candidate ? "Save Changes" : "Add Candidate")}

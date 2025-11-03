@@ -23,8 +23,6 @@ export function Pagination({
   showRecordsPerPageSelector = false
 }: PaginationProps) {
 
-  console.log('pagination rendering', { currentPage, totalPages});
-
   const [recordsPerPage, setRecordsPerPage] = useState(initialRecordsPerPage)
 
   const handleRecordsChange = (value: string) => {
