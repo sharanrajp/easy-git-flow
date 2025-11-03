@@ -68,6 +68,7 @@ import { SkillsDisplay } from "@/components/ui/skills-display"
 import { VirtualScheduleInterviewDialog } from "@/components/candidates/virtual-schedule-interview-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
+import { ScreeningSummaryDialog } from "@/components/candidates/screening-summary-dialog"
 
 export default function CandidatesPage() {
   const { toast } = useToast()
@@ -131,6 +132,7 @@ export default function CandidatesPage() {
   const [loadingInterviews, setLoadingInterviews] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [isScreening, setIsScreening] = useState(false)
+  const [isScreeningSummaryOpen, setIsScreeningSummaryOpen] = useState(false)
   
   // Virtual interview scheduling states
   const [isVirtualScheduleDialogOpen, setIsVirtualScheduleDialogOpen] = useState(false)
@@ -570,37 +572,9 @@ export default function CandidatesPage() {
     }
   }
 
-  const handleScreening = async () => {
-    setIsScreening(true)
+  const handleScreeningSummaryRefresh = async () => {
+    // Refresh candidate lists after screening operations
     try {
-      const token = getToken()
-      if (!token) {
-        toast({
-          title: "Error",
-          description: "No authentication token found. Please log in again.",
-          variant: "destructive",
-        })
-        return
-      }
-
-      const response = await fetch(`${API_BASE_URL}/screening/screen-candidates`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to trigger screening")
-      }
-
-      toast({
-        title: "Success",
-        description: "Screening triggered successfully for all unscreened candidates.",
-      })
-
-      // Refresh candidate lists
       const [updatedUnassigned, updatedAssigned] = await Promise.all([
         fetchUnassignedCandidates(),
         fetchAssignedCandidates()
@@ -608,14 +582,7 @@ export default function CandidatesPage() {
       setUnassignedCandidates(updatedUnassigned)
       setAssignedCandidates(updatedAssigned)
     } catch (error) {
-      console.error('Error triggering screening:', error)
-      toast({
-        title: "Error",
-        description: "Failed to trigger screening. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsScreening(false)
+      console.error('Error refreshing candidates:', error)
     }
   }
 
@@ -1929,11 +1896,10 @@ export default function CandidatesPage() {
             <Button 
               variant="outline" 
               className="cursor-pointer bg-transparent"
-              onClick={handleScreening}
-              disabled={isScreening}
+              onClick={() => setIsScreeningSummaryOpen(true)}
             >
               <Search className="h-4 w-4 mr-2" />
-              {isScreening ? "Screening..." : "Screening"}
+              View Screening Summary
             </Button>
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <Button 
@@ -3812,6 +3778,12 @@ export default function CandidatesPage() {
             virtualScheduleCandidate?.panel_name,
           ])}
           onSubmit={handleVirtualScheduleSubmit}
+        />
+
+        <ScreeningSummaryDialog
+          open={isScreeningSummaryOpen}
+          onOpenChange={setIsScreeningSummaryOpen}
+          onScreeningComplete={handleScreeningSummaryRefresh}
         />
       </div>
     </DashboardLayout>
