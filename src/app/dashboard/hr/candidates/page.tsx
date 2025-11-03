@@ -1776,7 +1776,7 @@ export default function CandidatesPage() {
       if (isVirtualReschedule && interviewId) {
         // Call PUT /virtual/reschedule/{interview_id} API
         const reschedulePayload = {
-          new_date: data.date.toISOString().split('T')[0],
+          new_date: `${data.date.getFullYear()}-${String(data.date.getMonth() + 1).padStart(2, '0')}-${String(data.date.getDate()).padStart(2, '0')}`,
           new_time: data.time,
           new_panel_id: data.panelMembers[0],
           new_meeting_link: data.meetingLink,
@@ -1823,7 +1823,7 @@ export default function CandidatesPage() {
             candidate_id: virtualScheduleCandidate._id,
             panel_id: panelId,
             round: round,
-            interview_date: data.date.toISOString().split('T')[0],
+            interview_date: `${data.date.getFullYear()}-${String(data.date.getMonth() + 1).padStart(2, '0')}-${String(data.date.getDate()).padStart(2, '0')}`,
             interview_time: data.time,
             meeting_link: data.meetingLink,
             assigned_by: currentUser.email,
