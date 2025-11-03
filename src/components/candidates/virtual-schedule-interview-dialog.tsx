@@ -111,7 +111,7 @@ export function VirtualScheduleInterviewDialog({
       
       try {
         setLoading(true)
-        let fetchedPanelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
+        let fetchedPanelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId, candidate.interview_type)
         console.log("Raw API response from fetchPanelistsForCandidate:", fetchedPanelists)
         console.log("Next round:", nextRound)
         console.log("Is reschedule:", isReschedule)

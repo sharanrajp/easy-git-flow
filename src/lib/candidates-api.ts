@@ -226,7 +226,7 @@ export async function updateCandidateCheckIn(candidateId: string, checked: boole
 }
 
 // Fetch panelists for a specific candidate and vacancy
-export async function fetchPanelistsForCandidate(candidateId: string, vacancyId: string): Promise<any[]> {
+export async function fetchPanelistsForCandidate(candidateId: string, vacancyId: string, interviewType?: string): Promise<any[]> {
   const token = getToken();
   
   if (!token) {
@@ -234,7 +234,12 @@ export async function fetchPanelistsForCandidate(candidateId: string, vacancyId:
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/virtual/getvirtualpanelist`, {
+    // Determine which endpoint to use based on interview type
+    const endpoint = interviewType === 'virtual' 
+      ? `${API_BASE_URL}/virtual/getvirtualpanelist`
+      : `${API_BASE_URL}/Vacancy/getpanelist`;
+
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

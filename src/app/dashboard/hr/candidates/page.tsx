@@ -1013,7 +1013,7 @@ export default function CandidatesPage() {
         // For R3, only show tpm_tem users
         panelists = (await getAllUsers() || []).filter((user) => user.role === "tpm_tem" && user.current_status === "free")
       } else {
-        panelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
+        panelists = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId, candidate.interview_type)
       }
       setAvailablePanels(panelists)
     } catch (error) {
@@ -1118,7 +1118,7 @@ export default function CandidatesPage() {
       } else if(candidate.final_status === "selected" && candidate.last_interview_round === "r2"){
         panels = (await getAllUsers() || []).filter((user) => user.role === "panelist" && user.panelist_type === "manager" && user.current_status === "free")
       } else {
-        panels = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId)
+        panels = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId, candidate.interview_type)
       }
       setAvailablePanels(panels)
     } catch (error) {
