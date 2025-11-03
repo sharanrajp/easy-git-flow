@@ -29,7 +29,7 @@ export interface InterviewSession {
 
 export function getInterviewSessions(): InterviewSession[] {
   if (typeof window === "undefined") return []
-  const sessions = localStorage.getItem("interview_sessions")
+  const sessions = sessionStorage.getItem("interview_sessions")
   return sessions ? JSON.parse(sessions) : []
 }
 
@@ -45,7 +45,7 @@ export function saveInterviewSession(session: InterviewSession) {
     sessions.push(session)
   }
   
-  localStorage.setItem("interview_sessions", JSON.stringify(sessions))
+  sessionStorage.setItem("interview_sessions", JSON.stringify(sessions))
   
   // Dispatch custom event for real-time updates
   window.dispatchEvent(new CustomEvent("interviewSessionUpdated", { detail: session }))
@@ -61,19 +61,19 @@ export function getInterviewSessionForCandidate(candidateId: string): InterviewS
 }
 
 export function updatePanelistStatus(panelistName: string, current_status: "free" | "in_interview") {
-  // Update user status in localStorage
-  const users = JSON.parse(localStorage.getItem("users") || "[]")
+  // Update user status in sessionStorage
+  const users = JSON.parse(sessionStorage.getItem("users") || "[]")
   const userIndex = users.findIndex((u: any) => u.name === panelistName)
 
   if (userIndex >= 0) {
     users[userIndex].accountStatus = current_status
-    localStorage.setItem("users", JSON.stringify(users))
+    sessionStorage.setItem("users", JSON.stringify(users))
 
     // Also update current user if it's the same person
-    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}")
+    const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || "{}")
     if (currentUser.name === panelistName) {
       currentUser.accountStatus = current_status
-      localStorage.setItem("currentUser", JSON.stringify(currentUser))
+      sessionStorage.setItem("currentUser", JSON.stringify(currentUser))
     }
   }
 }

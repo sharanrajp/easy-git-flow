@@ -14,24 +14,24 @@ export interface User {
 // Token management functions
 export function getToken(): string | null {
   if (typeof window === "undefined") return null
-  return localStorage.getItem("access_token")
+  return sessionStorage.getItem("access_token")
 }
 
 export function getRefreshToken(): string | null {
   if (typeof window === "undefined") return null
-  return localStorage.getItem("refresh_token")
+  return sessionStorage.getItem("refresh_token")
 }
 
 export function setToken(access_token: string, refresh_token: string): void {
   if (typeof window !== "undefined") {
-    localStorage.setItem("access_token", access_token)
-    localStorage.setItem("refresh_token", refresh_token) // Store refresh token as well
+    sessionStorage.setItem("access_token", access_token)
+    sessionStorage.setItem("refresh_token", refresh_token) // Store refresh token as well
   }
 }
 
 export function removeToken(): void {
   if (typeof window !== "undefined") {
-    localStorage.removeItem("access_token")
+    sessionStorage.removeItem("access_token")
   }
 }
 
@@ -110,7 +110,7 @@ export async function makeAuthenticatedRequest(url: string, options: RequestInit
 
 export function getStoredUser(): User | null {
   if (typeof window === "undefined") return null
-  const stored = localStorage.getItem("ats_user")
+  const stored = sessionStorage.getItem("ats_user")
   return stored ? JSON.parse(stored) : null
 }
 
@@ -135,7 +135,7 @@ export function getAllUsers(): Promise<User[]> {
 
 export function logout(): void {
   removeToken()
-  localStorage.removeItem("ats_user")
+  sessionStorage.removeItem("ats_user")
 }
 
 // Legacy functions for compatibility - now deprecated

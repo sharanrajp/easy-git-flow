@@ -5,7 +5,7 @@ function HomePage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // No localStorage usage - always redirect to login
+    // No sessionStorage usage - always redirect to login
     navigate("/login")
   }, [navigate])
 

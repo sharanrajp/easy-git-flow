@@ -23,7 +23,7 @@ interface CandidateFormProps {
 }
 
 export function CandidateForm({ candidate, onSubmit, onCancel, onFormChange, submitButtonText }: CandidateFormProps) {
-  // No stored user available since we removed localStorage
+  // No stored user available since we removed sessionStorage
   const currentUser = null
 
   // Parse existing experience to extract years and months

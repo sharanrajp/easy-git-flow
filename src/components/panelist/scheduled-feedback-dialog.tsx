@@ -66,7 +66,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
         ...currentUser,
         privileges: { ...currentUser.privileges, status: "free" as const }
       }
-      localStorage.setItem("ats_user", JSON.stringify(updatedUser))
+      sessionStorage.setItem("ats_user", JSON.stringify(updatedUser))
       window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }))
       
       // Trigger UI updates immediately with feedback data
@@ -127,7 +127,7 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
           })
           
           // Rollback optimistic update on error
-          localStorage.setItem("ats_user", JSON.stringify(currentUser))
+          sessionStorage.setItem("ats_user", JSON.stringify(currentUser))
           window.dispatchEvent(new CustomEvent('userUpdated', { detail: currentUser }))
         }
       }

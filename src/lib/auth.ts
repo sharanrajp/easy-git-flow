@@ -14,25 +14,25 @@ export interface User {
 // Token management functions
 export function getToken(): string | null {
   if (typeof window === "undefined") return null
-  return localStorage.getItem("access_token")
+  return sessionStorage.getItem("access_token")
 }
 
 export function getRefreshToken(): string | null {
   if (typeof window === "undefined") return null
-  return localStorage.getItem("refresh_token")
+  return sessionStorage.getItem("refresh_token")
 }
 
 export function setToken(access_token: string, refresh_token: string): void {
   if (typeof window !== "undefined") {
-    localStorage.setItem("access_token", access_token)
-    localStorage.setItem("refresh_token", refresh_token)
+    sessionStorage.setItem("access_token", access_token)
+    sessionStorage.setItem("refresh_token", refresh_token)
   }
 }
 
 export function removeToken(): void {
   if (typeof window !== "undefined") {
-    localStorage.removeItem("access_token")
-    localStorage.removeItem("refresh_token")
+    sessionStorage.removeItem("access_token")
+    sessionStorage.removeItem("refresh_token")
   }
 }
 
@@ -124,7 +124,7 @@ export async function makeAuthenticatedRequest(url: string, options: RequestInit
 
 export function getStoredUser(): User | null {
   if (typeof window === "undefined") return null
-  const stored = localStorage.getItem("ats_user")
+  const stored = sessionStorage.getItem("ats_user")
   return stored ? JSON.parse(stored) : null
 }
 
@@ -149,8 +149,8 @@ export async function getAllUsers(): Promise<User[]> {
 
 export function logout(): void {
   removeToken()
-  localStorage.removeItem("ats_user")
-  localStorage.removeItem("refresh_token")
+  sessionStorage.removeItem("ats_user")
+  sessionStorage.removeItem("refresh_token")
 }
 
 export async function addUser(user: User): Promise<void> {
@@ -196,7 +196,7 @@ export async function updateUserStatus(userId: string, current_status: User["cur
   const currentUser = getStoredUser()
   if (currentUser) {
     currentUser.current_status = apiStatus
-    localStorage.setItem("ats_user", JSON.stringify(currentUser))
+    sessionStorage.setItem("ats_user", JSON.stringify(currentUser))
   }
 }
 

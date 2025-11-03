@@ -35,7 +35,7 @@ interface VacancyFormProps {
 
 export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  // No stored user available since we removed localStorage
+  // No stored user available since we removed sessionStorage
   const currentUser = null;
 
   const [formData, setFormData] = useState({
@@ -91,7 +91,7 @@ export function VacancyForm({ vacancy, onSubmit }: VacancyFormProps) {
   }, []);
 
   useEffect(() => {
-    // No user data available since localStorage was removed
+    // No user data available since sessionStorage was removed
     // This effect is now a no-op
   }, []);
 

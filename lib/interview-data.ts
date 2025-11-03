@@ -46,19 +46,19 @@ export function getInterviewSessionForCandidate(candidateId: string): InterviewS
 }
 
 export function updatePanelistStatus(panelistName: string, status: "available" | "in_interview") {
-  // Update user status in localStorage
-  const users = JSON.parse(localStorage.getItem("users") || "[]")
+  // Update user status in sessionStorage
+  const users = JSON.parse(sessionStorage.getItem("users") || "[]")
   const userIndex = users.findIndex((u: any) => u.name === panelistName)
 
   if (userIndex >= 0) {
     users[userIndex].accountStatus = status
-    localStorage.setItem("users", JSON.stringify(users))
+    sessionStorage.setItem("users", JSON.stringify(users))
 
     // Also update current user if it's the same person
-    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}")
+    const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || "{}")
     if (currentUser.name === panelistName) {
       currentUser.accountStatus = status
-      localStorage.setItem("currentUser", JSON.stringify(currentUser))
+      sessionStorage.setItem("currentUser", JSON.stringify(currentUser))
     }
   }
 }

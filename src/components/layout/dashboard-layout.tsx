@@ -17,7 +17,7 @@ export function DashboardLayout({ children, requiredRole }: DashboardLayoutProps
 
   const handleUserUpdate = (updatedUser: User) => {
     setUser(updatedUser)
-    localStorage.setItem("ats_user", JSON.stringify(updatedUser))
+    sessionStorage.setItem("ats_user", JSON.stringify(updatedUser))
   }
 
   useEffect(() => {

@@ -53,8 +53,8 @@ export default function PanelistCandidatesPage() {
   const hasFeedbackCompleted = (candidate: PanelistCandidate) => {
     if (!candidate.previous_rounds || candidate.previous_rounds.length === 0) return false
     
-    // Get current user's name from localStorage
-    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}")
+    // Get current user's name from sessionStorage
+    const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || "{}")
     const currentPanelistName = currentUser.name
     
     // Find the round that matches the current interview round AND was assigned to this panelist

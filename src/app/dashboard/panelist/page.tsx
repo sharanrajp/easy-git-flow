@@ -314,7 +314,7 @@ export default function PanelistDashboard() {
       privileges: { ...currentUser.privileges, status: "in_interview" as const }
     }
     setCurrentUser(updatedUser)
-    localStorage.setItem("ats_user", JSON.stringify(updatedUser))
+    sessionStorage.setItem("ats_user", JSON.stringify(updatedUser))
     window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }))
     
     setIsUpdatingStatus(true)
@@ -397,7 +397,7 @@ export default function PanelistDashboard() {
         privileges: { ...currentUser.privileges, status: "free" as const }
       }
       setCurrentUser(updatedUser)
-      localStorage.setItem("ats_user", JSON.stringify(updatedUser))
+      sessionStorage.setItem("ats_user", JSON.stringify(updatedUser))
       window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }))
     }
     

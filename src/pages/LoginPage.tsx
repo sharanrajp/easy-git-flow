@@ -18,8 +18,8 @@ function LoginPage() {
 
   // Clear any stale authentication data on mount
   useEffect(() => {
-    localStorage.removeItem("access_token")
-    localStorage.removeItem("ats_user")
+    sessionStorage.removeItem("access_token")
+    sessionStorage.removeItem("ats_user")
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,9 +58,9 @@ function LoginPage() {
         return
       }
 
-      // Store both tokens in localStorage
-      localStorage.setItem("access_token", access_token)
-      localStorage.setItem("refresh_token", refresh_token)
+      // Store both tokens in sessionStorage
+      sessionStorage.setItem("access_token", access_token)
+      sessionStorage.setItem("refresh_token", refresh_token)
 
       // Fetch users with the token
       const usersResponse = await fetch(`${API_BASE_URL}/panels/with-status`, {
@@ -94,7 +94,7 @@ function LoginPage() {
           const enrichedUser = { ...currentUser, ...userProfile }
           
           // Store enriched user info
-          localStorage.setItem("ats_user", JSON.stringify(enrichedUser))
+          sessionStorage.setItem("ats_user", JSON.stringify(enrichedUser))
           
           // Redirect based on role
           if (enrichedUser.role === "superadmin") {
@@ -111,7 +111,7 @@ function LoginPage() {
         } catch (profileError) {
           console.warn("Failed to fetch user profile, using basic user data:", profileError)
           // Fallback to basic user data if profile fetch fails
-          localStorage.setItem("ats_user", JSON.stringify(currentUser))
+          sessionStorage.setItem("ats_user", JSON.stringify(currentUser))
           
           // Redirect based on role
           if (currentUser.role === "superadmin") {
