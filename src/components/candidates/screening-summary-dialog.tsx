@@ -8,7 +8,7 @@ import { getToken } from "@/lib/auth"
 import { Search, RefreshCw, Loader2 } from "lucide-react"
 
 interface PositionScreeningSummary {
-  position_name: string
+  position_title: string
   vacancy_id: string
   total_candidates: number
   screened: number
@@ -309,7 +309,7 @@ export function ScreeningSummaryDialog({
             <TableBody>
               {summaries.map((summary) => (
                 <TableRow key={summary.vacancy_id}>
-                  <TableCell className="font-medium">{summary.position_name}</TableCell>
+                  <TableCell className="font-medium">{summary.position_title}</TableCell>
                   <TableCell className="text-center">{summary.total_candidates}</TableCell>
                   <TableCell className="text-center">{summary.screened}</TableCell>
                   <TableCell className="text-center">{summary.not_screened}</TableCell>
@@ -317,7 +317,7 @@ export function ScreeningSummaryDialog({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleRunScreeningForPosition(summary.vacancy_id, summary.position_name)}
+                      onClick={() => handleRunScreeningForPosition(summary.vacancy_id, summary.position_title)}
                       disabled={runningScreening === summary.vacancy_id || summary.not_screened === 0}
                     >
                       {runningScreening === summary.vacancy_id ? (
