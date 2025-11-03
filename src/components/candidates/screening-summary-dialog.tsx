@@ -51,7 +51,8 @@ export function ScreeningSummaryDialog({
         return
       }
 
-      const response = await fetch(`${API_BASE_URL}/screening/summary-by-position`, {
+      // First, fetch vacancies to get vacancy IDs
+      const vacanciesResponse = await fetch(`${API_BASE_URL}/Vacancy/get_all_vacancies`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -59,12 +60,41 @@ export function ScreeningSummaryDialog({
         },
       })
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch screening summary")
+      if (!vacanciesResponse.ok) {
+        throw new Error("Failed to fetch vacancies")
       }
 
-      const data = await response.json()
-      setSummaries(data)
+      const vacancies = await vacanciesResponse.json()
+      
+      if (!vacancies || vacancies.length === 0) {
+        setSummaries([])
+        return
+      }
+
+      // Fetch screening summaries for all vacancies
+      const summaryPromises = vacancies.map(async (vacancy: any) => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/screening/summary-by-position/${vacancy.vacancy_id}`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          })
+
+          if (response.ok) {
+            return await response.json()
+          }
+          return null
+        } catch (error) {
+          console.error(`Error fetching summary for vacancy ${vacancy.vacancy_id}:`, error)
+          return null
+        }
+      })
+
+      const results = await Promise.all(summaryPromises)
+      const validSummaries = results.filter(summary => summary !== null).flat()
+      setSummaries(validSummaries)
     } catch (error) {
       console.error('Error fetching screening summary:', error)
       toast({
