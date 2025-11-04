@@ -3,11 +3,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Upload, CheckCircle, XCircle, FileText, AlertCircle } from "lucide-react"
+import { Upload, CheckCircle, XCircle, FileText, AlertCircle, List, Eye } from "lucide-react"
 import { API_BASE_URL } from "@/lib/api-config"
 import { getToken } from "@/lib/auth"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { fetchResumeProcessingLogs, fetchResumeStatus, type ResumeProcessingLog, type CandidateResumeStatus } from "@/lib/candidates-api"
+import { ResumeLogsDialog } from "./resume-logs-dialog"
+import { ResumeStatusDialog } from "./resume-status-dialog"
+import { useToast } from "@/hooks/use-toast"
 
 interface ResumeUploadDialogProps {
   open: boolean
@@ -22,11 +26,54 @@ interface UploadStatus {
 }
 
 export function ResumeUploadDialog({ open, onClose, onSuccess }: ResumeUploadDialogProps) {
+  const { toast } = useToast()
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [uploadStatuses, setUploadStatuses] = useState<UploadStatus[]>([])
   const [overallProgress, setOverallProgress] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  // Resume logs and status states
+  const [isResumeLogsOpen, setIsResumeLogsOpen] = useState(false)
+  const [isResumeStatusOpen, setIsResumeStatusOpen] = useState(false)
+  const [resumeLogs, setResumeLogs] = useState<ResumeProcessingLog[]>([])
+  const [resumeStatusData, setResumeStatusData] = useState<CandidateResumeStatus[]>([])
+  const [loadingResumeLogs, setLoadingResumeLogs] = useState(false)
+  const [loadingResumeStatus, setLoadingResumeStatus] = useState(false)
+
+  const handleViewLogs = async () => {
+    setLoadingResumeLogs(true)
+    setIsResumeLogsOpen(true)
+    try {
+      const response = await fetchResumeProcessingLogs()
+      setResumeLogs(response.logs)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch resume processing logs",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingResumeLogs(false)
+    }
+  }
+
+  const handleViewResumeStatus = async () => {
+    setLoadingResumeStatus(true)
+    setIsResumeStatusOpen(true)
+    try {
+      const response = await fetchResumeStatus()
+      setResumeStatusData(response.candidates)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch resume status",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingResumeStatus(false)
+    }
+  }
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -186,7 +233,27 @@ export function ResumeUploadDialog({ open, onClose, onSuccess }: ResumeUploadDia
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Upload Resumes</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>Upload Resumes</DialogTitle>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleViewLogs}
+              >
+                <List className="h-4 w-4 mr-2" />
+                Logs
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleViewResumeStatus}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                Resume Status
+              </Button>
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -324,6 +391,20 @@ export function ResumeUploadDialog({ open, onClose, onSuccess }: ResumeUploadDia
             </Button>
           </div>
         </div>
+
+        <ResumeLogsDialog
+          open={isResumeLogsOpen}
+          onOpenChange={setIsResumeLogsOpen}
+          logs={resumeLogs}
+          loading={loadingResumeLogs}
+        />
+
+        <ResumeStatusDialog
+          open={isResumeStatusOpen}
+          onOpenChange={setIsResumeStatusOpen}
+          candidates={resumeStatusData}
+          loading={loadingResumeStatus}
+        />
       </DialogContent>
     </Dialog>
   )
