@@ -285,11 +285,13 @@ export default function CandidatesPage() {
       }
     }
 
-    // Listen for feedback submission events only
+    // Listen for feedback submission events - both event types for compatibility
     window.addEventListener('interview-sessions:update', handleFeedbackUpdate)
+    window.addEventListener('dashboardUpdate', handleFeedbackUpdate)
     
     return () => {
       window.removeEventListener('interview-sessions:update', handleFeedbackUpdate)
+      window.removeEventListener('dashboardUpdate', handleFeedbackUpdate)
     }
   }, [])
 
