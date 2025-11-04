@@ -63,6 +63,9 @@ export function FeedbackDialog({ isOpen, onClose, session, onSubmit }: FeedbackD
       },
     })
 
+    // Trigger candidate list refresh
+    window.dispatchEvent(new Event('interview-sessions:update'))
+
     onSubmit()
     onClose()
 

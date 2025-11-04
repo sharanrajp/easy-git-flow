@@ -69,6 +69,9 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
       localStorage.setItem("ats_user", JSON.stringify(updatedUser))
       window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }))
       
+      // Trigger candidate list refresh
+      window.dispatchEvent(new Event('interview-sessions:update'))
+      
       // Trigger UI updates immediately with feedback data
       onSubmit(feedback)
       onClose()
