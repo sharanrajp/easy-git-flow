@@ -114,6 +114,13 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
             body: JSON.stringify({ status: "free" })
           })
 
+          // ✅ CRITICAL: Dispatch events AFTER successful API calls
+          console.log('[Feedback] Dispatching refresh events after successful submission')
+          window.dispatchEvent(new Event('interview-sessions:update'))
+          window.dispatchEvent(new Event('dashboardUpdate'))
+          window.dispatchEvent(new Event('candidateUpdated'))
+          console.log('[Feedback] Refresh events dispatched successfully')
+
           toast({
             title: "Success",
             description: "Feedback submitted successfully. Your status has been updated to available.",

@@ -63,6 +63,12 @@ export function FeedbackDialog({ isOpen, onClose, session, onSubmit }: FeedbackD
       },
     })
 
+    // ✅ Dispatch refresh events after feedback submission
+    console.log('[Walk-in Feedback] Dispatching refresh events')
+    window.dispatchEvent(new Event('interview-sessions:update'))
+    window.dispatchEvent(new Event('dashboardUpdate'))
+    window.dispatchEvent(new Event('candidateUpdated'))
+
     onSubmit()
     onClose()
 
