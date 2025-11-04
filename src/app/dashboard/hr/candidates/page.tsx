@@ -3767,11 +3767,11 @@ export default function CandidatesPage() {
                         <TableHeader>
                           <TableRow>
                             <TableHead>Candidate Name</TableHead>
-                            <TableHead>Panel Member Name</TableHead>
+                            <TableHead>Panel Name</TableHead>
                             <TableHead>Round</TableHead>
                             <TableHead>Interview Date</TableHead>
                             <TableHead>Interview Time</TableHead>
-                            <TableHead>Meeting Link</TableHead>
+                            {/* <TableHead>Meeting Link</TableHead> */}
                             <TableHead>Action</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -3794,7 +3794,7 @@ export default function CandidatesPage() {
                             <TableCell>{interview.round || '-'}</TableCell>
                             <TableCell>{interview.interview_date || '-'}</TableCell>
                             <TableCell>{interview.interview_time || '-'}</TableCell>
-                            <TableCell>
+                            {/* <TableCell>
                               {interview.meeting_link ? (
                                 <a 
                                   href={interview.meeting_link} 
@@ -3805,7 +3805,7 @@ export default function CandidatesPage() {
                                   Join
                                 </a>
                               ) : '-'}
-                            </TableCell>
+                            </TableCell> */}
                             <TableCell>
                               <Button
                                 variant="outline"
