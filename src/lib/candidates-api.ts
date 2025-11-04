@@ -96,13 +96,13 @@ export interface PanelistCandidate {
 }
 
 export interface OngoingInterview {
-  _id?: string;
   candidate_id: string;
   candidate_name: string;
   panel_id: string;
   panel_name: string;
   round: string;
   status?: string;
+  interview_id?: string;
   interview_date?: string;
   interview_time?: string;
   meeting_link?: string;
@@ -462,7 +462,7 @@ export async function unscheduleVirtualInterview(interviewId: string): Promise<v
 
   try {
     const response = await fetch(`${API_BASE_URL}/virtual/undo-schedule/${interviewId}`, {
-      method: 'POST',
+      method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
