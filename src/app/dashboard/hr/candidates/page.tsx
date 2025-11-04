@@ -294,12 +294,6 @@ export default function CandidatesPage() {
         setUnassignedCandidates(unassignedData)
         setAssignedCandidates(assignedData)
         
-        toast({
-          title: "Updated",
-          description: "Candidate list refreshed",
-          duration: 2000
-        })
-        
         // Schedule a second refresh 5 seconds later as safety net
         if (!skipSecondRefresh && !refreshTimeout) {
           refreshTimeout = setTimeout(() => {
@@ -310,11 +304,6 @@ export default function CandidatesPage() {
         }
       } catch (error) {
         console.error('[HR Candidates] Failed to refresh candidates:', error)
-        toast({
-          title: "Refresh failed",
-          description: "Could not update candidate list",
-          variant: "destructive"
-        })
       } finally {
         isRefreshing = false
         console.log('[HR Candidates] Refresh complete')
