@@ -94,7 +94,7 @@ export function formatToIST(timestamp: string | Date): string {
     const istOffset = 5.5 * 60 * 60 * 1000 // IST offset in milliseconds
     const istDate = new Date(date.getTime() + istOffset)
     
-    // Format as YYYY-MM-DD hh:mm:ss AM/PM
+    // Format as YYYY-MM-DD hh:mm AM/PM
     const year = istDate.getUTCFullYear()
     const month = String(istDate.getUTCMonth() + 1).padStart(2, '0')
     const day = String(istDate.getUTCDate()).padStart(2, '0')
@@ -102,9 +102,8 @@ export function formatToIST(timestamp: string | Date): string {
     const hours12 = hours24 % 12 || 12
     const period = hours24 >= 12 ? 'PM' : 'AM'
     const minutes = String(istDate.getUTCMinutes()).padStart(2, '0')
-    const seconds = String(istDate.getUTCSeconds()).padStart(2, '0')
     
-    return `${year}-${month}-${day} ${hours12}:${minutes}:${seconds} ${period}`
+    return `${year}-${month}-${day} ${hours12}:${minutes} ${period}`
   } catch {
     return ''
   }
