@@ -27,6 +27,11 @@ export function Calendar({
       onChange={handleDateChange}
       value={selected}
       className={className}
+      // tileDisabled={({ date }) => {
+      //   console.log('tileDisabled', { date });
+      //   return date < new Date()
+      // }}
+      minDate={new Date()}
       {...props}
     />
   )
