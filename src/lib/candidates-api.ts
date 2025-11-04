@@ -904,7 +904,29 @@ export async function fetchResumeStatus(): Promise<ResumeStatusResponse> {
       throw new Error('Failed to fetch resume status');
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('Raw API response:', data);
+    
+    // Handle different response formats
+    let positions: PositionResumeStatus[];
+    
+    if (Array.isArray(data)) {
+      // Response is directly an array
+      positions = data;
+    } else if (data.positions && Array.isArray(data.positions)) {
+      // Response has a positions property
+      positions = data.positions;
+    } else if (data.position_title) {
+      // Response is a single object
+      positions = [data];
+    } else {
+      positions = [];
+    }
+    
+    return {
+      count: positions.length,
+      positions
+    };
   } catch (error) {
     console.error('Error fetching resume status:', error);
     throw error;
