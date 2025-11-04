@@ -3624,7 +3624,10 @@ export default function CandidatesPage() {
         </Dialog>
 
         {/* Ongoing Interviews Dialog */}
-        <Dialog open={isInterviewsDialogOpen} onOpenChange={(open) => {
+        <Dialog 
+        className="w-full max-h-[600px] overflow-auto" 
+        open={isInterviewsDialogOpen} 
+        onOpenChange={(open) => {
           setIsInterviewsDialogOpen(open)
           if (open) {
             setInterviewSearchTerm("")
@@ -3638,10 +3641,10 @@ export default function CandidatesPage() {
               </DialogDescription>
             </DialogHeader>
             
-            <Tabs defaultValue="walk-in" className="w-full">
-              <TabsList>
-                <TabsTrigger value="walk-in">Walk-in</TabsTrigger>
-                <TabsTrigger value="virtual">Virtual</TabsTrigger>
+            <Tabs defaultValue="walk-in" className="w-full overflow-auto">
+              <TabsList className="w-full">
+                <TabsTrigger value="walk-in" className="w-1/2">Walk-in</TabsTrigger>
+                <TabsTrigger value="virtual" className="w-1/2">Virtual</TabsTrigger>
               </TabsList>
               
               {/* Walk-in Tab */}
