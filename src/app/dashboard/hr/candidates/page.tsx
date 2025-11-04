@@ -1322,9 +1322,23 @@ export default function CandidatesPage() {
     }
   }
 
-  const handleUnscheduleVirtualInterview = async (interviewId: string) => {
+  const handleUnscheduleVirtualInterview = async (interviewId?: string) => {
+    if (!interviewId) {
+      toast({
+        title: "Error",
+        description: "Interview ID is missing. Cannot unschedule.",
+        variant: "destructive",
+      })
+      return
+    }
+    
     try {
       await unscheduleVirtualInterview(interviewId)
+      
+      toast({
+        title: "Success",
+        description: "Virtual interview unscheduled successfully.",
+      })
       
       // Refresh ongoing virtual interviews list
       const virtualInterviewsData = await fetchOngoingVirtualInterviews()
@@ -3810,9 +3824,8 @@ export default function CandidatesPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleUnscheduleVirtualInterview(interview.interview_id!)}
+                                onClick={() => handleUnscheduleVirtualInterview(interview.interview_id)}
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                disabled={!interview.interview_id}
                               >
                                 Unschedule
                               </Button>
