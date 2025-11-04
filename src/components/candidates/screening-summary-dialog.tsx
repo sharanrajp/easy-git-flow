@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast"
 import { API_BASE_URL } from "@/lib/api-config"
 import { getToken } from "@/lib/auth"
-import { Search, RefreshCw, Loader2 } from "lucide-react"
+import { Search, RefreshCw, Loader2, Play } from "lucide-react"
 
 interface PositionScreeningSummary {
   position_title: string
@@ -261,7 +261,7 @@ export function ScreeningSummaryDialog({
                 </>
               ) : (
                 <>
-                  <Search className="h-4 w-4 mr-2" />
+                  <Play className="h-4 w-4 mr-2" />
                   Run All Screenings
                 </>
               )}

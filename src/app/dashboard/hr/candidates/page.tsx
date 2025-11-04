@@ -1898,7 +1898,7 @@ export default function CandidatesPage() {
               className="cursor-pointer bg-transparent"
               onClick={() => setIsScreeningSummaryOpen(true)}
             >
-              <Search className="h-4 w-4 mr-2" />
+              <Eye className="h-4 w-4 mr-2" />
               View Screening Summary
             </Button>
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>

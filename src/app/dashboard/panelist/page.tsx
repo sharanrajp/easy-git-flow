@@ -683,7 +683,7 @@ export default function PanelistDashboard() {
           </div>
         </div>
 
-        <div>
+        {/* <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Performance Metrics</h2>
             <div className="flex items-center space-x-2">
@@ -724,8 +724,8 @@ export default function PanelistDashboard() {
               color="red"
             />
           </div>
-        </div>
-        <div className="space-y-6">
+        </div> */}
+        <div className="space-y-6 w-full">
           {/* Search */}
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -746,10 +746,10 @@ export default function PanelistDashboard() {
           </div>
 
           {/* Main Tabs: Walk-in and Virtual */}
-          <Tabs defaultValue="walk-in" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="walk-in">Walk-in</TabsTrigger>
-              <TabsTrigger value="virtual">Virtual</TabsTrigger>
+          <Tabs defaultValue="walk-in" className="space-y-4 w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="walk-in" className="w-1/2">Walk-in</TabsTrigger>
+              <TabsTrigger value="virtual" className="w-1/2">Virtual</TabsTrigger>
             </TabsList>
 
             {/* Walk-in Tab Content */}
