@@ -58,7 +58,7 @@ import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, fetchPanelistsForCandidate, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, fetchOngoingVirtualInterviews, unscheduleVirtualInterview, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, fetchPanelistsForCandidate, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, fetchOngoingVirtualInterviews, unscheduleVirtualInterview, exportCandidatesExcel, deleteCandidates, fetchResumeProcessingLogs, fetchResumeStatus, type BackendCandidate, type OngoingInterview, type ResumeProcessingLog, type CandidateResumeStatus } from "@/lib/candidates-api"
 import { formatDate, toUTCDateString } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { API_BASE_URL } from "@/lib/api-config"
@@ -69,6 +69,8 @@ import { VirtualScheduleInterviewDialog } from "@/components/candidates/virtual-
 import { Pagination } from "@/components/ui/pagination"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 import { ScreeningSummaryDialog } from "@/components/candidates/screening-summary-dialog"
+import { ResumeLogsDialog } from "@/components/candidates/resume-logs-dialog"
+import { ResumeStatusDialog } from "@/components/candidates/resume-status-dialog"
 
 export default function CandidatesPage() {
   const { toast } = useToast()
@@ -135,6 +137,12 @@ export default function CandidatesPage() {
   const [isExporting, setIsExporting] = useState(false)
   const [isScreening, setIsScreening] = useState(false)
   const [isScreeningSummaryOpen, setIsScreeningSummaryOpen] = useState(false)
+  const [isResumeLogsOpen, setIsResumeLogsOpen] = useState(false)
+  const [isResumeStatusOpen, setIsResumeStatusOpen] = useState(false)
+  const [resumeLogs, setResumeLogs] = useState<ResumeProcessingLog[]>([])
+  const [resumeStatusData, setResumeStatusData] = useState<CandidateResumeStatus[]>([])
+  const [loadingResumeLogs, setLoadingResumeLogs] = useState(false)
+  const [loadingResumeStatus, setLoadingResumeStatus] = useState(false)
   
   // Virtual interview scheduling states
   const [isVirtualScheduleDialogOpen, setIsVirtualScheduleDialogOpen] = useState(false)
@@ -1971,6 +1979,52 @@ export default function CandidatesPage() {
             >
               <Upload className="h-4 w-4 mr-2" />
               Upload Resumes
+            </Button>
+            <Button 
+              variant="outline" 
+              className="cursor-pointer bg-transparent"
+              onClick={async () => {
+                setLoadingResumeLogs(true)
+                setIsResumeLogsOpen(true)
+                try {
+                  const response = await fetchResumeProcessingLogs()
+                  setResumeLogs(response.logs)
+                } catch (error) {
+                  toast({
+                    title: "Error",
+                    description: "Failed to fetch resume processing logs",
+                    variant: "destructive",
+                  })
+                } finally {
+                  setLoadingResumeLogs(false)
+                }
+              }}
+            >
+              <List className="h-4 w-4 mr-2" />
+              Logs
+            </Button>
+            <Button 
+              variant="outline" 
+              className="cursor-pointer bg-transparent"
+              onClick={async () => {
+                setLoadingResumeStatus(true)
+                setIsResumeStatusOpen(true)
+                try {
+                  const response = await fetchResumeStatus()
+                  setResumeStatusData(response.candidates)
+                } catch (error) {
+                  toast({
+                    title: "Error",
+                    description: "Failed to fetch resume status",
+                    variant: "destructive",
+                  })
+                } finally {
+                  setLoadingResumeStatus(false)
+                }
+              }}
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Resume Status
             </Button>
             <Button 
               variant="outline" 
@@ -3990,6 +4044,20 @@ export default function CandidatesPage() {
           open={isScreeningSummaryOpen}
           onOpenChange={setIsScreeningSummaryOpen}
           onScreeningComplete={handleScreeningSummaryRefresh}
+        />
+
+        <ResumeLogsDialog
+          open={isResumeLogsOpen}
+          onOpenChange={setIsResumeLogsOpen}
+          logs={resumeLogs}
+          loading={loadingResumeLogs}
+        />
+
+        <ResumeStatusDialog
+          open={isResumeStatusOpen}
+          onOpenChange={setIsResumeStatusOpen}
+          candidates={resumeStatusData}
+          loading={loadingResumeStatus}
         />
       </div>
     </DashboardLayout>

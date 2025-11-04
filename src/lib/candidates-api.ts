@@ -842,3 +842,72 @@ export async function fetchScreeningSummaryLogs(): Promise<ScreeningSummaryRespo
     throw error;
   }
 }
+
+export interface ResumeProcessingLog {
+  _id: string
+  file_name: string
+  status: string
+  message: string
+  started_at: string
+  completed_at: string
+}
+
+export interface ResumeProcessingResponse {
+  count: number
+  logs: ResumeProcessingLog[]
+}
+
+export async function fetchResumeProcessingLogs(): Promise<ResumeProcessingResponse> {
+  try {
+    const token = getToken();
+    const response = await fetch(`${API_BASE_URL}/resumes/logs`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch resume processing logs');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching resume processing logs:', error);
+    throw error;
+  }
+}
+
+export interface CandidateResumeStatus {
+  candidate_id: string
+  candidate_name: string
+  resume_status: string
+  resume_link?: string
+  last_updated: string
+}
+
+export interface ResumeStatusResponse {
+  count: number
+  candidates: CandidateResumeStatus[]
+}
+
+export async function fetchResumeStatus(): Promise<ResumeStatusResponse> {
+  try {
+    const token = getToken();
+    const response = await fetch(`${API_BASE_URL}/resumes/resume-status`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch resume status');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching resume status:', error);
+    throw error;
+  }
+}
