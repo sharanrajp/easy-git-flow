@@ -8,8 +8,9 @@ import { PasswordInput } from "@/components/ui/password-input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { X } from "lucide-react"
+import { Check, ChevronsUpDown, Search, X, XCircle } from "lucide-react"
 import type { User } from "@/lib/auth"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 interface UserFormProps {
   user?: User
@@ -39,7 +40,48 @@ export function UserForm({ user, onSubmit, onCancel, allowedRoles }: UserFormPro
     current_status: user?.current_status || ("free" as const),
   })
 
-  const [newSkill, setNewSkill] = useState("")
+    // Predefined skills list
+  const availableSkills = [
+    "Python",
+    "Java",
+    "SQL",
+    "JavaScript",
+    "TypeScript",
+    "React",
+    "Angular",
+    "Vue.js",
+    "Node.js",
+    "Cloud Computing",
+    "AWS",
+    "Azure",
+    "DevOps",
+    "Docker",
+    "Kubernetes",
+    "Data Analysis",
+    "Machine Learning",
+    "Artificial Intelligence",
+    "UX/UI Design",
+    "Communication",
+    "Leadership",
+    "Project Management",
+    "Agile",
+    "Scrum",
+    "HTML",
+    "CSS",
+    "REST API",
+    "GraphQL",
+    "MongoDB",
+    "PostgreSQL",
+    "MySQL",
+    "Git",
+    "CI/CD",
+  ];
+
+  const [skillSearchOpen, setSkillSearchOpen] = useState(false);
+  const [skillSearch, setSkillSearch] = useState("");
+
+  const filteredSkills = availableSkills.filter((skill) => skill.toLowerCase().includes(skillSearch.toLowerCase()));
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,8 +90,8 @@ export function UserForm({ user, onSubmit, onCancel, allowedRoles }: UserFormPro
       ...formData,
       // Only include skill_set and available_rounds for panel members and TPM/TEM
       skill_set: (formData.role === "panel_member" || formData.role === "tpm_tem") ? formData.skill_set : undefined,
-      available_rounds: formData.role === "tpm_tem" ? ["r3"] : 
-                        formData.role === "panel_member" ? formData.available_rounds : undefined,
+      available_rounds: formData.role === "tpm_tem" ? ["r3"] :
+        formData.role === "panel_member" ? formData.available_rounds : undefined,
       // Only include current_status for panel members and TPM/TEM
       current_status: (formData.role === "panel_member" || formData.role === "tpm_tem") ? formData.current_status : undefined,
     }
@@ -62,22 +104,29 @@ export function UserForm({ user, onSubmit, onCancel, allowedRoles }: UserFormPro
     onSubmit(submitData)
   }
 
-  const addSkill = () => {
-    if (newSkill.trim() && !formData.skill_set.includes(newSkill.trim())) {
+    const addSkill = (skill: string) => {
+    if (skill.trim() && !formData.skill_set.includes(skill.trim())) {
       setFormData({
         ...formData,
-        skill_set: [...formData.skill_set, newSkill.trim()],
-      })
-      setNewSkill("")
+        skill_set: [...formData.skill_set, skill.trim()],
+      });
     }
-  }
+  };
 
   const removeSkill = (skill: string) => {
     setFormData({
       ...formData,
       skill_set: formData.skill_set.filter((s) => s !== skill),
-    })
-  }
+    });
+  };
+
+  const toggleSkill = (skill: string) => {
+    if (formData.skill_set.includes(skill)) {
+      removeSkill(skill);
+    } else {
+      addSkill(skill);
+    }
+  };
 
   const handleRoundChange = (round: string, checked: boolean) => {
     if (checked) {
@@ -98,8 +147,8 @@ export function UserForm({ user, onSubmit, onCancel, allowedRoles }: UserFormPro
       ...formData,
       role,
       skill_set: (role === "panel_member" || role === "tpm_tem") ? formData.skill_set : [],
-      available_rounds: role === "tpm_tem" ? ["r3"] : 
-                        role === "panel_member" ? formData.available_rounds : [],
+      available_rounds: role === "tpm_tem" ? ["r3"] :
+        role === "panel_member" ? formData.available_rounds : [],
       current_status: (role === "panel_member" || role === "tpm_tem") ? "free" : undefined,
     })
   }
@@ -200,28 +249,92 @@ export function UserForm({ user, onSubmit, onCancel, allowedRoles }: UserFormPro
 
           <div className="space-y-2">
             <Label>Skills/Domain</Label>
-            <div className="flex space-x-2">
-              <Input
-                placeholder="Add a skill"
-                value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
-              />
-              <Button type="button" onClick={addSkill}>
-                Add
-              </Button>
-            </div>
+            <Popover open={skillSearchOpen} onOpenChange={setSkillSearchOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={skillSearchOpen}
+                  className="w-full justify-between"
+                  type="button"
+                >
+                  Select skills...
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start" onWheel={(e) => e.stopPropagation()}>
+                <div className="flex flex-col">
+                  <div className="flex items-center border-b px-3">
+                    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    <Input
+                      placeholder="Search or add custom skill..."
+                      value={skillSearch}
+                      onChange={(e) => setSkillSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && skillSearch.trim()) {
+                          e.preventDefault();
+                          addSkill(skillSearch);
+                          setSkillSearch("");
+                        }
+                      }}
+                      className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
+                    {skillSearch && (
+                      <button
+                        type="button"
+                        onClick={() => setSkillSearch("")}
+                        className="ml-2 hover:bg-accent rounded-sm p-1 transition-colors"
+                        aria-label="Clear search"
+                      >
+                        <XCircle className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-60 overflow-y-auto p-1">
+                    {skillSearch && !availableSkills.some((s) => s.toLowerCase() === skillSearch.toLowerCase()) && (
+                      <div
+                        className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                        onClick={() => {
+                          addSkill(skillSearch);
+                          setSkillSearch("");
+                        }}
+                      >
+                        <div className="flex items-center flex-1">
+                          <span className="font-medium">Add "{skillSearch}"</span>
+                        </div>
+                      </div>
+                    )}
+                    {filteredSkills.map((skill) => (
+                      <div
+                        key={skill}
+                        className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                        onClick={() => toggleSkill(skill)}
+                      >
+                        <Check
+                          className={`mr-2 h-4 w-4 ${formData.skill_set.includes(skill) ? "opacity-100" : "opacity-0"
+                            }`}
+                        />
+                        {skill}
+                      </div>
+                    ))}
+                    {filteredSkills.length === 0 && !skillSearch && (
+                      <div className="px-2 py-1.5 text-sm text-muted-foreground">No skills found</div>
+                    )}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
             <div className="flex flex-wrap gap-2 mt-2">
               {formData.skill_set.map((skill) => (
-                <Badge key={skill} variant="secondary" className="flex items-center gap-1">
-                  {skill}
+                <Badge key={skill} variant="secondary" className="flex items-center gap-1 pr-1">
+                  <span>{skill}</span>
                   <button
                     type="button"
                     onClick={() => removeSkill(skill)}
                     className="ml-1 hover:text-destructive transition-colors focus:outline-none"
                     aria-label={`Remove ${skill}`}
                   >
-                    <X className="h-3 w-3 cursor-pointer" onClick={() => removeSkill(skill)} />
+                    <X className="h-3 w-3" />
                   </button>
                 </Badge>
               ))}

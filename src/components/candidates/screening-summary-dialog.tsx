@@ -245,7 +245,7 @@ export function ScreeningSummaryDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4 mr-10">
           <DialogTitle>Screening Summary</DialogTitle>
           <div className="flex gap-2">
             <Button
