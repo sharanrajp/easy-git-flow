@@ -58,7 +58,7 @@ import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, fetchPanelistsForCandidate, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, fetchOngoingVirtualInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, fetchPanelistsForCandidate, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, fetchOngoingVirtualInterviews, unscheduleVirtualInterview, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
 import { formatDate, toUTCDateString } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { API_BASE_URL } from "@/lib/api-config"
@@ -1322,9 +1322,9 @@ export default function CandidatesPage() {
     }
   }
 
-  const handleUnscheduleVirtualInterview = async (candidateId: string, panelId: string) => {
+  const handleUnscheduleVirtualInterview = async (interviewId: string) => {
     try {
-      await undoAssignment(candidateId, panelId)
+      await unscheduleVirtualInterview(interviewId)
       
       // Refresh ongoing virtual interviews list
       const virtualInterviewsData = await fetchOngoingVirtualInterviews()
@@ -3765,6 +3765,10 @@ export default function CandidatesPage() {
                           <TableRow>
                             <TableHead>Candidate Name</TableHead>
                             <TableHead>Panel Member Name</TableHead>
+                            <TableHead>Round</TableHead>
+                            <TableHead>Interview Date</TableHead>
+                            <TableHead>Interview Time</TableHead>
+                            <TableHead>Meeting Link</TableHead>
                             <TableHead>Action</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -3784,18 +3788,31 @@ export default function CandidatesPage() {
                               {interview.candidate_name}
                             </TableCell>
                             <TableCell>{interview.panel_name}</TableCell>
+                            <TableCell>{interview.round || '-'}</TableCell>
+                            <TableCell>{interview.interview_date || '-'}</TableCell>
+                            <TableCell>{interview.interview_time || '-'}</TableCell>
                             <TableCell>
-                              {interview.status !== "interview-assigned" ? (
-                                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">Interview Started</Badge>
-                              ) : (
+                              {interview.meeting_link ? (
+                                <a 
+                                  href={interview.meeting_link} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline"
+                                >
+                                  Join
+                                </a>
+                              ) : '-'}
+                            </TableCell>
+                            <TableCell>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleUnscheduleVirtualInterview(interview.candidate_id, interview.panel_id)}
+                                onClick={() => handleUnscheduleVirtualInterview(interview.interview_id!)}
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                disabled={!interview.interview_id}
                               >
                                 Unschedule
-                              </Button>)}
+                              </Button>
                             </TableCell>
                           </TableRow>
                             ))}

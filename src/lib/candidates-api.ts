@@ -101,6 +101,11 @@ export interface OngoingInterview {
   panel_id: string;
   panel_name: string;
   round: string;
+  status?: string;
+  interview_id?: string;
+  interview_date?: string;
+  interview_time?: string;
+  meeting_link?: string;
 }
 
 // Fetch unassigned candidates from backend
@@ -443,6 +448,32 @@ export async function fetchOngoingVirtualInterviews(): Promise<OngoingInterview[
     return interviews;
   } catch (error) {
     console.error('Error fetching ongoing virtual interviews:', error);
+    throw error;
+  }
+}
+
+// Unschedule virtual interview
+export async function unscheduleVirtualInterview(interviewId: string): Promise<void> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/virtual/undo-schedule/${interviewId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to unschedule virtual interview: ${response.status} ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error('Error unscheduling virtual interview:', error);
     throw error;
   }
 }
