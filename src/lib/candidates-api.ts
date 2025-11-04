@@ -1,5 +1,6 @@
 import { getToken, makeAuthenticatedRequest } from './auth';
 import { API_BASE_URL } from './api-config';
+import { formatToIST } from './utils';
 
 export interface BackendCandidate {
   location: string;
@@ -672,9 +673,6 @@ export async function fetchBulkUploadLogs(uploadedBy?: string): Promise<BulkUplo
     
     // Transform API response to match our interface
     const logs: BulkUploadLog[] = apiLogs.map(log => {
-      // Import formatToIST function dynamically
-      const { formatToIST } = require('./utils');
-      
       // Convert uploaded_at to IST format
       const istTimestamp = formatToIST(log.uploaded_at);
       const [date, time] = istTimestamp.split(' ');
@@ -724,9 +722,6 @@ export async function fetchBulkUploadLogDetails(uploadId: string): Promise<BulkU
     
     // API returns {message: "...", log: {...}}
     const logData = data.log || data;
-    
-    // Import formatToIST function dynamically
-    const { formatToIST } = require('./utils');
     
     // Convert uploaded_at to IST format
     const istTimestamp = formatToIST(logData.uploaded_at);
