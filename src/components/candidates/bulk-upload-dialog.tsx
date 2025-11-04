@@ -93,7 +93,7 @@ export function BulkUploadDialog({ onSubmit, onCancel }: BulkUploadDialogProps) 
   const [showAllLogs, setShowAllLogs] = useState(false)
   const [skippedCandidatesPage, setSkippedCandidatesPage] = useState(1)
   const [skippedUploadLogsPage, setSkippedUploadLogsPage] = useState(1)
-  const itemsPerPage = 2
+  const itemsPerPage = 10
 
   // Load active vacancies on component mount
   useEffect(() => {
@@ -856,12 +856,12 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
                           <Table className="table-fixed">
                             <TableHeader>
                               <TableRow>
-                                <TableHead className="w-[120px]">Upload ID</TableHead>
+                                {/* <TableHead className="w-[120px]">Upload ID</TableHead> */}
                                 <TableHead className="w-[120px]">Uploaded By</TableHead>
-                                <TableHead className="w-[100px]">Upload Type</TableHead>
+                                {/* <TableHead className="w-[100px]">Upload Type</TableHead> */}
                                 <TableHead className="w-[150px]">Position</TableHead>
                                 <TableHead className="w-[70px]">Total</TableHead>
-                                <TableHead className="w-[80px]">Added</TableHead>
+                                <TableHead className="w-[80px]">Uploaded</TableHead>
                                 <TableHead className="w-[80px]">Skipped</TableHead>
                                 <TableHead className="w-[150px]">Date & Time</TableHead>
                                 <TableHead className="w-[80px]">Actions</TableHead>
@@ -875,13 +875,13 @@ Jane Smith,jane.smith@email.com,+911234567891,Chennai,2,"Node.js,Python,MongoDB"
                                   className="cursor-pointer hover:bg-muted/50"
                                   onClick={() => handleViewUploadDetails(log.upload_id)}
                                 >
-                                  <TableCell className="font-mono text-xs truncate">
+                                  {/* <TableCell className="font-mono text-xs truncate">
                                     {log.upload_id.substring(0, 8)}...
-                                  </TableCell>
+                                  </TableCell> */}
                                   <TableCell className="truncate">{log.uploaded_by}</TableCell>
-                                  <TableCell>
+                                  {/* <TableCell>
                                     <Badge variant="outline">{log.upload_type}</Badge>
-                                  </TableCell>
+                                  </TableCell> */}
                                   <TableCell className="truncate">{log.applied_position}</TableCell>
                                   <TableCell>{log.total_candidates}</TableCell>
                                   <TableCell>

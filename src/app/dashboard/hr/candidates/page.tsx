@@ -148,7 +148,7 @@ export default function CandidatesPage() {
   // Pagination states
   const [unassignedCurrentPage, setUnassignedCurrentPage] = useState(1)
   const [assignedCurrentPage, setAssignedCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(5)  
+  const [itemsPerPage, setItemsPerPage] = useState(5)
 
   // Status change dialog states
   const [isStatusChangeDialogOpen, setIsStatusChangeDialogOpen] = useState(false)
@@ -3437,8 +3437,8 @@ export default function CandidatesPage() {
           </AlertDialogContent>
         </AlertDialog>
 
-        <Dialog open={isBulkUploadOpen} onOpenChange={setIsBulkUploadOpen}>
-          <DialogContent className="max-w-4xl w-full mx-auto gradient-subtle border border-border/50 shadow-elegant animate-scale-in">
+        <Dialog open={isBulkUploadOpen} id="upload-dialog" onOpenChange={setIsBulkUploadOpen}>
+          <DialogContent className="max-w-4xl max-h-[600px] overflow-auto w-full mx-auto gradient-subtle border border-border/50 shadow-elegant animate-scale-in">
             <DialogHeader className="border-b border-border/10 pb-4">
               <DialogTitle className="text-xl font-semibold gradient-text">Upload Candidates</DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground">
