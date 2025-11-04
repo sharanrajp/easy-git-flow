@@ -59,17 +59,21 @@ export function ResumeUploadDialog({ open, onClose, onSuccess }: ResumeUploadDia
   }
 
   const handleViewResumeStatus = async () => {
-    setLoadingResumeStatus(true)
+    setResumeStatusData([]) // Clear previous data
     setIsResumeStatusOpen(true)
+    setLoadingResumeStatus(true)
     try {
       const response = await fetchResumeStatus()
-      setResumeStatusData(response.positions)
+      console.log('Resume status response:', response)
+      setResumeStatusData(response.positions || [])
     } catch (error) {
+      console.error('Resume status error:', error)
       toast({
         title: "Error",
         description: "Failed to fetch resume status",
         variant: "destructive",
       })
+      setResumeStatusData([])
     } finally {
       setLoadingResumeStatus(false)
     }
