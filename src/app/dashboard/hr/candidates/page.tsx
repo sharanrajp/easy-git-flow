@@ -58,7 +58,7 @@ import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
 import { getInterviewSessions } from "@/lib/interview-data"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, fetchPanelistsForCandidate, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
+import { fetchUnassignedCandidates, fetchAssignedCandidates, addCandidate, updateCandidate, updateCandidateCheckIn, fetchAvailablePanels, fetchPanelistsForCandidate, assignCandidateToPanel, undoAssignment, fetchOngoingInterviews, fetchOngoingVirtualInterviews, exportCandidatesExcel, deleteCandidates, type BackendCandidate, type OngoingInterview } from "@/lib/candidates-api"
 import { formatDate, toUTCDateString } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { API_BASE_URL } from "@/lib/api-config"
@@ -128,8 +128,10 @@ export default function CandidatesPage() {
   
   // Ongoing interviews states
   const [ongoingInterviews, setOngoingInterviews] = useState<OngoingInterview[]>([])
+  const [ongoingVirtualInterviews, setOngoingVirtualInterviews] = useState<OngoingInterview[]>([])
   const [isInterviewsDialogOpen, setIsInterviewsDialogOpen] = useState(false)
   const [loadingInterviews, setLoadingInterviews] = useState(false)
+  const [loadingVirtualInterviews, setLoadingVirtualInterviews] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [isScreening, setIsScreening] = useState(false)
   const [isScreeningSummaryOpen, setIsScreeningSummaryOpen] = useState(false)
@@ -1200,11 +1202,13 @@ export default function CandidatesPage() {
       Promise.all([
         fetchUnassignedCandidates(),
         fetchAssignedCandidates(),
-        fetchOngoingInterviews()
-      ]).then(([unassignedData, assignedData, interviewsData]) => {
+        fetchOngoingInterviews(),
+        fetchOngoingVirtualInterviews()
+      ]).then(([unassignedData, assignedData, interviewsData, virtualInterviewsData]) => {
         setUnassignedCandidates(unassignedData)
         setAssignedCandidates(assignedData)
         setOngoingInterviews(interviewsData)
+        setOngoingVirtualInterviews(virtualInterviewsData)
         window.dispatchEvent(new Event('dashboardUpdate'))
       }).catch(error => {
         console.error('Background refresh failed:', error)
@@ -1230,16 +1234,20 @@ export default function CandidatesPage() {
       await undoAssignment(candidateId, panelId)
       
       // Refresh both candidate lists and ongoing interviews
-      const [unassignedData, assignedData, interviewsData] = await Promise.all([
+      const [unassignedData, assignedData, interviewsData, virtualInterviewsData] = await Promise.all([
         fetchUnassignedCandidates(),
         fetchAssignedCandidates(), 
-        loadingInterviews ? Promise.resolve(ongoingInterviews) : fetchOngoingInterviews()
+        loadingInterviews ? Promise.resolve(ongoingInterviews) : fetchOngoingInterviews(),
+        loadingVirtualInterviews ? Promise.resolve(ongoingVirtualInterviews) : fetchOngoingVirtualInterviews()
       ])
       
       setUnassignedCandidates(unassignedData)
       setAssignedCandidates(assignedData)
       if (!loadingInterviews) {
         setOngoingInterviews(interviewsData)
+      }
+      if (!loadingVirtualInterviews) {
+        setOngoingVirtualInterviews(virtualInterviewsData)
       }
 
       toast({
@@ -1261,10 +1269,15 @@ export default function CandidatesPage() {
   const handleViewInterviews = async () => {
     setIsInterviewsDialogOpen(true)
     setLoadingInterviews(true)
+    setLoadingVirtualInterviews(true)
     
     try {
-      const interviewsData = await fetchOngoingInterviews()
+      const [interviewsData, virtualInterviewsData] = await Promise.all([
+        fetchOngoingInterviews(),
+        fetchOngoingVirtualInterviews()
+      ])
       setOngoingInterviews(interviewsData)
+      setOngoingVirtualInterviews(virtualInterviewsData)
     } catch (error) {
       console.error('Error fetching ongoing interviews:', error)
       toast({
@@ -1273,8 +1286,10 @@ export default function CandidatesPage() {
         variant: "destructive",
       })
       setOngoingInterviews([])
+      setOngoingVirtualInterviews([])
     } finally {
       setLoadingInterviews(false)
+      setLoadingVirtualInterviews(false)
       setInterviewSearchTerm("")
     }
   }
@@ -1302,6 +1317,34 @@ export default function CandidatesPage() {
       toast({
         title: "Error",
         description: "Failed to unassign interview. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleUnscheduleVirtualInterview = async (candidateId: string, panelId: string) => {
+    try {
+      await undoAssignment(candidateId, panelId)
+      
+      // Refresh ongoing virtual interviews list
+      const virtualInterviewsData = await fetchOngoingVirtualInterviews()
+      setOngoingVirtualInterviews(virtualInterviewsData)
+      const [updatedUnassigned, updatedAssigned] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates()
+      ])
+      setUnassignedCandidates(updatedUnassigned)
+      setAssignedCandidates(updatedAssigned)
+      
+      toast({
+        title: "Success", 
+        description: "Virtual interview has been unscheduled successfully.",
+      })
+    } catch (error) {
+      console.error('Error unscheduling virtual interview:', error)
+      toast({
+        title: "Error",
+        description: "Failed to unschedule interview. Please try again.",
         variant: "destructive",
       })
     }
@@ -1897,7 +1940,7 @@ export default function CandidatesPage() {
               onClick={handleViewInterviews}
             >
               <List className="h-4 w-4 mr-2" />
-              On-going Interviews
+              Ongoing Interviews
             </Button>
             <Button 
               variant="outline" 
@@ -3595,91 +3638,190 @@ export default function CandidatesPage() {
               </DialogDescription>
             </DialogHeader>
             
-            {loadingInterviews ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-2 text-gray-600">Loading interviews...</span>
-              </div>
-            ) : ongoingInterviews.length > 0 ? (
-              <div className="space-y-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by candidate or panel member name..."
-                    value={interviewSearchTerm}
-                    onChange={(e) => setInterviewSearchTerm(e.target.value)}
-                    className="pl-9 pr-8"
-                  />
-                  {interviewSearchTerm && (
-                    <button
-                      onClick={() => setInterviewSearchTerm("")}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-                <div className="max-h-96 overflow-y-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Candidate Name</TableHead>
-                        <TableHead>Panel Member Name</TableHead>
-                        <TableHead>Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {ongoingInterviews
-                        .filter((interview) => {
-                          const searchLower = interviewSearchTerm.toLowerCase()
-                          return (
-                            interviewSearchTerm === "" ||
-                            (interview.candidate_name && interview.candidate_name.toLowerCase().includes(searchLower)) ||
-                            (interview.panel_name && interview.panel_name.toLowerCase().includes(searchLower))
-                          )
-                        })
-                        .map((interview) => (
-                      <TableRow key={`${interview.candidate_id}-${interview.panel_id}`}>
-                        <TableCell className="font-medium">
-                          {interview.candidate_name}
-                        </TableCell>
-                        <TableCell>{interview.panel_name}</TableCell>
-                        <TableCell>
-                          {interview.status !== "interview-assigned" ? (
-                            <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">Interview Started</Badge>
-                          ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleUnassignInterview(interview.candidate_id, interview.panel_id)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            Unassign
-                          </Button>)}
-                        </TableCell>
-                      </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </div>
-                {ongoingInterviews.filter((interview) => {
-                  const searchLower = interviewSearchTerm.toLowerCase()
-                  return (
-                    interviewSearchTerm === "" ||
-                    (interview.candidate_name && interview.candidate_name.toLowerCase().includes(searchLower)) ||
-                    (interview.panel_name && interview.panel_name.toLowerCase().includes(searchLower))
-                  )
-                }).length === 0 && interviewSearchTerm && (
+            <Tabs defaultValue="walk-in" className="w-full">
+              <TabsList>
+                <TabsTrigger value="walk-in">Walk-in</TabsTrigger>
+                <TabsTrigger value="virtual">Virtual</TabsTrigger>
+              </TabsList>
+              
+              {/* Walk-in Tab */}
+              <TabsContent value="walk-in">
+                {loadingInterviews ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span className="ml-2 text-gray-600">Loading interviews...</span>
+                  </div>
+                ) : ongoingInterviews.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by candidate or panel member name..."
+                        value={interviewSearchTerm}
+                        onChange={(e) => setInterviewSearchTerm(e.target.value)}
+                        className="pl-9 pr-8"
+                      />
+                      {interviewSearchTerm && (
+                        <button
+                          onClick={() => setInterviewSearchTerm("")}
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Candidate Name</TableHead>
+                            <TableHead>Panel Member Name</TableHead>
+                            <TableHead>Action</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {ongoingInterviews
+                            .filter((interview) => {
+                              const searchLower = interviewSearchTerm.toLowerCase()
+                              return (
+                                interviewSearchTerm === "" ||
+                                (interview.candidate_name && interview.candidate_name.toLowerCase().includes(searchLower)) ||
+                                (interview.panel_name && interview.panel_name.toLowerCase().includes(searchLower))
+                              )
+                            })
+                            .map((interview) => (
+                          <TableRow key={`${interview.candidate_id}-${interview.panel_id}`}>
+                            <TableCell className="font-medium">
+                              {interview.candidate_name}
+                            </TableCell>
+                            <TableCell>{interview.panel_name}</TableCell>
+                            <TableCell>
+                              {interview.status !== "interview-assigned" ? (
+                                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">Interview Started</Badge>
+                              ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleUnassignInterview(interview.candidate_id, interview.panel_id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                Unassign
+                              </Button>)}
+                            </TableCell>
+                          </TableRow>
+                            ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    {ongoingInterviews.filter((interview) => {
+                      const searchLower = interviewSearchTerm.toLowerCase()
+                      return (
+                        interviewSearchTerm === "" ||
+                        (interview.candidate_name && interview.candidate_name.toLowerCase().includes(searchLower)) ||
+                        (interview.panel_name && interview.panel_name.toLowerCase().includes(searchLower))
+                      )
+                    }).length === 0 && interviewSearchTerm && (
+                      <div className="text-center py-8 text-gray-500">
+                        No interviews match your search criteria.
+                      </div>
+                    )}
+                  </div>
+                ) : (
                   <div className="text-center py-8 text-gray-500">
-                    No interviews match your search criteria.
+                    No ongoing interviews found
                   </div>
                 )}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                No ongoing interviews found
-              </div>
-            )}
+              </TabsContent>
+              
+              {/* Virtual Tab */}
+              <TabsContent value="virtual">
+                {loadingVirtualInterviews ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span className="ml-2 text-gray-600">Loading interviews...</span>
+                  </div>
+                ) : ongoingVirtualInterviews.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by candidate or panel member name..."
+                        value={interviewSearchTerm}
+                        onChange={(e) => setInterviewSearchTerm(e.target.value)}
+                        className="pl-9 pr-8"
+                      />
+                      {interviewSearchTerm && (
+                        <button
+                          onClick={() => setInterviewSearchTerm("")}
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Candidate Name</TableHead>
+                            <TableHead>Panel Member Name</TableHead>
+                            <TableHead>Action</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {ongoingVirtualInterviews
+                            .filter((interview) => {
+                              const searchLower = interviewSearchTerm.toLowerCase()
+                              return (
+                                interviewSearchTerm === "" ||
+                                (interview.candidate_name && interview.candidate_name.toLowerCase().includes(searchLower)) ||
+                                (interview.panel_name && interview.panel_name.toLowerCase().includes(searchLower))
+                              )
+                            })
+                            .map((interview) => (
+                          <TableRow key={`virtual-${interview.candidate_id}-${interview.panel_id}`}>
+                            <TableCell className="font-medium">
+                              {interview.candidate_name}
+                            </TableCell>
+                            <TableCell>{interview.panel_name}</TableCell>
+                            <TableCell>
+                              {interview.status !== "interview-assigned" ? (
+                                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">Interview Started</Badge>
+                              ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleUnscheduleVirtualInterview(interview.candidate_id, interview.panel_id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                Unschedule
+                              </Button>)}
+                            </TableCell>
+                          </TableRow>
+                            ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    {ongoingVirtualInterviews.filter((interview) => {
+                      const searchLower = interviewSearchTerm.toLowerCase()
+                      return (
+                        interviewSearchTerm === "" ||
+                        (interview.candidate_name && interview.candidate_name.toLowerCase().includes(searchLower)) ||
+                        (interview.panel_name && interview.panel_name.toLowerCase().includes(searchLower))
+                      )
+                    }).length === 0 && interviewSearchTerm && (
+                      <div className="text-center py-8 text-gray-500">
+                        No interviews match your search criteria.
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No ongoing virtual interviews found
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </DialogContent>
         </Dialog>
 

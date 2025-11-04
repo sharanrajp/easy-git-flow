@@ -418,6 +418,35 @@ export async function fetchOngoingInterviews(): Promise<OngoingInterview[]> {
   }
 }
 
+// Fetch ongoing virtual interviews from backend
+export async function fetchOngoingVirtualInterviews(): Promise<OngoingInterview[]> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/interviews/ongoing/virtual`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ongoing virtual interviews: ${response.status} ${response.statusText}`);
+    }
+
+    const interviews: OngoingInterview[] = await response.json();
+    return interviews;
+  } catch (error) {
+    console.error('Error fetching ongoing virtual interviews:', error);
+    throw error;
+  }
+}
+
 // Export candidates to Excel/CSV
 export async function exportCandidatesExcel(): Promise<Blob> {
   const response = await makeAuthenticatedRequest(`${API_BASE_URL}/export/candidates-excel`);
