@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Loader2 } from "lucide-react"
 import { PositionResumeStatus } from "@/lib/candidates-api"
@@ -16,6 +16,9 @@ export function ResumeStatusDialog({ open, onOpenChange, positions, loading }: R
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>Resume Status</DialogTitle>
+          <DialogDescription>
+            View position-wise resume status summary
+          </DialogDescription>
         </DialogHeader>
 
         {loading ? (
