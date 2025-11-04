@@ -672,8 +672,12 @@ export async function fetchBulkUploadLogs(uploadedBy?: string): Promise<BulkUplo
     
     // Transform API response to match our interface
     const logs: BulkUploadLog[] = apiLogs.map(log => {
-      // Split uploaded_at into date and time
-      const [date, time] = log.uploaded_at.split(' ');
+      // Import formatToIST function dynamically
+      const { formatToIST } = require('./utils');
+      
+      // Convert uploaded_at to IST format
+      const istTimestamp = formatToIST(log.uploaded_at);
+      const [date, time] = istTimestamp.split(' ');
       
       return {
         upload_id: log.upload_id,
@@ -721,8 +725,12 @@ export async function fetchBulkUploadLogDetails(uploadId: string): Promise<BulkU
     // API returns {message: "...", log: {...}}
     const logData = data.log || data;
     
-    // Split uploaded_at into date and time
-    const [date, time] = logData.uploaded_at.split(' ');
+    // Import formatToIST function dynamically
+    const { formatToIST } = require('./utils');
+    
+    // Convert uploaded_at to IST format
+    const istTimestamp = formatToIST(logData.uploaded_at);
+    const [date, time] = istTimestamp.split(' ');
     
     // Transform API response to match our interface
     const details: BulkUploadLogDetails = {

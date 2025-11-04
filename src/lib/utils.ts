@@ -77,3 +77,33 @@ export function normalizeDateString(dateString: string): string {
     return dateString
   }
 }
+
+/**
+ * Formats a timestamp to IST (Indian Standard Time) in YYYY-MM-DD HH:mm:ss format
+ * @param timestamp - Date string or timestamp to format
+ * @returns Formatted date string in IST timezone
+ */
+export function formatToIST(timestamp: string | Date): string {
+  if (!timestamp) return ''
+  
+  try {
+    const date = new Date(timestamp)
+    if (isNaN(date.getTime())) return ''
+    
+    // Convert to IST (UTC+5:30)
+    const istOffset = 5.5 * 60 * 60 * 1000 // IST offset in milliseconds
+    const istDate = new Date(date.getTime() + istOffset)
+    
+    // Format as YYYY-MM-DD HH:mm:ss
+    const year = istDate.getUTCFullYear()
+    const month = String(istDate.getUTCMonth() + 1).padStart(2, '0')
+    const day = String(istDate.getUTCDate()).padStart(2, '0')
+    const hours = String(istDate.getUTCHours()).padStart(2, '0')
+    const minutes = String(istDate.getUTCMinutes()).padStart(2, '0')
+    const seconds = String(istDate.getUTCSeconds()).padStart(2, '0')
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+  } catch {
+    return ''
+  }
+}
