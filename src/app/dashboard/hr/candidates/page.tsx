@@ -69,6 +69,8 @@ import { VirtualScheduleInterviewDialog } from "@/components/candidates/virtual-
 import { Pagination } from "@/components/ui/pagination"
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog"
 import { ScreeningSummaryDialog } from "@/components/candidates/screening-summary-dialog"
+import { ScreeningLogsDialog } from "@/components/candidates/screening-logs-dialog"
+import { fetchScreeningSummaryLogs, type ScreeningSummaryLog } from "@/lib/candidates-api"
 
 export default function CandidatesPage() {
   const { toast } = useToast()
@@ -135,6 +137,9 @@ export default function CandidatesPage() {
   const [isExporting, setIsExporting] = useState(false)
   const [isScreening, setIsScreening] = useState(false)
   const [isScreeningSummaryOpen, setIsScreeningSummaryOpen] = useState(false)
+  const [isScreeningLogsOpen, setIsScreeningLogsOpen] = useState(false)
+  const [screeningLogs, setScreeningLogs] = useState<ScreeningSummaryLog[]>([])
+  const [loadingScreeningLogs, setLoadingScreeningLogs] = useState(false)
   
   // Virtual interview scheduling states
   const [isVirtualScheduleDialogOpen, setIsVirtualScheduleDialogOpen] = useState(false)
@@ -1988,6 +1993,31 @@ export default function CandidatesPage() {
             >
               <Eye className="h-4 w-4 mr-2" />
               View Screening Summary
+            </Button>
+            <Button 
+              variant="outline" 
+              className="cursor-pointer bg-transparent"
+              onClick={async () => {
+                setIsScreeningLogsOpen(true)
+                setLoadingScreeningLogs(true)
+                try {
+                  const response = await fetchScreeningSummaryLogs()
+                  setScreeningLogs(response.logs || [])
+                } catch (error) {
+                  console.error('Error fetching screening logs:', error)
+                  toast({
+                    title: "Error",
+                    description: "Failed to fetch screening logs. Please try again.",
+                    variant: "destructive",
+                  })
+                  setScreeningLogs([])
+                } finally {
+                  setLoadingScreeningLogs(false)
+                }
+              }}
+            >
+              <List className="h-4 w-4 mr-2" />
+              Logs
             </Button>
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <Button 
@@ -3990,6 +4020,13 @@ export default function CandidatesPage() {
           open={isScreeningSummaryOpen}
           onOpenChange={setIsScreeningSummaryOpen}
           onScreeningComplete={handleScreeningSummaryRefresh}
+        />
+
+        <ScreeningLogsDialog
+          open={isScreeningLogsOpen}
+          onOpenChange={setIsScreeningLogsOpen}
+          logs={screeningLogs}
+          loading={loadingScreeningLogs}
         />
       </div>
     </DashboardLayout>

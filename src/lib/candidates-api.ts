@@ -786,3 +786,59 @@ export async function fetchCandidateDetails(candidateId: string): Promise<Backen
     throw error;
   }
 }
+
+// Screening summary log types
+export interface ScreeningSummaryDetail {
+  candidate_name: string
+  status: string
+  error?: string
+}
+
+export interface ScreeningSummaryLog {
+  _id: string
+  vacancy_id: string
+  position_title: string
+  total_candidates: number
+  success_count: number
+  failed_count: number
+  details: ScreeningSummaryDetail[]
+  status: string
+  started_at: string
+  completed_at: string
+}
+
+export interface ScreeningSummaryResponse {
+  count: number
+  logs: ScreeningSummaryLog[]
+}
+
+/**
+ * Fetch all screening summary logs
+ */
+export async function fetchScreeningSummaryLogs(): Promise<ScreeningSummaryResponse> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/screening/logs`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch screening summary logs: ${response.status} ${response.statusText}`);
+    }
+
+    const data: ScreeningSummaryResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching screening summary logs:', error);
+    throw error;
+  }
+}
