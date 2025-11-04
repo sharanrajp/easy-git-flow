@@ -5,7 +5,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast"
 import { API_BASE_URL } from "@/lib/api-config"
 import { getToken } from "@/lib/auth"
-import { Search, RefreshCw, Loader2, Play } from "lucide-react"
+import { Search, RefreshCw, Loader2, Play, List } from "lucide-react"
+import { ScreeningLogsDialog } from "./screening-logs-dialog"
+import { fetchScreeningSummaryLogs, type ScreeningSummaryLog } from "@/lib/candidates-api"
 
 interface PositionScreeningSummary {
   position_title: string
@@ -31,6 +33,9 @@ export function ScreeningSummaryDialog({
   const [summaries, setSummaries] = useState<PositionScreeningSummary[]>([])
   const [runningScreening, setRunningScreening] = useState<string | null>(null)
   const [runningGlobal, setRunningGlobal] = useState<'all' | 'retry' | null>(null)
+  const [isScreeningLogsOpen, setIsScreeningLogsOpen] = useState(false)
+  const [screeningLogs, setScreeningLogs] = useState<ScreeningSummaryLog[]>([])
+  const [loadingScreeningLogs, setLoadingScreeningLogs] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -251,6 +256,40 @@ export function ScreeningSummaryDialog({
             <Button
               variant="outline"
               size="sm"
+              onClick={async () => {
+                setLoadingScreeningLogs(true)
+                try {
+                  const response = await fetchScreeningSummaryLogs()
+                  setScreeningLogs(response.logs)
+                  setIsScreeningLogsOpen(true)
+                } catch (error) {
+                  console.error('Error fetching screening logs:', error)
+                  toast({
+                    title: "Error",
+                    description: "Failed to fetch screening logs. Please try again.",
+                    variant: "destructive",
+                  })
+                } finally {
+                  setLoadingScreeningLogs(false)
+                }
+              }}
+              disabled={loadingScreeningLogs}
+            >
+              {loadingScreeningLogs ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <List className="h-4 w-4 mr-2" />
+                  View Logs
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleRunAllScreenings}
               disabled={loading || runningGlobal === 'all'}
             >
@@ -336,6 +375,13 @@ export function ScreeningSummaryDialog({
           </Table>
         )}
       </DialogContent>
+
+      <ScreeningLogsDialog
+        open={isScreeningLogsOpen}
+        onOpenChange={setIsScreeningLogsOpen}
+        logs={screeningLogs}
+        loading={loadingScreeningLogs}
+      />
     </Dialog>
   )
 }
