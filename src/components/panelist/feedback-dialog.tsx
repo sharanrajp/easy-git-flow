@@ -63,12 +63,14 @@ export function FeedbackDialog({ isOpen, onClose, session, onSubmit }: FeedbackD
       },
     })
 
-    // Trigger candidate list refresh with multiple events for compatibility
-    window.dispatchEvent(new Event('interview-sessions:update'))
-    window.dispatchEvent(new Event('dashboardUpdate'))
-
     onSubmit()
     onClose()
+
+    // Dispatch events with delay to allow backend to process
+    setTimeout(() => {
+      window.dispatchEvent(new Event('interview-sessions:update'))
+      window.dispatchEvent(new Event('dashboardUpdate'))
+    }, 1500)
 
     // Reset form
     setFeedback({

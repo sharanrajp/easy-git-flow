@@ -69,13 +69,15 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
       localStorage.setItem("ats_user", JSON.stringify(updatedUser))
       window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }))
       
-      // Trigger candidate list refresh with multiple events for compatibility
-      window.dispatchEvent(new Event('interview-sessions:update'))
-      window.dispatchEvent(new Event('dashboardUpdate'))
-      
       // Trigger UI updates immediately with feedback data
       onSubmit(feedback)
       onClose()
+      
+      // Dispatch events with delay to allow backend to process
+      setTimeout(() => {
+        window.dispatchEvent(new Event('interview-sessions:update'))
+        window.dispatchEvent(new Event('dashboardUpdate'))
+      }, 1500)
       
       // Reset form after submission
       const resetFeedback = {
