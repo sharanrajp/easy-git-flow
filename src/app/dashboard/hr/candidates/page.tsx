@@ -3767,7 +3767,7 @@ export default function CandidatesPage() {
                         <TableHeader>
                           <TableRow>
                             <TableHead>Candidate Name</TableHead>
-                            <TableHead>Panel Member Name</TableHead>
+                            <TableHead>Panel Name</TableHead>
                             <TableHead>Round</TableHead>
                             <TableHead>Interview Date</TableHead>
                             <TableHead>Interview Time</TableHead>
