@@ -8,7 +8,7 @@ import { API_BASE_URL } from "@/lib/api-config"
 import { getToken } from "@/lib/auth"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { fetchResumeProcessingLogs, fetchResumeStatus, type ResumeProcessingLog, type CandidateResumeStatus } from "@/lib/candidates-api"
+import { fetchResumeProcessingLogs, fetchResumeStatus, type ResumeProcessingLog, type PositionResumeStatus } from "@/lib/candidates-api"
 import { ResumeLogsDialog } from "./resume-logs-dialog"
 import { ResumeStatusDialog } from "./resume-status-dialog"
 import { useToast } from "@/hooks/use-toast"
@@ -37,7 +37,7 @@ export function ResumeUploadDialog({ open, onClose, onSuccess }: ResumeUploadDia
   const [isResumeLogsOpen, setIsResumeLogsOpen] = useState(false)
   const [isResumeStatusOpen, setIsResumeStatusOpen] = useState(false)
   const [resumeLogs, setResumeLogs] = useState<ResumeProcessingLog[]>([])
-  const [resumeStatusData, setResumeStatusData] = useState<CandidateResumeStatus[]>([])
+  const [resumeStatusData, setResumeStatusData] = useState<PositionResumeStatus[]>([])
   const [loadingResumeLogs, setLoadingResumeLogs] = useState(false)
   const [loadingResumeStatus, setLoadingResumeStatus] = useState(false)
 
@@ -63,7 +63,7 @@ export function ResumeUploadDialog({ open, onClose, onSuccess }: ResumeUploadDia
     setIsResumeStatusOpen(true)
     try {
       const response = await fetchResumeStatus()
-      setResumeStatusData(response.candidates)
+      setResumeStatusData(response.positions)
     } catch (error) {
       toast({
         title: "Error",
@@ -402,7 +402,7 @@ export function ResumeUploadDialog({ open, onClose, onSuccess }: ResumeUploadDia
         <ResumeStatusDialog
           open={isResumeStatusOpen}
           onOpenChange={setIsResumeStatusOpen}
-          candidates={resumeStatusData}
+          positions={resumeStatusData}
           loading={loadingResumeStatus}
         />
       </DialogContent>

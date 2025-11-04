@@ -878,17 +878,16 @@ export async function fetchResumeProcessingLogs(): Promise<ResumeProcessingRespo
   }
 }
 
-export interface CandidateResumeStatus {
-  candidate_id: string
-  candidate_name: string
-  resume_status: string
-  resume_link?: string
-  last_updated: string
+export interface PositionResumeStatus {
+  position_title: string
+  total_candidates: number
+  with_resume: number
+  without_resume: number
 }
 
 export interface ResumeStatusResponse {
   count: number
-  candidates: CandidateResumeStatus[]
+  positions: PositionResumeStatus[]
 }
 
 export async function fetchResumeStatus(): Promise<ResumeStatusResponse> {
