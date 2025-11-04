@@ -3824,7 +3824,7 @@ export default function CandidatesPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleUnscheduleVirtualInterview(interview.interview_id)}
+                                onClick={() => handleUnscheduleVirtualInterview(interview._id)}
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
                               >
                                 Unschedule

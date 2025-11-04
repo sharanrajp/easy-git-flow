@@ -96,13 +96,13 @@ export interface PanelistCandidate {
 }
 
 export interface OngoingInterview {
+  _id?: string;
   candidate_id: string;
   candidate_name: string;
   panel_id: string;
   panel_name: string;
   round: string;
   status?: string;
-  interview_id?: string;
   interview_date?: string;
   interview_time?: string;
   meeting_link?: string;
