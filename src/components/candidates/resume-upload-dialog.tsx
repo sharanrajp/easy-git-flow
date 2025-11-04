@@ -59,13 +59,17 @@ export function ResumeUploadDialog({ open, onClose, onSuccess }: ResumeUploadDia
   }
 
   const handleViewResumeStatus = async () => {
+    console.log('=== Resume Status Button Clicked ===')
     setResumeStatusData([]) // Clear previous data
     setIsResumeStatusOpen(true)
     setLoadingResumeStatus(true)
     try {
       const response = await fetchResumeStatus()
       console.log('Resume status response:', response)
+      console.log('Positions array:', response.positions)
+      console.log('Positions length:', response.positions?.length)
       setResumeStatusData(response.positions || [])
+      console.log('State updated with positions')
     } catch (error) {
       console.error('Resume status error:', error)
       toast({
@@ -76,6 +80,7 @@ export function ResumeUploadDialog({ open, onClose, onSuccess }: ResumeUploadDia
       setResumeStatusData([])
     } finally {
       setLoadingResumeStatus(false)
+      console.log('=== Resume Status Loading Complete ===')
     }
   }
 

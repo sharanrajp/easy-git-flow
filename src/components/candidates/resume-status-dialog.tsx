@@ -11,6 +11,8 @@ interface ResumeStatusDialogProps {
 }
 
 export function ResumeStatusDialog({ open, onOpenChange, positions, loading }: ResumeStatusDialogProps) {
+  console.log('ResumeStatusDialog render:', { open, loading, positionsCount: positions.length, positions })
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto">
