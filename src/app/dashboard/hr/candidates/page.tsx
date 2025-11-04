@@ -263,12 +263,22 @@ export default function CandidatesPage() {
 
   // Auto-refresh candidates when feedback is submitted
   useEffect(() => {
-    let isRefreshing = false
+    console.log('[HR Candidates] Event listeners registered at:', new Date().toISOString())
     
-    const handleFeedbackUpdate = async () => {
+    let isRefreshing = false
+    let refreshTimeout: NodeJS.Timeout | null = null
+    
+    const handleFeedbackUpdate = async (skipSecondRefresh = false) => {
+      console.log('[HR Candidates] Feedback update event received at:', new Date().toISOString())
+      
       // Prevent multiple simultaneous refreshes
-      if (isRefreshing) return
+      if (isRefreshing) {
+        console.log('[HR Candidates] Already refreshing, skipping...')
+        return
+      }
       isRefreshing = true
+      
+      console.log('[HR Candidates] Starting candidate refresh...')
       
       try {
         const [unassignedData, assignedData] = await Promise.all([
@@ -276,22 +286,50 @@ export default function CandidatesPage() {
           fetchAssignedCandidates()
         ])
         
+        console.log('[HR Candidates] Refresh successful:', {
+          unassigned: unassignedData.length,
+          assigned: assignedData.length
+        })
+        
         setUnassignedCandidates(unassignedData)
         setAssignedCandidates(assignedData)
+        
+        toast({
+          title: "Updated",
+          description: "Candidate list refreshed",
+          duration: 2000
+        })
+        
+        // Schedule a second refresh 5 seconds later as safety net (only on first call)
+        if (!skipSecondRefresh && !refreshTimeout) {
+          refreshTimeout = setTimeout(() => {
+            console.log('[HR Candidates] Running delayed safety refresh...')
+            handleFeedbackUpdate(true)
+            refreshTimeout = null
+          }, 5000)
+        }
       } catch (error) {
-        console.error('Failed to refresh candidates:', error)
+        console.error('[HR Candidates] Failed to refresh candidates:', error)
+        toast({
+          title: "Refresh failed",
+          description: "Could not update candidate list",
+          variant: "destructive"
+        })
       } finally {
         isRefreshing = false
+        console.log('[HR Candidates] Refresh complete')
       }
     }
 
     // Listen for feedback submission events - both event types for compatibility
-    window.addEventListener('interview-sessions:update', handleFeedbackUpdate)
-    window.addEventListener('dashboardUpdate', handleFeedbackUpdate)
+    window.addEventListener('interview-sessions:update', () => handleFeedbackUpdate(false))
+    window.addEventListener('dashboardUpdate', () => handleFeedbackUpdate(false))
     
     return () => {
+      console.log('[HR Candidates] Event listeners removed at:', new Date().toISOString())
       window.removeEventListener('interview-sessions:update', handleFeedbackUpdate)
       window.removeEventListener('dashboardUpdate', handleFeedbackUpdate)
+      if (refreshTimeout) clearTimeout(refreshTimeout)
     }
   }, [])
 

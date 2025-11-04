@@ -75,9 +75,11 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
       
       // Dispatch events with delay to allow backend to process
       setTimeout(() => {
+        console.log('[Feedback] Dispatching refresh events at:', new Date().toISOString())
         window.dispatchEvent(new Event('interview-sessions:update'))
         window.dispatchEvent(new Event('dashboardUpdate'))
-      }, 1500)
+        console.log('[Feedback] Events dispatched successfully')
+      }, 2500)
       
       // Reset form after submission
       const resetFeedback = {
