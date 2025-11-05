@@ -103,13 +103,6 @@ export default function PanelistDashboard() {
     return user
   }, [])
 
-  useEffect(() => {
-    const user = loadCurrentUser()
-    if (user) {
-      loadCandidates()
-    }
-  }, [])
-
   const loadCandidates = useCallback(async () => {
     try {
       setIsCandidatesLoading(true)
@@ -126,6 +119,34 @@ export default function PanelistDashboard() {
       setIsCandidatesLoading(false)
     }
   }, [toast])
+
+  useEffect(() => {
+    const user = loadCurrentUser()
+    if (user) {
+      loadCandidates()
+    }
+  }, [loadCandidates])
+
+  // Listen for candidate assignment events to auto-refresh
+  useEffect(() => {
+    const handleCandidateAssigned = () => {
+      console.log('[Panelist Dashboard] Candidate assigned event received, refreshing...')
+      loadCandidates()
+    }
+
+    const handleDashboardUpdate = () => {
+      console.log('[Panelist Dashboard] Dashboard update event received, refreshing...')
+      loadCandidates()
+    }
+
+    window.addEventListener('candidateAssigned', handleCandidateAssigned)
+    window.addEventListener('dashboardUpdate', handleDashboardUpdate)
+    
+    return () => {
+      window.removeEventListener('candidateAssigned', handleCandidateAssigned)
+      window.removeEventListener('dashboardUpdate', handleDashboardUpdate)
+    }
+  }, [loadCandidates])
 
   // Check if candidate has completed feedback for current round
   const hasFeedbackCompleted = (candidate: any) => {

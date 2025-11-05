@@ -320,6 +320,10 @@ export function VirtualScheduleInterviewDialog({
         panelMembers: selectedPanelMembers,
         rescheduleReason: isReschedule ? rescheduleReason : undefined,
       })
+      
+      // Notify panelist dashboard to refresh
+      window.dispatchEvent(new CustomEvent('candidateAssigned'))
+      
       onClose()
     }
   }

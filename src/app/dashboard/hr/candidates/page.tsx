@@ -1105,6 +1105,7 @@ export default function CandidatesPage() {
         setUnassignedCandidates(updatedUnassigned)
         setAssignedCandidates(updatedAssigned)
         window.dispatchEvent(new Event('dashboardUpdate'))
+        window.dispatchEvent(new Event('candidateAssigned'))
       }).catch(error => {
         console.error('Background refresh failed:', error)
       })
@@ -1210,6 +1211,7 @@ export default function CandidatesPage() {
         setOngoingInterviews(interviewsData)
         setOngoingVirtualInterviews(virtualInterviewsData)
         window.dispatchEvent(new Event('dashboardUpdate'))
+        window.dispatchEvent(new Event('candidateAssigned'))
       }).catch(error => {
         console.error('Background refresh failed:', error)
       })
