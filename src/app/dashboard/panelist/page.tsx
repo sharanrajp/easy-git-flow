@@ -127,21 +127,37 @@ export default function PanelistDashboard() {
     }
   }, [loadCandidates])
 
-  // Listen for candidate assignment events to auto-refresh using BroadcastChannel
+  // Listen for candidate assignment events to auto-refresh using WebSocket
   useEffect(() => {
-    const channel = new BroadcastChannel('ats-updates')
+    const ws = new WebSocket('ws://127.0.0.1:8000/ws/ats')
     
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'candidateAssigned') {
-        loadCandidates()
+    ws.onopen = () => {
+      console.log('[Panelist Dashboard] WebSocket connected')
+    }
+
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data)
+        console.log('[Panelist Dashboard] Received WebSocket message:', message)
+        if (message.type === 'candidateAssigned') {
+          loadCandidates()
+        }
+      } catch (error) {
+        console.error('[Panelist Dashboard] Error parsing WebSocket message:', error)
       }
     }
 
-    channel.addEventListener('message', handleMessage)
+    ws.onerror = (error) => {
+      console.error('[Panelist Dashboard] WebSocket error:', error)
+    }
+
+    ws.onclose = () => {
+      console.log('[Panelist Dashboard] WebSocket disconnected')
+    }
     
     return () => {
-      channel.removeEventListener('message', handleMessage)
-      channel.close()
+      console.log('[Panelist Dashboard] Closing WebSocket connection')
+      ws.close()
     }
   }, [loadCandidates])
 
@@ -428,10 +444,12 @@ export default function PanelistDashboard() {
     
     handleScheduledFeedbackClose()
     
-    // Notify other components to refresh via BroadcastChannel
-    const channel = new BroadcastChannel('ats-updates')
-    channel.postMessage({ type: 'feedbackSubmitted' })
-    channel.close()
+    // Notify other components to refresh via WebSocket
+    const ws = new WebSocket('ws://127.0.0.1:8000/ws/ats')
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ type: 'feedbackSubmitted', timestamp: Date.now() }))
+      setTimeout(() => ws.close(), 100)
+    }
   }, [selectedScheduledCandidate, currentUser, handleScheduledFeedbackClose])
 
   useEffect(() => {
