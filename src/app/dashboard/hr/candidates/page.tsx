@@ -268,9 +268,8 @@ export default function CandidatesPage() {
     console.log('[HR Candidates] Event listeners registered at:', new Date().toISOString())
     
     let isRefreshing = false
-    let refreshTimeout: NodeJS.Timeout | null = null
     
-    const handleFeedbackUpdate = async (skipSecondRefresh = false) => {
+    const handleFeedbackUpdate = async () => {
       console.log('[HR Candidates] Feedback update event received at:', new Date().toISOString())
       
       // Prevent multiple simultaneous refreshes
@@ -295,15 +294,6 @@ export default function CandidatesPage() {
         
         setUnassignedCandidates(unassignedData)
         setAssignedCandidates(assignedData)
-        
-        // Schedule a second refresh 5 seconds later as safety net
-        if (!skipSecondRefresh && !refreshTimeout) {
-          refreshTimeout = setTimeout(() => {
-            console.log('[HR Candidates] Running delayed safety refresh...')
-            handleFeedbackUpdate(true) // Skip further cascading
-            refreshTimeout = null
-          }, 5000)
-        }
       } catch (error) {
         console.error('[HR Candidates] Failed to refresh candidates:', error)
       } finally {
@@ -313,16 +303,15 @@ export default function CandidatesPage() {
     }
 
     // Listen for all three event types
-    window.addEventListener('interview-sessions:update', () => handleFeedbackUpdate(false))
-    window.addEventListener('dashboardUpdate', () => handleFeedbackUpdate(false))
-    window.addEventListener('candidateUpdated', () => handleFeedbackUpdate(false))
+    window.addEventListener('interview-sessions:update', handleFeedbackUpdate)
+    window.addEventListener('dashboardUpdate', handleFeedbackUpdate)
+    window.addEventListener('candidateUpdated', handleFeedbackUpdate)
     
     return () => {
       console.log('[HR Candidates] Event listeners removed at:', new Date().toISOString())
       window.removeEventListener('interview-sessions:update', handleFeedbackUpdate)
       window.removeEventListener('dashboardUpdate', handleFeedbackUpdate)
       window.removeEventListener('candidateUpdated', handleFeedbackUpdate)
-      if (refreshTimeout) clearTimeout(refreshTimeout)
     }
   }, [])
 
