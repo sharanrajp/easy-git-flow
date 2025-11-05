@@ -129,20 +129,25 @@ export default function PanelistDashboard() {
 
   // Listen for candidate assignment events to auto-refresh
   useEffect(() => {
-    const handleCandidateAssigned = () => {
-      console.log('[Panelist Dashboard] Candidate assigned event received, refreshing...')
+    const handleCandidateAssigned = (event?: Event) => {
+      console.log('[Panelist Dashboard] ✅ candidateAssigned event received at:', new Date().toISOString())
+      console.log('[Panelist Dashboard] Starting data refresh...')
       loadCandidates()
     }
 
-    const handleDashboardUpdate = () => {
-      console.log('[Panelist Dashboard] Dashboard update event received, refreshing...')
+    const handleDashboardUpdate = (event?: Event) => {
+      console.log('[Panelist Dashboard] ✅ dashboardUpdate event received at:', new Date().toISOString())
+      console.log('[Panelist Dashboard] Starting data refresh...')
       loadCandidates()
     }
 
+    console.log('[Panelist Dashboard] 📡 Setting up event listeners...')
     window.addEventListener('candidateAssigned', handleCandidateAssigned)
     window.addEventListener('dashboardUpdate', handleDashboardUpdate)
+    console.log('[Panelist Dashboard] ✅ Event listeners registered: candidateAssigned, dashboardUpdate')
     
     return () => {
+      console.log('[Panelist Dashboard] 🔌 Removing event listeners')
       window.removeEventListener('candidateAssigned', handleCandidateAssigned)
       window.removeEventListener('dashboardUpdate', handleDashboardUpdate)
     }
@@ -432,7 +437,11 @@ export default function PanelistDashboard() {
     handleScheduledFeedbackClose()
     
     // Notify other components to refresh
+    console.log('[Panelist Dashboard] 📤 Dispatching events: interview-sessions:update, dashboardUpdate, candidateUpdated')
+    window.dispatchEvent(new Event('interview-sessions:update'))
     window.dispatchEvent(new Event('dashboardUpdate'))
+    window.dispatchEvent(new Event('candidateUpdated'))
+    console.log('[Panelist Dashboard] ✅ All refresh events dispatched successfully')
   }, [selectedScheduledCandidate, currentUser, handleScheduledFeedbackClose])
 
   useEffect(() => {
