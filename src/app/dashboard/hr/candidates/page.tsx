@@ -53,7 +53,6 @@ import { CandidateDetails } from "@/components/candidates/candidate-details"
 import { BulkActionsToolbar } from "@/components/candidates/bulk-actions-toolbar"
 import { BulkUploadDialog } from "@/components/candidates/bulk-upload-dialog"
 import { ResumeUploadDialog } from "@/components/candidates/resume-upload-dialog"
-import { ResumeUploadLogsDialog } from "@/components/candidates/resume-upload-logs-dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import { getAllUsers, getCurrentUser, type User } from "@/lib/auth"
 import { saveInterviewSession, type InterviewSession } from "@/lib/interview-data"
@@ -91,7 +90,6 @@ export default function CandidatesPage() {
   const [isScheduleOpen, setIsScheduleOpen] = useState(false)
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false)
   const [isResumeUploadOpen, setIsResumeUploadOpen] = useState(false)
-  const [isResumeLogsOpen, setIsResumeLogsOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [deleteCandidate, setDeleteCandidate] = useState<Candidate | null>(null)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
@@ -1958,14 +1956,6 @@ export default function CandidatesPage() {
               Upload Resumes
             </Button>
             <Button 
-              variant="outline" 
-              className="cursor-pointer bg-transparent"
-              onClick={() => setIsResumeLogsOpen(true)}
-            >
-              <List className="h-4 w-4 mr-2" />
-              Logs
-            </Button>
-            <Button
               variant="outline" 
               className="cursor-pointer bg-transparent"
               onClick={handleExportCandidates}
@@ -3983,11 +3973,6 @@ export default function CandidatesPage() {
           open={isScreeningSummaryOpen}
           onOpenChange={setIsScreeningSummaryOpen}
           onScreeningComplete={handleScreeningSummaryRefresh}
-        />
-
-        <ResumeUploadLogsDialog 
-          open={isResumeLogsOpen}
-          onOpenChange={setIsResumeLogsOpen}
         />
       </div>
     </DashboardLayout>
