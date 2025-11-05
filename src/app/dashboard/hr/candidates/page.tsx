@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DialogDescription } from "@/components/ui/dialog"
 import { AssignedCandidateDetails } from "@/components/candidates/assigned-candidate-details"
@@ -115,7 +115,7 @@ export default function CandidatesPage() {
   const [vacancies, setVacancies] = useState<Position[]>([])
   const [loadingVacancies, setLoadingVacancies] = useState(false)
   const [vacancyError, setVacancyError] = useState<string | null>(null)
-  
+
   // Panel assignment states
   const [availablePanels, setAvailablePanels] = useState<any[]>([])
   const [loadingPanels, setLoadingPanels] = useState(false)
@@ -125,7 +125,7 @@ export default function CandidatesPage() {
   const [assigningCandidate, setAssigningCandidate] = useState<string | null>(null)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [assignmentRound, setAssignmentRound] = useState<string>("")
-  
+
   // Ongoing interviews states
   const [ongoingInterviews, setOngoingInterviews] = useState<OngoingInterview[]>([])
   const [ongoingVirtualInterviews, setOngoingVirtualInterviews] = useState<OngoingInterview[]>([])
@@ -135,12 +135,12 @@ export default function CandidatesPage() {
   const [isExporting, setIsExporting] = useState(false)
   const [isScreening, setIsScreening] = useState(false)
   const [isScreeningSummaryOpen, setIsScreeningSummaryOpen] = useState(false)
-  
+
   // Virtual interview scheduling states
   const [isVirtualScheduleDialogOpen, setIsVirtualScheduleDialogOpen] = useState(false)
   const [virtualScheduleCandidate, setVirtualScheduleCandidate] = useState<BackendCandidate | null>(null)
   const [isVirtualReschedule, setIsVirtualReschedule] = useState(false)
-  
+
   // Search states for dialogs
   const [panelSearchTerm, setPanelSearchTerm] = useState("")
   const [interviewSearchTerm, setInterviewSearchTerm] = useState("")
@@ -155,12 +155,13 @@ export default function CandidatesPage() {
   const [statusChangeCandidateId, setStatusChangeCandidateId] = useState<string | null>(null)
   const [statusChangeType, setStatusChangeType] = useState<"offerReleased" | "joined" | null>(null)
   const [statusChangeDate, setStatusChangeDate] = useState<Date | undefined>(undefined)
+  const hasDispatchedRef = useRef(false)
 
   // Helper function to get next round
   const getNextRound = (currentRound: string): string => {
     switch (currentRound?.toLowerCase()) {
       case 'r1': return 'r2';
-      case 'r2': return 'r3';  
+      case 'r2': return 'r3';
       case 'r3': return 'final';
       default: return 'r1';
     }
@@ -170,13 +171,13 @@ export default function CandidatesPage() {
     const initializeUser = async () => {
       const user = getCurrentUser()
       setCurrentUser(user)
-      
+
       // Fetch all users to get recruiters list
       try {
         const allUsers = await getAllUsers()
         const recruitersList = allUsers.filter(u => u.role === "recruiter")
         setRecruiters(recruitersList)
-        
+
         // If current user is a recruiter, default to showing only their candidates
         if (user && user.role === "recruiter") {
           setRecruiterNameFilter(user.name)
@@ -186,7 +187,7 @@ export default function CandidatesPage() {
         setRecruiters([])
       }
     }
-    
+
     initializeUser()
   }, [])
 
@@ -210,7 +211,7 @@ export default function CandidatesPage() {
     const loadVacancies = async () => {
       setLoadingVacancies(true)
       setVacancyError(null)
-      
+
       try {
         const vacancyData = await fetchVacancies()
         // Filter only active vacancies
@@ -233,14 +234,14 @@ export default function CandidatesPage() {
     const loadAllCandidates = async () => {
       setLoadingUnassigned(true)
       setLoadingAssigned(true)
-      
+
       try {
         // Load all datasets in parallel
         const [unassignedData, assignedData] = await Promise.all([
           fetchUnassignedCandidates(),
           fetchAssignedCandidates()
         ])
-        
+
         setUnassignedCandidates(unassignedData)
         setAssignedCandidates(assignedData)
       } catch (error) {
@@ -256,75 +257,77 @@ export default function CandidatesPage() {
     loadAllCandidates()
   }, [])
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Dispatch event to notify other components
-      window.dispatchEvent(new CustomEvent("candidateUpdated"))
-    }
-  }, [candidates])
+// useEffect(() => {
+//   if (typeof window !== "undefined") {
+//     // 🔄 When candidates data changes, notify all tabs
+//     hasDispatchedRef.current = true
+//     window.dispatchEvent(new CustomEvent("candidateUpdated"))
 
-  // Auto-refresh candidates when feedback is submitted
-  useEffect(() => {
-    console.log('[HR Candidates] Event listeners registered at:', new Date().toISOString())
-    
-    let isRefreshing = false
-    let refreshTimeout: NodeJS.Timeout | null = null
-    
-    const handleFeedbackUpdate = async (skipSecondRefresh = false) => {
-      console.log('[HR Candidates] Feedback update event received at:', new Date().toISOString())
-      
-      // Prevent multiple simultaneous refreshes
-      if (isRefreshing) {
-        console.log('[HR Candidates] Already refreshing, skipping...')
-        return
-      }
-      isRefreshing = true
-      
-      console.log('[HR Candidates] Starting candidate refresh...')
-      
-      try {
-        const [unassignedData, assignedData] = await Promise.all([
-          fetchUnassignedCandidates(),
-          fetchAssignedCandidates()
-        ])
-        
-        console.log('[HR Candidates] Refresh successful:', {
-          unassigned: unassignedData.length,
-          assigned: assignedData.length
-        })
-        
-        setUnassignedCandidates(unassignedData)
-        setAssignedCandidates(assignedData)
-        
-        // Schedule a second refresh 5 seconds later as safety net
-        if (!skipSecondRefresh && !refreshTimeout) {
-          refreshTimeout = setTimeout(() => {
-            console.log('[HR Candidates] Running delayed safety refresh...')
-            handleFeedbackUpdate(true) // Skip further cascading
-            refreshTimeout = null
-          }, 5000)
-        }
-      } catch (error) {
-        console.error('[HR Candidates] Failed to refresh candidates:', error)
-      } finally {
-        isRefreshing = false
-        console.log('[HR Candidates] Refresh complete')
-      }
-    }
+//     // ✅ Also broadcast this update to other tabs
+//     const candidateChannel = new BroadcastChannel("candidate_updates")
+//     candidateChannel.postMessage({ type: "candidateUpdated" })
+//     candidateChannel.close()
+//   }
+// }, [candidates])
 
-    // Listen for all three event types
-    window.addEventListener('interview-sessions:update', () => handleFeedbackUpdate(false))
-    window.addEventListener('dashboardUpdate', () => handleFeedbackUpdate(false))
-    window.addEventListener('candidateUpdated', () => handleFeedbackUpdate(false))
-    
-    return () => {
-      console.log('[HR Candidates] Event listeners removed at:', new Date().toISOString())
-      window.removeEventListener('interview-sessions:update', handleFeedbackUpdate)
-      window.removeEventListener('dashboardUpdate', handleFeedbackUpdate)
-      window.removeEventListener('candidateUpdated', handleFeedbackUpdate)
-      if (refreshTimeout) clearTimeout(refreshTimeout)
+// Auto-refresh candidates when feedback or interview updates occur
+useEffect(() => {
+  const candidateChannel = new BroadcastChannel("candidate_updates");
+  const interviewChannel = new BroadcastChannel("interview_updates");
+  let isRefreshing = false;
+
+  const handleFeedbackUpdate = async () => {
+    if (isRefreshing) return;
+    isRefreshing = true;
+
+    try {
+      console.log("[HR Candidates] 🔄 Refreshing candidate data...");
+      const [unassignedData, assignedData] = await Promise.all([
+        fetchUnassignedCandidates(),
+        fetchAssignedCandidates(),
+      ]);
+      setUnassignedCandidates(unassignedData);
+      setAssignedCandidates(assignedData);
+      console.log("[HR Candidates] ✅ Data refreshed successfully");
+    } catch (error) {
+      console.error("[HR Candidates] ❌ Failed to refresh:", error);
+    } finally {
+      isRefreshing = false;
     }
-  }, [])
+  };
+
+  // 🔹 Cross-tab BroadcastChannel listener
+  const handleBroadcast = (event: MessageEvent) => {
+    const type = event.data?.type;
+    if (["candidateUpdated", "dashboardUpdate", "interview-sessions:update"].includes(type)) {
+      console.log("[HR Candidates] 📡 Broadcast event received:", type);
+      handleFeedbackUpdate();
+    }
+  };
+
+  candidateChannel.onmessage = handleBroadcast;
+  interviewChannel.onmessage = handleBroadcast;
+
+  // 🔹 Same-tab updates (local window events)
+  const handleLocal = (e: Event) => {
+    console.log("[HR Candidates] 🧭 Local event received:", e.type);
+    handleFeedbackUpdate();
+  };
+
+  window.addEventListener("interview-sessions:update", handleLocal);
+  window.addEventListener("dashboardUpdate", handleLocal);
+  window.addEventListener("candidateUpdated", handleLocal);
+
+  return () => {
+    candidateChannel.close();
+    interviewChannel.close();
+    window.removeEventListener("interview-sessions:update", handleLocal);
+    window.removeEventListener("dashboardUpdate", handleLocal);
+    window.removeEventListener("candidateUpdated", handleLocal);
+  };
+}, [fetchUnassignedCandidates, fetchAssignedCandidates]);
+
+
 
   // Reset pagination when filters change
   useEffect(() => {
@@ -354,7 +357,7 @@ export default function CandidatesPage() {
         (candidate.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (candidate.applied_position || "").toLowerCase().includes(searchTerm.toLowerCase())
 
-      const matchesInterviewType = 
+      const matchesInterviewType =
         (candidate as any).interview_type?.toLowerCase() === mainTab
 
       const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
@@ -362,7 +365,7 @@ export default function CandidatesPage() {
       const matchesExperience = (() => {
         if (experienceFilter === "all") return true
         const experience = Number(candidate.total_experience) || 0
-        
+
         switch (experienceFilter) {
           case "0-2":
             return experience >= 0 && experience <= 2
@@ -377,13 +380,13 @@ export default function CandidatesPage() {
         }
       })()
       const matchesRecruiter = recruiterFilter === "all" ? true
-          : recruiterFilter === "others" ? !["linkedin", "naukri", "website", "referral"].includes((candidate.source || "").toLowerCase())
+        : recruiterFilter === "others" ? !["linkedin", "naukri", "website", "referral"].includes((candidate.source || "").toLowerCase())
           : (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
-      const matchesRecruiterName = recruiterNameFilter === "all" 
-        ? true 
+      const matchesRecruiterName = recruiterNameFilter === "all"
+        ? true
         : (candidate.recruiter_name || "").toLowerCase() === recruiterNameFilter.toLowerCase()
       const matchesRound = roundFilter === "all" || (candidate.last_interview_round || "").toLowerCase() === roundFilter.toLowerCase()
-      
+
       const matchesDate = (() => {
         if (dateFilter === "all") return true
         if (!candidate.created_at) return false
@@ -426,12 +429,12 @@ export default function CandidatesPage() {
       (candidate.applied_position || "").toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesJob = jobFilter === "all" || candidate.applied_position === jobFilter
-    const matchesStatus = statusFilter === "all" || 
+    const matchesStatus = statusFilter === "all" ||
       (candidate.final_status || candidate.status || "").toLowerCase() === statusFilter.toLowerCase()
     const matchesExperience = (() => {
       if (experienceFilter === "all") return true
       const experience = Number(candidate.total_experience) || 0
-      
+
       switch (experienceFilter) {
         case "0-2":
           return experience >= 0 && experience <= 2
@@ -445,13 +448,13 @@ export default function CandidatesPage() {
           return true
       }
     })()
-   const matchesRecruiter = recruiterFilter === "all" ? true
-          : recruiterFilter === "others" ? !["linkedin", "naukri", "website", "referral"].includes((candidate.source || "").toLowerCase())
-          : (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
+    const matchesRecruiter = recruiterFilter === "all" ? true
+      : recruiterFilter === "others" ? !["linkedin", "naukri", "website", "referral"].includes((candidate.source || "").toLowerCase())
+        : (candidate.source || "").toLowerCase().includes(recruiterFilter.toLowerCase())
     const matchesRecruiterName = recruiterNameFilter === "all"
       ? true
       : (candidate.recruiter_name || "").toLowerCase() === recruiterNameFilter.toLowerCase()
-    const matchesRound = roundFilter === "all" || 
+    const matchesRound = roundFilter === "all" ||
       (candidate.last_interview_round || candidate.currentRound || "").toLowerCase() === roundFilter.toLowerCase()
     const matchesInterviewType = interviewTypeFilter === "all" || candidate.interview_type === interviewTypeFilter
 
@@ -492,7 +495,7 @@ export default function CandidatesPage() {
   const filteredUnassignedCandidates = useMemo(() => {
     return filterBackendCandidates(unassignedCandidates)
   }, [unassignedCandidates, searchTerm, jobFilter, statusFilter, experienceFilter, recruiterFilter, roundFilter, dateFilter, mainTab])
-  
+
   // Separate completed candidates from assigned candidates
   // Completed: R3 with any final status, OR rejected in any round, OR (R2 on-hold should stay in Assigned)
   const filteredCompletedCandidates = useMemo(() => {
@@ -501,13 +504,13 @@ export default function CandidatesPage() {
       const isRejected = c.final_status === "rejected"
       const isR3Selected = isR3 && c.final_status === "selected"
       const isR3OnHold = isR3 && c.final_status === "on-hold"
-      
+
       // Move to completed if:
       // 1. Rejected in any round
       // 2. R3 + selected
       // 3. R3 + on-hold
       // 4. Final statuses like hired, joined, offerReleased, candidateDeclined
-      return isRejected || isR3Selected || isR3OnHold || 
+      return isRejected || isR3Selected || isR3OnHold ||
         (isR3 && ["hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || ""))
     })
     return filterBackendCandidates(completedList)
@@ -522,7 +525,7 @@ export default function CandidatesPage() {
       const isR3Selected = isR3 && c.final_status === "selected"
       const isR3OnHold = isR3 && c.final_status === "on-hold"
       const isFinalStatus = isR3 && ["hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "")
-      
+
       // Keep in assigned if NOT completed
       return !(isRejected || isR3Selected || isR3OnHold || isFinalStatus)
     })
@@ -679,7 +682,7 @@ export default function CandidatesPage() {
       setCandidates([...candidates, newCandidate]);
       setIsCreateOpen(false);
       setFormHasChanges(false);
-      
+
       // Show success message
       toast({
         title: "Candidate added successfully",
@@ -693,7 +696,7 @@ export default function CandidatesPage() {
       } catch (refreshError) {
         console.error("Error refreshing candidates list:", refreshError);
       }
-      
+
       // Notify dashboards to refresh
       window.dispatchEvent(new Event('dashboardUpdate'))
 
@@ -713,16 +716,16 @@ export default function CandidatesPage() {
     try {
       // Get the candidate ID (_id for backend candidates)
       const candidateId = (selectedCandidate as any)._id || selectedCandidate.id
-      
+
       // Extract resume file if present
       const resumeFile = (candidateData as any).resume as File | null
-      
+
       // Remove resume from candidateData to avoid sending it in JSON
       const { resume, ...dataWithoutResume } = candidateData as any
-      
+
       // Update in backend using PUT method
       await updateCandidate(candidateId, dataWithoutResume as Partial<BackendCandidate>, resumeFile || undefined)
-      
+
       setIsEditOpen(false)
       setSelectedCandidate(null)
       setEditFormHasChanges(false)
@@ -733,13 +736,13 @@ export default function CandidatesPage() {
       })
 
       // Update local state optimistically
-      setUnassignedCandidates(prev => 
+      setUnassignedCandidates(prev =>
         prev.map(c => c._id === candidateId ? { ...c, ...candidateData } as BackendCandidate : c)
       )
-      setAssignedCandidates(prev => 
+      setAssignedCandidates(prev =>
         prev.map(c => c._id === candidateId ? { ...c, ...candidateData } as BackendCandidate : c)
       )
-      
+
       // Notify dashboards to refresh
       window.dispatchEvent(new Event('dashboardUpdate'))
     } catch (error) {
@@ -764,15 +767,15 @@ export default function CandidatesPage() {
       setUnassignedCandidates(prev => prev.filter(c => c._id !== candidateId))
       setAssignedCandidates(prev => prev.filter(c => c._id !== candidateId))
       setCandidates(candidates.filter((c) => c.id !== deleteCandidate.id))
-      
+
       // Remove from selected candidates if it was selected
       setSelectedCandidates(prev => prev.filter(id => id !== candidateId))
-      
+
       toast({
         title: "Candidate deleted",
         description: "Candidate has been removed successfully.",
       })
-      
+
       // Notify dashboards to refresh
       window.dispatchEvent(new Event('dashboardUpdate'))
 
@@ -800,7 +803,7 @@ export default function CandidatesPage() {
 
     setCandidates([...newCandidates, ...candidates])
     setIsBulkUploadOpen(false)
-    
+
     // Refresh unassigned candidates list immediately after bulk upload
     try {
       const updatedUnassigned = await fetchUnassignedCandidates();
@@ -814,25 +817,25 @@ export default function CandidatesPage() {
     const updatedCandidates = candidates.map((c) =>
       c.id === candidateId
         ? {
-            ...c,
-            waitTimeStarted: new Date().toISOString(),
-            isCheckedIn: true,
-          }
+          ...c,
+          waitTimeStarted: new Date().toISOString(),
+          isCheckedIn: true,
+        }
         : c,
     )
     setCandidates(updatedCandidates)
-    
+
     // Move checked-in candidate to top of unassigned list
     setUnassignedCandidates(prev => {
       const checkedInCandidate = prev.find(c => c._id === candidateId)
       if (!checkedInCandidate) return prev
-      
+
       const updatedCandidate = {
         ...checkedInCandidate,
         waitTimeStarted: new Date().toISOString(),
         isCheckedIn: true,
       }
-      
+
       const otherCandidates = prev.filter(c => c._id !== candidateId)
       return [updatedCandidate, ...otherCandidates]
     })
@@ -864,12 +867,12 @@ export default function CandidatesPage() {
     const updatedCandidates = candidates.map((c) =>
       c.id === candidateToSchedule.id
         ? {
-            ...c,
-            status: "r1-scheduled" as const,
-            assignedPanelist: panelistName,
-            currentRound: "r1" as const,
-            interviewDateTime: interviewSession.scheduledTime,
-          }
+          ...c,
+          status: "r1-scheduled" as const,
+          assignedPanelist: panelistName,
+          currentRound: "r1" as const,
+          interviewDateTime: interviewSession.scheduledTime,
+        }
         : c,
     )
     setCandidates(updatedCandidates)
@@ -975,41 +978,41 @@ export default function CandidatesPage() {
   const handleBackendCheckIn = async (candidate: BackendCandidate, checked: boolean) => {
     const candidateId = candidate._id
     setCheckingInCandidate(candidateId)
-    
+
     // Optimistically update UI immediately
-    setUnassignedCandidates(prev => 
-      prev.map(c => 
-        c._id === candidateId 
+    setUnassignedCandidates(prev =>
+      prev.map(c =>
+        c._id === candidateId
           ? { ...c, checked_in: checked }
           : c
       )
     )
-    
+
     // Show success toast immediately
     toast({
       title: "Success",
       description: `${candidate.name} has been ${checked ? 'checked in' : 'checked out'} successfully.`,
     })
-    
+
     // Clear loading state immediately
     setCheckingInCandidate(null)
-    
+
     // Make API call in background without triggering full refresh
     try {
       await updateCandidateCheckIn(candidateId, checked)
       // Don't dispatch dashboardUpdate event to avoid unnecessary re-fetches
     } catch (error) {
       console.error('Error updating candidate check-in status:', error)
-      
+
       // Revert optimistic update on error
-      setUnassignedCandidates(prev => 
-        prev.map(c => 
-          c._id === candidateId 
+      setUnassignedCandidates(prev =>
+        prev.map(c =>
+          c._id === candidateId
             ? { ...c, checked_in: !checked }
             : c
         )
       )
-      
+
       toast({
         title: "Error",
         description: `Failed to ${checked ? 'check in' : 'check out'} candidate. Please try again.`,
@@ -1029,16 +1032,16 @@ export default function CandidatesPage() {
       })
       return
     }
-    
+
     // Calculate next round to determine panel type
     const nextRound = getNextRound(candidate.last_interview_round || "")
-    
+
     // Open dialog immediately with loading state
     setSelectedCandidateForPanel(candidate)
     setAvailablePanels([])
     setLoadingPanels(true)
     setIsPanelDialogOpen(true)
-    
+
     // Fetch panelists in background
     try {
       let panelists = []
@@ -1065,7 +1068,7 @@ export default function CandidatesPage() {
   // Handle panel assignment
   const handlePanelAssignment = async (panelId: string) => {
     if (!selectedCandidateForPanel) return
-    
+
     if (!currentUser?._id) {
       toast({
         title: "Error",
@@ -1074,29 +1077,29 @@ export default function CandidatesPage() {
       })
       return
     }
-    
+
     setAssigningCandidate(selectedCandidateForPanel._id)
-    
+
     try {
       // Make the assignment API call
       await assignCandidateToPanel(selectedCandidateForPanel._id, panelId, 'r1', currentUser._id)
-      
+
       // Optimistically update UI - move candidate from unassigned to assigned immediately
       const candidateToMove = selectedCandidateForPanel
       setUnassignedCandidates(prev => prev.filter(c => c._id !== candidateToMove._id))
       setAssignedCandidates(prev => [candidateToMove, ...prev])
-      
+
       // Show success toast immediately
       toast({
         title: "Success",
         description: `${selectedCandidateForPanel.name} has been assigned to the panel successfully.`,
       })
-      
+
       // Close dialog immediately to unblock UI
       setIsPanelDialogOpen(false)
       setSelectedCandidateForPanel(null)
       setAvailablePanels([])
-      
+
       // Refresh data in background without blocking
       Promise.all([
         fetchUnassignedCandidates(),
@@ -1108,7 +1111,7 @@ export default function CandidatesPage() {
       }).catch(error => {
         console.error('Background refresh failed:', error)
       })
-      
+
     } catch (error) {
       console.error('Error assigning candidate to panel:', error)
       toast({
@@ -1125,7 +1128,7 @@ export default function CandidatesPage() {
   const handleMapAssign = async (candidate: BackendCandidate) => {
     const nextRound = getNextRound(candidate.last_interview_round || "")
     setAssignmentRound(nextRound)
-    
+
     // Check if candidate has vacancyId
     if (!candidate.vacancyId) {
       toast({
@@ -1135,20 +1138,20 @@ export default function CandidatesPage() {
       })
       return
     }
-    
+
     // Open dialog immediately with loading state
     setSelectedCandidateForPanel(candidate)
     setAvailablePanels([])
     setLoadingPanels(true)
     setIsPanelDialogOpen(true)
-    
+
     // Fetch panels in background
     try {
       let panels = []
       if (nextRound === "r3") {
         // For R3, only show tpm_tem users
         panels = (await getAllUsers() || []).filter((user) => user.role === "tpm_tem" && user.current_status === "free")
-      } else if(candidate.final_status === "selected" && candidate.last_interview_round === "r2"){
+      } else if (candidate.final_status === "selected" && candidate.last_interview_round === "r2") {
         panels = (await getAllUsers() || []).filter((user) => user.role === "panelist" && user.panelist_type === "manager" && user.current_status === "free")
       } else {
         panels = await fetchPanelistsForCandidate(candidate._id, candidate.vacancyId, candidate.interview_type)
@@ -1172,32 +1175,32 @@ export default function CandidatesPage() {
     if (!selectedCandidateForPanel || !currentUser || assigningCandidate) return
 
     setAssigningCandidate(panelId)
-    
+
     try {
       const round = assignmentRound || "r1"
       const candidateName = selectedCandidateForPanel.name
       const roundText = assignmentRound ? ` for ${round}` : ""
-      
+
       // Make the assignment API call
       await assignCandidateToPanel(
-        selectedCandidateForPanel._id, 
-        panelId, 
-        round, 
+        selectedCandidateForPanel._id,
+        panelId,
+        round,
         currentUser.name
       )
-      
+
       // Show success toast immediately
       toast({
         title: "Candidate Mapped Successfully",
         description: `${candidateName} has been mapped${roundText}.`,
       })
-      
+
       // Close the dialog immediately to unblock UI
       setIsPanelDialogOpen(false)
       setSelectedCandidateForPanel(null)
       setAvailablePanels([])
       setAssignmentRound("")
-      
+
       // Refresh data in background without blocking
       Promise.all([
         fetchUnassignedCandidates(),
@@ -1213,7 +1216,7 @@ export default function CandidatesPage() {
       }).catch(error => {
         console.error('Background refresh failed:', error)
       })
-      
+
     } catch (error) {
       console.error('Error assigning candidate to panel:', error)
       toast({
@@ -1229,18 +1232,18 @@ export default function CandidatesPage() {
   // Handle undo assignment
   const handleUndoAssignment = async (candidateId: string, panelId: string) => {
     setAssigningCandidate(candidateId)
-    
+
     try {
       await undoAssignment(candidateId, panelId)
-      
+
       // Refresh both candidate lists and ongoing interviews
       const [unassignedData, assignedData, interviewsData, virtualInterviewsData] = await Promise.all([
         fetchUnassignedCandidates(),
-        fetchAssignedCandidates(), 
+        fetchAssignedCandidates(),
         loadingInterviews ? Promise.resolve(ongoingInterviews) : fetchOngoingInterviews(),
         loadingVirtualInterviews ? Promise.resolve(ongoingVirtualInterviews) : fetchOngoingVirtualInterviews()
       ])
-      
+
       setUnassignedCandidates(unassignedData)
       setAssignedCandidates(assignedData)
       if (!loadingInterviews) {
@@ -1265,12 +1268,12 @@ export default function CandidatesPage() {
       setAssigningCandidate(null)
     }
   }
-  
+
   const handleViewInterviews = async () => {
     setIsInterviewsDialogOpen(true)
     setLoadingInterviews(true)
     setLoadingVirtualInterviews(true)
-    
+
     try {
       const [interviewsData, virtualInterviewsData] = await Promise.all([
         fetchOngoingInterviews(),
@@ -1293,11 +1296,11 @@ export default function CandidatesPage() {
       setInterviewSearchTerm("")
     }
   }
-  
+
   const handleUnassignInterview = async (candidateId: string, panelId: string) => {
     try {
       await undoAssignment(candidateId, panelId)
-      
+
       // Refresh ongoing interviews list
       const interviewsData = await fetchOngoingInterviews()
       setOngoingInterviews(interviewsData)
@@ -1307,9 +1310,9 @@ export default function CandidatesPage() {
       ])
       setUnassignedCandidates(updatedUnassigned)
       setAssignedCandidates(updatedAssigned)
-      
+
       toast({
-        title: "Success", 
+        title: "Success",
         description: "Interview assignment has been removed successfully.",
       })
     } catch (error) {
@@ -1325,7 +1328,7 @@ export default function CandidatesPage() {
   const handleUnscheduleVirtualInterview = async (interviewId: string) => {
     try {
       await unscheduleVirtualInterview(interviewId)
-      
+
       // Refresh ongoing virtual interviews list
       const virtualInterviewsData = await fetchOngoingVirtualInterviews()
       setOngoingVirtualInterviews(virtualInterviewsData)
@@ -1335,9 +1338,9 @@ export default function CandidatesPage() {
       ])
       setUnassignedCandidates(updatedUnassigned)
       setAssignedCandidates(updatedAssigned)
-      
+
       toast({
-        title: "Success", 
+        title: "Success",
         description: "Virtual interview has been unscheduled successfully.",
       })
     } catch (error) {
@@ -1354,11 +1357,11 @@ export default function CandidatesPage() {
     setAssigningCandidate(candidateId)
     try {
       await undoAssignment(candidateId, panelId)
-      
+
       // Refresh panels to show updated status
       const updatedPanels = await fetchAvailablePanels()
       setAvailablePanels(updatedPanels)
-      
+
       // Refresh candidate lists to move candidate from assigned back to unassigned
       const [updatedUnassigned, updatedAssigned] = await Promise.all([
         fetchUnassignedCandidates(),
@@ -1366,7 +1369,7 @@ export default function CandidatesPage() {
       ])
       setUnassignedCandidates(updatedUnassigned)
       setAssignedCandidates(updatedAssigned)
-      
+
       toast({
         title: "Success",
         description: "Assignment has been undone successfully.",
@@ -1490,7 +1493,7 @@ export default function CandidatesPage() {
   const handleBulkAction = async (action: string, data?: any) => {
     // Get the correct candidate objects based on current tab
     let selectedCandidateObjects: any[] = []
-    
+
     switch (activeTab) {
       case "unassigned":
         selectedCandidateObjects = unassignedCandidates.filter((c) => selectedCandidates.includes(c._id))
@@ -1499,10 +1502,10 @@ export default function CandidatesPage() {
         selectedCandidateObjects = assignedCandidates.filter((c) => selectedCandidates.includes(c._id))
         break
       case "completed":
-        selectedCandidateObjects = assignedCandidates.filter((c) => 
-          selectedCandidates.includes(c._id) && 
-          (c.last_interview_round === "r3" && 
-          ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "") || c.final_status === "rejected")
+        selectedCandidateObjects = assignedCandidates.filter((c) =>
+          selectedCandidates.includes(c._id) &&
+          (c.last_interview_round === "r3" &&
+            ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "") || c.final_status === "rejected")
         )
         break
       default:
@@ -1531,12 +1534,12 @@ export default function CandidatesPage() {
           candidates.map((c) =>
             selectedCandidates.includes(c.id)
               ? {
-                  ...c,
-                  status: "unassigned" as const,
-                  assignedPanelist: undefined,
-                  currentRound: undefined,
-                  interviewDateTime: undefined,
-                }
+                ...c,
+                status: "unassigned" as const,
+                assignedPanelist: undefined,
+                currentRound: undefined,
+                interviewDateTime: undefined,
+              }
               : c,
           ),
         )
@@ -1553,10 +1556,10 @@ export default function CandidatesPage() {
           // Call backend API to delete candidates using the correct ID field
           const candidateIdsToDelete = selectedCandidateObjects.map((c) => c._id || c.id)
           const deleteResult = await deleteCandidates(candidateIdsToDelete);
-          
+
           // Update local state to remove deleted candidates
           setCandidates(candidates.filter((c) => !selectedCandidates.includes(c.id)));
-          
+
           // Refresh backend data
           const [unassignedData, assignedData] = await Promise.all([
             fetchUnassignedCandidates(),
@@ -1564,13 +1567,13 @@ export default function CandidatesPage() {
           ]);
           setUnassignedCandidates(unassignedData);
           setAssignedCandidates(assignedData);
-          
+
           // Clear selection
           setSelectedCandidates([]);
-          
+
           // Notify dashboards to refresh
           window.dispatchEvent(new Event('dashboardUpdate'))
-          
+
           // Show success message
           toast({
             title: "Success",
@@ -1603,7 +1606,7 @@ export default function CandidatesPage() {
 
   const getSelectedCandidateObjects = () => {
     let currentCandidates: any[] = []
-    
+
     switch (activeTab) {
       case "unassigned":
         currentCandidates = unassignedCandidates
@@ -1612,14 +1615,14 @@ export default function CandidatesPage() {
         currentCandidates = assignedCandidates
         break
       case "completed":
-        currentCandidates = assignedCandidates.filter((c) => 
+        currentCandidates = assignedCandidates.filter((c) =>
           (c.last_interview_round === "r3" && ["selected", "rejected", "on-hold", "hired", "offerReleased", "candidateDeclined", "joined"].includes(c.final_status || "") || c.final_status === "rejected")
         )
         break
       default:
         currentCandidates = candidates
     }
-    
+
     return currentCandidates.filter((c) => selectedCandidates.includes(c._id || c.id))
   }
 
@@ -1628,17 +1631,17 @@ export default function CandidatesPage() {
     const previousUnassigned = [...unassignedCandidates]
     const previousAssigned = [...assignedCandidates]
     const previousCandidates = [...candidates]
-    
+
     // Prepare payload with status and corresponding date
     const payload: any = { final_status: newStatus }
-    
+
     // Add date in ISO 8601 format when changing to offerReleased or joined
     if (newStatus === "offerReleased") {
       payload.offer_released_date = toUTCDateString(new Date())
     } else if (newStatus === "joined") {
       payload.joined_date = toUTCDateString(new Date())
     }
-    
+
     // Optimistically update UI immediately
     setUnassignedCandidates((prev) =>
       prev.map((c) =>
@@ -1655,11 +1658,11 @@ export default function CandidatesPage() {
         c.id === candidateId || c._id === candidateId ? { ...c, ...payload, status: newStatus } : c
       )
     )
-    
+
     // Process backend update asynchronously
     try {
       await updateCandidate(candidateId, payload)
-      
+
       // Silently refresh data in background to ensure sync
       Promise.all([
         fetchUnassignedCandidates(),
@@ -1668,7 +1671,7 @@ export default function CandidatesPage() {
         setUnassignedCandidates(unassignedData)
         setAssignedCandidates(assignedData)
       }).catch(err => console.error('Background refresh failed:', err))
-      
+
       toast({
         title: "Success",
         description: "Candidate status updated successfully",
@@ -1678,7 +1681,7 @@ export default function CandidatesPage() {
       setUnassignedCandidates(previousUnassigned)
       setAssignedCandidates(previousAssigned)
       setCandidates(previousCandidates)
-      
+
       console.error('Failed to update candidate status:', error)
       toast({
         title: "Error",
@@ -1731,8 +1734,8 @@ export default function CandidatesPage() {
     )
     setCandidates((prev) =>
       prev.map((c) =>
-        c.id === statusChangeCandidateId || c._id === statusChangeCandidateId 
-          ? { ...c, ...payload, status: statusChangeType } 
+        c.id === statusChangeCandidateId || c._id === statusChangeCandidateId
+          ? { ...c, ...payload, status: statusChangeType }
           : c
       )
     )
@@ -1743,7 +1746,7 @@ export default function CandidatesPage() {
     // Process backend update asynchronously
     try {
       await updateCandidate(statusChangeCandidateId, payload)
-      
+
       // Silently refresh data in background to ensure sync
       Promise.all([
         fetchUnassignedCandidates(),
@@ -1752,7 +1755,7 @@ export default function CandidatesPage() {
         setUnassignedCandidates(unassignedData)
         setAssignedCandidates(assignedData)
       }).catch(err => console.error('Background refresh failed:', err))
-      
+
       toast({
         title: "Success",
         description: `Candidate status updated to ${statusChangeType === "offerReleased" ? "Offer Released" : "Joined"}`,
@@ -1762,7 +1765,7 @@ export default function CandidatesPage() {
       setUnassignedCandidates(previousUnassigned)
       setAssignedCandidates(previousAssigned)
       setCandidates(previousCandidates)
-      
+
       console.error('Failed to update candidate status:', error)
       toast({
         title: "Error",
@@ -1806,7 +1809,7 @@ export default function CandidatesPage() {
       // Check if this is a reschedule
       // Extract interview_id from nested structure based on last_interview_round
       const interviewId = virtualScheduleCandidate.interviews?.[virtualScheduleCandidate.last_interview_round || 'r1']?.interview_id;
-      
+
       console.log("Reschedule check:", {
         isVirtualReschedule,
         last_round: virtualScheduleCandidate.last_interview_round,
@@ -1886,7 +1889,7 @@ export default function CandidatesPage() {
             console.error("Failed to schedule interview:", errorData)
             throw new Error(errorData.detail || `Failed to schedule interview: ${response.statusText}`)
           }
-          
+
           const responseData = await response.json()
           console.log("Schedule API response:", responseData)
         }
@@ -1926,7 +1929,7 @@ export default function CandidatesPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-0 pb-0">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Candidates</h1>
-            </div>          
+            </div>
             {selectedCandidates.length > 1 && (
               <BulkActionsToolbar
                 selectedCount={selectedCandidates.length}
@@ -1934,56 +1937,56 @@ export default function CandidatesPage() {
               />
             )}
             <div className="flex gap-3">
-            <Button 
-              variant="outline" 
-              className="cursor-pointer bg-transparent"
-              onClick={handleViewInterviews}
-            >
-              <List className="h-4 w-4 mr-2" />
-              Ongoing Interviews
-            </Button>
-            <Button 
-              variant="outline" 
-              className="cursor-pointer bg-transparent"
-              onClick={() => setIsBulkUploadOpen(true)}
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Bulk Upload
-            </Button>
-            <Button 
-              variant="outline" 
-              className="cursor-pointer bg-transparent"
-              onClick={() => setIsResumeUploadOpen(true)}
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Upload Resumes
-            </Button>
-            <Button 
-              variant="outline" 
-              className="cursor-pointer bg-transparent"
-              onClick={handleExportCandidates}
-              disabled={isExporting}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              {isExporting ? "Exporting..." : "Export"}
-            </Button>
-            <Button 
-              variant="outline" 
-              className="cursor-pointer bg-transparent"
-              onClick={() => setIsScreeningSummaryOpen(true)}
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              View Screening Summary
-            </Button>
-            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-              <Button 
-                className="bg-blue-600 text-white hover:scale-105 smooth-transition shadow-elegant hover:shadow-glow cursor-pointer" 
-                onClick={() => setIsCreateOpen(true)}
+              <Button
+                variant="outline"
+                className="cursor-pointer bg-transparent"
+                onClick={handleViewInterviews}
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Candidate
+                <List className="h-4 w-4 mr-2" />
+                Ongoing Interviews
               </Button>
-              <DialogContent className="max-w-3xl max-h-[75vh] p-4 overflow-y-auto">
+              <Button
+                variant="outline"
+                className="cursor-pointer bg-transparent"
+                onClick={() => setIsBulkUploadOpen(true)}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Bulk Upload
+              </Button>
+              <Button
+                variant="outline"
+                className="cursor-pointer bg-transparent"
+                onClick={() => setIsResumeUploadOpen(true)}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Upload Resumes
+              </Button>
+              <Button
+                variant="outline"
+                className="cursor-pointer bg-transparent"
+                onClick={handleExportCandidates}
+                disabled={isExporting}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                {isExporting ? "Exporting..." : "Export"}
+              </Button>
+              <Button
+                variant="outline"
+                className="cursor-pointer bg-transparent"
+                onClick={() => setIsScreeningSummaryOpen(true)}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                View Screening Summary
+              </Button>
+              <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <Button
+                  className="bg-blue-600 text-white hover:scale-105 smooth-transition shadow-elegant hover:shadow-glow cursor-pointer"
+                  onClick={() => setIsCreateOpen(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Candidate
+                </Button>
+                <DialogContent className="max-w-3xl max-h-[75vh] p-4 overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle> Add New Candidate
                     </DialogTitle>
@@ -1995,325 +1998,325 @@ export default function CandidatesPage() {
                       onFormChange={setFormHasChanges}
                     />
                   </div>
-              </DialogContent>
-            </Dialog>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
-        </div>
 
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="relative flex-1">
-            <div className="flex items-center gap-4">
-              <div className="flex-1 relative">
-                <Input
-                  placeholder="Search candidates..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="max-w-sm pr-8"
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm("")}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="relative flex-1">
+              <div className="flex items-center gap-4">
+                <div className="flex-1 relative">
+                  <Input
+                    placeholder="Search candidates..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="max-w-sm pr-8"
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm("")}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    {statusOptions?.[activeTab]?.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={roundFilter} onValueChange={setRoundFilter}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by round" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Rounds</SelectItem>
+                    {activeTab !== "unassigned" && (
+                      <>
+                        {roundOptions?.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
+
+                  </SelectContent>
+                </Select>
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Select value={dateFilter} onValueChange={setDateFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Date" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  {statusOptions?.[activeTab]?.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
+                  <SelectItem value="all">All Dates</SelectItem>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="week">This Week</SelectItem>
+                  <SelectItem value="month">This Month</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={jobFilter} onValueChange={setJobFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Job" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Jobs</SelectItem>
+                  {vacancies.map((vacancy) => (
+                    <SelectItem key={vacancy.id} value={vacancy.position_title}>
+                      {vacancy.position_title}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={roundFilter} onValueChange={setRoundFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by round" />
+              <Select value={experienceFilter} onValueChange={setExperienceFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Experience" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Rounds</SelectItem>
-                  {activeTab !== "unassigned" && (
-                    <>
-                      {roundOptions?.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </>
-                  )}
-                  
+                  <SelectItem value="all">All Experience</SelectItem>
+                  <SelectItem value="0-2">0-2 years</SelectItem>
+                  <SelectItem value="3-5">3-5 years</SelectItem>
+                  <SelectItem value="6-10">6-10 years</SelectItem>
+                  <SelectItem value="10+">10+ years</SelectItem>
                 </SelectContent>
               </Select>
+              <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Source" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sources</SelectItem>
+                  <SelectItem value="linkedin">LinkedIn</SelectItem>
+                  <SelectItem value="naukri">Naukri</SelectItem>
+                  <SelectItem value="website">Website</SelectItem>
+                  <SelectItem value="referral">Referral</SelectItem>
+                  <SelectItem value="others">Others</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={recruiterNameFilter} onValueChange={setRecruiterNameFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Recruiter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Recruiters</SelectItem>
+                  {recruiters.map((recruiter) => (
+                    <SelectItem key={recruiter._id} value={recruiter.name}>
+                      {recruiter.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                onClick={handleClearFilters}
+                className="whitespace-nowrap"
+              >
+                Clear Filters
+              </Button>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Select value={dateFilter} onValueChange={setDateFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Date" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Dates</SelectItem>
-                <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="week">This Week</SelectItem>
-                <SelectItem value="month">This Month</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={jobFilter} onValueChange={setJobFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Job" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Jobs</SelectItem>
-                {vacancies.map((vacancy) => (
-                  <SelectItem key={vacancy.id} value={vacancy.position_title}>
-                    {vacancy.position_title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={experienceFilter} onValueChange={setExperienceFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Experience" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Experience</SelectItem>
-                <SelectItem value="0-2">0-2 years</SelectItem>
-                <SelectItem value="3-5">3-5 years</SelectItem>
-                <SelectItem value="6-10">6-10 years</SelectItem>
-                <SelectItem value="10+">10+ years</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Source" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Sources</SelectItem>
-                <SelectItem value="linkedin">LinkedIn</SelectItem>
-                <SelectItem value="naukri">Naukri</SelectItem>
-                <SelectItem value="website">Website</SelectItem>
-                <SelectItem value="referral">Referral</SelectItem>
-                <SelectItem value="others">Others</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={recruiterNameFilter} onValueChange={setRecruiterNameFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Recruiter" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Recruiters</SelectItem>
-                {recruiters.map((recruiter) => (
-                  <SelectItem key={recruiter._id} value={recruiter.name}>
-                    {recruiter.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline" 
-              onClick={handleClearFilters}
-              className="whitespace-nowrap"
-            >
-              Clear Filters
-            </Button>
-          </div>
-        </div>
         </div>
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto">
-        {/* Main Tabs: Walk-in / Virtual */}
-        <div className="space-y-4">
-          <Tabs defaultValue="walk-in" value={mainTab} onValueChange={(val) => setMainTab(val as "walk-in" | "virtual")} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="walk-in">Walk-in</TabsTrigger>
-              <TabsTrigger value="virtual">Virtual</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          
-          {/* Sub-tabs for Unassigned/Assigned/Completed - filtered by main tab */}
-          <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="flex-1 flex flex-col overflow-hidden">
-            <div>
-              <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
-                <TabsTrigger value="unassigned">
-                  Unassigned ({loadingUnassigned ? "..." : filteredUnassignedCandidates.length})
-                </TabsTrigger>
-                <TabsTrigger value="assigned">
-                  Assigned ({loadingAssigned ? "..." : filteredAssignedCandidates.length})
-                </TabsTrigger>
-                <TabsTrigger value="completed">
-                  Completed ({loadingAssigned ? "..." : filteredCompletedCandidates.length})
-                </TabsTrigger>
+          {/* Main Tabs: Walk-in / Virtual */}
+          <div className="space-y-4">
+            <Tabs defaultValue="walk-in" value={mainTab} onValueChange={(val) => setMainTab(val as "walk-in" | "virtual")} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="walk-in">Walk-in</TabsTrigger>
+                <TabsTrigger value="virtual">Virtual</TabsTrigger>
               </TabsList>
-            </div>
-            <div className="flex-1 overflow-hidden">
-            <TabsContent value="unassigned" className="mt-0 h-full overflow-auto">
-            {loadingUnassigned ? (
-              <Card>
-                <CardContent className="flex items-center justify-center py-16">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <span className="ml-2 text-gray-600">Loading unassigned candidates...</span>
-                </CardContent>
-              </Card>
-            ) : unassignedCandidates.length > 0 ? (
-              <Card className="h-full flex flex-col">
-                <CardContent className="flex-1 p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12">
-                          <Checkbox
-                            checked={
-                              paginatedUnassignedCandidates.length > 0 &&
-                              paginatedUnassignedCandidates.every((c) => selectedCandidates.includes(c._id))
-                            }
-                            onCheckedChange={(checked) => {
-                              const candidateIds = paginatedUnassignedCandidates.map((c) => c._id)
-                              if (checked) {
-                                setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
-                              } else {
-                                setSelectedCandidates(selectedCandidates.filter((id) => !candidateIds.includes(id)))
-                              }
-                            }}
-                          />
-                        </TableHead>
-                        <TableHead>Candidate</TableHead>
-                        <TableHead>Position</TableHead>
-                        <TableHead>Experience</TableHead>
-                        <TableHead>Skills</TableHead>
-                        <TableHead>Source</TableHead>
-                        <TableHead>Applied Date</TableHead>
-                        {mainTab === "walk-in" && <TableHead>Wait Time</TableHead>}
-                        <TableHead>Status</TableHead>
-                        {mainTab === "walk-in" && <TableHead>Check-In</TableHead>}
-                        {mainTab === "virtual" && <TableHead>Schedule Info</TableHead>}
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paginatedUnassignedCandidates.map((candidate) => (
-                        <TableRow key={candidate._id}>
-                          <TableCell> 
-                            <Checkbox 
-                              checked={selectedCandidates.includes(candidate._id)}
-                              onCheckedChange={(checked) => { if (checked) { setSelectedCandidates([...selectedCandidates, candidate._id]) } else { setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id)) } }} 
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{candidate.name}</div>
-                              <div className="text-sm text-gray-500">{candidate.email}</div>
-                              <div className="text-sm text-gray-500">{candidate.phone_number || "No phone_number"}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>{candidate.applied_position}</TableCell>
-                          <TableCell>{candidate.total_experience || "N/A"}</TableCell>
-                          <TableCell>
-                            <SkillsDisplay skills={candidate.skill_set || []} />
-                          </TableCell>
-                          <TableCell>
-                            {candidate.source?.toLowerCase() === "other" && candidate.other_source
-                              ? `Other(${candidate.other_source})`
-                              : candidate.source || "Not specified"}
-                          </TableCell>
-                          <TableCell>{new Date(candidate.created_at).toLocaleDateString()}</TableCell>
-                          {mainTab === "walk-in" && (
-                            <TableCell>
-                              <span className={candidate.checked_in ? "font-medium text-orange-600" : "text-gray-500"}>
-                                {formatBackendWaitTime(candidate.wait_duration_minutes)}
-                              </span>
-                            </TableCell>
-                          )}
-                          <TableCell>
-                            <Badge className="bg-gray-100 text-gray-800">
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {candidate.status || "Unassigned"}
-                              </div>
-                            </Badge>
-                          </TableCell>
-                          {mainTab === "walk-in" && (
-                            <TableCell>
-                              <Switch
-                                checked={candidate.checked_in || false}
-                                disabled={checkingInCandidate === candidate._id}
-                                onCheckedChange={(checked) => handleBackendCheckIn(candidate, checked as boolean)}
-                              />
-                            </TableCell>
-                          )}
-                          {mainTab === "virtual" && (
-                            <TableCell>
-                              {(candidate as any).scheduled_date ? (
-                                <div className="space-y-1 text-sm">
-                                  <div className="flex items-center gap-1 text-green-700">
-                                    <Calendar className="h-3 w-3" />
-                                    <span>{new Date((candidate as any).scheduled_date).toLocaleDateString()}</span>
+            </Tabs>
+
+            {/* Sub-tabs for Unassigned/Assigned/Completed - filtered by main tab */}
+            <Tabs defaultValue="unassigned" onValueChange={(val) => setActiveTab(val)} className="flex-1 flex flex-col overflow-hidden">
+              <div>
+                <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
+                  <TabsTrigger value="unassigned">
+                    Unassigned ({loadingUnassigned ? "..." : filteredUnassignedCandidates.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="assigned">
+                    Assigned ({loadingAssigned ? "..." : filteredAssignedCandidates.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="completed">
+                    Completed ({loadingAssigned ? "..." : filteredCompletedCandidates.length})
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <TabsContent value="unassigned" className="mt-0 h-full overflow-auto">
+                  {loadingUnassigned ? (
+                    <Card>
+                      <CardContent className="flex items-center justify-center py-16">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <span className="ml-2 text-gray-600">Loading unassigned candidates...</span>
+                      </CardContent>
+                    </Card>
+                  ) : unassignedCandidates.length > 0 ? (
+                    <Card className="h-full flex flex-col">
+                      <CardContent className="flex-1 p-0">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-12">
+                                <Checkbox
+                                  checked={
+                                    paginatedUnassignedCandidates.length > 0 &&
+                                    paginatedUnassignedCandidates.every((c) => selectedCandidates.includes(c._id))
+                                  }
+                                  onCheckedChange={(checked) => {
+                                    const candidateIds = paginatedUnassignedCandidates.map((c) => c._id)
+                                    if (checked) {
+                                      setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
+                                    } else {
+                                      setSelectedCandidates(selectedCandidates.filter((id) => !candidateIds.includes(id)))
+                                    }
+                                  }}
+                                />
+                              </TableHead>
+                              <TableHead>Candidate</TableHead>
+                              <TableHead>Position</TableHead>
+                              <TableHead>Experience</TableHead>
+                              <TableHead>Skills</TableHead>
+                              <TableHead>Source</TableHead>
+                              <TableHead>Applied Date</TableHead>
+                              {mainTab === "walk-in" && <TableHead>Wait Time</TableHead>}
+                              <TableHead>Status</TableHead>
+                              {mainTab === "walk-in" && <TableHead>Check-In</TableHead>}
+                              {mainTab === "virtual" && <TableHead>Schedule Info</TableHead>}
+                              <TableHead>Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {paginatedUnassignedCandidates.map((candidate) => (
+                              <TableRow key={candidate._id}>
+                                <TableCell>
+                                  <Checkbox
+                                    checked={selectedCandidates.includes(candidate._id)}
+                                    onCheckedChange={(checked) => { if (checked) { setSelectedCandidates([...selectedCandidates, candidate._id]) } else { setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id)) } }}
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <div>
+                                    <div className="font-medium">{candidate.name}</div>
+                                    <div className="text-sm text-gray-500">{candidate.email}</div>
+                                    <div className="text-sm text-gray-500">{candidate.phone_number || "No phone_number"}</div>
                                   </div>
-                                  <div className="flex items-center gap-1 text-blue-700">
-                                    <Clock className="h-3 w-3" />
-                                    <span>{(candidate as any).scheduled_time}</span>
-                                  </div>
-                                  {(candidate as any).panel_name && (
-                                    <div className="flex items-center gap-1 text-gray-700">
-                                      <Users className="h-3 w-3" />
-                                      <span className="font-medium">{(candidate as any).panel_name}</span>
+                                </TableCell>
+                                <TableCell>{candidate.applied_position}</TableCell>
+                                <TableCell>{candidate.total_experience || "N/A"}</TableCell>
+                                <TableCell>
+                                  <SkillsDisplay skills={candidate.skill_set || []} />
+                                </TableCell>
+                                <TableCell>
+                                  {candidate.source?.toLowerCase() === "other" && candidate.other_source
+                                    ? `Other(${candidate.other_source})`
+                                    : candidate.source || "Not specified"}
+                                </TableCell>
+                                <TableCell>{new Date(candidate.created_at).toLocaleDateString()}</TableCell>
+                                {mainTab === "walk-in" && (
+                                  <TableCell>
+                                    <span className={candidate.checked_in ? "font-medium text-orange-600" : "text-gray-500"}>
+                                      {formatBackendWaitTime(candidate.wait_duration_minutes)}
+                                    </span>
+                                  </TableCell>
+                                )}
+                                <TableCell>
+                                  <Badge className="bg-gray-100 text-gray-800">
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      {candidate.status || "Unassigned"}
                                     </div>
-                                  )}
-                                  {(candidate as any).meeting_link && (
-                                    <a
-                                      href={(candidate as any).meeting_link}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-xs text-blue-600 hover:underline"
+                                  </Badge>
+                                </TableCell>
+                                {mainTab === "walk-in" && (
+                                  <TableCell>
+                                    <Switch
+                                      checked={candidate.checked_in || false}
+                                      disabled={checkingInCandidate === candidate._id}
+                                      onCheckedChange={(checked) => handleBackendCheckIn(candidate, checked as boolean)}
+                                    />
+                                  </TableCell>
+                                )}
+                                {mainTab === "virtual" && (
+                                  <TableCell>
+                                    {(candidate as any).scheduled_date ? (
+                                      <div className="space-y-1 text-sm">
+                                        <div className="flex items-center gap-1 text-green-700">
+                                          <Calendar className="h-3 w-3" />
+                                          <span>{new Date((candidate as any).scheduled_date).toLocaleDateString()}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1 text-blue-700">
+                                          <Clock className="h-3 w-3" />
+                                          <span>{(candidate as any).scheduled_time}</span>
+                                        </div>
+                                        {(candidate as any).panel_name && (
+                                          <div className="flex items-center gap-1 text-gray-700">
+                                            <Users className="h-3 w-3" />
+                                            <span className="font-medium">{(candidate as any).panel_name}</span>
+                                          </div>
+                                        )}
+                                        {(candidate as any).meeting_link && (
+                                          <a
+                                            href={(candidate as any).meeting_link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-xs text-blue-600 hover:underline"
+                                          >
+                                            Meeting Link
+                                          </a>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <span className="text-gray-400 text-sm">Not scheduled</span>
+                                    )}
+                                  </TableCell>
+                                )}
+                                <TableCell>
+                                  <div className="flex items-center space-x-2">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        setSelectedUnassignedCandidate(candidate)
+                                        setIsUnassignedDetailsOpen(true)
+                                      }}
                                     >
-                                      Meeting Link
-                                    </a>
-                                  )}
-                                </div>
-                              ) : (
-                                <span className="text-gray-400 text-sm">Not scheduled</span>
-                              )}
-                            </TableCell>
-                          )}
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setSelectedUnassignedCandidate(candidate)
-                                  setIsUnassignedDetailsOpen(true)
-                                }}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setSelectedCandidate(candidate as any)
-                                  setIsEditOpen(true)
-                                }}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setDeleteCandidate(candidate as any)}
-                              >
-                                <Trash2 className="h-4 w-4 text-red-600" />
-                              </Button>
-                              {mainTab === "walk-in" && candidate.checked_in && (
-                                <Button
-                                  size="sm"
-                                  className="
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        setSelectedCandidate(candidate as any)
+                                        setIsEditOpen(true)
+                                      }}
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => setDeleteCandidate(candidate as any)}
+                                    >
+                                      <Trash2 className="h-4 w-4 text-red-600" />
+                                    </Button>
+                                    {mainTab === "walk-in" && candidate.checked_in && (
+                                      <Button
+                                        size="sm"
+                                        className="
                                     bg-blue-600
                                     hover:bg-blue-600
                                     active:bg-blue-600
@@ -2322,622 +2325,622 @@ export default function CandidatesPage() {
                                     disabled:bg-blue-600
                                     disabled:opacity-100
                                     text-white"
-                                  onClick={() => handleAssignPanel(candidate)}
-                                  disabled={loadingPanels}
-                                >
-                                Assign Panel
-                                </Button>
-                              )}
-                              {mainTab === "virtual" && (
-                                (candidate as any).scheduled_date ? (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-blue-600 hover:bg-blue-50"
-                                    onClick={() => handleVirtualRescheduleInterview(candidate)}
-                                  >
-                                    Reschedule
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    size="sm"
-                                    className="bg-green-600 hover:bg-green-700 text-white"
-                                    onClick={() => handleVirtualScheduleInterview(candidate)}
-                                  >
-                                    Schedule Interview
-                                  </Button>
-                                )
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                    <Clock className="h-8 w-8 text-gray-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No unassigned candidates</h3>
-                  <p className="text-gray-500 mb-6 max-w-md">
-                    There are currently no unassigned candidates from the backend.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="assigned" className="mt-0 h-full overflow-auto">
-            {loadingAssigned ? (
-              <Card>
-                <CardContent className="flex items-center justify-center py-16">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <span className="ml-2 text-gray-600">Loading assigned candidates...</span>
-                </CardContent>
-              </Card>
-            ) : assignedCandidates.length > 0 ? (
-              <Card className="h-full flex flex-col">
-                <CardContent className="flex-1 p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12">
-                          <Checkbox
-                            checked={
-                              paginatedAssignedCandidates.length > 0 &&
-                              paginatedAssignedCandidates.every((c) => selectedCandidates.includes(c._id))
-                            }
-                            onCheckedChange={(checked) => {
-                              const candidateIds = paginatedAssignedCandidates.map((c) => c._id)
-                              if (checked) {
-                                setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
-                              } else {
-                                setSelectedCandidates(selectedCandidates.filter((id) => !candidateIds.includes(id)))
-                              }
-                            }}
-                          />
-                        </TableHead>
-                        <TableHead>Candidate</TableHead>
-                        <TableHead>Position</TableHead>
-                        <TableHead>Skills</TableHead>
-                        <TableHead>Experience</TableHead>
-                        <TableHead>Round</TableHead>
-                        {mainTab === "virtual" ? (
-                          <>
-                            <TableHead>Schedule Info</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Actions</TableHead>
-                          </>
-                        ) : (
-                          <>
-                            <TableHead>Panelist</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Actions</TableHead>
-                          </>
-                        )}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paginatedAssignedCandidates.map((candidate) => {
-                        const getStatusColor = (status: string) => {
-                          switch (status) {
-                            case "selected":
-                              return "bg-green-100 text-green-800"
-                            case "rejected":
-                              return "bg-red-100 text-red-800"
-                            case "offerReleased":
-                              return "bg-blue-100 text-blue-800"
-                            case "candidateDeclined":
-                              return "bg-orange-100 text-orange-800"
-                            case "on-hold":
-                              return "bg-yellow-100 text-yellow-800"
-                            case "hired":
-                              return "bg-purple-100 text-purple-800"
-                            case "joined":
-                              return "bg-teal-100 text-teal-800"
-                            default:
-                              return "bg-gray-100 text-gray-800"
-                          }
-                        }
-
-                        const formatStatusLabel = (status: string) => {
-                          switch (status) {
-                            case "offerReleased":
-                              return "Offer Released"
-                            case "candidateDeclined":
-                              return "Candidate Declined"
-                            case "on-hold":
-                              return "On Hold"
-                            case "hired":
-                              return "Hired"
-                            case "joined":
-                              return "Joined"
-                            case "selected":
-                              return "Selected"
-                            case "rejected":
-                              return "Rejected"
-                            default:
-                              return status.charAt(0).toUpperCase() + status.slice(1)
-                          }
-                        }
-
-                        const formatPhoneNumber = (phone_number: any) => {
-                          if (!phone_number) return "No phone_number"
-                          return String(phone_number).replace(/\+/g, "")
-                        }
-
-                        return (
-                          <TableRow key={candidate._id}>
-                            <TableCell>
-                              <Checkbox
-                                checked={selectedCandidates.includes(candidate._id)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedCandidates([...selectedCandidates, candidate._id])
-                                  } else {
-                                    setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id))
-                                  }
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <div className="font-medium">{candidate.name}</div>
-                                <div className="text-sm text-gray-500">{candidate.email}</div>
-                                <div className="text-sm text-gray-500">{formatPhoneNumber(candidate.phone_number)}</div>
-                              </div>
-                            </TableCell>
-                            <TableCell>{(candidate as any).applied_position || candidate.applied_position || "N/A"}</TableCell>
-                            <TableCell>
-                              <SkillsDisplay skills={candidate.skill_set || []} />
-                            </TableCell>
-                            <TableCell>{candidate.total_experience || "N/A"}</TableCell>
-                            <TableCell>{candidate.last_interview_round}</TableCell>
-                            {mainTab === "virtual" ? (
-                              <>
-                                <TableCell>
-                                  {(candidate as any).interview_date ? (
-                                    <div className="space-y-1.5">
-                                      <div className="flex items-center gap-1.5 text-sm">
-                                        <Calendar className="h-3.5 w-3.5 text-green-600" />
-                                        <span className="text-foreground font-medium">
-                                          {new Date((candidate as any).interview_date).toLocaleDateString('en-GB')}
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-1.5 text-sm">
-                                        <Clock className="h-3.5 w-3.5 text-blue-600" />
-                                        <span className="text-foreground">{(candidate as any).interview_time}</span>
-                                      </div>
-                                      {candidate.panel_name && (
-                                        <div className="flex items-center gap-1.5 text-sm">
-                                          <Users className="h-3.5 w-3.5 text-gray-600" />
-                                          <span className="text-foreground font-medium">{candidate.panel_name}</span>
-                                        </div>
-                                      )}
-                                      {(candidate as any).meeting_link && (
-                                        <a 
-                                          href={(candidate as any).meeting_link} 
-                                          target="_blank" 
-                                          rel="noopener noreferrer"
-                                          className="text-blue-600 hover:underline text-sm font-medium"
+                                        onClick={() => handleAssignPanel(candidate)}
+                                        disabled={loadingPanels}
+                                      >
+                                        Assign Panel
+                                      </Button>
+                                    )}
+                                    {mainTab === "virtual" && (
+                                      (candidate as any).scheduled_date ? (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="text-blue-600 hover:bg-blue-50"
+                                          onClick={() => handleVirtualRescheduleInterview(candidate)}
                                         >
-                                          Meeting Link
-                                        </a>
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <span className="text-muted-foreground text-sm">Not scheduled</span>
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  <Badge className={getStatusColor(candidate.final_status || "assigned")}>
-                                    <div className="flex items-center gap-1">
-                                      {formatStatusLabel(candidate.final_status || "assigned")}
-                                    </div>
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() => {
-                                        setSelectedAssignedCandidate(candidate)
-                                        setIsAssignedDetailsOpen(true)
-                                      }}
-                                    >
-                                      <Eye className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() => {
-                                        setSelectedCandidate(candidate as any)
-                                        setIsEditOpen(true)
-                                      }}
-                                    >
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() => setDeleteCandidate(candidate as any)}
-                                    >
-                                      <Trash2 className="h-4 w-4 text-red-600" />
-                                    </Button>
-                                    {/* Debug logging */}
-                                    {console.log('Candidate:', candidate.name, 'Round:', candidate.last_interview_round, 'Status:', candidate.final_status, 'Interview Date:', (candidate as any).interview_date)}
-                                    
-                                    {/* Show Schedule Interview button for selected/on-hold candidates to schedule NEXT round */}
-                                    {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2" || candidate.last_interview_round === "r3") && 
-                                     (candidate.final_status?.toLowerCase() === "selected" || candidate.final_status?.toLowerCase() === "on-hold") ? (
-                                      <Button
-                                        size="sm"
-                                        className="bg-green-600 hover:bg-green-700 text-white"
-                                        onClick={() => handleVirtualScheduleInterview(candidate)}
-                                      >
-                                        Schedule Interview
-                                      </Button>
-                                    ) : (candidate as any).interview_date ? (
-                                      /* Show Reschedule for candidates with scheduled interviews who are not selected/on-hold */
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-                                        onClick={() => handleVirtualRescheduleInterview(candidate)}
-                                      >
-                                        Reschedule
-                                      </Button>
-                                    ) : null}
-                                  </div>
-                                </TableCell>
-                              </>
-                            ) : (
-                              <>
-                                <TableCell>{candidate.panel_name || "N/A"}</TableCell>
-                                <TableCell>
-                                  <Badge className={getStatusColor(candidate.final_status || "assigned")}>
-                                    <div className="flex items-center gap-1">
-                                      {formatStatusLabel(candidate.final_status || "assigned")}
-                                    </div>
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() => {
-                                        setSelectedAssignedCandidate(candidate)
-                                        setIsAssignedDetailsOpen(true)
-                                      }}
-                                    >
-                                      <Eye className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() => {
-                                        setSelectedCandidate(candidate as any)
-                                        setIsEditOpen(true)
-                                      }}
-                                    >
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() => setDeleteCandidate(candidate as any)}
-                                    >
-                                      <Trash2 className="h-4 w-4 text-red-600" />
-                                    </Button>
-                                    {["selected", "on-hold"].includes(candidate.final_status) && (candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && (
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="cursor-pointer bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                                        onClick={() => handleMapAssign(candidate)}
-                                      >
-                                        Map Assign
-                                      </Button>
+                                          Reschedule
+                                        </Button>
+                                      ) : (
+                                        <Button
+                                          size="sm"
+                                          className="bg-green-600 hover:bg-green-700 text-white"
+                                          onClick={() => handleVirtualScheduleInterview(candidate)}
+                                        >
+                                          Schedule Interview
+                                        </Button>
+                                      )
                                     )}
                                   </div>
                                 </TableCell>
-                              </>
-                            )}
-                          </TableRow>
-                        )
-                      })}
-                     </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-                    <UserCheck className="h-8 w-8 text-orange-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No assigned candidates</h3>
-                  <p className="text-gray-500 mb-6 max-w-md">
-                    No candidates are currently assigned from the backend.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <Card>
+                      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                          <Clock className="h-8 w-8 text-gray-400" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No unassigned candidates</h3>
+                        <p className="text-gray-500 mb-6 max-w-md">
+                          There are currently no unassigned candidates from the backend.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
 
-          <TabsContent value="completed" className="mt-0 h-full overflow-auto">
-            {loadingAssigned ? (
-              <Card>
-                <CardContent className="flex items-center justify-center py-16">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <span className="ml-2 text-gray-600">Loading completed candidates...</span>
-                </CardContent>
-              </Card>
-            ) : filteredCompletedCandidates.length > 0 ? (
-              <Card className="h-full flex flex-col">
-                <CardContent className="flex-1 p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12">
-                          <Checkbox
-                            checked={
-                              paginatedCompletedCandidates.length > 0 &&
-                              paginatedCompletedCandidates.every((c) => selectedCandidates.includes(c._id))
-                            }
-                            onCheckedChange={(checked) => {
-                              const candidateIds = paginatedCompletedCandidates.map((c) => c._id)
-                              if (checked) {
-                                setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
-                              } else {
-                                setSelectedCandidates(selectedCandidates.filter((id) => !candidateIds.includes(id)))
-                              }
-                            }}
-                          />
-                        </TableHead>
-                        <TableHead>Candidate</TableHead>
-                        <TableHead>Position</TableHead>
-                        <TableHead>Skills</TableHead>
-                        <TableHead>Experience</TableHead>
-                        <TableHead>Interview Round</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paginatedCompletedCandidates.map((candidate) => {
-                        const getStatusColor = (status: string) => {
-                          switch (status) {
-                            case "selected":
-                              return "bg-green-100 text-green-800"
-                            case "rejected":
-                              return "bg-red-100 text-red-800"
-                            case "offerReleased":
-                              return "bg-blue-100 text-blue-800"
-                            case "candidateDeclined":
-                              return "bg-orange-100 text-orange-800"
-                            case "on-hold":
-                              return "bg-yellow-100 text-yellow-800"
-                            case "hired":
-                              return "bg-purple-100 text-purple-800"
-                            case "joined":
-                              return "bg-teal-100 text-teal-800"
-                            default:
-                              return "bg-gray-100 text-gray-800"
-                          }
-                        }
-
-                        const formatPhoneNumber = (phone_number: any) => {
-                          if (!phone_number) return "No phone number"
-                          return String(phone_number).replace(/\+/g, "")
-                        }
-
-                        const formatStatusLabel = (status: string) => {
-                          switch (status) {
-                            case "offerReleased":
-                              return "Offer Released"
-                            case "candidateDeclined":
-                              return "Candidate Declined"
-                            case "on-hold":
-                              return "On Hold"
-                            case "hired":
-                              return "Hired"
-                            case "joined":
-                              return "Joined"
-                            case "selected":
-                              return "Selected"
-                            case "rejected":
-                              return "Rejected"
-                            default:
-                              return status.charAt(0).toUpperCase() + status.slice(1)
-                          }
-                        }
-
-                        return (
-                          <TableRow key={candidate._id}>
-                            <TableCell>
-                              <Checkbox
-                                checked={selectedCandidates.includes(candidate._id)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedCandidates([...selectedCandidates, candidate._id])
-                                  } else {
-                                    setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id))
+                <TabsContent value="assigned" className="mt-0 h-full overflow-auto">
+                  {loadingAssigned ? (
+                    <Card>
+                      <CardContent className="flex items-center justify-center py-16">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <span className="ml-2 text-gray-600">Loading assigned candidates...</span>
+                      </CardContent>
+                    </Card>
+                  ) : assignedCandidates.length > 0 ? (
+                    <Card className="h-full flex flex-col">
+                      <CardContent className="flex-1 p-0">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-12">
+                                <Checkbox
+                                  checked={
+                                    paginatedAssignedCandidates.length > 0 &&
+                                    paginatedAssignedCandidates.every((c) => selectedCandidates.includes(c._id))
                                   }
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <div className="font-medium">{candidate.name}</div>
-                                <div className="text-sm text-gray-500">{candidate.email}</div>
-                                <div className="text-sm text-gray-500">{formatPhoneNumber(candidate.phone_number)}</div>
-                              </div>
-                            </TableCell>
-                            <TableCell>{candidate.applied_position || "N/A"}</TableCell>
-                            <TableCell>
-                              <SkillsDisplay skills={candidate.skill_set || []} />
-                            </TableCell>
-                            <TableCell>{candidate.total_experience || "N/A"}</TableCell>
-                            <TableCell>{candidate.last_interview_round}</TableCell>
-                            <TableCell>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild disabled={
-                                  candidate.last_interview_round?.toLowerCase() === "r3" && 
-                                  currentUser?.role !== "hr" && 
-                                  currentUser?.role !== "admin"
-                                }>
-                                  <Button variant="ghost" className="p-0 h-auto" disabled={
-                                    candidate.last_interview_round?.toLowerCase() === "r3" && 
-                                    currentUser?.role !== "hr" && 
-                                    currentUser?.role !== "admin"
-                                  }>
-                                    <Badge className={getStatusColor(candidate.final_status || "selected")}>
-                                      <div className="flex items-center gap-1">
-                                        {formatStatusLabel(candidate.final_status || "selected")}
-                                        {!["rejected", "joined", "candidateDeclined"].includes(candidate.final_status || "") && 
-                                         !(candidate.last_interview_round?.toLowerCase() === "r3" && currentUser?.role !== "hr" && currentUser?.role !== "admin") && 
-                                         <ChevronDown className="h-3 w-3" />}
-                                      </div>
-                                    </Badge>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                {!["rejected", "joined", "candidateDeclined"].includes(candidate.final_status || "") &&
-                                 !(candidate.last_interview_round?.toLowerCase() === "r3" && currentUser?.role !== "hr" && currentUser?.role !== "admin") &&
-                                <DropdownMenuContent>
-                                  {/* Forward-only status transitions based on R3 status */}
-                                  {(() => {
-                                    const currentStatus = candidate.final_status || "selected"
-                                    
-                                    // For R3 = Selected: Offer Released → Hired → Joined → Candidate Declined
-                                    if (currentStatus === "selected") {
-                                      return (
-                                        <>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
-                                        </>
-                                      )
+                                  onCheckedChange={(checked) => {
+                                    const candidateIds = paginatedAssignedCandidates.map((c) => c._id)
+                                    if (checked) {
+                                      setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
+                                    } else {
+                                      setSelectedCandidates(selectedCandidates.filter((id) => !candidateIds.includes(id)))
                                     }
-                                    
-                                    // For R3 = On-Hold: Selected → Rejected → Offer Released → Hired → Joined → Candidate Declined
-                                    if (currentStatus === "on-hold") {
-                                      return (
-                                        <>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "selected")}>Selected</DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "rejected")}>Rejected</DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
-                                        </>
-                                      )
-                                    }
-                                    
-                                    // For Offer Released: can go to Hired, Joined, or Candidate Declined (forward only)
-                                    if (currentStatus === "offerReleased") {
-                                      return (
-                                        <>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
-                                        </>
-                                      )
-                                    }
-                                    
-                                    // For Hired: can only go to Joined or Candidate Declined (forward only)
-                                    if (currentStatus === "hired") {
-                                      return (
-                                        <>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
-                                        </>
-                                      )
-                                    }
-                                    
-                                    // For Joined or Candidate Declined or Rejected: no further status changes allowed
-                                    return null
-                                  })()}
-                                </DropdownMenuContent>
+                                  }}
+                                />
+                              </TableHead>
+                              <TableHead>Candidate</TableHead>
+                              <TableHead>Position</TableHead>
+                              <TableHead>Skills</TableHead>
+                              <TableHead>Experience</TableHead>
+                              <TableHead>Round</TableHead>
+                              {mainTab === "virtual" ? (
+                                <>
+                                  <TableHead>Schedule Info</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Actions</TableHead>
+                                </>
+                              ) : (
+                                <>
+                                  <TableHead>Panelist</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Actions</TableHead>
+                                </>
+                              )}
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {paginatedAssignedCandidates.map((candidate) => {
+                              const getStatusColor = (status: string) => {
+                                switch (status) {
+                                  case "selected":
+                                    return "bg-green-100 text-green-800"
+                                  case "rejected":
+                                    return "bg-red-100 text-red-800"
+                                  case "offerReleased":
+                                    return "bg-blue-100 text-blue-800"
+                                  case "candidateDeclined":
+                                    return "bg-orange-100 text-orange-800"
+                                  case "on-hold":
+                                    return "bg-yellow-100 text-yellow-800"
+                                  case "hired":
+                                    return "bg-purple-100 text-purple-800"
+                                  case "joined":
+                                    return "bg-teal-100 text-teal-800"
+                                  default:
+                                    return "bg-gray-100 text-gray-800"
                                 }
-                              </DropdownMenu>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setSelectedAssignedCandidate(candidate)
-                                    setIsAssignedDetailsOpen(true)
+                              }
+
+                              const formatStatusLabel = (status: string) => {
+                                switch (status) {
+                                  case "offerReleased":
+                                    return "Offer Released"
+                                  case "candidateDeclined":
+                                    return "Candidate Declined"
+                                  case "on-hold":
+                                    return "On Hold"
+                                  case "hired":
+                                    return "Hired"
+                                  case "joined":
+                                    return "Joined"
+                                  case "selected":
+                                    return "Selected"
+                                  case "rejected":
+                                    return "Rejected"
+                                  default:
+                                    return status.charAt(0).toUpperCase() + status.slice(1)
+                                }
+                              }
+
+                              const formatPhoneNumber = (phone_number: any) => {
+                                if (!phone_number) return "No phone_number"
+                                return String(phone_number).replace(/\+/g, "")
+                              }
+
+                              return (
+                                <TableRow key={candidate._id}>
+                                  <TableCell>
+                                    <Checkbox
+                                      checked={selectedCandidates.includes(candidate._id)}
+                                      onCheckedChange={(checked) => {
+                                        if (checked) {
+                                          setSelectedCandidates([...selectedCandidates, candidate._id])
+                                        } else {
+                                          setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id))
+                                        }
+                                      }}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <div>
+                                      <div className="font-medium">{candidate.name}</div>
+                                      <div className="text-sm text-gray-500">{candidate.email}</div>
+                                      <div className="text-sm text-gray-500">{formatPhoneNumber(candidate.phone_number)}</div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>{(candidate as any).applied_position || candidate.applied_position || "N/A"}</TableCell>
+                                  <TableCell>
+                                    <SkillsDisplay skills={candidate.skill_set || []} />
+                                  </TableCell>
+                                  <TableCell>{candidate.total_experience || "N/A"}</TableCell>
+                                  <TableCell>{candidate.last_interview_round}</TableCell>
+                                  {mainTab === "virtual" ? (
+                                    <>
+                                      <TableCell>
+                                        {(candidate as any).interview_date ? (
+                                          <div className="space-y-1.5">
+                                            <div className="flex items-center gap-1.5 text-sm">
+                                              <Calendar className="h-3.5 w-3.5 text-green-600" />
+                                              <span className="text-foreground font-medium">
+                                                {new Date((candidate as any).interview_date).toLocaleDateString('en-GB')}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-sm">
+                                              <Clock className="h-3.5 w-3.5 text-blue-600" />
+                                              <span className="text-foreground">{(candidate as any).interview_time}</span>
+                                            </div>
+                                            {candidate.panel_name && (
+                                              <div className="flex items-center gap-1.5 text-sm">
+                                                <Users className="h-3.5 w-3.5 text-gray-600" />
+                                                <span className="text-foreground font-medium">{candidate.panel_name}</span>
+                                              </div>
+                                            )}
+                                            {(candidate as any).meeting_link && (
+                                              <a
+                                                href={(candidate as any).meeting_link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:underline text-sm font-medium"
+                                              >
+                                                Meeting Link
+                                              </a>
+                                            )}
+                                          </div>
+                                        ) : (
+                                          <span className="text-muted-foreground text-sm">Not scheduled</span>
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge className={getStatusColor(candidate.final_status || "assigned")}>
+                                          <div className="flex items-center gap-1">
+                                            {formatStatusLabel(candidate.final_status || "assigned")}
+                                          </div>
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <div className="flex items-center gap-2">
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => {
+                                              setSelectedAssignedCandidate(candidate)
+                                              setIsAssignedDetailsOpen(true)
+                                            }}
+                                          >
+                                            <Eye className="h-4 w-4" />
+                                          </Button>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => {
+                                              setSelectedCandidate(candidate as any)
+                                              setIsEditOpen(true)
+                                            }}
+                                          >
+                                            <Edit className="h-4 w-4" />
+                                          </Button>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setDeleteCandidate(candidate as any)}
+                                          >
+                                            <Trash2 className="h-4 w-4 text-red-600" />
+                                          </Button>
+                                          {/* Debug logging */}
+                                          {console.log('Candidate:', candidate.name, 'Round:', candidate.last_interview_round, 'Status:', candidate.final_status, 'Interview Date:', (candidate as any).interview_date)}
+
+                                          {/* Show Schedule Interview button for selected/on-hold candidates to schedule NEXT round */}
+                                          {(candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2" || candidate.last_interview_round === "r3") &&
+                                            (candidate.final_status?.toLowerCase() === "selected" || candidate.final_status?.toLowerCase() === "on-hold") ? (
+                                            <Button
+                                              size="sm"
+                                              className="bg-green-600 hover:bg-green-700 text-white"
+                                              onClick={() => handleVirtualScheduleInterview(candidate)}
+                                            >
+                                              Schedule Interview
+                                            </Button>
+                                          ) : (candidate as any).interview_date ? (
+                                            /* Show Reschedule for candidates with scheduled interviews who are not selected/on-hold */
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                                              onClick={() => handleVirtualRescheduleInterview(candidate)}
+                                            >
+                                              Reschedule
+                                            </Button>
+                                          ) : null}
+                                        </div>
+                                      </TableCell>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <TableCell>{candidate.panel_name || "N/A"}</TableCell>
+                                      <TableCell>
+                                        <Badge className={getStatusColor(candidate.final_status || "assigned")}>
+                                          <div className="flex items-center gap-1">
+                                            {formatStatusLabel(candidate.final_status || "assigned")}
+                                          </div>
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <div className="flex items-center gap-2">
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => {
+                                              setSelectedAssignedCandidate(candidate)
+                                              setIsAssignedDetailsOpen(true)
+                                            }}
+                                          >
+                                            <Eye className="h-4 w-4" />
+                                          </Button>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => {
+                                              setSelectedCandidate(candidate as any)
+                                              setIsEditOpen(true)
+                                            }}
+                                          >
+                                            <Edit className="h-4 w-4" />
+                                          </Button>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setDeleteCandidate(candidate as any)}
+                                          >
+                                            <Trash2 className="h-4 w-4 text-red-600" />
+                                          </Button>
+                                          {["selected", "on-hold"].includes(candidate.final_status) && (candidate.last_interview_round === "r1" || candidate.last_interview_round === "r2") && (
+                                            <Button
+                                              variant="outline"
+                                              size="sm"
+                                              className="cursor-pointer bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                                              onClick={() => handleMapAssign(candidate)}
+                                            >
+                                              Map Assign
+                                            </Button>
+                                          )}
+                                        </div>
+                                      </TableCell>
+                                    </>
+                                  )}
+                                </TableRow>
+                              )
+                            })}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <Card>
+                      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                        <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                          <UserCheck className="h-8 w-8 text-orange-600" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No assigned candidates</h3>
+                        <p className="text-gray-500 mb-6 max-w-md">
+                          No candidates are currently assigned from the backend.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="completed" className="mt-0 h-full overflow-auto">
+                  {loadingAssigned ? (
+                    <Card>
+                      <CardContent className="flex items-center justify-center py-16">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <span className="ml-2 text-gray-600">Loading completed candidates...</span>
+                      </CardContent>
+                    </Card>
+                  ) : filteredCompletedCandidates.length > 0 ? (
+                    <Card className="h-full flex flex-col">
+                      <CardContent className="flex-1 p-0">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-12">
+                                <Checkbox
+                                  checked={
+                                    paginatedCompletedCandidates.length > 0 &&
+                                    paginatedCompletedCandidates.every((c) => selectedCandidates.includes(c._id))
+                                  }
+                                  onCheckedChange={(checked) => {
+                                    const candidateIds = paginatedCompletedCandidates.map((c) => c._id)
+                                    if (checked) {
+                                      setSelectedCandidates([...new Set([...selectedCandidates, ...candidateIds])])
+                                    } else {
+                                      setSelectedCandidates(selectedCandidates.filter((id) => !candidateIds.includes(id)))
+                                    }
                                   }}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setSelectedCandidate(candidate as any)
-                                    setIsEditOpen(true)
-                                  }}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => setDeleteCandidate(candidate as any)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-600" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                    <Award className="h-8 w-8 text-green-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No completed candidates</h3>
-                  <p className="text-gray-500 mb-6 max-w-md">
-                    No candidates have completed all interview rounds yet.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
+                                />
+                              </TableHead>
+                              <TableHead>Candidate</TableHead>
+                              <TableHead>Position</TableHead>
+                              <TableHead>Skills</TableHead>
+                              <TableHead>Experience</TableHead>
+                              <TableHead>Interview Round</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {paginatedCompletedCandidates.map((candidate) => {
+                              const getStatusColor = (status: string) => {
+                                switch (status) {
+                                  case "selected":
+                                    return "bg-green-100 text-green-800"
+                                  case "rejected":
+                                    return "bg-red-100 text-red-800"
+                                  case "offerReleased":
+                                    return "bg-blue-100 text-blue-800"
+                                  case "candidateDeclined":
+                                    return "bg-orange-100 text-orange-800"
+                                  case "on-hold":
+                                    return "bg-yellow-100 text-yellow-800"
+                                  case "hired":
+                                    return "bg-purple-100 text-purple-800"
+                                  case "joined":
+                                    return "bg-teal-100 text-teal-800"
+                                  default:
+                                    return "bg-gray-100 text-gray-800"
+                                }
+                              }
+
+                              const formatPhoneNumber = (phone_number: any) => {
+                                if (!phone_number) return "No phone number"
+                                return String(phone_number).replace(/\+/g, "")
+                              }
+
+                              const formatStatusLabel = (status: string) => {
+                                switch (status) {
+                                  case "offerReleased":
+                                    return "Offer Released"
+                                  case "candidateDeclined":
+                                    return "Candidate Declined"
+                                  case "on-hold":
+                                    return "On Hold"
+                                  case "hired":
+                                    return "Hired"
+                                  case "joined":
+                                    return "Joined"
+                                  case "selected":
+                                    return "Selected"
+                                  case "rejected":
+                                    return "Rejected"
+                                  default:
+                                    return status.charAt(0).toUpperCase() + status.slice(1)
+                                }
+                              }
+
+                              return (
+                                <TableRow key={candidate._id}>
+                                  <TableCell>
+                                    <Checkbox
+                                      checked={selectedCandidates.includes(candidate._id)}
+                                      onCheckedChange={(checked) => {
+                                        if (checked) {
+                                          setSelectedCandidates([...selectedCandidates, candidate._id])
+                                        } else {
+                                          setSelectedCandidates(selectedCandidates.filter((id) => id !== candidate._id))
+                                        }
+                                      }}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <div>
+                                      <div className="font-medium">{candidate.name}</div>
+                                      <div className="text-sm text-gray-500">{candidate.email}</div>
+                                      <div className="text-sm text-gray-500">{formatPhoneNumber(candidate.phone_number)}</div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>{candidate.applied_position || "N/A"}</TableCell>
+                                  <TableCell>
+                                    <SkillsDisplay skills={candidate.skill_set || []} />
+                                  </TableCell>
+                                  <TableCell>{candidate.total_experience || "N/A"}</TableCell>
+                                  <TableCell>{candidate.last_interview_round}</TableCell>
+                                  <TableCell>
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild disabled={
+                                        candidate.last_interview_round?.toLowerCase() === "r3" &&
+                                        currentUser?.role !== "hr" &&
+                                        currentUser?.role !== "admin"
+                                      }>
+                                        <Button variant="ghost" className="p-0 h-auto" disabled={
+                                          candidate.last_interview_round?.toLowerCase() === "r3" &&
+                                          currentUser?.role !== "hr" &&
+                                          currentUser?.role !== "admin"
+                                        }>
+                                          <Badge className={getStatusColor(candidate.final_status || "selected")}>
+                                            <div className="flex items-center gap-1">
+                                              {formatStatusLabel(candidate.final_status || "selected")}
+                                              {!["rejected", "joined", "candidateDeclined"].includes(candidate.final_status || "") &&
+                                                !(candidate.last_interview_round?.toLowerCase() === "r3" && currentUser?.role !== "hr" && currentUser?.role !== "admin") &&
+                                                <ChevronDown className="h-3 w-3" />}
+                                            </div>
+                                          </Badge>
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      {!["rejected", "joined", "candidateDeclined"].includes(candidate.final_status || "") &&
+                                        !(candidate.last_interview_round?.toLowerCase() === "r3" && currentUser?.role !== "hr" && currentUser?.role !== "admin") &&
+                                        <DropdownMenuContent>
+                                          {/* Forward-only status transitions based on R3 status */}
+                                          {(() => {
+                                            const currentStatus = candidate.final_status || "selected"
+
+                                            // For R3 = Selected: Offer Released → Hired → Joined → Candidate Declined
+                                            if (currentStatus === "selected") {
+                                              return (
+                                                <>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
+                                                </>
+                                              )
+                                            }
+
+                                            // For R3 = On-Hold: Selected → Rejected → Offer Released → Hired → Joined → Candidate Declined
+                                            if (currentStatus === "on-hold") {
+                                              return (
+                                                <>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "selected")}>Selected</DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "rejected")}>Rejected</DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "offerReleased")}>Offer Released</DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
+                                                </>
+                                              )
+                                            }
+
+                                            // For Offer Released: can go to Hired, Joined, or Candidate Declined (forward only)
+                                            if (currentStatus === "offerReleased") {
+                                              return (
+                                                <>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "hired")}>Hired</DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
+                                                </>
+                                              )
+                                            }
+
+                                            // For Hired: can only go to Joined or Candidate Declined (forward only)
+                                            if (currentStatus === "hired") {
+                                              return (
+                                                <>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "joined")}>Joined</DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => handleChangeStatus(candidate._id, "candidateDeclined")}>Candidate Declined</DropdownMenuItem>
+                                                </>
+                                              )
+                                            }
+
+                                            // For Joined or Candidate Declined or Rejected: no further status changes allowed
+                                            return null
+                                          })()}
+                                        </DropdownMenuContent>
+                                      }
+                                    </DropdownMenu>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => {
+                                          setSelectedAssignedCandidate(candidate)
+                                          setIsAssignedDetailsOpen(true)
+                                        }}
+                                      >
+                                        <Eye className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => {
+                                          setSelectedCandidate(candidate as any)
+                                          setIsEditOpen(true)
+                                        }}
+                                      >
+                                        <Edit className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => setDeleteCandidate(candidate as any)}
+                                      >
+                                        <Trash2 className="h-4 w-4 text-red-600" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              )
+                            })}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <Card>
+                      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                          <Award className="h-8 w-8 text-green-600" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No completed candidates</h3>
+                        <p className="text-gray-500 mb-6 max-w-md">
+                          No candidates have completed all interview rounds yet.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
+              </div>
+            </Tabs>
           </div>
-        </Tabs>
         </div>
-      </div>
 
-      <div className="p-2 pb-0 border-t flex-shrink-0">
-        <Pagination
-          currentPage={activeTab === "unassigned" ? unassignedCurrentPage : activeTab === "completed" ? completedCurrentPage : assignedCurrentPage}
-          totalPages={activeTab === "unassigned" ? unassignedTotalPages : activeTab === "completed" ? completedTotalPages : assignedTotalPages}
-          onPageChange={activeTab === "unassigned" ? setUnassignedCurrentPage : activeTab === "completed" ? setCompletedCurrentPage : setAssignedCurrentPage}
-          onRecordsPerPageChange={(records) => setItemsPerPage(records)}
-          initialRecordsPerPage={itemsPerPage}
-          showRecordsPerPageSelector={true}
-        />
-      </div>
+        <div className="p-2 pb-0 border-t flex-shrink-0">
+          <Pagination
+            currentPage={activeTab === "unassigned" ? unassignedCurrentPage : activeTab === "completed" ? completedCurrentPage : assignedCurrentPage}
+            totalPages={activeTab === "unassigned" ? unassignedTotalPages : activeTab === "completed" ? completedTotalPages : assignedTotalPages}
+            onPageChange={activeTab === "unassigned" ? setUnassignedCurrentPage : activeTab === "completed" ? setCompletedCurrentPage : setAssignedCurrentPage}
+            onRecordsPerPageChange={(records) => setItemsPerPage(records)}
+            initialRecordsPerPage={itemsPerPage}
+            showRecordsPerPageSelector={true}
+          />
+        </div>
 
-      <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
+        <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Assign Panel</DialogTitle>
@@ -3149,7 +3152,7 @@ export default function CandidatesPage() {
                   </span>
                 )}
               </DialogDescription>
-            </DialogHeader> 
+            </DialogHeader>
             <div className="space-y-6">
               {/* Current Panelist Section */}
               {candidateToReschedule && (
@@ -3379,9 +3382,9 @@ export default function CandidatesPage() {
                 onScheduleInterview={
                   selectedCandidate.status === "unassigned"
                     ? () => {
-                        setIsDetailsOpen(false)
-                        handleScheduleInterview(selectedCandidate)
-                      }
+                      setIsDetailsOpen(false)
+                      handleScheduleInterview(selectedCandidate)
+                    }
                     : undefined
                 }
               />
@@ -3451,7 +3454,7 @@ export default function CandidatesPage() {
           </DialogContent>
         </Dialog>
 
-        <ResumeUploadDialog 
+        <ResumeUploadDialog
           open={isResumeUploadOpen}
           onClose={() => setIsResumeUploadOpen(false)}
           onSuccess={async () => {
@@ -3463,7 +3466,7 @@ export default function CandidatesPage() {
               ])
               setUnassignedCandidates(unassignedData)
               setAssignedCandidates(assignedData)
-              
+
               toast({
                 title: "Success",
                 description: "Resumes uploaded and candidates updated successfully.",
@@ -3491,7 +3494,7 @@ export default function CandidatesPage() {
             setSelectedAssignedCandidate(null)
           }}
         />
-        
+
         {/* Panel Assignment Dialog */}
         <Dialog open={isPanelDialogOpen} onOpenChange={(open) => {
           setIsPanelDialogOpen(open)
@@ -3557,42 +3560,42 @@ export default function CandidatesPage() {
                       )
                     })
                     .map((panel) => (
-                    <Card key={panel.id} className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="mt-2 space-y-1">
-                            <div className="text-sm text-gray-600">
-                              <span className="font-medium">{panel.name || 'N/A'}</span> - {panel.email || 'N/A'}
+                      <Card key={panel.id} className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="mt-2 space-y-1">
+                              <div className="text-sm text-gray-600">
+                                <span className="font-medium">{panel.name || 'N/A'}</span> - {panel.email || 'N/A'}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="ml-4">
-                          {panel.assigned_candidate ? (
-                            <div className="space-y-2">
-                              <Badge variant="secondary" className="bg-green-100 text-green-800">
-                                Assigned
-                              </Badge>
+                          <div className="ml-4">
+                            {panel.assigned_candidate ? (
+                              <div className="space-y-2">
+                                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                  Assigned
+                                </Badge>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleUndoAssignment(panel.assigned_candidate.candidate_id, panel.id)}
+                                  disabled={assigningCandidate === panel.assigned_candidate.candidate_id}
+                                >
+                                  {assigningCandidate === panel.assigned_candidate.candidate_id ? "Processing..." : "Undo Assignment"}
+                                </Button>
+                              </div>
+                            ) : (
                               <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleUndoAssignment(panel.assigned_candidate.candidate_id, panel.id)}
-                                disabled={assigningCandidate === panel.assigned_candidate.candidate_id}
+                                onClick={() => handlePanelAssignmentUpdated(panel.id || panel._id)}
+                                disabled={assigningCandidate === selectedCandidateForPanel?._id}
                               >
-                                {assigningCandidate === panel.assigned_candidate.candidate_id ? "Processing..." : "Undo Assignment"}
+                                {assigningCandidate === selectedCandidateForPanel?._id ? "Assigning..." : "Map Candidate"}
                               </Button>
-                            </div>
-                          ) : (
-                            <Button
-                              onClick={() => handlePanelAssignmentUpdated(panel.id || panel._id)}
-                              disabled={assigningCandidate === selectedCandidateForPanel?._id}
-                            >
-                              {assigningCandidate === selectedCandidateForPanel?._id ? "Assigning..." : "Map Candidate"}
-                            </Button>
-                          )}
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))
+                      </Card>
+                    ))
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-gray-500">
@@ -3612,7 +3615,7 @@ export default function CandidatesPage() {
               <DialogTitle>Candidate Details</DialogTitle>
             </DialogHeader>
             {selectedUnassignedCandidate && (
-              <UnassignedCandidateDetails 
+              <UnassignedCandidateDetails
                 candidate={selectedUnassignedCandidate}
                 onClose={() => {
                   setIsUnassignedDetailsOpen(false)
@@ -3624,15 +3627,15 @@ export default function CandidatesPage() {
         </Dialog>
 
         {/* Ongoing Interviews Dialog */}
-        <Dialog 
-        className="w-full max-h-[600px] overflow-auto" 
-        open={isInterviewsDialogOpen} 
-        onOpenChange={(open) => {
-          setIsInterviewsDialogOpen(open)
-          if (open) {
-            setInterviewSearchTerm("")
-          }
-        }}>
+        <Dialog
+          className="w-full max-h-[600px] overflow-auto"
+          open={isInterviewsDialogOpen}
+          onOpenChange={(open) => {
+            setIsInterviewsDialogOpen(open)
+            if (open) {
+              setInterviewSearchTerm("")
+            }
+          }}>
           <DialogContent className="max-w-4xl">
             <DialogHeader>
               <DialogTitle>Ongoing Interviews</DialogTitle>
@@ -3640,13 +3643,13 @@ export default function CandidatesPage() {
                 View and manage all ongoing interviews
               </DialogDescription>
             </DialogHeader>
-            
+
             <Tabs defaultValue="walk-in" className="w-full overflow-auto">
               <TabsList className="w-full">
                 <TabsTrigger value="walk-in" className="w-1/2">Walk-in</TabsTrigger>
                 <TabsTrigger value="virtual" className="w-1/2">Virtual</TabsTrigger>
               </TabsList>
-              
+
               {/* Walk-in Tab */}
               <TabsContent value="walk-in">
                 {loadingInterviews ? (
@@ -3693,25 +3696,25 @@ export default function CandidatesPage() {
                               )
                             })
                             .map((interview) => (
-                          <TableRow key={`${interview.candidate_id}-${interview.panel_id}`}>
-                            <TableCell className="font-medium">
-                              {interview.candidate_name}
-                            </TableCell>
-                            <TableCell>{interview.panel_name}</TableCell>
-                            <TableCell>
-                              {interview.status !== "interview-assigned" ? (
-                                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">Interview Started</Badge>
-                              ) : (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleUnassignInterview(interview.candidate_id, interview.panel_id)}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                Unassign
-                              </Button>)}
-                            </TableCell>
-                          </TableRow>
+                              <TableRow key={`${interview.candidate_id}-${interview.panel_id}`}>
+                                <TableCell className="font-medium">
+                                  {interview.candidate_name}
+                                </TableCell>
+                                <TableCell>{interview.panel_name}</TableCell>
+                                <TableCell>
+                                  {interview.status !== "interview-assigned" ? (
+                                    <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">Interview Started</Badge>
+                                  ) : (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleUnassignInterview(interview.candidate_id, interview.panel_id)}
+                                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    >
+                                      Unassign
+                                    </Button>)}
+                                </TableCell>
+                              </TableRow>
                             ))}
                         </TableBody>
                       </Table>
@@ -3724,10 +3727,10 @@ export default function CandidatesPage() {
                         (interview.panel_name && interview.panel_name.toLowerCase().includes(searchLower))
                       )
                     }).length === 0 && interviewSearchTerm && (
-                      <div className="text-center py-8 text-gray-500">
-                        No interviews match your search criteria.
-                      </div>
-                    )}
+                        <div className="text-center py-8 text-gray-500">
+                          No interviews match your search criteria.
+                        </div>
+                      )}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
@@ -3735,7 +3738,7 @@ export default function CandidatesPage() {
                   </div>
                 )}
               </TabsContent>
-              
+
               {/* Virtual Tab */}
               <TabsContent value="virtual">
                 {loadingVirtualInterviews ? (
@@ -3786,15 +3789,15 @@ export default function CandidatesPage() {
                               )
                             })
                             .map((interview) => (
-                          <TableRow key={`virtual-${interview.candidate_id}-${interview.panel_id}`}>
-                            <TableCell className="font-medium">
-                              {interview.candidate_name}
-                            </TableCell>
-                            <TableCell>{interview.panel_name}</TableCell>
-                            <TableCell>{interview.round || '-'}</TableCell>
-                            <TableCell>{interview.interview_date || '-'}</TableCell>
-                            <TableCell>{interview.interview_time || '-'}</TableCell>
-                            {/* <TableCell>
+                              <TableRow key={`virtual-${interview.candidate_id}-${interview.panel_id}`}>
+                                <TableCell className="font-medium">
+                                  {interview.candidate_name}
+                                </TableCell>
+                                <TableCell>{interview.panel_name}</TableCell>
+                                <TableCell>{interview.round || '-'}</TableCell>
+                                <TableCell>{interview.interview_date || '-'}</TableCell>
+                                <TableCell>{interview.interview_time || '-'}</TableCell>
+                                {/* <TableCell>
                               {interview.meeting_link ? (
                                 <a 
                                   href={interview.meeting_link} 
@@ -3806,18 +3809,18 @@ export default function CandidatesPage() {
                                 </a>
                               ) : '-'}
                             </TableCell> */}
-                            <TableCell>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleUnscheduleVirtualInterview(interview.interview_id!)}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                disabled={!interview.interview_id}
-                              >
-                                Unschedule
-                              </Button>
-                            </TableCell>
-                          </TableRow>
+                                <TableCell>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleUnscheduleVirtualInterview(interview.interview_id!)}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    disabled={!interview.interview_id}
+                                  >
+                                    Unschedule
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
                             ))}
                         </TableBody>
                       </Table>
@@ -3830,10 +3833,10 @@ export default function CandidatesPage() {
                         (interview.panel_name && interview.panel_name.toLowerCase().includes(searchLower))
                       )
                     }).length === 0 && interviewSearchTerm && (
-                      <div className="text-center py-8 text-gray-500">
-                        No interviews match your search criteria.
-                      </div>
-                    )}
+                        <div className="text-center py-8 text-gray-500">
+                          No interviews match your search criteria.
+                        </div>
+                      )}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
@@ -3882,7 +3885,7 @@ export default function CandidatesPage() {
                     className="w-full"
                   />
                 </div>
-                
+
                 {/* Calendar Picker */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
@@ -3936,7 +3939,7 @@ export default function CandidatesPage() {
             </div>
           </DialogContent>
         </Dialog>
-        
+
         {/* Virtual Schedule Interview Dialog */}
         <VirtualScheduleInterviewDialog
           open={isVirtualScheduleDialogOpen}
@@ -3954,8 +3957,8 @@ export default function CandidatesPage() {
                 time: (virtualScheduleCandidate as any).interview_time,
                 meetingLink: (virtualScheduleCandidate as any).meeting_link,
                 panelMembers: [
-                  (virtualScheduleCandidate as any).panel_id || 
-                  (virtualScheduleCandidate as any).panel_name || 
+                  (virtualScheduleCandidate as any).panel_id ||
+                  (virtualScheduleCandidate as any).panel_name ||
                   virtualScheduleCandidate.panel_name
                 ].filter(Boolean),
               }

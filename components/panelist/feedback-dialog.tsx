@@ -1,4 +1,4 @@
- 
+
 
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -41,44 +41,63 @@ export function FeedbackDialog({ isOpen, onClose, session, onSubmit }: FeedbackD
       setFeedback((prev) => ({ ...prev, [category]: rating }))
     }
   }
+const handleSubmit = () => {
+  completeInterview(session.id, {
+    rating: Math.round(
+      (feedback.problem_solving +
+        feedback.communication +
+        feedback.code_quality +
+        feedback.technical_knowledge +
+        feedback.teamwork) / 5
+    ),
+    notes: feedback.comments,
+    decision: feedback.overallDecision === "Move to r2" ? "selected" : "rejected",
+    submittedAt: new Date().toISOString(),
+    detailedRatings: {
+      problem_solving: feedback.problem_solving,
+      communication: feedback.communication,
+      code_quality: feedback.code_quality,
+      technical_knowledge: feedback.technical_knowledge,
+      teamwork: feedback.teamwork,
+    },
+  });
 
-  const handleSubmit = () => {
-    // Complete the interview with feedback
-    completeInterview(session.id, {
-      rating: Math.round(
-        (feedback.problem_solving +
-          feedback.communication +
-          feedback.code_quality +
-          feedback.technical_knowledge +
-          feedback.teamwork) /
-          5,
-      ),
-      notes: feedback.comments,
-      decision: feedback.overallDecision === "Move to r2" ? "selected" : "rejected",
-      submittedAt: new Date().toISOString(),
-      detailedRatings: {
-        problem_solving: feedback.problem_solving,
-        communication: feedback.communication,
-        code_quality: feedback.code_quality,
-        technical_knowledge: feedback.technical_knowledge,
-        teamwork: feedback.teamwork,
-      },
-    })
+  console.log("[Walk-in Feedback] 📢 Dispatching refresh events");
 
-    onSubmit()
-    onClose()
+  // 🔹 Local (same-tab) updates
+  window.dispatchEvent(new Event("interview-sessions:update"));
+  window.dispatchEvent(new Event("dashboardUpdate"));
+  window.dispatchEvent(new Event("candidateUpdated"));
 
-    // Reset form
-    setFeedback({
-      problem_solving: 0,
-      communication: 0,
-      code_quality: 0,
-      technical_knowledge: 0,
-      teamwork: 0,
-      overallDecision: "",
-      comments: "",
-    })
-  }
+  // 🔹 Cross-tab updates (multi-tab sync)
+  const candidateChannel = new BroadcastChannel("candidate_updates");
+  const interviewChannel = new BroadcastChannel("interview_updates");
+
+  candidateChannel.postMessage({ type: "candidateUpdated" });
+  interviewChannel.postMessage({ type: "interview-sessions:update" });
+
+  // 🔹 Delay close slightly to ensure delivery
+  setTimeout(() => {
+    candidateChannel.close();
+    interviewChannel.close();
+  }, 100);
+
+  onSubmit();
+  onClose();
+
+  // 🔹 Reset form
+  setFeedback({
+    problem_solving: 0,
+    communication: 0,
+    code_quality: 0,
+    technical_knowledge: 0,
+    teamwork: 0,
+    overallDecision: "",
+    comments: "",
+  });
+};
+
+
 
   const StarRating = ({ category, label }: { category: keyof FeedbackData; label: string }) => (
     <div className="space-y-2">
@@ -92,9 +111,8 @@ export function FeedbackDialog({ isOpen, onClose, session, onSubmit }: FeedbackD
             className="focus:outline-none"
           >
             <Star
-              className={`h-6 w-6 ${
-                star <= (feedback[category] as number) ? "text-yellow-400 fill-current" : "text-gray-300"
-              }`}
+              className={`h-6 w-6 ${star <= (feedback[category] as number) ? "text-yellow-400 fill-current" : "text-gray-300"
+                }`}
             />
           </button>
         ))}

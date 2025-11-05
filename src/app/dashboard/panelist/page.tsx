@@ -414,26 +414,61 @@ export default function PanelistDashboard() {
     window.dispatchEvent(new Event('dashboardUpdate'))
   }, [selectedScheduledCandidate, currentUser, handleScheduledFeedbackClose])
 
-  useEffect(() => {
-    const loadSessions = () => {
-      if (currentUser?.name) {
-        const sessions = getInterviewSessionsForPanelist(currentUser.name)
-        const scheduled = sessions.filter(
-          (s) => s.status === "scheduled" || s.status === "in-progress" || s.status === "paused",
-        )
-        const completed = sessions.filter((s) => s.status === "completed")
+useEffect(() => {
+  if (!currentUser?.name) return;
 
-        setInterviewSessions(scheduled)
-        setCompletedInterviews(completed)
-      }
+  let isRefreshing = false;
+
+  const loadSessions = async () => {
+    if (isRefreshing) return;
+    isRefreshing = true;
+
+    try {
+      const sessions = await getInterviewSessionsForPanelist(currentUser.name);
+      const scheduled = sessions.filter((s) =>
+        ["scheduled", "in-progress", "paused"].includes(s.status)
+      );
+      const completed = sessions.filter((s) => s.status === "completed");
+
+      setInterviewSessions(scheduled);
+      setCompletedInterviews(completed);
+
+      console.log("[Panel] Sessions reloaded successfully");
+    } catch (err) {
+      console.error("[Panel] Failed to load sessions:", err);
+    } finally {
+      isRefreshing = false;
     }
-    
-    loadSessions()
-    
-    // Reload when sessions are updated
-    window.addEventListener("interviewSessionUpdated", loadSessions)
-    return () => window.removeEventListener("interviewSessionUpdated", loadSessions)
-  }, [currentUser?.name])
+  };
+
+  // Initial load
+  loadSessions();
+
+  // ✅ Cross-tab updates
+  const channel = new BroadcastChannel("interview_updates");
+  channel.onmessage = (event) => {
+    if (event.data?.type === "interview-sessions:update") {
+      console.log("[Panel] Cross-tab → reloading sessions");
+      loadSessions();
+    }
+  };
+
+  // ✅ Same-tab updates
+  const handleLocalUpdate = (e: Event) => {
+    if (e.type === "interview-sessions:update") {
+      console.log("[Panel] Local event → reloading sessions");
+      loadSessions();
+    }
+  };
+  window.addEventListener("interview-sessions:update", handleLocalUpdate);
+
+  return () => {
+    channel.close();
+    window.removeEventListener("interview-sessions:update", handleLocalUpdate);
+  };
+}, [currentUser?.name]);
+
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -450,18 +485,6 @@ export default function PanelistDashboard() {
 
     return () => clearInterval(interval)
   }, [interviewSessions])
-
-  // Auto-refresh candidates every 5 seconds (unless feedback dialog is open)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Don't refresh if user is actively submitting feedback
-      if (!showFeedbackDialog && !showScheduledFeedback) {
-        loadCandidates()
-      }
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [showFeedbackDialog, showScheduledFeedback, loadCandidates])
 
   useEffect(() => {
     const handleInterviewUpdate = (event: CustomEvent) => {
