@@ -299,11 +299,13 @@ export default function CandidatesPage() {
     // Listen for feedback and dashboard update events
     window.addEventListener('interview-sessions:update', handleFeedbackUpdate)
     window.addEventListener('dashboardUpdate', handleFeedbackUpdate)
+    window.addEventListener('candidateUpdated', handleFeedbackUpdate)
     
     return () => {
       console.log('[HR Candidates] Event listeners removed at:', new Date().toISOString())
       window.removeEventListener('interview-sessions:update', handleFeedbackUpdate)
       window.removeEventListener('dashboardUpdate', handleFeedbackUpdate)
+      window.removeEventListener('candidateUpdated', handleFeedbackUpdate)
     }
   }, [])
 
