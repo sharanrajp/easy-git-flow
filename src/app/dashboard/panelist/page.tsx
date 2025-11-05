@@ -127,29 +127,21 @@ export default function PanelistDashboard() {
     }
   }, [loadCandidates])
 
-  // Listen for candidate assignment events to auto-refresh
+  // Listen for candidate assignment events to auto-refresh using BroadcastChannel
   useEffect(() => {
-    const handleCandidateAssigned = (event?: Event) => {
-      console.log('[Panelist Dashboard] ✅ candidateAssigned event received at:', new Date().toISOString())
-      console.log('[Panelist Dashboard] Starting data refresh...')
-      loadCandidates()
+    const channel = new BroadcastChannel('ats-updates')
+    
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'candidateAssigned') {
+        loadCandidates()
+      }
     }
 
-    const handleDashboardUpdate = (event?: Event) => {
-      console.log('[Panelist Dashboard] ✅ dashboardUpdate event received at:', new Date().toISOString())
-      console.log('[Panelist Dashboard] Starting data refresh...')
-      loadCandidates()
-    }
-
-    console.log('[Panelist Dashboard] 📡 Setting up event listeners...')
-    window.addEventListener('candidateAssigned', handleCandidateAssigned)
-    window.addEventListener('dashboardUpdate', handleDashboardUpdate)
-    console.log('[Panelist Dashboard] ✅ Event listeners registered: candidateAssigned, dashboardUpdate')
+    channel.addEventListener('message', handleMessage)
     
     return () => {
-      console.log('[Panelist Dashboard] 🔌 Removing event listeners')
-      window.removeEventListener('candidateAssigned', handleCandidateAssigned)
-      window.removeEventListener('dashboardUpdate', handleDashboardUpdate)
+      channel.removeEventListener('message', handleMessage)
+      channel.close()
     }
   }, [loadCandidates])
 
@@ -436,12 +428,10 @@ export default function PanelistDashboard() {
     
     handleScheduledFeedbackClose()
     
-    // Notify other components to refresh
-    console.log('[Panelist Dashboard] 📤 Dispatching events: interview-sessions:update, dashboardUpdate, candidateUpdated')
-    window.dispatchEvent(new Event('interview-sessions:update'))
-    window.dispatchEvent(new Event('dashboardUpdate'))
-    window.dispatchEvent(new Event('candidateUpdated'))
-    console.log('[Panelist Dashboard] ✅ All refresh events dispatched successfully')
+    // Notify other components to refresh via BroadcastChannel
+    const channel = new BroadcastChannel('ats-updates')
+    channel.postMessage({ type: 'feedbackSubmitted' })
+    channel.close()
   }, [selectedScheduledCandidate, currentUser, handleScheduledFeedbackClose])
 
   useEffect(() => {

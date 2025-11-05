@@ -257,23 +257,17 @@ export default function CandidatesPage() {
   }, [])
 
 
-  // Auto-refresh candidates when feedback is submitted
+  // Auto-refresh candidates when feedback is submitted using BroadcastChannel
   useEffect(() => {
-    console.log('[HR Candidates] Event listeners registered at:', new Date().toISOString())
-    
+    const channel = new BroadcastChannel('ats-updates')
     let isRefreshing = false
     
-    const handleFeedbackUpdate = async () => {
-      console.log('[HR Candidates] Feedback update event received at:', new Date().toISOString())
+    const handleFeedbackUpdate = async (event: MessageEvent) => {
+      if (event.data.type !== 'feedbackSubmitted') return
       
       // Prevent multiple simultaneous refreshes
-      if (isRefreshing) {
-        console.log('[HR Candidates] Already refreshing, skipping...')
-        return
-      }
+      if (isRefreshing) return
       isRefreshing = true
-      
-      console.log('[HR Candidates] ✅ Event received, starting candidate refresh...')
       
       try {
         const [unassignedData, assignedData] = await Promise.all([
@@ -281,33 +275,20 @@ export default function CandidatesPage() {
           fetchAssignedCandidates()
         ])
         
-        console.log('[HR Candidates] ✅ Refresh successful:', {
-          unassigned: unassignedData.length,
-          assigned: assignedData.length
-        })
-        
         setUnassignedCandidates(unassignedData)
         setAssignedCandidates(assignedData)
       } catch (error) {
-        console.error('[HR Candidates] ❌ Failed to refresh candidates:', error)
+        console.error('[HR Candidates] Failed to refresh candidates:', error)
       } finally {
         isRefreshing = false
-        console.log('[HR Candidates] Refresh complete')
       }
     }
 
-    // Listen for feedback and dashboard update events
-    console.log('[HR Candidates] 📡 Setting up event listeners...')
-    window.addEventListener('interview-sessions:update', handleFeedbackUpdate)
-    window.addEventListener('dashboardUpdate', handleFeedbackUpdate)
-    window.addEventListener('candidateUpdated', handleFeedbackUpdate)
-    console.log('[HR Candidates] ✅ Event listeners registered: interview-sessions:update, dashboardUpdate, candidateUpdated')
+    channel.addEventListener('message', handleFeedbackUpdate)
     
     return () => {
-      console.log('[HR Candidates] Event listeners removed at:', new Date().toISOString())
-      window.removeEventListener('interview-sessions:update', handleFeedbackUpdate)
-      window.removeEventListener('dashboardUpdate', handleFeedbackUpdate)
-      window.removeEventListener('candidateUpdated', handleFeedbackUpdate)
+      channel.removeEventListener('message', handleFeedbackUpdate)
+      channel.close()
     }
   }, [])
 
@@ -1089,10 +1070,9 @@ export default function CandidatesPage() {
       ]).then(([updatedUnassigned, updatedAssigned]) => {
         setUnassignedCandidates(updatedUnassigned)
         setAssignedCandidates(updatedAssigned)
-        console.log('[HR Map Candidate] 📤 Dispatching events: dashboardUpdate, candidateAssigned')
-        window.dispatchEvent(new Event('dashboardUpdate'))
-        window.dispatchEvent(new Event('candidateAssigned'))
-        console.log('[HR Map Candidate] ✅ Events dispatched successfully')
+        const channel = new BroadcastChannel('ats-updates')
+        channel.postMessage({ type: 'candidateAssigned' })
+        channel.close()
       }).catch(error => {
         console.error('Background refresh failed:', error)
       })
@@ -1197,10 +1177,9 @@ export default function CandidatesPage() {
         setAssignedCandidates(assignedData)
         setOngoingInterviews(interviewsData)
         setOngoingVirtualInterviews(virtualInterviewsData)
-        console.log('[HR Assign Panel] 📤 Dispatching events: dashboardUpdate, candidateAssigned')
-        window.dispatchEvent(new Event('dashboardUpdate'))
-        window.dispatchEvent(new Event('candidateAssigned'))
-        console.log('[HR Assign Panel] ✅ Events dispatched successfully')
+        const channel = new BroadcastChannel('ats-updates')
+        channel.postMessage({ type: 'candidateAssigned' })
+        channel.close()
       }).catch(error => {
         console.error('Background refresh failed:', error)
       })
@@ -1910,11 +1889,10 @@ export default function CandidatesPage() {
       setUnassignedCandidates(unassignedData)
       setAssignedCandidates(assignedData)
 
-      // ✅ Dispatch events to notify Panelist dashboard of new assignment
-      console.log('[HR Virtual Schedule] 📤 Dispatching events: candidateAssigned, dashboardUpdate')
-      window.dispatchEvent(new Event('candidateAssigned'))
-      window.dispatchEvent(new Event('dashboardUpdate'))
-      console.log('[HR Virtual Schedule] ✅ Events dispatched successfully')
+      // Notify Panelist dashboard via BroadcastChannel
+      const channel = new BroadcastChannel('ats-updates')
+      channel.postMessage({ type: 'candidateAssigned' })
+      channel.close()
 
       setIsVirtualScheduleDialogOpen(false)
       setVirtualScheduleCandidate(null)
