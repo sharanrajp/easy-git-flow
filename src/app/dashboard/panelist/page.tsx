@@ -472,17 +472,6 @@ export default function PanelistDashboard() {
     return () => clearInterval(interval)
   }, [interviewSessions])
 
-  // Auto-refresh candidates every 5 seconds (unless feedback dialog is open)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Don't refresh if user is actively submitting feedback
-      if (!showFeedbackDialog && !showScheduledFeedback) {
-        loadCandidates()
-      }
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [showFeedbackDialog, showScheduledFeedback, loadCandidates])
 
   useEffect(() => {
     const handleInterviewUpdate = (event: CustomEvent) => {
