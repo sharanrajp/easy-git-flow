@@ -12,11 +12,11 @@ interface ResumeUploadLogDetailsDialogProps {
   loading: boolean
 }
 
-export function ResumeUploadLogDetailsDialog({ 
-  open, 
-  onOpenChange, 
-  details, 
-  loading 
+export function ResumeUploadLogDetailsDialog({
+  open,
+  onOpenChange,
+  details,
+  loading
 }: ResumeUploadLogDetailsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -57,42 +57,52 @@ export function ResumeUploadLogDetailsDialog({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>File Name</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Message</TableHead>
-                      <TableHead>Started At</TableHead>
-                      <TableHead>Completed At</TableHead>
+                      <TableHead className="w-[200px]">File Name</TableHead>
+                      <TableHead className="w-[120px]">Status</TableHead>
+                      <TableHead className="w-[300px]">Message</TableHead>
+                      <TableHead className="w-[180px]">Started At</TableHead>
+                      <TableHead className="w-[180px]">Completed At</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {details.failed_details.map((detail, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{detail.file_name}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              detail.status === "completed"
-                                ? "default"
-                                : detail.status === "failed"
-                                ? "destructive"
-                                : "secondary"
-                            }
-                          >
-                            {detail.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="max-w-xs">{detail.message}</TableCell>
-                        <TableCell className="whitespace-nowrap">
-                          {formatToIST(detail.started_at)}
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap">
-                          {formatToIST(detail.completed_at)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {details.failed_details.map((detail, index) => {
+                      const match = detail.message.match(/'message': '([^']+)'/);
+                      const extractedMessage = match ? match[1] : null;
+                      console.log({ message: detail.message, extractedMessage });
+                      return (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium max-w-[200px] whitespace-normal break-words">{detail.file_name}</TableCell>
+                          <TableCell className="w-[120px]">
+                            <Badge
+                              variant={
+                                detail.status === "completed"
+                                  ? "default"
+                                  : detail.status === "failed"
+                                    ? "destructive"
+                                    : "secondary"
+                              }
+                            >
+                              {detail.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] whitespace-normal break-words">
+                            {extractedMessage || detail.message}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap w-[180px]">
+                            {formatToIST(detail.started_at)}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap w-[180px]">
+                            {formatToIST(detail.completed_at)}
+                          </TableCell>
+                        </TableRow>
+                      )
+                    }
+                    )
+                    }
                   </TableBody>
                 </Table>
               </div>
+
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 No failed resumes in this upload

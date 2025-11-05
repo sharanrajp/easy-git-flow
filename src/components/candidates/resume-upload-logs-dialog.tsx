@@ -24,7 +24,7 @@ export function ResumeUploadLogsDialog({
 }: ResumeUploadLogsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[80vh] overflow-auto">
+      <DialogContent className="max-w-5xl w-[700px] max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>Resume Upload Logs</DialogTitle>
         </DialogHeader>
