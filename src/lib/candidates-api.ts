@@ -934,3 +934,74 @@ export async function fetchResumeStatus(): Promise<ResumeStatusResponse> {
     throw error;
   }
 }
+
+// Resume Upload Logs types and APIs
+export interface ResumeUploadLog {
+  _id: string
+  uploaded_by: string
+  total_files: number
+  started_at: string
+}
+
+export interface FailedResumeDetail {
+  file_name: string
+  status: string
+  message: string
+  started_at: string
+  completed_at: string
+}
+
+export interface ResumeUploadLogDetails {
+  _id: string
+  uploaded_by: string
+  total_files: number
+  started_at: string
+  failed_details: FailedResumeDetail[]
+}
+
+export interface ResumeUploadLogsResponse {
+  count: number
+  logs: ResumeUploadLog[]
+}
+
+export async function fetchResumeUploadLogs(limit = 50, skip = 0): Promise<ResumeUploadLogsResponse> {
+  try {
+    const token = getToken();
+    const response = await fetch(`${API_BASE_URL}/resumes/logs?limit=${limit}&skip=${skip}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch resume upload logs');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching resume upload logs:', error);
+    throw error;
+  }
+}
+
+export async function fetchResumeUploadLogDetails(logId: string): Promise<ResumeUploadLogDetails> {
+  try {
+    const token = getToken();
+    const response = await fetch(`${API_BASE_URL}/resumes/logs/${logId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch resume upload log details');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching resume upload log details:', error);
+    throw error;
+  }
+}
