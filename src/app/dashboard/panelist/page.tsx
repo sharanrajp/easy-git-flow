@@ -437,9 +437,11 @@ export default function PanelistDashboard() {
     handleScheduledFeedbackClose()
     
     // Notify other components to refresh
-    console.log('[Panelist Dashboard] 📤 Dispatching event: dashboardUpdate (feedback submitted)')
+    console.log('[Panelist Dashboard] 📤 Dispatching events: interview-sessions:update, dashboardUpdate, candidateUpdated')
+    window.dispatchEvent(new Event('interview-sessions:update'))
     window.dispatchEvent(new Event('dashboardUpdate'))
-    console.log('[Panelist Dashboard] ✅ Event dispatched successfully')
+    window.dispatchEvent(new Event('candidateUpdated'))
+    console.log('[Panelist Dashboard] ✅ All refresh events dispatched successfully')
   }, [selectedScheduledCandidate, currentUser, handleScheduledFeedbackClose])
 
   useEffect(() => {
