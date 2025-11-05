@@ -96,6 +96,29 @@ export interface PanelistCandidate {
   }>;
 }
 
+export interface ResumeUploadLog {
+  _id: string;
+  uploaded_by: string;
+  total_files: number;
+  started_at: string;
+}
+
+export interface FailedResumeDetail {
+  file_name: string;
+  status: string;
+  message: string;
+  started_at: string;
+  completed_at: string;
+}
+
+export interface ResumeUploadLogDetails {
+  _id: string;
+  uploaded_by: string;
+  total_files: number;
+  started_at: string;
+  failed_details: FailedResumeDetail[];
+}
+
 export interface OngoingInterview {
   candidate_id: string;
   candidate_name: string;
@@ -888,6 +911,50 @@ export interface PositionResumeStatus {
 export interface ResumeStatusResponse {
   count: number
   positions: PositionResumeStatus[]
+}
+
+// Fetch resume upload logs
+export async function fetchResumeUploadLogs(): Promise<ResumeUploadLog[]> {
+  try {
+    const token = getToken();
+    const response = await fetch(`${API_BASE_URL}/resumes/logs`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch resume upload logs');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching resume upload logs:', error);
+    throw error;
+  }
+}
+
+// Fetch resume upload log details
+export async function fetchResumeUploadLogDetails(logId: string): Promise<ResumeUploadLogDetails> {
+  try {
+    const token = getToken();
+    const response = await fetch(`${API_BASE_URL}/resumes/logs/${logId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch resume upload log details');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching resume upload log details:', error);
+    throw error;
+  }
 }
 
 export async function fetchResumeStatus(): Promise<ResumeStatusResponse> {
