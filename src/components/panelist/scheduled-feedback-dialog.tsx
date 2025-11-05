@@ -114,12 +114,10 @@ export function ScheduledFeedbackDialog({ isOpen, onClose, candidate, onSubmit }
             body: JSON.stringify({ status: "free" })
           })
 
-          // Notify other tabs/pages via WebSocket
-          const ws = new WebSocket('ws://127.0.0.1:8000/ws/ats')
-          ws.onopen = () => {
-            ws.send(JSON.stringify({ type: 'feedbackSubmitted', timestamp: Date.now() }))
-            setTimeout(() => ws.close(), 100)
-          }
+          // Notify other tabs/pages via BroadcastChannel
+          const channel = new BroadcastChannel('ats-updates')
+          channel.postMessage({ type: 'feedbackSubmitted' })
+          channel.close()
 
           toast({
             title: "Success",

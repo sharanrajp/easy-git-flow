@@ -257,55 +257,38 @@ export default function CandidatesPage() {
   }, [])
 
 
-  // Auto-refresh candidates when feedback is submitted using WebSocket
+  // Auto-refresh candidates when feedback is submitted using BroadcastChannel
   useEffect(() => {
-    const ws = new WebSocket('ws://127.0.0.1:8000/ws/ats')
+    const channel = new BroadcastChannel('ats-updates')
     let isRefreshing = false
     
-    ws.onopen = () => {
-      console.log('[HR Candidates] WebSocket connected')
-    }
-
-    ws.onmessage = async (event) => {
+    const handleFeedbackUpdate = async (event: MessageEvent) => {
+      if (event.data.type !== 'feedbackSubmitted') return
+      
+      // Prevent multiple simultaneous refreshes
+      if (isRefreshing) return
+      isRefreshing = true
+      
       try {
-        const message = JSON.parse(event.data)
-        console.log('[HR Candidates] Received WebSocket message:', message)
+        const [unassignedData, assignedData] = await Promise.all([
+          fetchUnassignedCandidates(),
+          fetchAssignedCandidates()
+        ])
         
-        if (message.type !== 'feedbackSubmitted') return
-        
-        // Prevent multiple simultaneous refreshes
-        if (isRefreshing) return
-        isRefreshing = true
-        
-        try {
-          const [unassignedData, assignedData] = await Promise.all([
-            fetchUnassignedCandidates(),
-            fetchAssignedCandidates()
-          ])
-          
-          setUnassignedCandidates(unassignedData)
-          setAssignedCandidates(assignedData)
-        } catch (error) {
-          console.error('[HR Candidates] Failed to refresh candidates:', error)
-        } finally {
-          isRefreshing = false
-        }
+        setUnassignedCandidates(unassignedData)
+        setAssignedCandidates(assignedData)
       } catch (error) {
-        console.error('[HR Candidates] Error parsing WebSocket message:', error)
+        console.error('[HR Candidates] Failed to refresh candidates:', error)
+      } finally {
+        isRefreshing = false
       }
     }
 
-    ws.onerror = (error) => {
-      console.error('[HR Candidates] WebSocket error:', error)
-    }
-
-    ws.onclose = () => {
-      console.log('[HR Candidates] WebSocket disconnected')
-    }
+    channel.addEventListener('message', handleFeedbackUpdate)
     
     return () => {
-      console.log('[HR Candidates] Closing WebSocket connection')
-      ws.close()
+      channel.removeEventListener('message', handleFeedbackUpdate)
+      channel.close()
     }
   }, [])
 
@@ -1087,11 +1070,9 @@ export default function CandidatesPage() {
       ]).then(([updatedUnassigned, updatedAssigned]) => {
         setUnassignedCandidates(updatedUnassigned)
         setAssignedCandidates(updatedAssigned)
-        const ws = new WebSocket('ws://127.0.0.1:8000/ws/ats')
-        ws.onopen = () => {
-          ws.send(JSON.stringify({ type: 'candidateAssigned', timestamp: Date.now() }))
-          setTimeout(() => ws.close(), 100)
-        }
+        const channel = new BroadcastChannel('ats-updates')
+        channel.postMessage({ type: 'candidateAssigned' })
+        channel.close()
       }).catch(error => {
         console.error('Background refresh failed:', error)
       })
@@ -1196,11 +1177,9 @@ export default function CandidatesPage() {
         setAssignedCandidates(assignedData)
         setOngoingInterviews(interviewsData)
         setOngoingVirtualInterviews(virtualInterviewsData)
-        const ws = new WebSocket('ws://127.0.0.1:8000/ws/ats')
-        ws.onopen = () => {
-          ws.send(JSON.stringify({ type: 'candidateAssigned', timestamp: Date.now() }))
-          setTimeout(() => ws.close(), 100)
-        }
+        const channel = new BroadcastChannel('ats-updates')
+        channel.postMessage({ type: 'candidateAssigned' })
+        channel.close()
       }).catch(error => {
         console.error('Background refresh failed:', error)
       })
@@ -1910,12 +1889,10 @@ export default function CandidatesPage() {
       setUnassignedCandidates(unassignedData)
       setAssignedCandidates(assignedData)
 
-      // Notify Panelist dashboard via WebSocket
-      const ws = new WebSocket('ws://127.0.0.1:8000/ws/ats')
-      ws.onopen = () => {
-        ws.send(JSON.stringify({ type: 'candidateAssigned', timestamp: Date.now() }))
-        setTimeout(() => ws.close(), 100)
-      }
+      // Notify Panelist dashboard via BroadcastChannel
+      const channel = new BroadcastChannel('ats-updates')
+      channel.postMessage({ type: 'candidateAssigned' })
+      channel.close()
 
       setIsVirtualScheduleDialogOpen(false)
       setVirtualScheduleCandidate(null)
