@@ -256,12 +256,6 @@ export default function CandidatesPage() {
     loadAllCandidates()
   }, [])
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Dispatch event to notify other components
-      window.dispatchEvent(new CustomEvent("candidateUpdated"))
-    }
-  }, [candidates])
 
   // Auto-refresh candidates when feedback is submitted
   useEffect(() => {
@@ -302,16 +296,14 @@ export default function CandidatesPage() {
       }
     }
 
-    // Listen for all three event types
+    // Listen for feedback and dashboard update events
     window.addEventListener('interview-sessions:update', handleFeedbackUpdate)
     window.addEventListener('dashboardUpdate', handleFeedbackUpdate)
-    window.addEventListener('candidateUpdated', handleFeedbackUpdate)
     
     return () => {
       console.log('[HR Candidates] Event listeners removed at:', new Date().toISOString())
       window.removeEventListener('interview-sessions:update', handleFeedbackUpdate)
       window.removeEventListener('dashboardUpdate', handleFeedbackUpdate)
-      window.removeEventListener('candidateUpdated', handleFeedbackUpdate)
     }
   }, [])
 
