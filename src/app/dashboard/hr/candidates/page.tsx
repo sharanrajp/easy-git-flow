@@ -273,7 +273,7 @@ export default function CandidatesPage() {
       }
       isRefreshing = true
       
-      console.log('[HR Candidates] Starting candidate refresh...')
+      console.log('[HR Candidates] ✅ Event received, starting candidate refresh...')
       
       try {
         const [unassignedData, assignedData] = await Promise.all([
@@ -281,7 +281,7 @@ export default function CandidatesPage() {
           fetchAssignedCandidates()
         ])
         
-        console.log('[HR Candidates] Refresh successful:', {
+        console.log('[HR Candidates] ✅ Refresh successful:', {
           unassigned: unassignedData.length,
           assigned: assignedData.length
         })
@@ -289,7 +289,7 @@ export default function CandidatesPage() {
         setUnassignedCandidates(unassignedData)
         setAssignedCandidates(assignedData)
       } catch (error) {
-        console.error('[HR Candidates] Failed to refresh candidates:', error)
+        console.error('[HR Candidates] ❌ Failed to refresh candidates:', error)
       } finally {
         isRefreshing = false
         console.log('[HR Candidates] Refresh complete')
@@ -297,9 +297,11 @@ export default function CandidatesPage() {
     }
 
     // Listen for feedback and dashboard update events
+    console.log('[HR Candidates] 📡 Setting up event listeners...')
     window.addEventListener('interview-sessions:update', handleFeedbackUpdate)
     window.addEventListener('dashboardUpdate', handleFeedbackUpdate)
     window.addEventListener('candidateUpdated', handleFeedbackUpdate)
+    console.log('[HR Candidates] ✅ Event listeners registered: interview-sessions:update, dashboardUpdate, candidateUpdated')
     
     return () => {
       console.log('[HR Candidates] Event listeners removed at:', new Date().toISOString())
@@ -1087,8 +1089,10 @@ export default function CandidatesPage() {
       ]).then(([updatedUnassigned, updatedAssigned]) => {
         setUnassignedCandidates(updatedUnassigned)
         setAssignedCandidates(updatedAssigned)
+        console.log('[HR Map Candidate] 📤 Dispatching events: dashboardUpdate, candidateAssigned')
         window.dispatchEvent(new Event('dashboardUpdate'))
         window.dispatchEvent(new Event('candidateAssigned'))
+        console.log('[HR Map Candidate] ✅ Events dispatched successfully')
       }).catch(error => {
         console.error('Background refresh failed:', error)
       })
@@ -1193,8 +1197,10 @@ export default function CandidatesPage() {
         setAssignedCandidates(assignedData)
         setOngoingInterviews(interviewsData)
         setOngoingVirtualInterviews(virtualInterviewsData)
+        console.log('[HR Assign Panel] 📤 Dispatching events: dashboardUpdate, candidateAssigned')
         window.dispatchEvent(new Event('dashboardUpdate'))
         window.dispatchEvent(new Event('candidateAssigned'))
+        console.log('[HR Assign Panel] ✅ Events dispatched successfully')
       }).catch(error => {
         console.error('Background refresh failed:', error)
       })
@@ -1905,9 +1911,10 @@ export default function CandidatesPage() {
       setAssignedCandidates(assignedData)
 
       // ✅ Dispatch events to notify Panelist dashboard of new assignment
-      console.log('[HR Virtual Schedule] Dispatching candidateAssigned event')
+      console.log('[HR Virtual Schedule] 📤 Dispatching events: candidateAssigned, dashboardUpdate')
       window.dispatchEvent(new Event('candidateAssigned'))
       window.dispatchEvent(new Event('dashboardUpdate'))
+      console.log('[HR Virtual Schedule] ✅ Events dispatched successfully')
 
       setIsVirtualScheduleDialogOpen(false)
       setVirtualScheduleCandidate(null)
