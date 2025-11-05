@@ -309,14 +309,6 @@ export function ResumeUploadDialog({ open, onClose, onSuccess }: ResumeUploadDia
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleViewLogs}
-              >
-                <List className="h-4 w-4 mr-2" />
-                Processing Logs
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
                 onClick={handleViewResumeStatus}
               >
                 <Eye className="h-4 w-4 mr-2" />
