@@ -1902,6 +1902,11 @@ export default function CandidatesPage() {
       setUnassignedCandidates(unassignedData)
       setAssignedCandidates(assignedData)
 
+      // ✅ Dispatch events to notify Panelist dashboard of new assignment
+      console.log('[HR Virtual Schedule] Dispatching candidateAssigned event')
+      window.dispatchEvent(new Event('candidateAssigned'))
+      window.dispatchEvent(new Event('dashboardUpdate'))
+
       setIsVirtualScheduleDialogOpen(false)
       setVirtualScheduleCandidate(null)
       setIsVirtualReschedule(false)
