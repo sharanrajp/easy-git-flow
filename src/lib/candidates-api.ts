@@ -490,6 +490,7 @@ export async function exportCandidatesExcel(): Promise<Blob> {
   return response.blob();
 }
 
+
 export async function fetchPanelistAssignedCandidates(): Promise<PanelistCandidate[]> {
   const token = getToken();
   
@@ -964,6 +965,43 @@ export interface ResumeUploadLogsResponse {
   logs: ResumeUploadLog[]
 }
 
+// {
+//   "filter_type": "this_week",
+//   "start_date": "2025-11-03",
+//   "end_date": "2025-11-09",
+//   "total_candidates": 44,
+//   "summary": [
+//     {
+//       "recruiter_name": "Preethi",
+//       "total_sourced": 43,
+//       "sources": [
+//         {
+//           "source": "Naukri",
+//           "count": 43
+//         }
+//       ]
+//     },
+//     {
+//       "recruiter_name": "Raja",
+//       "total_sourced": 1,
+//       "sources": [
+//         {
+//           "source": "Naukri",
+//           "count": 1
+//         }
+//       ]
+//     }
+//   ]
+// }
+
+export interface CandidatesSourcedByRecruiter {
+  filter_type: string,
+  start_date: string,
+  end_date: string,
+  total_candidates: number,
+  summary: []
+}
+
 export async function fetchResumeUploadLogs(limit = 50, skip = 0): Promise<ResumeUploadLogsResponse> {
   try {
     const token = getToken();
@@ -1002,6 +1040,25 @@ export async function fetchResumeUploadLogDetails(logId: string): Promise<Resume
     return await response.json();
   } catch (error) {
     console.error('Error fetching resume upload log details:', error);
+    throw error;
+  }
+}
+
+export async function fetchCandidatesSourcedByRecruiter(): Promise<CandidatesSourcedByRecruiter> {
+  try {
+    const token = getToken();
+    const response = await fetch(`${API_BASE_URL}/interviews/source-summary`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch candidates sourced by recruiter');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching candidates sourced by recruiter:', error);
     throw error;
   }
 }

@@ -19,6 +19,7 @@ import {
   fetchAssignedCandidates,
   fetchOngoingInterviews,
   type BackendCandidate,
+  fetchCandidatesSourcedByRecruiter as fetchCandidatesAPI,
 } from "@/lib/candidates-api";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
@@ -44,11 +45,14 @@ export default function HRDashboard() {
 
   const [vacancies, setVacancies] = useState<Position[]>([]);
   const [hrUsers, setHrUsers] = useState<User[]>([]);
+  const [recruiterUsers, setRecruiterUsers] = useState<User[]>([])
 
   // Store all fetched data
   const [unassignedCandidates, setUnassignedCandidates] = useState<BackendCandidate[]>([]);
   const [assignedCandidates, setAssignedCandidates] = useState<BackendCandidate[]>([]);
   const [ongoingInterviews, setOngoingInterviews] = useState<any[]>([]);
+  const [candidatesByRecruiter, setCandidatesByRecruiter] = useState([]);
+  const [candidatesBySource, setCandidatesBySource] = useState([]);
 
   // Calculate metrics for Candidate Overview section
   const candidateMetrics = useMemo(() => {
@@ -107,9 +111,9 @@ export default function HRDashboard() {
         fetchAssignedCandidates(),
         fetchOngoingInterviews(),
       ]);
-
       setVacancies(fetchedVacancies || []);
       setHrUsers(fetchedUsers.filter((user) => user.role === "hr") || []);
+      setRecruiterUsers(fetchedUsers.filter((user) => user.role === "recruiter") || []);
       setUnassignedCandidates(fetchedUnassigned || []);
       setAssignedCandidates(fetchedAssigned || []);
       setOngoingInterviews(fetchedOngoing || []);
@@ -123,30 +127,89 @@ export default function HRDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  };  
 
   // Chart colors
   const CHART_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
 
   // Sample data for charts - replace with actual data from API
-  const candidatesBySource = useMemo(() => [
-    { name: 'Naukri', value: 420 },
-    { name: 'Referral', value: 40 },
-    { name: 'Walk-in Drive', value: 28 },
-    { name: 'Voler Software', value: 15 },
-    { name: 'Expert App Demo', value: 7 },
-    { name: 'Data Drone', value: 5 },
-    { name: 'Flyrosoft', value: 3 },
-    { name: 'Flex Ventures', value: 2 },
-  ], []);
+  // const candidatesBySource = useMemo(() => [
+  //   { name: 'Naukri', value: 420 },
+  //   { name: 'Referral', value: 40 },
+  //   { name: 'Walk-in Drive', value: 28 },
+  //   { name: 'Voler Software', value: 15 },
+  //   { name: 'Expert App Demo', value: 7 },
+  //   { name: 'Data Drone', value: 5 },
+  //   { name: 'Flyrosoft', value: 3 },
+  //   { name: 'Flex Ventures', value: 2 },
+  // ], []);
 
-  const candidatesByRecruiter = useMemo(() => [
-    { name: 'Raja', value: 70.3, count: 350 },
-    { name: 'Subikha', value: 9.1, count: 45 },
-    { name: 'Pavithra', value: 8.9, count: 44 },
-    { name: 'Merwin', value: 7.1, count: 35 },
-    { name: 'Preethi', value: 4.6, count: 23 },
-  ], []);
+  const formatSourceData = (data) => {
+    if (!data || !data.summary) return [];
+
+    const sourceTotals = {};
+
+    data.summary.forEach((recruiter) => {
+      recruiter.sources.forEach(({ source, count }) => {
+        sourceTotals[source] = (sourceTotals[source] || 0) + count;
+      });
+    });
+
+    return Object.entries(sourceTotals).map(([name, value]) => ({
+      name,
+      value,
+    }));
+  };
+
+
+  // const candidatesByRecruiter = useMemo(() => [
+  //   { name: 'Raja', value: 70.3, count: 350 },
+  //   { name: 'Subikha', value: 9.1, count: 45 },
+  //   { name: 'Pavithra', value: 8.9, count: 44 },
+  //   { name: 'Merwin', value: 7.1, count: 35 },
+  //   { name: 'Preethi', value: 4.6, count: 23 },
+  // ], []);
+
+  // candidates sourced by recruiter
+
+  const formatRecruiterData = (data) => {
+    if (!data || !data.summary) return [];
+
+    const { total_candidates, summary } = data;
+
+    return summary.map((item) => ({
+      name: item.recruiter_name,
+      count: item.total_sourced,
+      value: total_candidates
+        ? Number(((item.total_sourced / total_candidates) * 100).toFixed(1))
+        : 0,
+    }));
+  };
+
+  useEffect(() => {
+    async function loadCandidates() {
+      try {
+        const data = await fetchCandidatesAPI();
+        console.log("Raw API Data:", data);
+
+        const formattedRecruiterData = formatRecruiterData(data);
+        console.log("Formatted Recruiter Data:", formattedRecruiterData);
+
+        setCandidatesByRecruiter(formattedRecruiterData);
+
+        const formattedSourceData = formatSourceData(data);
+        console.log("Formatted Source Data:", formattedSourceData);
+
+        setCandidatesBySource(formattedSourceData);
+        
+      } catch (error) {
+        console.error("Error fetching recruiter data:", error);
+      }
+    }
+
+    loadCandidates();
+  }, []);
+
 
   const interviewSchedule = useMemo(() => [
     { position: 'Associate IT Analyst', value: 688 },
@@ -227,8 +290,8 @@ export default function HRDashboard() {
   };
 
   if (isLoading) {
-  return (
-    <DashboardLayout requiredRole={["admin", "hr", "recruiter"]}>
+    return (
+      <DashboardLayout requiredRole={["admin", "hr", "recruiter"]}>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="flex flex-col items-center gap-3">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
@@ -312,7 +375,7 @@ export default function HRDashboard() {
                 </SelectTrigger>
                 <SelectContent className="bg-background z-50">
                   <SelectItem value="all">All Recruiters</SelectItem>
-                  {hrUsers.map((user) => (
+                  {recruiterUsers.map((user) => (
                     <SelectItem key={user._id} value={user.name}>
                       {user.name}
                     </SelectItem>
@@ -486,212 +549,212 @@ export default function HRDashboard() {
 
             {/* Candidate Overview Metrics */}
             <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              Candidate Overview
-            </h2>
-            <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={candidateFilter} onValueChange={setCandidateFilter}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="day">Today</SelectItem>
-                  <SelectItem value="week">This Week</SelectItem>
-                  <SelectItem value="month">This Month</SelectItem>
-                  <SelectItem value="quarter">This Quarter</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={candidateVacancyFilter} onValueChange={setCandidateVacancyFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="All Roles" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  {vacancies.map((vacancy) => (
-                    <SelectItem key={vacancy.id} value={vacancy.id}>
-                      {vacancy.position_title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <MetricCard
-              title="Total Applications"
-              value={candidateMetrics?.total_applications || 0}
-              icon={Users}
-              trend={{ value: 12, label: candidateFilter === "day" ? "vs yesterday" : `vs last ${candidateFilter}` }}
-              color="blue"
-              filterValue={
-                candidateFilter === "day"
-                  ? "Today"
-                  : candidateFilter === "week"
-                    ? "This Week"
-                    : candidateFilter === "month"
-                      ? "This Month"
-                      : "This Quarter"
-              }
-            />
-            <MetricCard
-              title="Unassigned Candidates"
-              value={candidateMetrics?.unassigned_candidates || 0}
-              description="Awaiting recruiter assignment"
-              icon={UserCheck}
-              color="orange"
-              filterValue={
-                candidateFilter === "day"
-                  ? "Today"
-                  : candidateFilter === "week"
-                    ? "This Week"
-                    : candidateFilter === "month"
-                      ? "This Month"
-                      : "This Quarter"
-              }
-            />
-            <MetricCard
-              title="Interviews Scheduled"
-              value={candidateMetrics?.interviews_scheduled || 0}
-              description="Across all rounds"
-              icon={Clock}
-              color="green"
-              filterValue={
-                candidateFilter === "day"
-                  ? "Today"
-                  : candidateFilter === "week"
-                    ? "This Week"
-                    : candidateFilter === "month"
-                      ? "This Month"
-                      : "This Quarter"
-              }
-            />
-            <MetricCard
-              title="Joined/Offer Released"
-              value={`${candidateMetrics?.joined_count || 0}/${candidateMetrics?.offer_released_count || 0}`}
-              icon={CheckCircle}
-              trend={{ value: 25, label: `vs last ${candidateFilter}` }}
-              color="green"
-              filterValue={
-                candidateFilter === "day"
-                  ? "Today"
-                  : candidateFilter === "week"
-                    ? "This Week"
-                    : candidateFilter === "month"
-                      ? "This Month"
-                      : "This Quarter"
-              }
-            />
-            </div>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  Candidate Overview
+                </h2>
+                <div className="flex items-center space-x-2">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Select value={candidateFilter} onValueChange={setCandidateFilter}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="day">Today</SelectItem>
+                      <SelectItem value="week">This Week</SelectItem>
+                      <SelectItem value="month">This Month</SelectItem>
+                      <SelectItem value="quarter">This Quarter</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={candidateVacancyFilter} onValueChange={setCandidateVacancyFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="All Roles" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Roles</SelectItem>
+                      {vacancies.map((vacancy) => (
+                        <SelectItem key={vacancy.id} value={vacancy.id}>
+                          {vacancy.position_title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard
+                  title="Total Applications"
+                  value={candidateMetrics?.total_applications || 0}
+                  icon={Users}
+                  trend={{ value: 12, label: candidateFilter === "day" ? "vs yesterday" : `vs last ${candidateFilter}` }}
+                  color="blue"
+                  filterValue={
+                    candidateFilter === "day"
+                      ? "Today"
+                      : candidateFilter === "week"
+                        ? "This Week"
+                        : candidateFilter === "month"
+                          ? "This Month"
+                          : "This Quarter"
+                  }
+                />
+                <MetricCard
+                  title="Unassigned Candidates"
+                  value={candidateMetrics?.unassigned_candidates || 0}
+                  description="Awaiting recruiter assignment"
+                  icon={UserCheck}
+                  color="orange"
+                  filterValue={
+                    candidateFilter === "day"
+                      ? "Today"
+                      : candidateFilter === "week"
+                        ? "This Week"
+                        : candidateFilter === "month"
+                          ? "This Month"
+                          : "This Quarter"
+                  }
+                />
+                <MetricCard
+                  title="Interviews Scheduled"
+                  value={candidateMetrics?.interviews_scheduled || 0}
+                  description="Across all rounds"
+                  icon={Clock}
+                  color="green"
+                  filterValue={
+                    candidateFilter === "day"
+                      ? "Today"
+                      : candidateFilter === "week"
+                        ? "This Week"
+                        : candidateFilter === "month"
+                          ? "This Month"
+                          : "This Quarter"
+                  }
+                />
+                <MetricCard
+                  title="Joined/Offer Released"
+                  value={`${candidateMetrics?.joined_count || 0}/${candidateMetrics?.offer_released_count || 0}`}
+                  icon={CheckCircle}
+                  trend={{ value: 25, label: `vs last ${candidateFilter}` }}
+                  color="green"
+                  filterValue={
+                    candidateFilter === "day"
+                      ? "Today"
+                      : candidateFilter === "week"
+                        ? "This Week"
+                        : candidateFilter === "month"
+                          ? "This Month"
+                          : "This Quarter"
+                  }
+                />
+              </div>
             </div>
 
             {/* Interview Pipeline */}
             <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              Interview Pipeline
-            </h2>
-            <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={pipelineVacancyFilter} onValueChange={setPipelineVacancyFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="All Roles" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  {vacancies.map((vacancy) => (
-                    <SelectItem key={vacancy.id} value={vacancy.id}>
-                      {vacancy.position_title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <MetricCard
-              title="Ongoing R1"
-              value={pipelineMetrics?.ongoing_r1 || 0}
-              description="Technical Screen in progress"
-              icon={Users}
-              color="blue"
-            />
-            <MetricCard
-              title="Ongoing R2"
-              value={pipelineMetrics?.ongoing_r2 || 0}
-              description="Technical + Behavioral in progress"
-              icon={Users}
-              color="orange"
-            />
-            <MetricCard
-              title="Ongoing R3"
-              value={pipelineMetrics?.ongoing_r3 || 0}
-              description="Manager Interview in progress"
-              icon={Users}
-              color="green"
-            />
-            </div>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  Interview Pipeline
+                </h2>
+                <div className="flex items-center space-x-2">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Select value={pipelineVacancyFilter} onValueChange={setPipelineVacancyFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="All Roles" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Roles</SelectItem>
+                      {vacancies.map((vacancy) => (
+                        <SelectItem key={vacancy.id} value={vacancy.id}>
+                          {vacancy.position_title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <MetricCard
+                  title="Ongoing R1"
+                  value={pipelineMetrics?.ongoing_r1 || 0}
+                  description="Technical Screen in progress"
+                  icon={Users}
+                  color="blue"
+                />
+                <MetricCard
+                  title="Ongoing R2"
+                  value={pipelineMetrics?.ongoing_r2 || 0}
+                  description="Technical + Behavioral in progress"
+                  icon={Users}
+                  color="orange"
+                />
+                <MetricCard
+                  title="Ongoing R3"
+                  value={pipelineMetrics?.ongoing_r3 || 0}
+                  description="Manager Interview in progress"
+                  icon={Users}
+                  color="green"
+                />
+              </div>
             </div>
 
             {/* Performance & Hiring */}
             <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Performance & Hiring Metrics
-            </h2>
-            <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={performanceRecruiterFilter} onValueChange={setPerformanceRecruiterFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Recruiters</SelectItem>
-                  {hrUsers.map((user) => (
-                    <SelectItem key={user._id} value={user.name}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <MetricCard
-              title="Successful Hires"
-              value={performanceMetrics?.successful_hires || 0}
-              description="This month"
-              icon={CheckCircle}
-              trend={{ value: 25, label: "vs last month" }}
-              color="green"
-            />
-            <MetricCard
-              title="Interview-to-Offer Rate"
-              value={`${performanceMetrics?.interview_to_offer_rate || 0}%`}
-              description="Conversion efficiency"
-              icon={TrendingUp}
-              color="blue"
-            />
-            <MetricCard
-              title="Avg. Time to Hire"
-              value={`${performanceMetrics?.avg_time_to_hire || 0} days`}
-              description="From application to offer"
-              icon={Calendar}
-              color="gray"
-            />
-            <MetricCard
-              title="Offer Acceptance Rate"
-              value={`${performanceMetrics?.offer_acceptance_rate || 0}%`}
-              description="Offers accepted vs. offered"
-              icon={ThumbsUp}
-              trend={{ value: 5, label: "vs last month" }}
-              color="green"
-            />
-            </div>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  Performance & Hiring Metrics
+                </h2>
+                <div className="flex items-center space-x-2">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Select value={performanceRecruiterFilter} onValueChange={setPerformanceRecruiterFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Recruiters</SelectItem>
+                      {recruiterUsers.map((user) => (
+                        <SelectItem key={user._id} value={user.name}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard
+                  title="Successful Hires"
+                  value={performanceMetrics?.successful_hires || 0}
+                  description="This month"
+                  icon={CheckCircle}
+                  trend={{ value: 25, label: "vs last month" }}
+                  color="green"
+                />
+                <MetricCard
+                  title="Interview-to-Offer Rate"
+                  value={`${performanceMetrics?.interview_to_offer_rate || 0}%`}
+                  description="Conversion efficiency"
+                  icon={TrendingUp}
+                  color="blue"
+                />
+                <MetricCard
+                  title="Avg. Time to Hire"
+                  value={`${performanceMetrics?.avg_time_to_hire || 0} days`}
+                  description="From application to offer"
+                  icon={Calendar}
+                  color="gray"
+                />
+                <MetricCard
+                  title="Offer Acceptance Rate"
+                  value={`${performanceMetrics?.offer_acceptance_rate || 0}%`}
+                  description="Offers accepted vs. offered"
+                  icon={ThumbsUp}
+                  trend={{ value: 5, label: "vs last month" }}
+                  color="green"
+                />
+              </div>
             </div>
           </TabsContent>
         </Tabs>
