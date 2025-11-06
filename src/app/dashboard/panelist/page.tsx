@@ -96,7 +96,7 @@ export default function PanelistDashboard() {
 
   const itemsPerPage = 5
   const { toast } = useToast()
-
+  
   const loadCurrentUser = useCallback(() => {
     const user = getCurrentUser()
     setCurrentUser(user)
@@ -174,6 +174,9 @@ export default function PanelistDashboard() {
 
   const scheduledInterviews = filteredCandidates.filter(candidate => !hasFeedbackCompleted(candidate))
   const completedCandidateInterviews = filteredCandidates.filter(candidate => hasFeedbackCompleted(candidate))
+
+  console.log({ scheduledInterviews });
+
 
   // Filter by interview type
   const walkinScheduled = scheduledInterviews.filter(c => c.interview_type === "walk-in")
@@ -470,6 +473,32 @@ export default function PanelistDashboard() {
 
     return () => clearInterval(interval)
   }, [interviewSessions])
+
+useEffect(() => {
+  const handleInterviewScheduled = (e:any) => {
+    const newInterview = e.detail
+    console.log("🆕 New interview scheduled:", { newInterview })
+
+    // Add this new candidate/interview to main candidates list
+    setCandidates((prevCandidates) => {
+      console.log({ prevCandidates });
+      
+      const exists = prevCandidates.some(
+        (c) => c._id === newInterview.candidate_id
+      )
+      if (exists) return prevCandidates // avoid duplicates
+
+      // Append the new one
+      return [...prevCandidates, newInterview]
+    })
+  }
+
+  window.addEventListener("interview_scheduled", handleInterviewScheduled)
+  return () =>
+    window.removeEventListener("interview_scheduled", handleInterviewScheduled)
+}, [])
+
+
 
 
   useEffect(() => {

@@ -9,8 +9,48 @@ import PanelistDashboard from "./app/dashboard/panelist/page"
 import SuperadminDashboard from "./app/dashboard/superadmin/page"
 import { Toaster } from "./components/ui/toaster"
 import { ThemeProvider } from "./components/theme-provider"
+import { useEffect } from "react"
+import { API_BASE_URL } from "@/lib/api-config"
+
 
 function App() {
+
+  useEffect(() => {
+    // Create SSE connection to backend
+    const eventSource = new EventSource(`${API_BASE_URL}/sse/stream`)
+
+    // When server sends a message
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        console.log("📩 SSE event received:", data)
+
+        // Handle interview scheduling
+        if (data.type === "interview_scheduled") {
+          // Example: trigger function to refetch scheduled interviews
+          window.dispatchEvent(new CustomEvent("refresh_scheduled_interviews", { detail: data }))
+        }
+
+        // Handle feedback submission
+        if (data.type === "feedback_submitted") {
+          window.dispatchEvent(new CustomEvent("refresh_feedbacks", { detail: data }))
+        }
+      } catch (err) {
+        console.error("Failed to parse SSE message:", err)
+      }
+    }
+
+    // Handle connection errors
+    eventSource.onerror = (err) => {
+      console.error("SSE connection error:", err)
+      eventSource.close()
+    }
+
+    // Cleanup on component unmount
+    return () => {
+      eventSource.close()
+    }
+  }, [])
   return (
     <ThemeProvider defaultTheme="light">
       <Router>
