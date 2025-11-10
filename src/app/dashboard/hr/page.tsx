@@ -29,7 +29,7 @@ export default function HRDashboard() {
 
   // Analytics tab and period filters
   const [activeTab, setActiveTab] = useState("candidates");
-  const [timePeriod, setTimePeriod] = useState("this-week");
+  const [timePeriod, setTimePeriod] = useState("this_week");
   const [recruiterFilter, setRecruiterFilter] = useState("all");
   const [jobTitleFilter, setJobTitleFilter] = useState("all");
   const [statusActive, setStatusActive] = useState(true);
@@ -127,7 +127,7 @@ export default function HRDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
 
   // Chart colors
   const CHART_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
@@ -189,7 +189,7 @@ export default function HRDashboard() {
   useEffect(() => {
     async function loadCandidates() {
       try {
-        const data = await fetchCandidatesAPI();
+        const data = await fetchCandidatesAPI(timePeriod);
         console.log("Raw API Data:", data);
 
         const formattedRecruiterData = formatRecruiterData(data);
@@ -201,14 +201,14 @@ export default function HRDashboard() {
         console.log("Formatted Source Data:", formattedSourceData);
 
         setCandidatesBySource(formattedSourceData);
-        
+
       } catch (error) {
         console.error("Error fetching recruiter data:", error);
       }
     }
 
     loadCandidates();
-  }, []);
+  }, [timePeriod]);
 
 
   const interviewSchedule = useMemo(() => [
@@ -308,38 +308,38 @@ export default function HRDashboard() {
         {/* Time Period Filters */}
         <div className="flex flex-wrap gap-2">
           <Button
-            variant={timePeriod === "last-week" ? "default" : "outline"}
-            onClick={() => setTimePeriod("last-week")}
+            variant={timePeriod === "last_week" ? "default" : "outline"}
+            onClick={() => setTimePeriod("last_week")}
           >
             LAST WEEK
           </Button>
           <Button
-            variant={timePeriod === "this-week" ? "default" : "outline"}
-            onClick={() => setTimePeriod("this-week")}
+            variant={timePeriod === "this_week" ? "default" : "outline"}
+            onClick={() => setTimePeriod("this_week")}
           >
             THIS WEEK
           </Button>
           <Button
-            variant={timePeriod === "last-month" ? "default" : "outline"}
-            onClick={() => setTimePeriod("last-month")}
+            variant={timePeriod === "last_month" ? "default" : "outline"}
+            onClick={() => setTimePeriod("last_month")}
           >
             LAST MONTH
           </Button>
           <Button
-            variant={timePeriod === "this-month" ? "default" : "outline"}
-            onClick={() => setTimePeriod("this-month")}
+            variant={timePeriod === "this_month" ? "default" : "outline"}
+            onClick={() => setTimePeriod("this_month")}
           >
             THIS MONTH
           </Button>
           <Button
-            variant={timePeriod === "last-quarter" ? "default" : "outline"}
-            onClick={() => setTimePeriod("last-quarter")}
+            variant={timePeriod === "last_quarter" ? "default" : "outline"}
+            onClick={() => setTimePeriod("last_quarter")}
           >
             LAST QUARTER
           </Button>
           <Button
-            variant={timePeriod === "this-quarter" ? "default" : "outline"}
-            onClick={() => setTimePeriod("this-quarter")}
+            variant={timePeriod === "this_quarter" ? "default" : "outline"}
+            onClick={() => setTimePeriod("this_quarter")}
           >
             THIS QUARTER
           </Button>
@@ -484,7 +484,7 @@ export default function HRDashboard() {
                         cx="50%"
                         cy="50%"
                         outerRadius={100}
-                        label={({ name, value }) => `${value}%`}
+                        label={({ payload }) => `${payload.value}%`}
                       >
                         {candidatesByRecruiter.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
@@ -493,6 +493,7 @@ export default function HRDashboard() {
                       <Tooltip />
                       <Legend />
                     </PieChart>
+
                   </ResponsiveContainer>
                 </CardContent>
               </Card>

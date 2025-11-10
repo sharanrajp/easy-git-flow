@@ -1044,21 +1044,27 @@ export async function fetchResumeUploadLogDetails(logId: string): Promise<Resume
   }
 }
 
-export async function fetchCandidatesSourcedByRecruiter(): Promise<CandidatesSourcedByRecruiter> {
+export async function fetchCandidatesSourcedByRecruiter(filterType: string): Promise<CandidatesSourcedByRecruiter> {
   try {
     const token = getToken();
-    const response = await fetch(`${API_BASE_URL}/interviews/source-summary`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/interviews/source-summary?filter=${encodeURIComponent(filterType)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
     if (!response.ok) {
       throw new Error('Failed to fetch candidates sourced by recruiter');
     }
+
     return await response.json();
   } catch (error) {
     console.error('Error fetching candidates sourced by recruiter:', error);
     throw error;
   }
 }
+
