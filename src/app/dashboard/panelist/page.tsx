@@ -163,20 +163,17 @@ export default function PanelistDashboard() {
 
   const filteredCandidates = candidates.filter(
     (candidate) =>
-      candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate.register_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (candidate.skill_set && Array.isArray(candidate.skill_set) && 
-       candidate.skill_set.some((skill: string) => 
-         skill.toLowerCase().includes(searchTerm.toLowerCase())
+      candidate?.name?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
+      candidate?.email?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
+      candidate?.register_number?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
+      (candidate?.skill_set && Array.isArray(candidate?.skill_set) && 
+       candidate?.skill_set.some((skill: string) => 
+         skill?.toLowerCase()?.includes(searchTerm?.toLowerCase())
        ))
   )
 
   const scheduledInterviews = filteredCandidates.filter(candidate => !hasFeedbackCompleted(candidate))
   const completedCandidateInterviews = filteredCandidates.filter(candidate => hasFeedbackCompleted(candidate))
-
-  console.log({ scheduledInterviews });
-
 
   // Filter by interview type
   const walkinScheduled = scheduledInterviews.filter(c => c.interview_type === "walk-in")
@@ -475,31 +472,24 @@ export default function PanelistDashboard() {
   }, [interviewSessions])
 
 useEffect(() => {
-  const handleInterviewScheduled = (e:any) => {
-    const newInterview = e.detail
-    console.log("🆕 New interview scheduled:", { newInterview })
+  console.log("calling panelist dashboard")
 
-    // Add this new candidate/interview to main candidates list
-    setCandidates((prevCandidates) => {
-      console.log({ prevCandidates });
-      
-      const exists = prevCandidates.some(
-        (c) => c._id === newInterview.candidate_id
-      )
-      if (exists) return prevCandidates // avoid duplicates
-
-      // Append the new one
-      return [...prevCandidates, newInterview]
-    })
+  const handleSSEUpdate = (e: any) => {
+    const data = e.detail
+    console.log("🆕 SSE data received:", { data })
+    loadCandidates()
   }
 
-  window.addEventListener("interview_scheduled", handleInterviewScheduled)
-  return () =>
-    window.removeEventListener("interview_scheduled", handleInterviewScheduled)
+  // Listen for both SSE event types
+  window.addEventListener("interview_scheduled", handleSSEUpdate)
+  window.addEventListener("candidate_panel_assigned", handleSSEUpdate)
+
+  // Cleanup both listeners on unmount
+  return () => {
+    window.removeEventListener("interview_scheduled", handleSSEUpdate)
+    window.removeEventListener("candidate_panel_assigned", handleSSEUpdate)
+  }
 }, [])
-
-
-
 
   useEffect(() => {
     const handleInterviewUpdate = (event: CustomEvent) => {

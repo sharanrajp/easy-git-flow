@@ -28,12 +28,17 @@ function App() {
         // Handle interview scheduling
         if (data.type === "interview_scheduled") {
           // Example: trigger function to refetch scheduled interviews
-          window.dispatchEvent(new CustomEvent("refresh_scheduled_interviews", { detail: data }))
+          window.dispatchEvent(new CustomEvent("interview_scheduled", { detail: data }))
+        }
+
+        // Handle canidate panel assignment
+        if (data.type === "candidate_panel_assigned") {
+          window.dispatchEvent(new CustomEvent("candidate_panel_assigned", { detail: data }))
         }
 
         // Handle feedback submission
         if (data.type === "feedback_submitted") {
-          window.dispatchEvent(new CustomEvent("refresh_feedbacks", { detail: data }))
+          window.dispatchEvent(new CustomEvent("feedback_submitted", { detail: data }))
         }
       } catch (err) {
         console.error("Failed to parse SSE message:", err)
