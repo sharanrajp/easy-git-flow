@@ -60,14 +60,14 @@ export interface PanelistCandidate {
   skill_set: string[];
   last_interview_round?: string;
   resume_link?: string;
-  interview_type?:string;
-  total_experience?:any;
-  notice_period?:string;
-  expected_ctc?:string;
-  current_ctc?:any;
-  recruiter_name?:string;
-  willing_to_relocate?:boolean;
-  created_at?:string;
+  interview_type?: string;
+  total_experience?: any;
+  notice_period?: string;
+  expected_ctc?: string;
+  current_ctc?: any;
+  recruiter_name?: string;
+  willing_to_relocate?: boolean;
+  created_at?: string;
   applied_position?: string
   final_status?: string;
   feedback_submitted?: boolean;
@@ -112,7 +112,7 @@ export interface OngoingInterview {
 // Fetch unassigned candidates from backend
 export async function fetchUnassignedCandidates(): Promise<BackendCandidate[]> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -141,7 +141,7 @@ export async function fetchUnassignedCandidates(): Promise<BackendCandidate[]> {
 // Add a new candidate
 export async function addCandidate(candidateData: Partial<BackendCandidate>, resumeFile?: File): Promise<BackendCandidate> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -149,12 +149,12 @@ export async function addCandidate(candidateData: Partial<BackendCandidate>, res
   try {
     const formData = new FormData()
     formData.append("candidate_data", JSON.stringify(candidateData))
-    
+
     // Append resume file if provided
     if (resumeFile) {
       formData.append("resume", resumeFile)
     }
-    
+
     const response = await fetch(`${API_BASE_URL}/candidates/add`, {
       method: 'POST',
       headers: {
@@ -178,7 +178,7 @@ export async function addCandidate(candidateData: Partial<BackendCandidate>, res
 // Fetch assigned candidates from backend
 export async function fetchAssignedCandidates(): Promise<BackendCandidate[]> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -207,7 +207,7 @@ export async function fetchAssignedCandidates(): Promise<BackendCandidate[]> {
 // Update candidate check-in status
 export async function updateCandidateCheckIn(candidateId: string, checked: boolean): Promise<void> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -234,14 +234,14 @@ export async function updateCandidateCheckIn(candidateId: string, checked: boole
 // Fetch panelists for a specific candidate and vacancy
 export async function fetchPanelistsForCandidate(candidateId: string, vacancyId: string, interviewType?: string): Promise<any[]> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
 
   try {
     // Determine which endpoint to use based on interview type
-    const endpoint = interviewType === 'virtual' 
+    const endpoint = interviewType === 'virtual'
       ? `${API_BASE_URL}/virtual/getvirtualpanelist`
       : `${API_BASE_URL}/Vacancy/getpanelist`;
 
@@ -272,7 +272,7 @@ export async function fetchPanelistsForCandidate(candidateId: string, vacancyId:
 // Fetch available panels (kept for backward compatibility)
 export async function fetchAvailablePanels(round: string = 'r1'): Promise<any[]> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -301,7 +301,7 @@ export async function fetchAvailablePanels(round: string = 'r1'): Promise<any[]>
 // Fetch all panels with status
 export async function fetchPanelsWithStatus(): Promise<any[]> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -330,9 +330,9 @@ export async function fetchPanelsWithStatus(): Promise<any[]> {
 // Assign candidate to panel
 export async function assignCandidateToPanel(candidateId: string, panelId: string, round: string = 'r1', assignedBy: string): Promise<void> {
   console.log('assignCandidateToPanel called with:', { candidateId, panelId, round, assignedBy }) // Debug log
-  
+
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -344,9 +344,9 @@ export async function assignCandidateToPanel(candidateId: string, panelId: strin
       round: round,
       assigned_by: assignedBy
     }
-    
+
     console.log('Request body for assignment:', requestBody) // Debug log
-    
+
     const response = await fetch(`${API_BASE_URL}/mapping/assign`, {
       method: 'POST',
       headers: {
@@ -357,7 +357,7 @@ export async function assignCandidateToPanel(candidateId: string, panelId: strin
     });
 
     console.log('Assignment response status:', response.status) // Debug log
-    
+
     if (!response.ok) {
       const errorText = await response.text()
       console.error('Assignment error response:', errorText) // Debug log
@@ -372,7 +372,7 @@ export async function assignCandidateToPanel(candidateId: string, panelId: strin
 // Undo assignment
 export async function undoAssignment(candidateId: string, panelId: string): Promise<void> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -398,7 +398,7 @@ export async function undoAssignment(candidateId: string, panelId: string): Prom
 // Fetch ongoing interviews from backend
 export async function fetchOngoingInterviews(): Promise<OngoingInterview[]> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -427,7 +427,7 @@ export async function fetchOngoingInterviews(): Promise<OngoingInterview[]> {
 // Fetch ongoing virtual interviews from backend
 export async function fetchOngoingVirtualInterviews(): Promise<OngoingInterview[]> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -456,7 +456,7 @@ export async function fetchOngoingVirtualInterviews(): Promise<OngoingInterview[
 // Unschedule virtual interview
 export async function unscheduleVirtualInterview(interviewId: string): Promise<void> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -482,20 +482,20 @@ export async function unscheduleVirtualInterview(interviewId: string): Promise<v
 // Export candidates to Excel/CSV
 export async function exportCandidatesExcel(): Promise<Blob> {
   const response = await makeAuthenticatedRequest(`${API_BASE_URL}/export/candidates-excel`);
-  
+
   if (!response.ok) {
     throw new Error(`Failed to export candidates: ${response.status} ${response.statusText}`);
   }
-  
+
   return response.blob();
 }
 
 
 export async function fetchPanelistAssignedCandidates(): Promise<PanelistCandidate[]> {
   const token = getToken();
-  
+
   console.log('fetchPanelistAssignedCandidates - Token:', token ? 'Present' : 'Missing');
-  
+
   if (!token) {
     console.error('fetchPanelistAssignedCandidates - No authentication token found');
     throw new Error('No authentication token found');
@@ -503,13 +503,13 @@ export async function fetchPanelistAssignedCandidates(): Promise<PanelistCandida
 
   try {
     console.log('fetchPanelistAssignedCandidates - Making authenticated request to:', `${API_BASE_URL}/interviews/my-assigned-candidates`);
-    
+
     const response = await makeAuthenticatedRequest(`${API_BASE_URL}/interviews/my-assigned-candidates`, {
       method: 'GET'
     });
 
     console.log('fetchPanelistAssignedCandidates - Response status:', response.status);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error('fetchPanelistAssignedCandidates - Response not ok:', response.status, response.statusText, errorText);
@@ -528,7 +528,7 @@ export async function fetchPanelistAssignedCandidates(): Promise<PanelistCandida
 // Update candidate by ID
 export async function updateCandidate(candidateId: string, candidateData: Partial<BackendCandidate>, resumeFile?: File): Promise<BackendCandidate> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -536,12 +536,12 @@ export async function updateCandidate(candidateId: string, candidateData: Partia
   try {
     const formData = new FormData();
     formData.append("candidate_data", JSON.stringify(candidateData));
-    
+
     // Append resume file if provided
     if (resumeFile) {
       formData.append("resume", resumeFile);
     }
-    
+
     const response = await fetch(`${API_BASE_URL}/candidates/${candidateId}`, {
       method: 'PUT',
       headers: {
@@ -565,7 +565,7 @@ export async function updateCandidate(candidateId: string, candidateData: Partia
 // Delete candidates by IDs (supports single or multiple deletions)
 export async function deleteCandidates(candidateIds: string[]): Promise<{ deleted_count: number; message: string }> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -638,7 +638,7 @@ export interface BulkUploadLogDetails {
 // Fetch all bulk upload logs
 export async function fetchBulkUploadLogs(uploadedBy?: string): Promise<BulkUploadLog[]> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -662,16 +662,16 @@ export async function fetchBulkUploadLogs(uploadedBy?: string): Promise<BulkUplo
     }
 
     const data = await response.json();
-    
+
     // API returns {message: "...", logs: [...]}
     const apiLogs: BulkUploadLogApiResponse[] = data.logs || data;
-    
+
     // Ensure the logs array is valid
     if (!Array.isArray(apiLogs)) {
       console.error('API returned non-array logs:', data);
       return [];
     }
-    
+
     // Transform API response to match our interface
     const logs: BulkUploadLog[] = apiLogs.map(log => {
       // Convert uploaded_at to IST format
@@ -679,7 +679,7 @@ export async function fetchBulkUploadLogs(uploadedBy?: string): Promise<BulkUplo
       const parts = istTimestamp.split(' ');
       const date = parts[0];
       const time = parts.slice(1).join(' '); // Includes AM/PM
-      
+
       return {
         upload_id: log.upload_id,
         uploaded_by: log.uploaded_by,
@@ -692,7 +692,7 @@ export async function fetchBulkUploadLogs(uploadedBy?: string): Promise<BulkUplo
         uploaded_time: time,
       };
     });
-    
+
     return logs;
   } catch (error) {
     console.error('Error fetching bulk upload logs:', error);
@@ -703,7 +703,7 @@ export async function fetchBulkUploadLogs(uploadedBy?: string): Promise<BulkUplo
 // Fetch specific bulk upload log details by upload_id
 export async function fetchBulkUploadLogDetails(uploadId: string): Promise<BulkUploadLogDetails> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -722,16 +722,16 @@ export async function fetchBulkUploadLogDetails(uploadId: string): Promise<BulkU
     }
 
     const data = await response.json();
-    
+
     // API returns {message: "...", log: {...}}
     const logData = data.log || data;
-    
+
     // Convert uploaded_at to IST format
     const istTimestamp = formatToIST(logData.uploaded_at);
     const parts = istTimestamp.split(' ');
     const date = parts[0];
     const time = parts.slice(1).join(' '); // Includes AM/PM
-    
+
     // Transform API response to match our interface
     const details: BulkUploadLogDetails = {
       upload_id: logData.upload_id,
@@ -749,7 +749,7 @@ export async function fetchBulkUploadLogDetails(uploadId: string): Promise<BulkU
         candidate_id: candidate.candidate_id,
       })),
     };
-    
+
     return details;
   } catch (error) {
     console.error('Error fetching bulk upload log details:', error);
@@ -760,7 +760,7 @@ export async function fetchBulkUploadLogDetails(uploadId: string): Promise<BulkU
 // Fetch candidate details by candidate_id
 export async function fetchCandidateDetails(candidateId: string): Promise<BackendCandidate> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -818,7 +818,7 @@ export interface ScreeningSummaryResponse {
  */
 export async function fetchScreeningSummaryLogs(): Promise<ScreeningSummaryResponse> {
   const token = getToken();
-  
+
   if (!token) {
     throw new Error('No authentication token found');
   }
@@ -999,6 +999,8 @@ export interface CandidatesSourcedByRecruiter {
   start_date: string,
   end_date: string,
   total_candidates: number,
+  recruiter_id: string,
+  recruiter_name: string,
   summary: []
 }
 
@@ -1043,28 +1045,36 @@ export async function fetchResumeUploadLogDetails(logId: string): Promise<Resume
     throw error;
   }
 }
+export async function fetchCandidatesSourcedByRecruiter(params: any): Promise<CandidatesSourcedByRecruiter> {
+  const { filterType, recruiterFilter } = params;
+  console.log({ filterType, recruiterFilter });
 
-export async function fetchCandidatesSourcedByRecruiter(filterType: string): Promise<CandidatesSourcedByRecruiter> {
   try {
     const token = getToken();
-    const response = await fetch(
-      `${API_BASE_URL}/interviews/source-summary?filter=${encodeURIComponent(filterType)}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+
+    // build query params dynamically
+    const queryParams = new URLSearchParams();
+    queryParams.append("filter", filterType);
+    if (recruiterFilter && recruiterFilter.toLowerCase() !== "all") {
+      queryParams.append("recruiter_name", recruiterFilter);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/interviews/source-summary?${queryParams.toString()}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch candidates sourced by recruiter');
+      throw new Error("Failed to fetch candidates sourced by recruiter");
     }
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching candidates sourced by recruiter:', error);
+    console.error("Error fetching candidates sourced by recruiter:", error);
     throw error;
   }
 }
+
 

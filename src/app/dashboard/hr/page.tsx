@@ -129,6 +129,9 @@ export default function HRDashboard() {
     }
   };
 
+  console.log({ recruiterUsers });
+
+
   // Chart colors
   const CHART_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
 
@@ -188,8 +191,12 @@ export default function HRDashboard() {
 
   useEffect(() => {
     async function loadCandidates() {
+      const params = {
+        filterType: timePeriod,
+        recruiterFilter
+      };
       try {
-        const data = await fetchCandidatesAPI(timePeriod);
+        const data = await fetchCandidatesAPI(params);
         console.log("Raw API Data:", data);
 
         const formattedRecruiterData = formatRecruiterData(data);
@@ -208,7 +215,7 @@ export default function HRDashboard() {
     }
 
     loadCandidates();
-  }, [timePeriod]);
+  }, [timePeriod, recruiterFilter]);
 
 
   const interviewSchedule = useMemo(() => [
@@ -301,6 +308,9 @@ export default function HRDashboard() {
       </DashboardLayout>
     );
   }
+
+  console.log({ recruiterFilter });
+
 
   return (
     <DashboardLayout requiredRole="admin">
